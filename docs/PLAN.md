@@ -567,7 +567,7 @@ Nothing has been built yet. Recommended order:
    - `src/portability.ts`: filename safety check (R-6).
    - `scripts/`: launchd `.plist` (+ cron/Task Scheduler snippets later).
    - `logs/`: plain-text run logs (gitignored).
-   - `SPEC.md`, `README.md` (bill of materials + recreate steps), `.gitignore`, `LICENSE` (MIT).
+   - `docs/SPEC.md`, `README.md` (bill of materials + recreate steps), `.gitignore`, `LICENSE` (MIT).
 4. **Implement against the spec**, adding tests so each MUST maps to ≥1 test.
 5. **Run the first conformance check** (code vs. spec) and record results.
 6. **Initialize git**, commit, and (optionally) push to GitHub under MIT.

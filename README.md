@@ -11,7 +11,7 @@ rotted. If any piece dies, the plain file tree survives and the tool gets swappe
 
 **Status:** design complete, implementation not started yet.
 
-Read [`PLAN.md`](PLAN.md) for the full design record: goals, what was rejected and why,
+Read [`docs/PLAN.md`](docs/PLAN.md) for the full design record: goals, what was rejected and why,
 architecture, technology choices, a decades-scale migration analysis, and the operations runbook.
 It's written to be self-contained, so a future session (human or AI) can pick up the project from
 that document alone.
