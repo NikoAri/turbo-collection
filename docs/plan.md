@@ -238,6 +238,10 @@ implementations for 40+ years.
   "Current Bindings" section records today's implementation. Migrations change only the bindings.
 - **Traceability:** each requirement has a stable ID (R-1, R-2, …); code references the ID
   (e.g., `// R-3`) so conformance is auditable, not inferred.
+- **Controlled language:** the writing rules that keep the spec's English interpretable across
+  decades of language drift (obligations only via RFC 2119 keywords, one term one meaning, no
+  idiom in normative text; inspired by ASD-STE100 "Simplified Technical English") are codified
+  in `docs/language-requirement.md`, which binds every normative document in the project.
 
 **Conformance checking has two directions** (both AI-assisted, both periodic):
 

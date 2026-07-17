@@ -4,7 +4,7 @@ An open, CLI-first system for preserving personal photos and videos for decades,
 them up for a subscription cycle.
 
 The core idea: separate your data from your tools. Photos live as plain files in a plain folder
-tree — no database, no proprietary container, nothing that requires a specific app or company to
+tree: no database, no proprietary container, nothing that requires a specific app or company to
 stay in business. A thin, swappable orchestrator (today: [rclone](https://rclone.org/) + a
 SHA-256 integrity manifest) mirrors them to external storage and verifies nothing has silently
 rotted. If any piece dies, the plain file tree survives and the tool gets swapped.
@@ -18,4 +18,4 @@ that document alone.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT; see [`LICENSE`](LICENSE).
