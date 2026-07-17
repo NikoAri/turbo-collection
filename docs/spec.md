@@ -15,12 +15,13 @@ a protocol.
 
 ### 0.1 Document hierarchy
 
-Three documents, three jobs. Confusing them is the most common way a specification rots.
+Each document has one job. Confusing them is the most common way a specification rots.
 
 | Document | Role | Normative? | May code cite it? |
 |---|---|---|---|
 | `plan.md` | Design record: **why**. Rationale, rejected options, history. | No | **No** |
 | `spec.md` (this file) and `spec-sources.md` | Specification: **what** must be true. | **Yes** | **Yes, and only these** |
+| `language-requirement.md` | Authoring standard: **how normative documents are written**, so their English stays interpretable over decades. | Yes, for document authors | **No** (its R-LANG-2) |
 | Section 12, Current bindings | **How** it is done today. Volatile by design. | Yes, but expected to change | Yes |
 
 | ID | Requirement |
@@ -44,6 +45,10 @@ requirement is marked withdrawn and its ID is retired.
 
 **Traceability.** Code cites the ID it satisfies (for example, a `R-MIRROR-3` comment on the function
 that enforces it), so conformance can be audited mechanically rather than inferred. See Section 13.
+
+**Writing rules.** The language discipline this document is written under (controlled vocabulary,
+one term per concept, the normative-text/commentary split) is defined in `language-requirement.md`,
+which binds every normative document in this project.
 
 ---
 
