@@ -2,12 +2,12 @@
 
 > **Spec version:** 0.1.0-draft
 > **Created:** 2026-07-12
-> **Status:** Draft. No implementation exists yet. Section 9 (Versioning) is explicitly provisional.
+> **Status:** Draft. No implementation exists yet.
 
 This document is the **normative source of truth** for what Turbo-Collection must do. It is
 language-neutral and tool-neutral on purpose, so that the tests and the implementation can be
-regenerated from it in any future language, in the way an RFC outlives any single implementation of
-a protocol.
+regenerated from it in any future implementation language, in the way an RFC outlives any single
+implementation of a protocol.
 
 ---
 
@@ -40,8 +40,8 @@ at all, it is for rationale only, and is explicitly non-normative.
 2119**.
 
 **Requirement IDs** are stable and domain-prefixed: `R-COL-1`, `R-SRC-6`, `R-TGT-12`. Once this
-specification is published at a version, an ID is **never renumbered and never reused**. A withdrawn
-requirement is marked withdrawn and its ID is retired.
+specification is published at a version, an ID MUST NOT be renumbered and MUST NOT be reused. A
+withdrawn requirement keeps its ID and is marked withdrawn.
 
 **Traceability.** Code cites the ID it satisfies (for example, a `R-MIRROR-3` comment on the function
 that enforces it), so conformance can be audited mechanically rather than inferred. See Section 13.
@@ -196,6 +196,25 @@ Self-contained, per R-META-1.
   manifest, the recovery note, the logs, the collection marker, and the copy of this specification
   carried on each target. Artifacts are versioned and must be self-evident (Section 9). Originals are
   neither: they are preserved untouched, exactly as they arrived.
+
+- **Published (of a specification version).** Stamped into an artifact that has left the machine
+  holding the collection (R-VER-10). A version whose stamp carries the `-draft` suffix is not
+  published; it changes freely.
+
+- **MAJOR line.** All versions of this specification that share a MAJOR number (for example, the
+  2.x line). The **terminal text** of a line is its last published version at the moment the line
+  is superseded by the next MAJOR.
+
+- **Format generation.** The artifact formats and collection layout convention in force under a
+  MAJOR line. A new format generation begins only at a MAJOR version that changes an artifact
+  format or the layout convention; a MAJOR version that only forbids previously conforming
+  behavior does not begin one. Format generations change more rarely than specification versions.
+
+- **Migration.** The operation that converts a copy of the collection from an older format
+  generation to the current one (R-VER-15, R-VER-16).
+
+- **Change ledger.** The per-version, per-requirement record of specification changes, kept in
+  Section 15 (R-VER-13).
 
 - **Import.** The act of a source supplying files into the collection.
 
@@ -426,13 +445,14 @@ knowing what can actually go wrong would be inventing a contract that cannot yet
 
 ## 9. Versioning and change (`R-VER-*`)
 
-> **PROVISIONAL.** This section is a first cut, to be worked through properly in its own session, and
-> it should be revisited rather than accepted as written. Only two requirements here genuinely cannot
-> wait, because they cannot be retrofitted: **R-VER-3** (artifacts carry a version stamp: if the first
-> release writes unstamped files, no later release can ever safely change a format) and **R-VER-4**
-> (self-evidence: it constrains every format choice, so it must hold before the first format is
-> chosen). Everything else, including the numbering scheme and the immutability discipline, is cheap
-> to add later.
+This section governs the specification itself: how a version is numbered and published (9.2), how
+artifacts declare the version that governs them (9.3), how the document is preserved across its own
+changes (9.4), how the system crosses a format-generation boundary (9.5), and the checklist that
+publishes a version (9.6).
+
+> **Audience note.** Not every requirement here binds the implementation. The numbering, archiving,
+> ledger, and publication rules bind the **maintainers of this document**; code has nothing to cite
+> in them. The stamping, reading, and migration rules bind the implementation as usual.
 
 ### 9.1 The regress, and where it stops
 
@@ -462,35 +482,154 @@ objection, and it is answered in three moves.
    regress stops, and it stops because of what the artifacts are made of, not because versioning was
    avoided.
 
-### 9.2 Requirements
+### 9.2 Version numbers and publication
 
 | ID | Requirement |
 |---|---|
-| **R-VER-1** | This specification MUST carry a version. **MAJOR**: a requirement changes incompatibly, or previously written artifacts become unreadable. **MINOR**: a requirement is added. **PATCH**: a clarification with no behavioral change. |
-| **R-VER-2** | **Published versions MUST be immutable.** A correction is made by publishing a new version, never by editing a released one. A version stamp on an artifact MUST therefore resolve to exactly one document text, forever. |
+| **R-VER-1** | This specification MUST carry a semantic version, `MAJOR.MINOR.PATCH`, and the bump MUST be decided by the effect on artifacts. **MAJOR**: an artifact written under the previous version would parse differently, change meaning, or become invalid; or the collection layout convention changes; or previously conforming behavior becomes forbidden; or the document language or obligation vocabulary changes (R-VER-19). **MINOR**: additions only; every artifact written under the previous version keeps its exact meaning. **PATCH**: prose improvement with no behavioral consequence. |
+| **R-VER-2** | **Version identity MUST be immutable.** A published version number refers to exactly one text, forever: the number MUST NOT be reused for different text, and a published text MUST NOT be edited. A correction is a new version. Retention is deliberately weaker than identity: a published stamp MUST resolve, at minimum, to the archived terminal text of its MAJOR line (R-VER-12) together with the change ledger (R-VER-13); retaining every intermediate text as a separate file is not required. |
+| **R-VER-10** | A version is **published** at the first moment its stamp is written into an artifact that leaves the machine holding the collection. A stamp carrying the `-draft` suffix MUST NOT be written into such an artifact. A draft MAY change freely and is never archived. |
+| **R-VER-17** | If a published version is later found to be misclassified under R-VER-1 (for example, labeled MINOR when it changed an artifact's meaning), the correction MUST be an **erratum**: a new ledger entry (R-VER-13) declaring the misclassification. The published text MUST NOT be edited and its stamp MUST NOT be silently reinterpreted. |
+| **R-VER-18** | A version stamp MUST state the publication date, in ISO 8601 form, beside the number: for example, `spec 1.2.0 (2027-03-01)`. |
+| **R-VER-19** | The document language of this specification, and its obligation vocabulary (the RFC 2119 keyword set, or a successor), MAY change only at a MAJOR version. All normative documents in this project MUST change document language together, at the same boundary. Across such a change: requirement IDs MUST NOT change; the changes-from section (R-VER-14) MUST state the previous language and the new language, and MUST map every defined term and every obligation keyword from the old language to the new; and the archived terminal text of the superseded line (R-VER-12) MUST remain in its original language, untranslated. |
+| **R-VER-21** | Each version of this specification MUST have exactly one authentic text, in exactly one document language. A translation of any version MAY be published beside it and MUST be marked as informative. Only the authentic text resolves a version stamp (R-VER-2). |
+
+> **Why the bump test is artifact-driven.** Two surfaces could define "breaking": artifacts, or code
+> conformance. They disagree: a new MUST is additive for artifacts (everything already written stays
+> valid) while making existing code non-conformant. For a preservation system the choice is forced.
+> Data outlives code, and code is regenerable from this document; artifacts are regenerable from
+> nothing. So artifacts decide the bump, and a release that merely obsoletes code is MINOR.
+
+> **Why identity and retention are split (R-VER-2).** Immutability is two promises, and only one of
+> them must be absolute. *Identity* is the RFC discipline: "written under version 1.2" is worthless
+> if 1.2 was quietly revised, and precise if 1.2 can only ever mean one text. *Retention* of every
+> intermediate text is not needed, because MINOR versions are additive (R-VER-1): the text of any
+> intermediate version is derivable from its line's terminal text minus the additions the ledger
+> records after it. What a reader of an old log actually needs to reconstruct is *which obligations
+> governed that run*, and the ledger answers exactly that. Version control keeps the exact
+> intermediate texts as best effort; nothing load-bearing depends on it. The cost is accepted
+> knowingly: this scheme is exactly as sound as version classification, which is why publication
+> passes through the checklist (9.6) and why misclassification has an honesty rule (R-VER-17).
+
+> **Why a document-language change is MAJOR (R-VER-19).** By the artifact test alone, a faithful
+> translation would be a PATCH: no artifact changes meaning. It is forced up to MAJOR by R-VER-2's
+> resolution rule: intermediate versions are derivable from a terminal text only within one
+> language, because translation is not a mechanical derivation. A language change therefore has to
+> sit at a line boundary, where the outgoing language's text is archived whole. The document
+> language and the obligation keywords are bindings in the same sense the implementation language
+> is (Section 12): today's expression of the intent, replaceable. The writing rules in
+> `language-requirement.md` are what keep a future translation faithful (one term, one meaning,
+> defined in-document), and that document is re-expressed for the new language at the same boundary.
+
+> **Why exactly one authentic text (R-VER-21).** The alternative, several equally authentic language
+> versions, works only with a standing arbiter to resolve divergences between them: a court can
+> compare all versions and rule; this project cannot. The changes-from section of a language-switch
+> MAJOR is deliberately this project's own Rosetta Stone: the one artifact that carries both
+> languages side by side, term by term and keyword by keyword.
+
+### 9.3 Stamps and self-evidence
+
+| ID | Requirement |
+|---|---|
 | **R-VER-3** | Every artifact Turbo-Collection persists (configuration, manifest, recovery note, log, collection marker) MUST record the specification version it was written against, in a form readable **before** the artifact is parsed. |
 | **R-VER-4** | **Self-evidence.** Every artifact MUST be intelligible by inspection alone, without the specification version that produced it. The version stamp is a disambiguator; it MUST NOT be the only key to decoding the artifact. |
 | **R-VER-5** | Turbo-Collection MUST NOT silently reinterpret an artifact whose version it does not recognize. An unrecognized version MUST be an explicit failure, never a guess. |
-| **R-VER-6** | **Readers permissive, writers strict.** Turbo-Collection MUST be able to READ every artifact version it has ever written. It need only WRITE the current version. |
 | **R-VER-7** | The collection root MUST carry a plain-text marker recording the specification version and the layout convention the collection was written under. |
 | **R-VER-8** | Every target MUST carry a copy of the specification version it was written under, so that the rules governing the data survive alongside the data. |
 | **R-VER-9** | Code MUST declare which specification version it conforms to, and every run MUST record that version in its log (R-LOG-3). |
-
-> **R-VER-2 and R-VER-4 do the real work here, and both are borrowed rather than invented.** R-VER-2
-> is the RFC discipline: immutability is what makes a version stamp mean anything decades later.
-> "Written under version 1.2" is worthless if 1.2 was quietly revised; it is precise if 1.2 can only
-> ever mean one text.
 
 > **R-VER-4 is a design constraint with teeth.** It forbids any artifact format that can only be
 > understood by consulting its specification, which rules out binary encodings, opaque headers, and
 > compact-but-cryptic schemes **forever**. Every format this project ever adopts must pass one test:
 > *could a stranger figure this out by looking at it?*
 
-> **R-VER-6 is the preservation-shaped asymmetry.** Backward compatibility in the ordinary software
-> sense (new code must interoperate with old code) is not the problem here; there is no protocol and
-> no network peer. The problem is that data written in 2026 must still be readable in 2070. So the
-> obligation runs one way only: **always be able to read what you wrote; never be obliged to write
-> what you used to.**
+### 9.4 Preserving the specification itself
+
+| ID | Requirement |
+|---|---|
+| **R-VER-11** | Every version of this specification MUST be fully self-contained for the system it describes, and MUST describe only that system. Determining a current obligation MUST NOT require reading any other version, and this document MUST NOT carry a catalog of superseded formats. A superseded format generation is defined by the archived terminal text of its own line (R-VER-12). |
+| **R-VER-12** | When a MAJOR line is superseded, its terminal text MUST be archived as a plain Markdown file in the repository's top-level `superseded/` directory, named with its full version stamp (for example, `superseded/spec-1.4.2.md`). The `superseded/` directory MUST contain the terminal text of every superseded MAJOR line. Intermediate texts MAY live in version control as best effort; they are not load-bearing (R-VER-2). |
+| **R-VER-13** | Section 15 of this document MUST be a change ledger holding one entry per published version: the version stamp, and one line per requirement ID added, amended, or withdrawn, stating what changed and why. |
+| **R-VER-14** | The first published version of a new MAJOR line MUST contain a changes-from section stating its differences from the terminal text of the previous line, at **conversion grade**: precise enough that an artifact written under the previous line can be interpreted in current terms from that section alone. The section MUST name the archived terminal text of the previous line by its full version stamp. |
+
+> **Why present-tense and self-contained (R-VER-11).** The alternative is rules reconstructed by
+> merging a chain of documents, and the history of protocol standards maintained as amendment
+> chains is the argument against it: an implementer who must merge a base text with years of
+> scattered updates will misread them, and consolidating back into one self-contained text gets
+> more expensive the longer it is deferred. Most readers only ever need the current system. A
+> reader examining an old drive loads that generation's own archived specification, which per
+> R-VER-8 is also bound into the drive itself.
+
+> **What "conversion grade" means (R-VER-14).** The standard the Gregorian calendar reform set: it
+> stated its break from the Julian calendar as a mechanical rule (which dates to skip, which leap
+> years to drop), and that is what keeps Julian dates convertible centuries later. "The layout was
+> improved" is narrative; "a path of form X under the previous line maps to form Y" is conversion
+> grade. This section is also what makes direct-jump migrations composable (R-VER-16): a bridge
+> across several generations can be assembled from the consecutive changes-from sections.
+
+> **Where the texts live.** `spec/` at the head of the repository is the living view; top-level
+> `superseded/` holds the frozen terminal texts, deliberately outside the living directory so that
+> restructuring the living specification never moves a frozen record; and R-VER-8 scatters stamped
+> copies onto every target, so the versions that actually govern data in the wild are the most
+> redundantly stored of all. The change ledger lives *inside* this document (R-VER-13) for the same
+> reason: it is the only in-tree record of intermediate versions, so it must travel with every copy.
+
+### 9.5 Format generations and migration
+
+| ID | Requirement |
+|---|---|
+| **R-VER-6** | Turbo-Collection MUST read every artifact of the **current format generation**, and MUST write artifacts of the current format generation only. For the previous generation, its obligation is the migration of R-VER-15, not general reading. For older generations it has no reading obligation: an unrecognized stamp is an explicit refusal (R-VER-5). |
+| **R-VER-15** | A release that introduces a new format generation MUST include a migration from the previous generation. The migration MUST be atomic per copy: at every moment, a copy is wholly of the old generation or wholly of the new, never in between. It MUST verify the copy against its manifest under the old generation's rules before converting, and MUST re-verify the copy under the new generation's rules after converting; both verifications MUST cover every file, not a sample. It MUST leave every original byte-identical. It MUST remain available for at least one full off-site rotation cycle after the release, so that a copy returning late is migrated, not refused. |
+| **R-VER-16** | A release MAY also provide a direct migration from a named older generation (for example, generation 3 to generation 7). Such a shortcut MUST check the copy's stamp against its declared source generation and MUST refuse any other; MUST meet every obligation of R-VER-15; and MUST produce an end state identical to crossing each intervening boundary in turn. A shortcut is an addition to the previous-generation migration, never a replacement for it. |
+
+> **A format generation is not a specification version.** The specification changes often; formats
+> change rarely. Most MAJOR versions will open no new generation at all (forbidding previously
+> conforming behavior is MAJOR, yet changes no format). The compatibility promise is phrased per
+> generation exactly so that its cost stays visible and small: one bridge, at each rare boundary.
+
+> **Why boundary verification is full, never sampled (R-VER-15).** A generation boundary is the one
+> moment when every copy in the fleet is systematically rewritten, which makes it the best
+> opportunity silent corruption will ever get. It is also rare. So the expensive check is spent
+> exactly there: every file verified on both sides of the crossing. Sampled verification is a
+> cadence optimization for routine checking (Section 14), and has no place at a boundary. Atomicity
+> per copy exists for the interrupted case: a migration that can be half-applied leaves a copy that
+> is of neither generation, which is exactly the state R-VER-5 exists to refuse.
+
+> **"Read forever" is still true, and it is a property of the system, not of any binary.** Older
+> generations are recovered, not read. The copy's own stamp (R-VER-3), its self-evidence (R-VER-4),
+> its carried manifest, recovery note, and specification (R-TGT-9, R-TGT-10, R-VER-8), and the
+> archived terminal text (R-VER-12) are together sufficient for a then-current human or AI to
+> regenerate a reader on demand. And the universal fallback is always available, from any
+> generation: verify the copy under its own generation's rules, then regenerate current-generation
+> artifacts from the data itself. That works because originals are immutable and the manifest
+> declares its own algorithm (R-INT-5).
+
+### 9.6 The publication checklist
+
+| ID | Requirement |
+|---|---|
+| **R-VER-20** | A version of this specification MUST be published only by completing the following checklist, in order. |
+
+1. **Classify** the change set under R-VER-1's test, and draft one ledger line per added, amended,
+   or withdrawn requirement ID.
+2. **Review** every added or changed passage against `language-requirement.md` (its R-LANG-14
+   gate).
+3. **Sweep** the document mechanically: no em-dash (U+2014) anywhere; en-dash (U+2013) only inside
+   numeric ranges (R-LANG-15).
+4. **If the version starts a new MAJOR line:** archive the outgoing line's terminal text into
+   `superseded/` (R-VER-12); write the changes-from section (R-VER-14); and, if the new line begins
+   a new format generation, confirm that the R-VER-15 migration exists and passes its boundary
+   verification, before any artifact is stamped.
+5. **Enter the ledger lines** into Section 15 (R-VER-13).
+6. **Stamp** the document: the new version number with its date (R-VER-18), with no `-draft`
+   suffix (R-VER-10).
+7. **Publish:** the first artifact written with the new stamp that leaves the machine publishes
+   the version (R-VER-10). From that moment, the text is immutable in identity (R-VER-2).
+
+> **The checklist is deliberately short, and two steps carry the whole scheme.** Step 1, because
+> the archive pruning of R-VER-2 is exactly as sound as the classification it rests on; and step 4,
+> because the migration promise of R-VER-15 is exactly as sound as its boundary verification.
+> Everything else is mechanical.
 
 ---
 
@@ -598,8 +737,8 @@ definitions for common operating systems, but contains no scheduling logic.
 ## 12. Current bindings and assumptions
 
 > **This section, and only this section, records *how* the requirements are met today.** It is
-> expected to change, and it is the only section a migration touches. Nothing above depends on any
-> entry here. Per R-META-1, this section carries its own assumptions list rather than deferring to
+> expected to change, and it is the only section a binding change touches. Nothing above depends on
+> any entry here. Per R-META-1, this section carries its own assumptions list rather than deferring to
 > another document.
 
 ### 12.1 Bindings (as of 2026-07-12)
@@ -670,8 +809,9 @@ one test that exercises it. Per R-META-2, code cites **only** specification IDs.
 specification version it conforms to (R-VER-9).
 
 **Testing.** Every **MUST** in this document MUST map to at least one test. Tests are deterministic
-but language-bound; this specification is the language-free layer above them. On a language
-migration, this document regenerates **both** the tests and the implementation.
+but bound to an implementation language; this specification is the layer above them. On an
+implementation-language migration, this document regenerates **both** the tests and the
+implementation.
 
 > AI-assisted conformance review is a strong reviewer, not a proof: it can miss subtle behavioral
 > bugs. Tests complement it. Neither replaces the other.
@@ -680,18 +820,12 @@ migration, this document regenerates **both** the tests and the implementation.
 
 ## 14. Open questions
 
-Three deserve their own working session, because each is a design problem rather than a gap.
+Two deserve their own working session, because each is a design problem rather than a gap.
 
-1. **Specification versioning.** Section 9 is provisional. The numbering scheme (semantic versioning,
-   RFC-style immutable numbering, or something else), the compatibility and support policy (how far
-   back must artifacts remain readable, what deprecation means, whether n-1 is guaranteed), and how
-   this document is preserved and distributed. Only R-VER-3 (the version stamp) and R-VER-4
-   (self-evidence) are settled, because those two cannot be retrofitted.
-
-2. **Failure modes and exit codes.** Work through what can actually go wrong, then define the
+1. **Failure modes and exit codes.** Work through what can actually go wrong, then define the
    taxonomy. Deliberately not invented in advance (Section 8.5).
 
-3. **Source viability.** Which iPhone route can actually satisfy R-SRC-5 (Section 12.2). This is
+2. **Source viability.** Which iPhone route can actually satisfy R-SRC-5 (Section 12.2). This is
    empirical, and it blocks `spec-sources.md`.
 
 Smaller, and answerable in passing:
@@ -710,10 +844,18 @@ Smaller, and answerable in passing:
 
 ---
 
-## 15. Change log
+## 15. Change ledger
 
-Versions are immutable once published (R-VER-2). A correction is a new version, never an edit.
+This section is the ledger required by R-VER-13: one entry per published version, holding the
+version stamp and one line per requirement ID added, amended, or withdrawn, stating what changed
+and why. Errata (R-VER-17) are entered here. Because MINOR versions are additive (R-VER-1), the
+terminal text of a MAJOR line plus this ledger determines the text of every version of that line
+(R-VER-2).
+
+No version has been published yet (R-VER-10). The draft history below is informal; a draft carries
+no obligations and receives no per-ID ledger entries.
 
 | Version | Date | Change |
 |---|---|---|
-| 0.1.0-draft | 2026-07-12 | First draft. Core plus the Source and Target port contracts. Concrete source adapters deferred to `spec-sources.md`. Section 9 (Versioning) is provisional. |
+| 0.1.0-draft | 2026-07-12 | First draft. Core plus the Source and Target port contracts. Concrete source adapters deferred to `spec-sources.md`. Section 9 (Versioning) provisional. |
+| 0.1.0-draft | 2026-07-17 | Section 9 rewritten from provisional to full policy: R-VER-1, R-VER-2, R-VER-6 amended; R-VER-10 to R-VER-21 added; Section 14 open question 1 resolved; Section 3 gained the publication, format-generation, migration, and ledger terms; this section became the ledger. Normative documents moved to top-level `spec/`; superseded terminal texts will live in top-level `superseded/`. |

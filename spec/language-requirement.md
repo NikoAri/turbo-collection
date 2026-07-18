@@ -62,7 +62,12 @@ maintenance procedures rather than to specifications. ASD-STE100 is an inspirati
 obligation.
 
 These rules also make the documents easier to translate, by a human or an AI, into another
-language entirely. That is the escape hatch if English itself is ever the wrong binding.
+language entirely. That is the escape hatch if English itself is ever the wrong binding, and it is
+concrete, not rhetorical: `spec.md` (its R-VER-19) permits a new MAJOR version to change the
+document language and the obligation vocabulary outright, with every normative document switching
+together. At that boundary, this document is re-expressed for the new language in the same
+movement: its principles (one term, one meaning; frozen obligation vocabulary; terms defined
+in-document) are language-neutral, even though its examples and keyword definitions are not.
 
 ---
 

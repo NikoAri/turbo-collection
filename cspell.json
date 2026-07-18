@@ -1,0 +1,49 @@
+{
+  "version": "0.2",
+  "language": "en-US",
+  "words": [
+    "APFS",
+    "Backblaze",
+    "browsable",
+    "Bvckup",
+    "checksummed",
+    "civilizational",
+    "dedup",
+    "diffable",
+    "disambiguator",
+    "exFAT",
+    "EXIF",
+    "forkable",
+    "hardlinks",
+    "HEIC",
+    "HEVC",
+    "iCloud",
+    "Immich",
+    "Kopia",
+    "launchd",
+    "NTFS",
+    "OneDrive",
+    "Picasa",
+    "postconditions",
+    "rclone",
+    "regenerable",
+    "restic",
+    "rsync",
+    "SCHED",
+    "SemVer",
+    "shasum",
+    "stdlib",
+    "systemd",
+    "tomllib",
+    "unparseable",
+    "unwritable"
+  ],
+  "flagWords": [
+    "regeneratable->regenerable"
+  ],
+  "ignorePaths": [
+    ".git/**",
+    "node_modules/**",
+    "LICENSE"
+  ]
+}
