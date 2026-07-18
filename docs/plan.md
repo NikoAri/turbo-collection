@@ -241,7 +241,7 @@ implementations for 40+ years.
 - **Controlled language:** the writing rules that keep the spec's English interpretable across
   decades of language drift (obligations only via RFC 2119 keywords, one term one meaning, no
   idiom in normative text; inspired by ASD-STE100 "Simplified Technical English") are codified
-  in `docs/language-requirement.md`, which binds every normative document in the project.
+  in `spec/language-requirement.md`, which binds every normative document in the project.
 
 **Conformance checking has two directions** (both AI-assisted, both periodic):
 

@@ -13,15 +13,20 @@ rotted. If any piece dies, the plain file tree survives and the tool gets swappe
 
 Three documents carry the project, each with one job:
 
-- [`docs/spec.md`](docs/spec.md): the normative specification, **what** must be true. The
+- [`spec/spec.md`](spec/spec.md): the normative specification, **what** must be true. The
   language-neutral source of truth from which the tests and the implementation are generated,
   and regenerated, in the way an RFC outlives any single implementation of a protocol.
 - [`docs/plan.md`](docs/plan.md): the design record, **why**. Goals, what was rejected and why,
   architecture, technology choices, a decades-scale migration analysis, and the operations
   runbook. Self-contained, so a future session (human or AI) can pick up the project from it.
-- [`docs/language-requirement.md`](docs/language-requirement.md): the authoring standard, **how
+- [`spec/language-requirement.md`](spec/language-requirement.md): the authoring standard, **how
   the normative documents are written**, so their English stays interpretable across decades of
   language drift.
+
+The directory layout encodes the document hierarchy: everything in `spec/` is normative and is
+the only thing code may cite; `docs/` holds rationale and is never binding; a top-level
+`superseded/` directory will hold the frozen terminal text of each superseded specification line
+once one exists.
 
 ## License
 
