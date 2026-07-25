@@ -20,8 +20,9 @@ Each document has one job. Confusing them is the most common way a specification
 | Document | Role | Normative? | May code cite it? |
 |---|---|---|---|
 | `plan.md` | Design record: **why**. Rationale, rejected options, history. | No | **No** |
-| `spec.md` (this file) and `spec-sources.md` | Specification: **what** must be true. | **Yes** | **Yes, and only these** |
+| `turbo-collection-spec.md` (this file) and the source specifications under `specs/sources/` | Specification: **what** must be true. | **Yes** | **Yes, and only these** |
 | `language-requirement.md` | Authoring standard: **how normative documents are written**, so their English stays interpretable over decades. | Yes, for document authors | **No** (its R-LANG-2) |
+| The procedures beside each source specification | Procedure: **how a human operator** performs an acquisition. | Yes, for operators | **No** (R-META-4) |
 | Section 12, Current bindings | **How** it is done today. Volatile by design. | Yes, but expected to change | Yes |
 
 | ID | Requirement |
@@ -29,10 +30,17 @@ Each document has one job. Confusing them is the most common way a specification
 | **R-META-1** | This specification MUST be sufficient to implement and test Turbo-Collection with no other document in hand. If an implementer needs a fact that is not here, that is a defect in this specification, and the fix is to add the fact here. |
 | **R-META-2** | Code and tests MUST cite requirement IDs from a specification document only. They MUST NOT cite `plan.md`, design discussions, or conversation history. |
 | **R-META-3** | Any behavior in the code that is not traceable to a requirement is either a specification gap (add the requirement) or unauthorized behavior (remove the code). There is no third option. |
+| **R-META-4** | A normative document that binds the implementation MUST have a filename ending in `-spec.md`. A normative document that binds the human operator MUST have a filename ending in `-procedure.md`. Code and tests MUST cite documents whose filename ends in `-spec.md` only. |
 
 R-META-1 has a deliberate consequence: this document carries its **own** glossary (Section 3) and its
 **own** assumptions list (Section 12). It does not defer them elsewhere. Where `plan.md` is mentioned
 at all, it is for rationale only, and is explicitly non-normative.
+
+> **Why the filename carries the kind (R-META-4).** A directory can say what a document is only
+> while the document stays in it. Files get copied to drives, attached to messages, and opened
+> without their path in view, and the classification has to survive all of that. Putting the kind
+> in the name also makes R-META-2 mechanical: a check that code cites nothing outside `-spec.md`
+> needs no list of documents to maintain.
 
 ### 0.2 Conventions
 
@@ -41,7 +49,9 @@ at all, it is for rationale only, and is explicitly non-normative.
 
 **Requirement IDs** are stable and domain-prefixed: `R-COL-1`, `R-SRC-6`, `R-TGT-12`. Once this
 specification is published at a version, an ID MUST NOT be renumbered and MUST NOT be reused. A
-withdrawn requirement keeps its ID and is marked withdrawn.
+withdrawn requirement keeps its ID and is marked withdrawn. The author of a normative document MUST
+give that document requirement-ID prefixes that no other normative document in this project uses, so
+that a cited ID resolves to exactly one document.
 
 **Traceability.** Code cites the ID it satisfies (for example, a `R-MIRROR-3` comment on the function
 that enforces it), so conformance can be audited mechanically rather than inferred. See Section 13.
@@ -55,12 +65,12 @@ which binds every normative document in this project.
 ## 1. Scope, non-goals, and invocation
 
 The diagram below *is* the scope statement. It draws the line between what this document owns, what
-`spec-sources.md` owns, and what sits outside Turbo-Collection entirely. Note the symmetry: a port on
+the source specifications own, and what sits outside Turbo-Collection entirely. Note the symmetry: a port on
 each end, and nothing vendor-specific in the middle.
 
 ```mermaid
 flowchart LR
-    IN["Sources<br/>iPhone, iCloud, OneDrive,<br/>SD card, existing archive<br/>(spec-sources.md)"]
+    IN["Sources<br/>iPhone, iCloud, OneDrive,<br/>SD card, existing archive<br/>(specs/sources/)"]
 
     subgraph CORE["Core: this document"]
         COL["Collection<br/>plain file tree"]
@@ -95,7 +105,7 @@ safety, artifact versioning, configuration, logging, and the command-line contra
 
 | Concern | Where it lives |
 |---|---|
-| Concrete source adapters (iPhone, iCloud, OneDrive, SD card) and their format quirks | `spec-sources.md`, not yet written |
+| Concrete source adapters (iPhone, iCloud, OneDrive, SD card) and their format quirks | The source specifications under `specs/sources/`, one per vendor surface |
 | *When* a run happens (scheduling) | Outside Turbo-Collection entirely. See Section 1.4. |
 
 ### 1.3 Non-goals (normative)
@@ -217,6 +227,9 @@ Self-contained, per R-META-1.
   Section 15 (R-VER-13).
 
 - **Import.** The act of a source supplying files into the collection.
+
+- **Procedure.** A normative document stating the steps a human operator performs to achieve a
+  result this specification requires. It binds the operator, not the implementation (R-META-4).
 
 - **Mirror.** To make a target match the collection, transferring only what changed.
 
@@ -490,7 +503,7 @@ objection, and it is answered in three moves.
 | **R-VER-2** | **Version identity MUST be immutable.** A published version number refers to exactly one text, forever: the number MUST NOT be reused for different text, and a published text MUST NOT be edited. A correction is a new version. Retention is deliberately weaker than identity: a published stamp MUST resolve, at minimum, to the archived terminal text of its MAJOR line (R-VER-12) together with the change ledger (R-VER-13); retaining every intermediate text as a separate file is not required. |
 | **R-VER-10** | A version is **published** at the first moment its stamp is written into an artifact that leaves the machine holding the collection. A stamp carrying the `-draft` suffix MUST NOT be written into such an artifact. A draft MAY change freely and is never archived. |
 | **R-VER-17** | If a published version is later found to be misclassified under R-VER-1 (for example, labeled MINOR when it changed an artifact's meaning), the correction MUST be an **erratum**: a new ledger entry (R-VER-13) declaring the misclassification. The published text MUST NOT be edited and its stamp MUST NOT be silently reinterpreted. |
-| **R-VER-18** | A version stamp MUST state the publication date, in ISO 8601 form, beside the number: for example, `spec 1.2.0 (2027-03-01)`. |
+| **R-VER-18** | A version stamp MUST state the name of the document it stamps, and the publication date in ISO 8601 form, beside the number: for example, `turbo-collection-spec 1.2.0 (2027-03-01)`. |
 | **R-VER-19** | The document language of this specification, and its obligation vocabulary (the RFC 2119 keyword set, or a successor), MAY change only at a MAJOR version. All normative documents in this project MUST change document language together, at the same boundary. Across such a change: requirement IDs MUST NOT change; the changes-from section (R-VER-14) MUST state the previous language and the new language, and MUST map every defined term and every obligation keyword from the old language to the new; and the archived terminal text of the superseded line (R-VER-12) MUST remain in its original language, untranslated. |
 | **R-VER-21** | Each version of this specification MUST have exactly one authentic text, in exactly one document language. A translation of any version MAY be published beside it and MUST be marked as informative. Only the authentic text resolves a version stamp (R-VER-2). |
 
@@ -535,7 +548,7 @@ objection, and it is answered in three moves.
 | **R-VER-4** | **Self-evidence.** Every artifact MUST be intelligible by inspection alone, without the specification version that produced it. The version stamp is a disambiguator; it MUST NOT be the only key to decoding the artifact. |
 | **R-VER-5** | Turbo-Collection MUST NOT silently reinterpret an artifact whose version it does not recognize. An unrecognized version MUST be an explicit failure, never a guess. |
 | **R-VER-7** | The collection root MUST carry a plain-text marker recording the specification version and the layout convention the collection was written under. |
-| **R-VER-8** | Every target MUST carry a copy of the specification version it was written under, so that the rules governing the data survive alongside the data. |
+| **R-VER-8** | Every target MUST carry a copy of the specification version it was written under, so that the rules governing the data survive alongside the data. The copy MUST be named `turbo-collection-spec-<version>.md`, where `<version>` is the full version number of the text the copy holds. |
 | **R-VER-9** | Code MUST declare which specification version it conforms to, and every run MUST record that version in its log (R-LOG-3). |
 
 > **R-VER-4 is a design constraint with teeth.** It forbids any artifact format that can only be
@@ -548,8 +561,8 @@ objection, and it is answered in three moves.
 | ID | Requirement |
 |---|---|
 | **R-VER-11** | Every version of this specification MUST be fully self-contained for the system it describes, and MUST describe only that system. Determining a current obligation MUST NOT require reading any other version, and this document MUST NOT carry a catalog of superseded formats. A superseded format generation is defined by the archived terminal text of its own line (R-VER-12). |
-| **R-VER-12** | When a MAJOR line is superseded, its terminal text MUST be archived as a plain Markdown file in the repository's top-level `superseded/` directory, named with its full version stamp (for example, `superseded/spec-1.4.2.md`). The `superseded/` directory MUST contain the terminal text of every superseded MAJOR line. Intermediate texts MAY live in version control as best effort; they are not load-bearing (R-VER-2). |
-| **R-VER-13** | Section 15 of this document MUST be a change ledger holding one entry per published version: the version stamp, and one line per requirement ID added, amended, or withdrawn, stating what changed and why. |
+| **R-VER-12** | When a MAJOR line is superseded, its terminal text MUST be archived as a plain Markdown file in the repository's top-level `superseded/` directory, named with its own filename and its full version number (for example, `superseded/turbo-collection-spec-1.4.2.md`). The `superseded/` directory MUST contain the terminal text of every superseded MAJOR line. Intermediate texts MAY live in version control as best effort; they are not load-bearing (R-VER-2). |
+| **R-VER-13** | Section 15 of this document MUST be a change ledger holding one entry per published version: the version stamp; one line per requirement ID added, amended, or withdrawn, stating what changed and why; and one line per normative document whose filename changed, stating the previous filename, the new filename, and the version at which the change took effect. The author of a filename change MUST also update every reference to that document in this project. |
 | **R-VER-14** | The first published version of a new MAJOR line MUST contain a changes-from section stating its differences from the terminal text of the previous line, at **conversion grade**: precise enough that an artifact written under the previous line can be interpreted in current terms from that section alone. The section MUST name the archived terminal text of the previous line by its full version stamp. |
 
 > **Why present-tense and self-contained (R-VER-11).** The alternative is rules reconstructed by
@@ -567,7 +580,7 @@ objection, and it is answered in three moves.
 > grade. This section is also what makes direct-jump migrations composable (R-VER-16): a bridge
 > across several generations can be assembled from the consecutive changes-from sections.
 
-> **Where the texts live.** `spec/` at the head of the repository is the living view; top-level
+> **Where the texts live.** `specs/` at the head of the repository is the living view; top-level
 > `superseded/` holds the frozen terminal texts, deliberately outside the living directory so that
 > restructuring the living specification never moves a frozen record; and R-VER-8 scatters stamped
 > copies onto every target, so the versions that actually govern data in the wild are the most
@@ -770,7 +783,7 @@ export. **They are not equivalent.** Some are believed to re-encode images or st
 R-SRC-5 forbids and R-SRC-6 requires Turbo-Collection to detect and refuse.
 
 Which routes can actually supply true originals **must be established empirically and MUST NOT be
-assumed.** This blocks `spec-sources.md`, and it is recorded here as an open question rather than as
+assumed.** This blocks the source specifications, and it is recorded here as an open question rather than as
 a binding, precisely so that nobody later mistakes a guess for a finding.
 
 ### 12.3 Assumptions to re-verify
@@ -826,7 +839,7 @@ Two deserve their own working session, because each is a design problem rather t
    taxonomy. Deliberately not invented in advance (Section 8.5).
 
 2. **Source viability.** Which iPhone route can actually satisfy R-SRC-5 (Section 12.2). This is
-   empirical, and it blocks `spec-sources.md`.
+   empirical, and it blocks the Apple source specification.
 
 Smaller, and answerable in passing:
 
@@ -859,3 +872,4 @@ no obligations and receives no per-ID ledger entries.
 |---|---|---|
 | 0.1.0-draft | 2026-07-12 | First draft. Core plus the Source and Target port contracts. Concrete source adapters deferred to `spec-sources.md`. Section 9 (Versioning) provisional. |
 | 0.1.0-draft | 2026-07-17 | Section 9 rewritten from provisional to full policy: R-VER-1, R-VER-2, R-VER-6 amended; R-VER-10 to R-VER-21 added; Section 14 open question 1 resolved; Section 3 gained the publication, format-generation, migration, and ledger terms; this section became the ledger. Normative documents moved to top-level `spec/`; superseded terminal texts will live in top-level `superseded/`. |
+| 0.1.0-draft | 2026-07-25 | Layout and naming restructure. Filename changes: `spec/spec.md` became `specs/turbo-collection-spec.md`, and `spec/language-requirement.md` became `specs/language-requirement.md`. The planned single `spec-sources.md` became one source specification per vendor surface under `specs/sources/`, each paired with the procedures a human operator follows. R-META-4 added: the filename states whether a normative document binds the implementation or the operator. Section 0.2 gained the rule that requirement-ID prefixes are unique across normative documents. R-VER-8 amended to name the copy carried on a target; R-VER-12 amended so archived texts carry the document's own filename; R-VER-13 amended to record filename changes and to require every reference to be updated with them; R-VER-18 amended to require the document name in a version stamp. Section 3 gained the procedure term. |

@@ -11,22 +11,35 @@ rotted. If any piece dies, the plain file tree survives and the tool gets swappe
 
 **Status:** design record and core specification (draft) written; implementation not started yet.
 
-Three documents carry the project, each with one job:
+Each document has one job:
 
-- [`spec/spec.md`](spec/spec.md): the normative specification, **what** must be true. The
-  language-neutral source of truth from which the tests and the implementation are generated,
-  and regenerated, in the way an RFC outlives any single implementation of a protocol.
+- [`specs/turbo-collection-spec.md`](specs/turbo-collection-spec.md): the core normative
+  specification, **what** must be true. The language-neutral source of truth from which the tests
+  and the implementation are generated, and regenerated, in the way an RFC outlives any single
+  implementation of a protocol.
+- [`specs/sources/`](specs/sources/): one specification per **vendor surface** a photo can come
+  from, each paired with the procedures a human follows to acquire from it. The core spec is
+  normative over things this project controls; a source specification is normative over things a
+  vendor controls, so it carries dated evidence and expiry dates rather than stable promises.
 - [`docs/plan.md`](docs/plan.md): the design record, **why**. Goals, what was rejected and why,
   architecture, technology choices, a decades-scale migration analysis, and the operations
   runbook. Self-contained, so a future session (human or AI) can pick up the project from it.
-- [`spec/language-requirement.md`](spec/language-requirement.md): the authoring standard, **how
+- [`specs/language-requirement.md`](specs/language-requirement.md): the authoring standard, **how
   the normative documents are written**, so their English stays interpretable across decades of
-  language drift.
+  language drift. It is about documents rather than about turbo-collection, which is why it
+  carries no project prefix.
 
-The directory layout encodes the document hierarchy: everything in `spec/` is normative and is
-the only thing code may cite; `docs/` holds rationale and is never binding; a top-level
-`superseded/` directory will hold the frozen terminal text of each superseded specification line
-once one exists.
+**The filename states the kind, so it survives being separated from its path:**
+
+| Pattern | Binds | Executed by | May code cite it |
+|---|---|---|---|
+| `*-spec.md` | the implementation | machine | yes, and only these |
+| `*-procedure.md` | the operator | human | no |
+| anything in `docs/` | nothing | n/a | no |
+
+Directories group by topic; the name carries the classification. A top-level `superseded/`
+directory will hold the frozen terminal text of each superseded specification line once one
+exists.
 
 ## License
 

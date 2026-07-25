@@ -76,7 +76,8 @@ in-document) are language-neutral, even though its examples and keyword definiti
 Self-contained, per R-LANG-5.
 
 - **Normative document.** A document in this project that states requirements with stable IDs.
-  As of 2026-07-17: `spec/spec.md`, the planned `spec/spec-sources.md`, and this document.
+  As of 2026-07-25: `specs/turbo-collection-spec.md`, the source specifications under
+  `specs/sources/`, and this document.
 
 - **Normative text.** The passages of a normative document that state requirements: requirement
   tables, and any sentence using an RFC 2119 keyword.
