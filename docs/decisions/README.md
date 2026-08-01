@@ -71,3 +71,4 @@ there is more than one area to group.
 | 2026-08-01 | [One document per layout convention](2026-08-01-layout-conventions-decision.md) | Accepted |
 | 2026-08-01 | [Specifications carry precision, `docs/` carries explanation](2026-08-01-docs-and-specs-separation-decision.md) | Accepted |
 | 2026-08-01 | [Obligation keywords appear only in normative documents](2026-08-01-obligation-keywords-decision.md) | Accepted |
+| 2026-08-01 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-08-01-language-standard-additions-decision.md) | Accepted |
