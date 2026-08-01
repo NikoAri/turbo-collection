@@ -1,12 +1,13 @@
 # Photo Collection: Project Plan & Design Record
 
-> **Status:** Design agreed. Specification and implementation not started yet.
-> **Created:** 2026-07-09
+> **Status:** Design agreed. Specification drafted; implementation not started.
+> **Created:** 2026-07-09, as `plan.md`. Renamed 2026-08-01.
 > **License (intended):** MIT
-> **This document is the single source of truth.** It is self-contained on purpose so that
-> *any* future session (a different AI, a different machine, or the human owner alone) can
-> pick up the project without needing the original chat history. If you are a future AI
-> session: read this whole file first, then help continue with the spec and implementation.
+> **This document records why, not what.** What must be true lives in
+> [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which is the source of
+> truth that code cites. Here you will find goals, rejected options, architecture rationale, a
+> decades-scale migration analysis, and an operations runbook. Anything decided after 2026-08-01 is
+> recorded in [`decisions/`](decisions/) rather than woven back into this narrative.
 
 ---
 
@@ -17,8 +18,9 @@
 - **Distinguish durable principles from dated assumptions.** Section 13 (Assumptions Register)
   lists facts that were true as of 2026-07-09 and **must be re-verified** before you rely on them
   (tool status, licenses, prices, versions, even which AIs exist). Do not trust them blindly.
-- **Nothing has been built yet.** There is no code and no formal spec, only this plan. The next
-  artifacts are (1) a formal specification and (2) the implementation. See Section 15 (Next Steps).
+- **The specification exists; the code does not.** Read
+  [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) for what must be true, and
+  [`spec-guide.md`](spec-guide.md) for a map of which document covers what.
 - **The owner is tech-savvy** and expects to remain so, and assumes continued access to some AI
   (cloud today, possibly local models later). Write for that audience.
 
@@ -33,22 +35,31 @@
 5. [Architecture (ports & adapters)](#5-architecture-ports--adapters)
 6. [Technology decisions (the bindings)](#6-technology-decisions-the-bindings)
 7. [Specification approach](#7-specification-approach)
-8. [Draft requirements (seed for the spec)](#8-draft-requirements-seed-for-the-spec)
+8. [Draft requirements (superseded)](#8-draft-requirements-superseded)
 9. [What-if migration analysis](#9-what-if-migration-analysis)
 10. [Operations runbook](#10-operations-runbook)
 11. [The 4-hour/month maintenance budget](#11-the-4-hourmonth-maintenance-budget)
 12. [Discontinuity-driven refinements](#12-discontinuity-driven-refinements)
 13. [Assumptions register (dated; re-verify)](#13-assumptions-register-dated-re-verify)
 14. [Glossary](#14-glossary)
-15. [Next steps for a future session](#15-next-steps-for-a-future-session)
+15. [Next steps (superseded)](#15-next-steps-superseded)
 
 ---
 
 ## 1. Problem statement & goals
 
 The owner has decades of personal photos (~**1 TB** to start), historically backed up manually.
-They want an **alternative** to subscription photo services (iCloud/Google/OneDrive ~$10/mo), which
-can be discontinued or changed at any time, and to instead run a **self-controlled** system.
+Subscription photo services (iCloud/Google/OneDrive, ~$10/mo) can be discontinued, repriced, or
+changed at any time, and they tie access to payment.
+
+**This project does not replace them. It changes their role.** An iPhone and iCloud stay in daily
+use, as camera, as sync, as sharing surface, and they stop being where photos *live*. Custody moves
+to a **self-controlled** collection of plain files. After that a vendor service holds as much or as
+little as suits you, and losing one costs you convenience rather than photographs.
+
+That is a better outcome than leaving, and a more honest description of the design: iCloud is
+currently the **acquisition route** for the iPhone, so this project depends on it working well
+rather than wishing it away.
 
 **Hard goals:**
 
@@ -62,6 +73,13 @@ can be discontinued or changed at any time, and to instead run a **self-controll
 - **Minimal, transparent stack**: the owner wants to *see the full stack*; no hidden magic.
 - **CLI-first**: a GUI may be layered on later, but must not be a core dependency.
 - **Low human effort**: target **≤ 4 hours/month** of maintenance as a **hard limit** (see Section 11).
+- **Safe release of a source copy**: Turbo-Collection never deletes anything from iCloud or from a
+  phone, and R-SRC-7 forbids it from trying. What this project delivers is deletion *by you*, made
+  safe: once photos are in the collection and verified, you can free that storage yourself and stop
+  paying for it. A primary motivator rather than a pleasant side effect, and what turns "I have a
+  backup" into "I own my photos". It also sets an obligation, since safe deletion by hand needs the
+  tool to answer, for a specific set of photos rather than for a whole tree, whether they are already
+  stored and intact.
 
 **Non-goals (for now):**
 
@@ -108,7 +126,7 @@ Supporting principles:
 |---|---|
 | **Immich** (self-hosted Google Photos clone) | Excellent, but too heavy; stores metadata in a **PostgreSQL database** (violates "plain files"), felt overwhelming, and it's a *manager* not a *backup*. AGPL (fine for personal use, but not the direction). |
 | **PhotoPrism / LibrePhotos** | Same class as Immich: DB-backed photo managers, heavier than needed. |
-| **Managed cloud services** (iCloud/Google/OneDrive/Dropbox) | The thing being escaped: subscription cost, lock-in (metadata in their format), and "access" tied to "payment." Good for non-technical people; wrong for these goals. |
+| **Managed cloud services as the *system of record*** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the acquisition route for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup target (Section 10). What is rejected is depending on any of them for custody. |
 | **Proprietary backup apps** (e.g., Bvckup 2) | The owner *liked* Bvckup's file-mirroring model, but it's **proprietary** → no full control. We want an open equivalent. |
 | **Full versioned/repo backup tools as the core** (restic/Borg/Kopia) | Great tools, but their **repo format** isn't plain browsable files; you need the tool to read it back. Fine as a *later, optional* versioned layer, not the core. |
 | **POSIX shell as the orchestration language** | Durable on Unix but **not truly OS-independent** (not native on Windows) and less approachable. A high-level language with a cross-platform runtime is more portable. |
@@ -175,6 +193,8 @@ graph TD
 | Piece | Port (interface) | Today's adapter | Why isolated |
 |---|---|---|---|
 | Data | (none) | Plain file tree | The sacred core; only the engine touches it |
+| Source | `capabilities()` / `list()` / `fetch(item)` | none yet | Every vendor-specific fact lives in an adapter, never in the core |
+| Target | `capabilities()` / `push()` / `verify()` | local drive | A target declares what it can guarantee, rather than being merely a path |
 | Mirror engine | `mirror(src, dst, excludes)` | rclone | Swap to rsync = change one adapter, no data change |
 | Integrity | `build()` / `verify()` | SHA-256 manifest | Verification is separate from copying |
 | Config | `load() -> Config` | JSON file (data) | Config is *data, not code*; survives a language rewrite |
@@ -265,38 +285,18 @@ On a language migration, the English spec regenerates **both** the tests and the
 
 ---
 
-## 8. Draft requirements (seed for the spec)
+## 8. Draft requirements (superseded)
 
-These are a starting point drafted during design; refine and expand when writing the formal spec.
-(RFC 2119 keywords; language-free.)
+**Superseded.** Ten draft requirements were sketched here, numbered R-1 to R-10, alongside a first
+cut at port contracts. All of it became
+[`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which states the real
+requirements and the real port contracts, and which has since moved past this sketch in several
+places: exit codes were deliberately left open rather than given a code per failure class, and the
+Source and Target ports did not exist here at all.
 
-- **R-1 (Mirror):** The system MUST copy every source file that is absent or changed at the destination.
-- **R-2 (Safety):** The system MUST NOT modify or delete any file in the source.
-- **R-3 (Safety):** The system MUST NOT delete destination files unless deletion-mirroring is explicitly enabled in config.
-- **R-4 (Fixity):** The system MUST record a SHA-256 checksum for every copied file.
-- **R-5 (Fixity):** The system MUST be able to verify the destination against recorded checksums and report any mismatch.
-- **R-6 (Portability):** The system MUST flag filenames unsafe across common filesystems (reserved
-  characters, case collisions, non-NFC Unicode normalization) *before* copying.
-- **R-7 (Observability):** The system MUST write a plain-text log per run with start time, end time,
-  files copied, bytes copied, and outcome.
-- **R-8 (Exit contract):** The system MUST exit 0 on success and non-zero on error, with a distinct
-  code per failure class.
-- **R-9 (Idempotence):** A second run with no source changes MUST copy nothing.
-- **R-10 (Config):** The system MUST read all source/destination/exclusion settings from an external
-  config file and MUST NOT hardcode paths.
-
-**Port contracts to formalize:** `MirrorEngine`, `IntegrityStore`, `Config`, `Logger`
-(each with: inputs, outputs, preconditions, postconditions, error behavior, exit codes).
-
-Example (`MirrorEngine`):
-
-| Aspect | Contract |
-|---|---|
-| Operation | `mirror(source, destination, excludes)` |
-| Precondition | source readable; destination writable |
-| Postcondition | destination contains every current source file; only changed files transferred |
-| Must not | modify source; delete destination files unless mirror-delete enabled |
-| Errors | unreadable source → distinct exit code; write failure → distinct exit code |
+The text is not reproduced, for two reasons. Superseded requirements sitting beside live ones invite
+a reader to follow the wrong set, and `language-requirement.md` R-LANG-17 keeps obligation keywords
+out of documents that bind nobody.
 
 ---
 
@@ -552,31 +552,13 @@ SHA-256 *as a chosen mechanism*.
 
 ---
 
-## 15. Next steps for a future session
+## 15. Next steps (superseded)
 
-Nothing has been built yet. Recommended order:
+**Superseded.** This section listed steps toward a specification that has since been written, at a
+different path under a different name, and a repository scaffold that predates the Source and Target
+ports. Neither survives contact with what exists now.
 
-1. **Write the formal specification** (`SPEC.md`) from Section 7 & 8:
-   - Principles, numbered RFC-2119 requirements (expand R-1…R-10), port contracts, current bindings,
-     migration playbook, operations runbook, continuity/substrate, assumptions register.
-   - Include the conformance procedure (both directions) and the traceability convention.
-2. **Confirm two open sub-decisions with the owner:**
-   - **Library location:** internal disk (working copy) vs. dedicated portable external drive
-     (leans portable, per Section 12).
-   - **Off-site:** physical drive rotation (free, ~12 min/mo) vs. cloud rclone→B2 (paid, ~0 min).
-3. **Scaffold the repository** (TypeScript, stdlib-only):
-   - `config/backup.config.json`: declarative sources/destinations/excludes.
-   - `src/`: `main.ts` (CLI entrypoint), `core.ts` (orchestrator), `engine.ts` (MirrorEngine port +
-     rclone adapter), `integrity.ts` (SHA-256 build/verify), `config.ts`, `logs.ts`.
-   - `src/portability.ts`: filename safety check (R-6).
-   - `scripts/`: launchd `.plist` (+ cron/Task Scheduler snippets later).
-   - `logs/`: plain-text run logs (gitignored).
-   - `docs/SPEC.md`, `README.md` (bill of materials + recreate steps), `.gitignore`, `LICENSE` (MIT).
-4. **Implement against the spec**, adding tests so each MUST maps to ≥1 test.
-5. **Run the first conformance check** (code vs. spec) and record results.
-6. **Initialize git**, commit, and (optionally) push to GitHub under MIT.
-
-**Confirmed decisions (do not re-litigate without reason):** open file-mirroring approach; CLI-first;
-rclone engine (rsync fallback); TypeScript/Node, stdlib-only; JSON config; SHA-256 manifest; launchd
-scheduler; git/GitHub; Mermaid; MIT license; spec-as-source-of-truth; plain files as the sacred core;
-4 h/month hard maintenance budget; start local + plain mirror (versioning/cloud are later additions).
+What is next lives outside this document by design, because a narrative that also tracks a work queue
+goes stale the moment either changes. Current obligations are in
+[`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md); decisions taken since
+2026-08-01 are in [`decisions/`](decisions/); open questions are in that specification's Section 14.

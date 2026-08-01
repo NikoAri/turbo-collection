@@ -27,22 +27,40 @@ documents. It does not bind the implementation.
 > the reader to ignore it. Self-application is also the cheapest ongoing test: if a rule here is
 > too strict to follow here, it is too strict.
 
+R-LANG-17 is the single exception to the scope above. It binds the author of any document in this
+project, normative or not, because its whole purpose is keeping a document that binds nobody from
+reading as though it binds someone.
+
 ### 0.2 Conventions
+
+| ID | Requirement |
+|---|---|
+| **R-LANG-21** | The document language of every normative document in this project is **American English**, and spelling MUST be American throughout. Changing document language is governed by `version-requirement.md` R-PUB-9, which permits a change only at a MAJOR version. |
+
+> **Why the variant is named, and why here.** `version-requirement.md` R-PUB-11 requires exactly one
+> authentic text in exactly one document language, and "English" alone does not identify one. The
+> `-ise` and `-ize` forms of one verb are two spellings of a single word, which is the failure
+> R-LANG-6 forbids for terms. This rule sits ahead of every other rule in this document because every
+> presupposes it. An obligation keyword, a defined term, a pronoun and an article are all
+> language-specific, so naming the language first is what makes the rest of this document mean
+> anything. Naming the variant also makes the rule checkable by a spell checker rather than by
+> memory: `cspell.json` in this repository declares `en-US` and carries the British forms in its
+> `flagWords` list with their American replacements.
 
 **Requirement keywords** (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY) are used as defined in
 **RFC 2119**.
 
-**Requirement IDs** (`R-LANG-1`, `R-LANG-2`, ...) are stable. Once this document is published at
-a version, an ID MUST NOT be renumbered and MUST NOT be reused. A withdrawn requirement keeps
-its ID and is marked withdrawn.
+**Requirement IDs** in this document carry the prefix `R-LANG-*`, which no other normative document
+in this project uses. Their stability is governed by R-LANG-20.
 
 ---
 
 ## 1. Purpose and threat model
 
 The specification is the durable layer of this project: code is regenerated from it, and data is
-interpreted under it. The specification is written in English, and English is a **binding** in
-the same sense that TypeScript is: today's expression of the intent, replaceable later. Natural
+interpreted under it. The specification is written in English, specifically American English
+(R-LANG-21), and English is a **binding** in the same sense that TypeScript is: today's expression
+of the intent, replaceable later. Natural
 languages drift. A reader 400 years after Shakespeare reads him with effort; 600 years after
 Chaucer, with training; 1,000 years after Beowulf, not at all. This project plans in decades, at
 which scale drift is real but mild, provided the text does not lean on the parts of a language
@@ -63,8 +81,8 @@ obligation.
 
 These rules also make the documents easier to translate, by a human or an AI, into another
 language entirely. That is the escape hatch if English itself is ever the wrong binding, and it is
-concrete, not rhetorical: `spec.md` (its R-VER-19) permits a new MAJOR version to change the
-document language and the obligation vocabulary outright, with every normative document switching
+concrete, not rhetorical: `version-requirement.md` (its R-PUB-9) permits a new MAJOR version to
+change document language and obligation vocabulary outright, with every normative document switching
 together. At that boundary, this document is re-expressed for the new language in the same
 movement: its principles (one term, one meaning; frozen obligation vocabulary; terms defined
 in-document) are language-neutral, even though its examples and keyword definitions are not.
@@ -76,8 +94,11 @@ in-document) are language-neutral, even though its examples and keyword definiti
 Self-contained, per R-LANG-5.
 
 - **Normative document.** A document in this project that states requirements with stable IDs.
-  As of 2026-07-25: `specs/turbo-collection-spec.md`, the source specifications under
-  `specs/sources/`, and this document.
+  As of 2026-08-01: `specs/turbo-collection-spec.md`, the source specifications under
+  `specs/sources/`, the procedures paired with them, `specs/version-requirement.md`, and this
+  document. A normative document is not necessarily a specification: a procedure binds an
+  operator, and an authoring standard binds a document author. Only a document whose filename
+  ends in `-spec.md` may be cited by code (`turbo-collection-spec.md` R-META-4).
 
 - **Normative text.** The passages of a normative document that state requirements: requirement
   tables, and any sentence using an RFC 2119 keyword.
@@ -95,12 +116,20 @@ Self-contained, per R-LANG-5.
 
 ## 3. Language requirements
 
-### 3.1 Obligations (`R-LANG-3`, `R-LANG-4`)
+### 3.1 Obligations (`R-LANG-3`, `R-LANG-4`, `R-LANG-17`)
 
 | ID | Requirement |
 |---|---|
 | **R-LANG-3** | Every obligation MUST be stated with an RFC 2119 keyword. A sentence without such a keyword carries no obligation. |
 | **R-LANG-4** | Every obligation MUST appear in normative text. Commentary MUST NOT be the only place an obligation is stated. |
+| **R-LANG-17** | A document that is not a normative document MUST NOT state an obligation with an RFC 2119 keyword, and MUST NOT label a passage with an identifier of the form used for requirement IDs. Such a document MAY describe a requirement and cite its ID. |
+
+> **Why R-LANG-17 exists.** R-LANG-3 makes RFC 2119 keywords the only way an obligation is stated
+> anywhere in this project, so a reader who meets one is entitled to conclude that the sentence
+> binds someone and that code may cite it. A non-normative document written in the same voice
+> defeats that. `turbo-collection-spec.md` R-META-4 already solves half of this, by putting the kind
+> in a filename so that a binding document announces itself; R-LANG-17 solves the other half, by
+> keeping a document that binds nobody from sounding as though it binds someone.
 
 > **Why R-LANG-4 exists.** Commentary is deliberately written in freer language (Section 3.5),
 > so it is the part of the document most exposed to drift and to misreading. An obligation that
@@ -126,13 +155,29 @@ Self-contained, per R-LANG-5.
 > and enforcing it absolutely would cost more than it protects. Apply it to load-bearing words
 > first: a word like "copy" (noun and verb, both frequent here) deserves care.
 
-### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`)
+### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`, `R-LANG-18`, `R-LANG-19`)
 
 | ID | Requirement |
 |---|---|
 | **R-LANG-8** | A normative statement MUST make clear which actor it binds. A sentence SHOULD state one obligation, and SHOULD use the active voice. |
 | **R-LANG-9** | Normative text MUST NOT rely on idiom, metaphor, irony, humor, or cultural reference to carry a requirement's meaning. |
 | **R-LANG-10** | In normative text, a pronoun MUST have exactly one plausible antecedent. If more than one antecedent is plausible, the noun MUST be repeated in place of the pronoun. |
+| **R-LANG-18** | In normative text, a definite article MUST mark only a noun that has exactly one identifiable referent in context. A statement about any member of a class MUST use a bare noun or a plural noun instead. |
+| **R-LANG-19** | Prose SHOULD omit a definite article whose removal changes no meaning. |
+
+> **Why definiteness is precision, not style (R-LANG-18).** "The" promises a reader that exactly one
+> referent is meant and that the reader can identify it. Most statements in a specification are
+> general, so that promise is usually false. "The target MUST carry a manifest" invites the question
+> *which* target; "Every target MUST carry a manifest" does not. This is the failure R-LANG-10
+> addresses for pronouns, caught one step earlier in the sentence.
+
+> **Where this parts company with ASD-STE100.** Section 1 names STE as an inspiration, and STE
+> prefers explicit articles, because a maintenance procedure written telegraphically becomes
+> ambiguous about which physical part is meant. A specification has the opposite problem: its
+> subjects are classes, not objects in front of a technician. STE is an inspiration here, not an
+> obligation, and this is one of the places the two disagree. R-LANG-19 is SHOULD rather than MUST
+> for the same reason R-LANG-7 is: English resists the rule, and absolute enforcement would cost
+> more than it protects.
 
 > **What R-LANG-9 does and does not forbid.** It does not forbid naming a concrete tool where
 > the tool itself is the subject, as the bindings section of `spec.md` does. It forbids meaning
@@ -184,13 +229,34 @@ text; existing non-normative text is not retroactively rewritten.
 |---|---|
 | **R-LANG-15** | Prose MUST NOT use the em-dash character (U+2014). An en-dash (U+2013) MAY appear only inside a numeric range. |
 | **R-LANG-16** | A normative document MUST be plain text (Markdown), and diagrams MUST be stored as plain-text source (Mermaid), never only as images. |
+| **R-LANG-20** | Requirement IDs MUST be stable and domain-prefixed. Once a normative document is published at a version (`version-requirement.md` R-PUB-3), an ID in that document MUST NOT be renumbered and MUST NOT be reused; a withdrawn requirement keeps its ID and is marked withdrawn. The author of a normative document MUST give it requirement-ID prefixes that no other normative document in this project uses, so that a cited ID resolves to exactly one document. |
+> **Why R-LANG-20 is stated once rather than in each document.** Prefix uniqueness is the one rule
+> here that no single document can satisfy alone, since it is a claim about every other document.
+> Stating it separately in each would be three copies of a rule that has to agree with itself, so
+> it lives here and the others cite it. This is unlike the RFC 2119 conventions block, which is
+> genuinely required in every normative document by R-LANG-5 and by `version-requirement.md`
+> R-PUB-4.
 
 ---
 
-## 5. Change log
+## 5. This document's bump test
 
-Versions are immutable once published. A correction is a new version, never an edit.
+Required of every normative document by `version-requirement.md` R-PUB-1.
+
+| Level | Test |
+|---|---|
+| **MAJOR** | A rule stated here is withdrawn or tightened, so that a document conforming under the previous version no longer conforms; or document language or obligation vocabulary changes (R-PUB-9). |
+| **MINOR** | Additions only. Every document conforming under the previous version still conforms. |
+| **PATCH** | Prose improvement that changes no rule. |
+
+---
+
+## 6. Change ledger
+
+Required by `version-requirement.md` R-PUB-6. Versions are immutable once published. A correction is
+a new version, never an edit.
 
 | Version | Date | Change |
 |---|---|---|
 | 0.1.0-draft | 2026-07-16 | First draft: R-LANG-1 to R-LANG-16. |
+| 0.1.0-draft | 2026-08-01 | R-LANG-17 added: a document that is not normative states no obligation with an RFC 2119 keyword and carries no requirement-shaped identifiers. Section 0.1 records that this one rule reaches beyond normative documents. R-LANG-18 and R-LANG-19 added, on definite articles, with commentary noting where they part company with ASD-STE100. Section 2's list of normative documents gained `specs/version-requirement.md` and the procedures, and now states that a normative document is not necessarily a specification. Section 1's reference to `spec.md` R-VER-19 repaired to `version-requirement.md` R-PUB-9. Section 5 added, stating this document's bump test as R-PUB-1 requires. Former Section 5 renamed from "Change log" to "Change ledger", matching the term R-PUB-6 uses. R-LANG-20 added, holding requirement-ID stability and prefix uniqueness, which `turbo-collection-spec.md` and `version-requirement.md` had each restated; both now cite it. R-LANG-21 added **in Section 0.2**, naming American English as the document language, since R-PUB-11 requires exactly one authentic text in exactly one language and "English" alone does not identify one. Placed ahead of every other rule because every other rule presupposes a language: obligation keywords, defined terms, pronouns and articles are all language-specific. Section 1 now names the variant where it discusses language as a binding. `cspell.json` gained a `flagWords` list enforcing it, and Section 0.2 stopped restating requirement-ID stability, which R-LANG-20 now holds. Rationale: [`../docs/decisions/2026-08-01-obligation-keywords-decision.md`](../docs/decisions/2026-08-01-obligation-keywords-decision.md). |
