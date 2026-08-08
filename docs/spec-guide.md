@@ -9,6 +9,7 @@ in [`decisions/`](decisions/), never here.
 | Document | Job | Binds | May code cite it |
 |---|---|---|---|
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
+| [`specs/procedures/*-procedure.md`](../specs/procedures/) | What a person does, one document per sitting: setup, import, backup, off-site, release. Steps only; reasoning lives in [`decisions/`](decisions/). | operator | no |
 | `specs/sources/<surface>/*-spec.md` | What may be assumed about getting original bytes out of one vendor surface. | implementation | yes |
 | `specs/sources/<surface>/*-procedure.md` | Steps a human operator follows to acquire from that surface. | operator | no |
 | [`specs/language-requirement.md`](../specs/language-requirement.md) | How a normative document is written, so its English stays interpretable across decades. | document authors | no |
@@ -39,6 +40,11 @@ Every prefix resolves to exactly one document.
 | `R-LOG-*` | `turbo-collection-spec.md` | logging |
 | `R-CLI-*` | `turbo-collection-spec.md` | command line |
 | `R-VER-*` | `turbo-collection-spec.md` | artifact version stamps, format generations, migration |
+| `R-SET-*` | `procedures/turbo-collection-setup-procedure.md` | buying, labeling and filling drives, once |
+| `R-IMP-*` | `procedures/turbo-collection-import-procedure.md` | getting photos off a source into a collection |
+| `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing backup drives up to date |
+| `R-OFF-*` | `procedures/turbo-collection-offsite-procedure.md` | bringing the off-site copy up to date |
+| `R-REL-*` | `procedures/turbo-collection-release-procedure.md` | destroying a copy held outside a collection |
 | `R-LANG-*` | `language-requirement.md` | how a normative document is written |
 | `R-PUB-*` | `version-requirement.md` | how a normative document is versioned and published |
 | `R-ICLOUD-*` | `specs/sources/icloud/` | iCloud surface (planned, stub not yet filled) |

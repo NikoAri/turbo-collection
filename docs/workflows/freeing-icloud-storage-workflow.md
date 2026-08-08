@@ -37,10 +37,10 @@ and losing one silently is exactly what step 3 exists to catch.
 
 ## 2. Move the export into the collection
 
-Place files under the collection's layout convention. **[unbacked]** Do not delete the export folder
-yet; it is your second copy until step 4 finishes.
+Place files under the collection's layout convention. Do not delete the export folder yet; it is
+your second copy until step 4 finishes (R-IMP-4).
 
-## 3. Verify, and count **[unbacked]**
+## 3. Verify, and count (R-IMP-5, R-REL-2)
 
 Two separate checks, and neither substitutes for the other.
 
@@ -60,7 +60,7 @@ The property you need before deleting is narrow and specific: *these exact items
 collection, and their bytes match*. Verifying the whole collection does not establish it, and neither
 does a successful-looking export.
 
-## 4. Mirror to at least one target, and verify there too **[unbacked]**
+## 4. Mirror to at least one target, and verify there too (R-BAK-1 to R-BAK-3)
 
 A photo that exists only on the collection drive is one drive failure away from gone. Mirror, then
 verify the target against its own manifest (R-TGT-9 requires each target to carry one).
@@ -68,7 +68,11 @@ verify the target against its own manifest (R-TGT-9 requires each target to carr
 Deleting from iCloud after step 3 but before step 4 leaves you with a single copy for however long
 that gap lasts. That gap is the riskiest state in this workflow.
 
-## 5. Now delete from iCloud
+## 5. Now delete from iCloud (R-REL-1 to R-REL-5)
+
+R-REL-4 permits this step only for what steps 3 and 4 covered. R-REL-5 adds a second gate that is
+easy to overlook: if you are down to two copies because a drive died or has not been replaced, do not
+delete from iCloud at all until three copies exist again.
 
 In Photos, delete the batch you verified. Deleting on any signed-in device removes it everywhere,
 and it lands in Recently Deleted for 30 days.
@@ -88,5 +92,11 @@ Thirty days of free undo costs nothing. Treat reclaimed space as available only 
 1. **A safe-to-delete query.** Steps 3 and 4 ask whether a *specific set of items* is stored and
    intact. R-INT-2 verifies a whole tree and R-CLI-9 checks adapter health; neither answers it. That
    gap is tracked as part of the append-only drafting.
-2. **`R-OP-*` requirements** to replace every **[unbacked]** marker above.
-3. **Export completeness at scale**, still unmeasured. Until it is, batch sizes stay countable.
+2. **Export completeness at scale**, still unmeasured. Until it is, batch sizes stay countable.
+
+The citations this workflow was owed landed on 2026-08-08, in
+[`../../specs/procedures/`](../../specs/procedures/). Every safety-bearing step above now names the
+requirement behind it.
+
+Those procedures assume Turbo-Collection exists and say "run it". This workflow is the by-hand
+stand-in until it does, so it satisfies the same requirements with a checksum utility.

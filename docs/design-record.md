@@ -371,11 +371,18 @@ flowchart TD
     A[Take photos - phone] -->|automatic| B[Phone storage]
     B -->|monthly, you ~20 min:<br/>plug in / Wi-Fi transfer| C[Ingest to computer]
     C -->|automatic: EXIF-sort into YYYY/MM| D[Photo library on main disk]
-    D -->|automatic: scheduled<br/>rclone mirror + SHA-256| E[Primary backup drive<br/>always connected]
+    D -->|scheduled or on demand:<br/>rclone mirror + SHA-256| E[Primary backup drive]
     E -->|monthly, you ~12 min:<br/>swap drive OR cloud upload| F[Off-site copy]
     D -->|automatic| G[AI-summarized log]
     G -->|monthly, you ~8 min: glance| H[Verified safe]
 ```
+
+**Corrected 2026-08-08.** This diagram previously showed the primary backup drive as always
+connected, with mirroring on a schedule. That is one deployment, never a requirement: `R-CLI-2`
+makes the tool one-shot with no daemon, and `R-CLI-6` requires it to be fully usable with no
+scheduler installed. Connecting a backup drive only when you use it trades automation for a
+stronger air gap, and pushes the whole burden of protecting new photos onto the backup procedure,
+which is why `R-REL-2` is written as a gate on release rather than as a nightly habit.
 
 **Monthly checklist (~40 min):**
 
@@ -387,8 +394,9 @@ flowchart TD
 ### Hardware lifecycle (~2–3 year cadence, driven by drive *age*)
 
 1. **Monitor** *(automatic)*: orchestrator flags any drive >80% full or past ~3-yr age in the log.
-2. **Buy online** *(you, ~30–60 min)*: order **two matching drives** (primary + off-site) so they
-   rotate in sync.
+2. **Buy online** *(you, ~30–60 min)*: order **one drive at a time**, of a different model from the
+   drive it joins, and check that model against current published failure data before ordering.
+   Corrected 2026-08-08; see the buying cheat-sheet below.
 3. **Receive & prep** *(you, ~20–30 min)*: unbox, connect, format, physically label, drop a text file
    on the drive recording purchase date & role.
 4. **Burn-in & onboard** *(you ~15 min active, rest passive)*: add to config, run first full mirror +
@@ -400,12 +408,29 @@ flowchart TD
 
 | Decision | Guidance |
 |---|---|
-| Type | HDD for always-connected primary (cheapest/TB); SSD for the carried off-site drive (shock-resistant) |
+| Type | SSD for the collection drive, which is powered during every session; **HDD for both backups**, because a drive that sits unpowered loses charge (`R-SET-7`) |
 | Avoid | SMR drives for backup (prefer **CMR**); avoid unknown/relabeled sellers (counterfeit risk) |
-| Capacity | Buy **≥ 2× the library** so *age*, not fullness, is the trigger |
-| Quantity | **Two at a time** (primary + off-site) |
-| Filesystem | exFAT for a carry-anywhere off-site drive; robust native FS for the primary |
+| Capacity | Buy **≥ 2× the library** so *age*, not fullness, is the trigger. Headroom costs money and costs no verification time |
+| Quantity | **Three copies total, bought on separated dates** (`R-SET-11`, `R-SET-2`). Never two matching drives together |
+| Brand | Prefer different models, and different manufacturers where an enclosure discloses one. A suggestion, not a rule, because enclosures often do not disclose |
+| Filesystem | exFAT only where a drive must be written by both macOS and Windows; a journaled native filesystem everywhere else |
 | On arrival | First mirror + checksum verify = free DOA/burn-in check |
+
+**Two corrections, both made 2026-08-08.**
+
+*Matching drives.* This table previously advised buying two matching drives so they rotate in sync.
+Failures inside a manufacturing batch are correlated over multi-year periods, and measured failure
+rates differ between models by two orders of magnitude, so two identical drives bought together are
+one bet placed twice. A saving grace this architecture already has: mirrors are independent plain
+trees, so recovery is an ordinary file copy and never a RAID rebuild, which removes the mechanism
+that usually kills a second drive right after the first.
+
+*SSD off-site.* This table previously recommended an SSD for the carried off-site drive, on
+shock-resistance grounds. That is now inverted. NAND holds charge that leaks: JEDEC JESD218 rates a
+consumer SSD for one year unpowered at 30 °C, halving for each 5 to 10 °C warmer, and an off-site
+drive is precisely the drive that sits unpowered longest. Shock resistance still matters, so the SSD
+moves to the collection drive, which is the one actually being carried between machines and powered
+every session.
 
 **Capacity math (1 TB start):** at ~10–20 GB/month growth, a 2–4 TB drive outlives its ~3-yr age life
 before filling. So replacement is **age-driven**, ~two drives every ~2–3 years: predictable, never an emergency.

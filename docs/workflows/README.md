@@ -10,14 +10,13 @@ catches the drift.
 | Where a thing lives | What it holds |
 |---|---|
 | `specs/turbo-collection-spec.md` | what the software owes |
-| `specs/turbo-collection-procedure.md` | what an operator owes, as `R-OP-*` |
+| `specs/procedures/` | what a person does, one document per sitting |
 | `docs/workflows/` | the order you do it in |
-| `docs/design-record.md` | why any of it is shaped this way |
+| `docs/decisions/`, `docs/design-record.md` | why any of it is shaped this way |
 
-**Status, 2026-08-01:** `turbo-collection-procedure.md` does not exist yet, so the safety steps below
-cite nothing. Every step marked **[unbacked]** is a rule this project intends to state and has not
-stated. Treat those as the author's judgment rather than as a project guarantee until the citation
-appears.
+**Status, 2026-08-08:** the procedures exist, and every `[unbacked]` marker below has been replaced
+by a citation. Procedures assume Turbo-Collection exists and say "run it"; workflows here are the
+by-hand stand-ins until it does.
 
 | Workflow | Performable today without code |
 |---|---|
