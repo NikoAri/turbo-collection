@@ -22,17 +22,26 @@ write, which is the one thing it is not useful for.
 from its directory. This is the same reason a specification is named `-spec.md` and a procedure
 `-procedure.md`, and it is what keeps a non-binding document from reading as a binding one.
 
-**Names are frozen at first write.** A record is never renamed, including when it is superseded. A
-later decision on the same topic takes its own date and keeps the same topic slug, so the pair sorts
-together and the supersession is visible in the listing.
+**A record holds the current decision, not its history** (owner, 2026-08-10). When a decision
+changes, the record is rewritten: copy it to a file carrying the new date and the same topic slug,
+update it to say what is true now, and delete the old file. Git holds every previous state, so
+nothing is lost by cleaning up, and a reader of this directory sees one current answer per topic
+instead of a chain to walk backward.
 
-**Maintenance.** A record may be edited to stay accurate about the world: fixing a typo, repairing a
-link, updating a path that moved, filling in a requirement ID once it exists. A record is not edited
-to agree with a decision that has since changed. Changing the substance means writing a new record
-and setting the old record's Status line to point at it. The short form: edit a record to keep it
-true about the world, never to keep it agreeing with you.
+A rewritten record carries a line near the top naming the date it replaces and, when a conclusion
+actually reversed, why. That is not history-keeping for its own sake: a reasoning error worth
+repeating is worth recording, and the reader who most needs it is the one about to make it again.
 
-**Status.** `Accepted`, or `Superseded by <filename>`.
+**Maintenance.** A record may also be edited in place to stay accurate about the world: fixing a
+typo, repairing a link, updating a path that moved, filling in a requirement ID once it exists. Use
+a rewrite when the substance changed, an edit when only the world moved around it.
+
+**This is deliberately unlike `plans/` and `progress/` in the private notes repository**, which stay
+immutable dated records and are never rewritten. Those log what happened on a day; these state what
+is true now.
+
+**Status.** `Accepted`. A record that is no longer accepted is rewritten or deleted rather than
+left standing with a status pointing elsewhere.
 
 **Citation.** By filename, which is how every other document in this repository is cited. There are
 no record numbers.
@@ -73,4 +82,4 @@ there is more than one area to group.
 | 2026-08-01 | [Obligation keywords appear only in normative documents](2026-08-01-obligation-keywords-decision.md) | Accepted |
 | 2026-08-01 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-08-01-language-standard-additions-decision.md) | Accepted |
 | 2026-08-08 | [An operator procedure, and the test for what belongs in it](2026-08-08-operator-procedure-decision.md) | Accepted |
-| 2026-08-08 | [Three copies, and media chosen by unpowered interval](2026-08-08-storage-hardware-decision.md) | Accepted |
+| 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md) | Accepted |

@@ -408,10 +408,10 @@ which is why `R-REL-2` is written as a gate on release rather than as a nightly 
 
 | Decision | Guidance |
 |---|---|
-| Type | SSD for the collection drive, which is powered during every session; **HDD for both backups**, because a drive that sits unpowered loses charge (`R-SET-7`) |
+| Type | SSD for the collection drive, which is carried between machines; **HDD for both backups**, on price alone at roughly 30 against 60–80 USD/TB. Any medium is permitted in any role (`R-SET-2`) |
 | Avoid | SMR drives for backup (prefer **CMR**); avoid unknown/relabeled sellers (counterfeit risk) |
 | Capacity | Buy **≥ 2× the library** so *age*, not fullness, is the trigger. Headroom costs money and costs no verification time |
-| Quantity | **Three copies total, bought on separated dates** (`R-SET-11`, `R-SET-2`). Never two matching drives together |
+| Quantity | **Three copies total, bought on separated dates** (`R-SET-13`, `R-SET-3`). Never two matching drives together |
 | Brand | Prefer different models, and different manufacturers where an enclosure discloses one. A suggestion, not a rule, because enclosures often do not disclose |
 | Filesystem | exFAT only where a drive must be written by both macOS and Windows; a journaled native filesystem everywhere else |
 | On arrival | First mirror + checksum verify = free DOA/burn-in check |
@@ -425,12 +425,15 @@ one bet placed twice. A saving grace this architecture already has: mirrors are 
 trees, so recovery is an ordinary file copy and never a RAID rebuild, which removes the mechanism
 that usually kills a second drive right after the first.
 
-*SSD off-site.* This table previously recommended an SSD for the carried off-site drive, on
-shock-resistance grounds. That is now inverted. NAND holds charge that leaks: JEDEC JESD218 rates a
-consumer SSD for one year unpowered at 30 °C, halving for each 5 to 10 °C warmer, and an off-site
-drive is precisely the drive that sits unpowered longest. Shock resistance still matters, so the SSD
-moves to the collection drive, which is the one actually being carried between machines and powered
-every session.
+*SSD off-site.* This table briefly forbade an SSD for the carried off-site drive, on the grounds that
+NAND holds charge that leaks. **That reasoning was withdrawn on 2026-08-10 and the prohibition is
+gone.** JEDEC JESD218's one-year client figure is measured on a drive stressed to its full rated
+terabytes written, and a photo collection leaves a drive at a small fraction of that, where
+retention is far longer. The medium is now chosen on price, and the property that actually
+establishes a copy is intact is reading it on a cadence, which is still undecided. Shock resistance
+remains a reason to put the SSD on the collection drive, since that is the one carried between
+machines. Full reasoning:
+[storage hardware decision](decisions/2026-08-10-storage-hardware-decision.md).
 
 **Capacity math (1 TB start):** at ~10–20 GB/month growth, a 2–4 TB drive outlives its ~3-yr age life
 before filling. So replacement is **age-driven**, ~two drives every ~2–3 years: predictable, never an emergency.

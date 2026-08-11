@@ -19,11 +19,11 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 | ID | Do this |
 |---|---|
-| **R-REL-1** | Confirm three copies exist on three drives, one of them off-site (`turbo-collection-setup-procedure.md` R-SET-11). |
+| **R-REL-1** | Confirm three copies exist on three drives, one of them off-site (`turbo-collection-setup-procedure.md` R-SET-13). |
 | **R-REL-2** | Run Turbo-Collection and confirm a report states that **these specific items** were counted, verified in the collection, and verified on a backup drive. |
 | **R-REL-3** | Stop on any discrepancy. Import again rather than accepting a shortfall. |
 | **R-REL-4** | Release only what that report covers. |
-| **R-REL-5** | Do not release anything while fewer than three copies exist, or while the off-site drive is in the same building as every other copy. |
+| **R-REL-5** | Do not release anything while fewer than three copies exist, or while the off-site drive is not off-site. |
 
 ---
 
@@ -45,3 +45,4 @@ informal.
 | Version | Date | Change |
 |---|---|---|
 | 0.1.0-draft | 2026-08-08 | First draft, R-REL-1 to R-REL-5. Split out of `turbo-collection-procedure.md`. Release is its own procedure because it is a distinct act at a distinct moment, and the only one that can destroy a photograph. |
+| 0.1.0-draft | 2026-08-10 | R-REL-5 reworded to use **off-site**, defined in `turbo-collection-setup-procedure.md` Section 1, rather than restating the definition as "in the same building as every other copy". No obligation changed. |

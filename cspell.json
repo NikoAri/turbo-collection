@@ -11,6 +11,7 @@
     "civilizational",
     "dedup",
     "decorrelate",
+    "decorrelated",
     "decorrelates",
     "decorrelation",
     "diffable",
@@ -27,6 +28,7 @@
     "JESD",
     "journaled",
     "Kopia",
+    "Solidigm",
     "launchd",
     "NAND",
     "NTFS",
@@ -104,6 +106,7 @@
   "ignorePaths": [
     ".git/**",
     "node_modules/**",
-    "LICENSE"
+    "LICENSE",
+    "cspell.json"
   ]
 }
