@@ -83,3 +83,5 @@ there is more than one area to group.
 | 2026-08-01 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-08-01-language-standard-additions-decision.md) | Accepted |
 | 2026-08-08 | [An operator procedure, and the test for what belongs in it](2026-08-08-operator-procedure-decision.md) | Accepted |
 | 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md) | Accepted |
+| 2026-08-13 | [Turbo-Collection only ever adds](2026-08-13-append-only-decision.md) | Accepted |
+| 2026-08-13 | [The manifest is JSON, with a checksum-utility copy beside it](2026-08-13-manifest-format-decision.md) | Accepted |

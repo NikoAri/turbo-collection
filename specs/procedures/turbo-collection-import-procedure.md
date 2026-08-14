@@ -18,7 +18,7 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 | **R-IMP-1** | Plug in the collection drive. |
 | **R-IMP-2** | Run Turbo-Collection for the source you are importing from. |
 | **R-IMP-3** | Read the report. |
-| **R-IMP-4** | Leave the source copy in place. It is your second copy until a backup drive holds these items. |
+| **R-IMP-4** | Leave the source copy in place until a backup drive holds these items. A source copy does not count toward the three copies `turbo-collection-release-procedure.md` R-REL-1 requires, because those three are on drives you hold. |
 | **R-IMP-5** | Import in batches small enough to count, until export completeness at scale has been measured. |
 
 ---
@@ -41,3 +41,4 @@ informal.
 | Version | Date | Change |
 |---|---|---|
 | 0.1.0-draft | 2026-08-08 | First draft, R-IMP-1 to R-IMP-5. Split out of `turbo-collection-procedure.md`. Counting and checksum verification are work Turbo-Collection performs, stated in `turbo-collection-spec.md`, so they are not restated as operator obligations. |
+| 0.1.0-draft | 2026-08-13 | R-IMP-4 reworded. It called a source copy "your second copy", while R-SET-13 and R-REL-1 count three copies on three drives, so a reader could count collection plus source plus one backup, reach three, and release too early. One concept, one name (`language-requirement.md` R-LANG-6). No obligation changed: leaving the source copy in place was already required, and a source copy never counted toward the three. |

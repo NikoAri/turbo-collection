@@ -113,6 +113,18 @@ Supporting principles:
   must be simple enough to run and maintain without it. AI is an accelerant, not a load-bearing part.
 - **Future-translatability.** Even if a language disappears, a mainstream + idiomatic + small +
   dependency-light codebase can be translated (by a future human or AI) into the language of the day.
+- **Only ever add.** Turbo-Collection creates and reports; it never deletes. The one destructive
+  capability it used to have, mirror-delete, was withdrawn on 2026-07-29, and the reasoning is in
+  [the append-only decision](decisions/2026-08-13-append-only-decision.md). Worth stating here as
+  philosophy and not only as a requirement, because it explains an otherwise odd shape: a target
+  grows monotonically and is a superset of the collection rather than a copy of it.
+- **The code is not the trust anchor.** This principle is what makes the previous one hard. If the
+  orchestrator is small, regenerable from a specification, and therefore disposable, then any
+  guarantee resting on the code alone can be regenerated away. Borg is instructive here: it does not
+  enforce append-only in its client at all, and puts the restriction in an SSH `command=` on the
+  server, where the client cannot reach it. A promise a tool makes about itself is weaker than a
+  constraint imposed outside it. Offline drive rotation is the cheapest such constraint available
+  here, and it is already the design: a disconnected drive cannot be deleted from.
 - **Design for discontinuity.** Disruption is the norm, not the exception: most people live
   through several (revolutions, wars, blackouts, natural disasters, hyperinflation, services
   shutting down), and the coming decades are unlikely to be calmer. The architecture deliberately
@@ -434,6 +446,22 @@ establishes a copy is intact is reading it on a cadence, which is still undecide
 remains a reason to put the SSD on the collection drive, since that is the one carried between
 machines. Full reasoning:
 [storage hardware decision](decisions/2026-08-10-storage-hardware-decision.md).
+
+*What sets the cadence.* The immutable-backup literature supplies the idea worth borrowing:
+**dwell time**, the period damage sits undetected between the moment it happens and the moment
+someone looks. A verification cadence longer than dwell time means every surviving copy can be bad
+before anyone finds out. That reframes cadence as a **safety parameter rather than a performance
+one**, and raises its priority accordingly: it is now the only thing standing where the withdrawn
+media rule used to stand. The cost is measured and awkward, roughly 3 hours per terabyte, disk-bound
+rather than hash-bound, so a full pass over 4 TB is a twelve-hour operation and cannot be the answer
+every time. Sampled-plus-periodic-full is the shape core specification §14 already permits. No number
+is chosen yet.
+
+Append-only sharpens one edge of this. Never overwriting protects copies that already exist, and does
+nothing to stop bad bytes reaching new ones, so a collection file that corrupts silently would be
+faithfully copied to the next fresh target. `R-MIRROR-9` closes that by verifying immediately before
+each copy, which is cheap because the file is being read anyway. It does not replace a cadence; it
+only stops corruption spreading at the one moment the tool is already looking.
 
 **Capacity math (1 TB start):** at ~10–20 GB/month growth, a 2–4 TB drive outlives its ~3-yr age life
 before filling. So replacement is **age-driven**, ~two drives every ~2–3 years: predictable, never an emergency.
