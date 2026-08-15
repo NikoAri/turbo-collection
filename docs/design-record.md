@@ -118,6 +118,32 @@ Supporting principles:
   [the append-only decision](decisions/2026-08-13-append-only-decision.md). Worth stating here as
   philosophy and not only as a requirement, because it explains an otherwise odd shape: a target
   grows monotonically and is a superset of the collection rather than a copy of it.
+- **A record lives with the data it describes.** There is no central index of what is stored where.
+  Every directory carries its own manifest and its own receipt; every drive carries its own recovery
+  note and its own copy of the specification; nothing remembers a source's contents between runs.
+  Picasa is the worked example here as well as for plain files: it first stored album definitions in
+  `.pal` files under a user profile directory, away from the photographs, and version 3.9 moved album
+  data into a `.picasa.ini` **inside each photo folder**. Google reached this conclusion themselves,
+  too late for anyone whose albums predated the move. The industry name for what is rejected is a
+  **catalog**: in backup software, the central database of what was backed up onto which media, whose
+  known failure is that losing it leaves you holding media you can no longer interpret, so it needs
+  its own backup and its own recovery procedure. The cost accepted instead is repetition, which is
+  the redundancy principle applied to metadata. Reasoning:
+  [the receipts decision](decisions/2026-08-15-receipts-decision.md).
+- **A vendor may be a route, never a custodian, and the same holds for hardware.** The rule began as
+  a statement about services and tools, and it turns out to describe three layers of the same choice.
+  A **service** may be how photographs are acquired (iCloud) but never where they live. A **tool** may
+  be required to perform an acquisition but never to read the result, which is what disqualifies
+  restic, Borg and Kopia as the core. And **silicon** may be in the path but must not hold the only
+  key to the data, which is what disqualifies storage soldered into a computer and enclosures that
+  encrypt on their own chip. The hardware layer differs in one way worth stating: silicon can never be
+  removed from the path, only kept standard and replaceable, so the goal there is **minimal
+  dependency** rather than none. Reasoning:
+  [the drive and hardware decision](decisions/2026-08-15-drive-naming-and-hardware-decision.md).
+- **The computer is equipment, not infrastructure.** No machine is part of this system. Configuration
+  travels on the collection drive, logs are written to the drives, and nothing is installed or
+  remembered on a host, so a backup can be performed on a borrowed computer in another building. This
+  is what several separately-argued decisions were quietly buying.
 - **The code is not the trust anchor.** This principle is what makes the previous one hard. If the
   orchestrator is small, regenerable from a specification, and therefore disposable, then any
   guarantee resting on the code alone can be regenerated away. Borg is instructive here: it does not

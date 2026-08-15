@@ -85,3 +85,5 @@ there is more than one area to group.
 | 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md) | Accepted |
 | 2026-08-13 | [Turbo-Collection only ever adds](2026-08-13-append-only-decision.md) | Accepted |
 | 2026-08-13 | [The manifest is JSON, with a checksum-utility copy beside it](2026-08-13-manifest-format-decision.md) | Accepted |
+| 2026-08-15 | [Every directory carries a receipt, and manifests become per-directory](2026-08-15-receipts-decision.md) | Accepted |
+| 2026-08-15 | [Drive names, removable storage, and the off-site drive that never travels](2026-08-15-drive-naming-and-hardware-decision.md) | Accepted |
