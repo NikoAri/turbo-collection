@@ -22,10 +22,11 @@ Each document has one job:
   specification, **what** must be true. The language-neutral source of truth from which the tests
   and the implementation are generated, and regenerated, in the way an RFC outlives any single
   implementation of a protocol.
-- [`specs/sources/`](specs/sources/): one specification per **vendor surface** a photo can come
-  from, each paired with the procedures a human follows to acquire from it. The core spec is
-  normative over things this project controls; a source specification is normative over things a
-  vendor controls, so it carries dated evidence and expiry dates rather than stable promises.
+- [`specs/acquisition-routes/`](specs/acquisition-routes/): one specification per **acquisition
+  route** a photo can come in by, each paired with the procedures a human follows to acquire by it.
+  The core spec is normative over things this project controls; a route specification is normative
+  over things a vendor controls, so it carries dated evidence and expiry dates rather than stable
+  promises.
 - [`specs/language-requirement.md`](specs/language-requirement.md): an authoring standard, **how a
   normative document is written**, so its English stays interpretable across decades of language
   drift. It is about documents rather than about turbo-collection, which is why it carries no
@@ -43,11 +44,11 @@ Each document has one job:
 
 **The filename states the kind, so it survives being separated from its path:**
 
-| Pattern | Binds | Executed by | May code cite it |
-|---|---|---|---|
-| `*-spec.md` | the implementation | machine | yes, and only these |
-| `*-procedure.md` | the operator | human | no |
-| anything in `docs/` | nothing | n/a | no |
+| Pattern             | Binds              | Executed by | May code cite it    |
+| ------------------- | ------------------ | ----------- | ------------------- |
+| `*-spec.md`         | the implementation | machine     | yes, and only these |
+| `*-procedure.md`    | the operator       | human       | no                  |
+| anything in `docs/` | nothing            | n/a         | no                  |
 
 Directories group by topic; the name carries the classification. A top-level `superseded/`
 directory will hold the frozen terminal text of each superseded specification line once one

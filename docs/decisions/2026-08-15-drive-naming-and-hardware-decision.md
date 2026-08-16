@@ -54,7 +54,7 @@ drive and no photographs.
 
 **A consequence worth naming:** the collection is then present at every mirror without exception,
 which is what let receipts settle on a single writer. See
-[the receipts decision](2026-08-15-receipts-decision.md).
+[the receipts decision](2026-08-16-receipts-decision.md).
 
 ## Every drive is external and removable
 

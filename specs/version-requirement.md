@@ -20,11 +20,11 @@ version.
 
 ### 0.1 Who this document binds
 
-This document is a **specification-authoring standard**. It binds the *authors* of normative
+This document is a **specification-authoring standard**. It binds the _authors_ of normative
 documents. It does not bind the implementation.
 
-| ID | Requirement |
-|---|---|
+| ID           | Requirement                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
 | **R-PUB-12** | Every normative document in this project MUST conform to this document, including this document itself. |
 
 > **Why self-application.** A versioning standard that does not carry a version of its own invites
@@ -66,8 +66,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 - **Normative document.** A document in this project that states requirements with stable IDs.
 
 - **Subject.** What a normative document is normative over. For `turbo-collection-spec.md` the
-  subject is Turbo-Collection itself; for a source specification it is one vendor surface; for this
-  document it is the normative documents of this project.
+  subject is Turbo-Collection itself; for a route specification it is one acquisition route; for
+  this document it is the normative documents of this project.
 
 - **Published.** Issued under a version number carrying no `-draft` suffix, and stamped into
   something that has left the machine on which it was written (R-PUB-3). A published text is
@@ -104,29 +104,29 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 ## 3. Version numbers and publication
 
-| ID | Requirement |
-|---|---|
-| **R-PUB-1** | Every normative document MUST carry a semantic version, `MAJOR.MINOR.PATCH`, and MUST state in its own text the test that decides its bump. Every such test MUST classify as **MAJOR** any change that makes previously conforming behavior non-conforming, and any change of document language or obligation vocabulary (R-PUB-9); as **MINOR** a change that only adds, so that everything conforming under the previous version still conforms; and as **PATCH** a prose improvement that changes no obligation. |
-| **R-PUB-2** | **Version identity MUST be immutable.** A published version number refers to exactly one text, forever: the number MUST NOT be reused for different text, and a published text MUST NOT be edited. A correction is a new version. Retention is deliberately weaker than identity: a published stamp MUST resolve, at minimum, to the archived terminal text of its MAJOR line (R-PUB-5) together with the change ledger (R-PUB-6); retaining every intermediate text as a separate file is not required. |
-| **R-PUB-3** | A version is **published** at the first moment its stamp is written into something that leaves the machine on which the document was written. A stamp carrying the `-draft` suffix MUST NOT be written into such a thing. A draft MAY change freely and is never archived. |
-| **R-PUB-8** | If a published version is later found to be misclassified under its own bump test (for example, labeled MINOR when it withdrew an obligation), the correction MUST be an **erratum**: a new ledger entry (R-PUB-6) declaring the misclassification. The published text MUST NOT be edited and its stamp MUST NOT be silently reinterpreted. |
-| **R-PUB-9** | The document language of a normative document, and its obligation vocabulary, MAY change only at a MAJOR version. All normative documents in this project MUST change document language together, at the same boundary. Across such a change: requirement IDs MUST NOT change; the changes-from section (R-PUB-7) MUST state the previous language and the new language, and MUST map every defined term and every obligation keyword from the old language to the new; and the archived terminal text of the superseded line (R-PUB-5) MUST remain in its original language, untranslated. |
-| **R-PUB-11** | Each version of a normative document MUST have exactly one authentic text, in exactly one document language. A translation of any version MAY be published beside it and MUST be marked as informative. Only the authentic text resolves a version stamp (R-PUB-2). |
+| ID           | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-PUB-1**  | Every normative document MUST carry a semantic version, `MAJOR.MINOR.PATCH`, and MUST state in its own text the test that decides its bump. Every such test MUST classify as **MAJOR** any change that makes previously conforming behavior non-conforming, and any change of document language or obligation vocabulary (R-PUB-9); as **MINOR** a change that only adds, so that everything conforming under the previous version still conforms; and as **PATCH** a prose improvement that changes no obligation.                                                                         |
+| **R-PUB-2**  | **Version identity MUST be immutable.** A published version number refers to exactly one text, forever: the number MUST NOT be reused for different text, and a published text MUST NOT be edited. A correction is a new version. Retention is deliberately weaker than identity: a published stamp MUST resolve, at minimum, to the archived terminal text of its MAJOR line (R-PUB-5) together with the change ledger (R-PUB-6); retaining every intermediate text as a separate file is not required.                                                                                    |
+| **R-PUB-3**  | A version is **published** at the first moment its stamp is written into something that leaves the machine on which the document was written. A stamp carrying the `-draft` suffix MUST NOT be written into such a thing. A draft MAY change freely and is never archived.                                                                                                                                                                                                                                                                                                                  |
+| **R-PUB-8**  | If a published version is later found to be misclassified under its own bump test (for example, labeled MINOR when it withdrew an obligation), the correction MUST be an **erratum**: a new ledger entry (R-PUB-6) declaring the misclassification. The published text MUST NOT be edited and its stamp MUST NOT be silently reinterpreted.                                                                                                                                                                                                                                                 |
+| **R-PUB-9**  | The document language of a normative document, and its obligation vocabulary, MAY change only at a MAJOR version. All normative documents in this project MUST change document language together, at the same boundary. Across such a change: requirement IDs MUST NOT change; the changes-from section (R-PUB-7) MUST state the previous language and the new language, and MUST map every defined term and every obligation keyword from the old language to the new; and the archived terminal text of the superseded line (R-PUB-5) MUST remain in its original language, untranslated. |
+| **R-PUB-11** | Each version of a normative document MUST have exactly one authentic text, in exactly one document language. A translation of any version MAY be published beside it and MUST be marked as informative. Only the authentic text resolves a version stamp (R-PUB-2).                                                                                                                                                                                                                                                                                                                         |
 
 > **Why each document states its own bump test (R-PUB-1).** The rule above sets a floor that every
 > document shares, but the surface a bump is measured against differs. `turbo-collection-spec.md`
 > measures the effect on artifacts, because artifacts are regenerable from nothing while code is
-> regenerable from the document. A source specification writes no artifacts at all, so it measures
+> regenerable from the document. A route specification writes no artifacts at all, so it measures
 > whether a previously conforming acquisition route has become non-conforming. Forcing one surface
 > onto both would make one of the two tests meaningless.
 
 > **Why identity and retention are split (R-PUB-2).** Immutability is two promises, and only one of
-> them must be absolute. *Identity* is the RFC discipline: "written under version 1.2" is worthless
-> if 1.2 was quietly revised, and precise if 1.2 can only ever mean one text. *Retention* of every
+> them must be absolute. _Identity_ is the RFC discipline: "written under version 1.2" is worthless
+> if 1.2 was quietly revised, and precise if 1.2 can only ever mean one text. _Retention_ of every
 > intermediate text is not needed, because MINOR versions are additive (R-PUB-1): the text of any
 > intermediate version is derivable from its line's terminal text minus the additions the ledger
-> records after it. What a reader of an old log actually needs to reconstruct is *which obligations
-> governed that run*, and the ledger answers exactly that. Version control keeps the exact
+> records after it. What a reader of an old log actually needs to reconstruct is _which obligations
+> governed that run_, and the ledger answers exactly that. Version control keeps the exact
 > intermediate texts as best effort; nothing load-bearing depends on it. The cost is accepted
 > knowingly: this scheme is exactly as sound as version classification, which is why publication
 > passes through the checklist in Section 5 and why misclassification has an honesty rule (R-PUB-8).
@@ -151,12 +151,12 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 ## 4. Preserving a document across its own changes
 
-| ID | Requirement |
-|---|---|
-| **R-PUB-4** | Every version of a normative document MUST be fully self-contained for the subject it describes, and MUST describe only that subject. Determining a current obligation MUST NOT require reading any other version of that document, and a document MUST NOT carry a catalog of its own superseded versions. A superseded state of a subject is defined by the archived terminal text of its own line (R-PUB-5). |
+| ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-PUB-4** | Every version of a normative document MUST be fully self-contained for the subject it describes, and MUST describe only that subject. Determining a current obligation MUST NOT require reading any other version of that document, and a document MUST NOT carry a catalog of its own superseded versions. A superseded state of a subject is defined by the archived terminal text of its own line (R-PUB-5).                                                                                               |
 | **R-PUB-5** | When a MAJOR line is superseded, its terminal text MUST be archived as a plain Markdown file in the repository's top-level `superseded/` directory, named with the document's own filename and its full version number (for example, `superseded/turbo-collection-spec-1.4.2.md`). The `superseded/` directory MUST contain the terminal text of every superseded MAJOR line of every normative document. Intermediate texts MAY live in version control as best effort; they are not load-bearing (R-PUB-2). |
-| **R-PUB-6** | Every normative document MUST carry a change ledger, inside the document, holding one entry per published version: the version stamp; one line per requirement ID added, amended, or withdrawn, stating what changed and why; and one line per normative document whose filename changed, stating the previous filename, the new filename, and the version at which the change took effect. The author of a filename change MUST also update every reference to that document in this project. |
-| **R-PUB-7** | The first published version of a new MAJOR line MUST contain a changes-from section stating its differences from the terminal text of the previous line, at **conversion grade**. The section MUST name the archived terminal text of the previous line by its full version stamp. |
+| **R-PUB-6** | Every normative document MUST carry a change ledger, inside the document, holding one entry per published version: the version stamp; one line per requirement ID added, amended, or withdrawn, stating what changed and why; and one line per normative document whose filename changed, stating the previous filename, the new filename, and the version at which the change took effect. The author of a filename change MUST also update every reference to that document in this project.                |
+| **R-PUB-7** | The first published version of a new MAJOR line MUST contain a changes-from section stating its differences from the terminal text of the previous line, at **conversion grade**. The section MUST name the archived terminal text of the previous line by its full version stamp.                                                                                                                                                                                                                            |
 
 > **Why present-tense and self-contained (R-PUB-4).** The alternative is rules reconstructed by
 > merging a chain of documents, and the history of protocol standards maintained as amendment chains
@@ -174,7 +174,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 > **Where the texts live.** `specs/` at the head of the repository is the living view; top-level
 > `superseded/` holds the frozen terminal texts, deliberately outside the living directory so that
-> restructuring a living document never moves a frozen record. The change ledger lives *inside* each
+> restructuring a living document never moves a frozen record. The change ledger lives _inside_ each
 > document (R-PUB-6) because it is the only in-tree record of intermediate versions, so it must
 > travel with every copy of the document. For `turbo-collection-spec.md` this matters most of all,
 > because its R-VER-8 scatters stamped copies onto every target, which makes the versions actually
@@ -184,8 +184,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 ## 5. The publication checklist
 
-| ID | Requirement |
-|---|---|
+| ID           | Requirement                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
 | **R-PUB-10** | A version of a normative document MUST be published only by completing the following checklist, in order. |
 
 1. **Classify** the change set under the document's own bump test (R-PUB-1), and draft one ledger
@@ -216,11 +216,11 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 Required of every normative document by R-PUB-1.
 
-| Level | Test |
-|---|---|
+| Level     | Test                                                                                                                                                                                                              |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MAJOR** | An obligation stated in this document is withdrawn or narrowed, so that a document conforming under the previous version no longer conforms; or the document language or obligation vocabulary changes (R-PUB-9). |
-| **MINOR** | Additions only. Every document conforming under the previous version still conforms. |
-| **PATCH** | Prose improvement that changes no obligation. |
+| **MINOR** | Additions only. Every document conforming under the previous version still conforms.                                                                                                                              |
+| **PATCH** | Prose improvement that changes no obligation.                                                                                                                                                                     |
 
 ---
 
@@ -229,6 +229,7 @@ Required of every normative document by R-PUB-1.
 Required by R-PUB-6. No version has been published yet (R-PUB-3), so the entry below is informal; a
 draft carries no obligations and receives no per-ID ledger entries.
 
-| Version | Date | Change |
-|---|---|---|
+| Version     | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.0-draft | 2026-08-01 | First draft. R-PUB-1 to R-PUB-12. Eleven requirements moved here from `turbo-collection-spec.md` Section 9 and renumbered, where they had bound the authors of documents rather than the implementation: R-VER-1 became R-PUB-1, R-VER-2 became R-PUB-2, R-VER-10 became R-PUB-3, R-VER-11 became R-PUB-4, R-VER-12 became R-PUB-5, R-VER-13 became R-PUB-6, R-VER-14 became R-PUB-7, R-VER-17 became R-PUB-8, R-VER-19 became R-PUB-9, R-VER-20 became R-PUB-10, R-VER-21 became R-PUB-11. R-PUB-12 is new, and states the scope this document had no way to state while it was a section of another document. Three of the moved requirements were generalized, because they were written to describe one document and now govern several: R-PUB-1 states a floor and requires each document to state its own bump test, leaving the artifact-driven test in `turbo-collection-spec.md` R-VER-1; R-PUB-4 speaks of a document's subject rather than of Turbo-Collection; R-PUB-6 requires a ledger without fixing its section number. Rationale: [`../docs/decisions/2026-08-01-version-requirement-split-decision.md`](../docs/decisions/2026-08-01-version-requirement-split-decision.md). |
+| 0.1.0-draft | 2026-08-16 | The **Subject** term reworded: a normative document about acquisition is now normative over one **acquisition route** rather than over one vendor surface, and the R-PUB-1 commentary calls such a document a route specification. Follows `turbo-collection-spec.md`, which withdrew the vendor surface level on this date and renamed `specs/sources/` to `specs/acquisition-routes/`. No requirement added, amended, or withdrawn.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |

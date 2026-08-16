@@ -109,8 +109,41 @@ Supporting principles:
   GitHub) and are expected to be swapped. Isolate the volatile parts so churn never touches the data.
 - **Minimize dependencies.** Every dependency is a future liability, for both humans and AIs to
   maintain or translate. Prefer standard libraries and single-binary tools.
-- **AI-optional, not AI-dependent.** AI makes maintenance and future migration cheap, but the stack
-  must be simple enough to run and maintain without it. AI is an accelerant, not a load-bearing part.
+- **AI-optional to operate, AI-assumed to recover.** Operating this system requires no AI: the stack
+  is simple enough to run and maintain by hand, and that has not changed. What changed on 2026-08-16
+  is the other half. This bullet used to end "AI is an accelerant, not a load-bearing part," which is
+  no longer true without qualification, because recovering data when Turbo-Collection is gone now
+  leans on the next principle. The boundary is worth keeping sharp: normal operation assumes nothing,
+  recovery assumes help.
+- **A future reader has help.** A person who finds this data, at any point across the decades it is
+  meant to survive, is assumed to have access to a capable AI assistant and to be able to ask it to
+  act on what they find. So *readable without Turbo-Collection* means readable by a person holding
+  plain, self-describing data and an assistant, rather than by a person holding one particular
+  command-line program. This licenses removing **pre-computed conveniences**: a second copy of a
+  manifest in some tool's format earns nothing, because anyone who can obtain that conversion can
+  obtain the verification directly and skip the intermediate file. It licenses nothing whatever about
+  **self-description**, because an assistant can act only on data that states what it is. Every
+  artifact still carries its format version, names its algorithm, and travels beside the
+  specification governing it, so this principle makes R-VER-8 and the `specVersion` field more
+  important rather than less. It moves work from the writer to the reader's assistant; it must never
+  move work to the reader's guesswork. **Conventional tooling is the safety net, not the main mode of
+  operation.** Standard utilities, format parsers, GNU coreutils and ordinary programming skill remain
+  a complete fallback should assistance ever be unavailable, and no decision may close that path off.
+  They are simply no longer what this project designs *for*. Note the fallback does not require the
+  reader to hold that skill, only that the skill still exists and can be bought: someone who inherits
+  this drive and cannot program can hire a person who can, and the data is plain and self-describing
+  enough that such a person needs no familiarity with this project to work on it. That is a far
+  weaker condition than it first sounds, and it is what makes relying on the primary path safe. That distinction is what decides each
+  case: the fallback must stay **possible**, and need not be made **convenient**. Self-description is
+  what keeps it possible, which is why it survives every application of this principle;
+  the companion manifest was what made it convenient, which is why it did not. Being wrong therefore
+  costs inconvenience rather than data, because a reader with no help at all still holds plain files,
+  checksums in documented JSON, and a specification sitting beside them, which is the strongest
+  position available to anyone. And it is self-testing: the annual
+  re-validation ritual in Section 10 already asks a then-current AI to re-check this project's
+  assumptions, so if that ritual can be run, this principle holds, and if nobody can run it you have
+  learned it failed by the only means that would tell you. First applied by withdrawing R-INT-9, the
+  companion manifest, on 2026-08-16.
 - **Future-translatability.** Even if a language disappears, a mainstream + idiomatic + small +
   dependency-light codebase can be translated (by a future human or AI) into the language of the day.
 - **Only ever add.** Turbo-Collection creates and reports; it never deletes. The one destructive
@@ -129,7 +162,7 @@ Supporting principles:
   known failure is that losing it leaves you holding media you can no longer interpret, so it needs
   its own backup and its own recovery procedure. The cost accepted instead is repetition, which is
   the redundancy principle applied to metadata. Reasoning:
-  [the receipts decision](decisions/2026-08-15-receipts-decision.md).
+  [the receipts decision](decisions/2026-08-16-receipts-decision.md).
 - **A vendor may be a route, never a custodian, and the same holds for hardware.** The rule began as
   a statement about services and tools, and it turns out to describe three layers of the same choice.
   A **service** may be how photographs are acquired (iCloud) but never where they live. A **tool** may

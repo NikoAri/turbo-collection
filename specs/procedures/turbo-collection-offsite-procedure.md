@@ -42,9 +42,11 @@ was withdrawn and its number is not reused.
 > drive costs a drive and no photographs, because a current copy stayed at home. Without it, the trip
 > is taken with the only current copy in hand.
 
-> **Why any computer will do.** Nothing about a run lives on the host. Configuration travels with the
-> collection (`turbo-collection-spec.md` R-CFG-5), the run's log is written to the drives rather than
-> to the machine (R-LOG-5), and no database is kept anywhere (Section 2). So the computer at the far
+> **Why any computer will do.** Nothing the collection depends on lives on the host. Configuration
+> travels with the collection and each drive states what it is (`turbo-collection-spec.md` R-CFG-5,
+> R-CFG-6), everything that bears on whether source material can be deleted is written into receipts
+> on the drives rather than into a log on the machine (R-REC-2), and no database is kept anywhere
+> (Section 2). So the computer at the far
 > end is equipment you borrow, not part of the system. One caution, which is not a rule here: a
 > borrowed computer is a machine whose state you do not control, and plugging the collection into it
 > is a judgment you make about that machine.

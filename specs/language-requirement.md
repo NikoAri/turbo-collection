@@ -15,12 +15,12 @@ English language itself has shifted.
 
 ### 0.1 Who this document binds
 
-This document is a **specification-authoring standard**. It binds the *authors* of normative
+This document is a **specification-authoring standard**. It binds the _authors_ of normative
 documents. It does not bind the implementation.
 
-| ID | Requirement |
-|---|---|
-| **R-LANG-1** | Every normative document in this project MUST conform to this document, including this document itself. |
+| ID           | Requirement                                                                                                                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-LANG-1** | Every normative document in this project MUST conform to this document, including this document itself.                                                                                              |
 | **R-LANG-2** | Code and tests MUST NOT cite `R-LANG-*` requirement IDs. These IDs bind documents, not the implementation. (This is the counterpart of `spec.md` R-META-2: code cites specification documents only.) |
 
 > **Why R-LANG-1 includes this document.** A writing standard that violates its own rules invites
@@ -33,8 +33,8 @@ reading as though it binds someone.
 
 ### 0.2 Conventions
 
-| ID | Requirement |
-|---|---|
+| ID            | Requirement                                                                                                                                                                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **R-LANG-21** | The document language of every normative document in this project is **American English**, and spelling MUST be American throughout. Changing document language is governed by `version-requirement.md` R-PUB-9, which permits a change only at a MAJOR version. |
 
 > **Why the variant is named, and why here.** `version-requirement.md` R-PUB-11 requires exactly one
@@ -94,8 +94,8 @@ in-document) are language-neutral, even though its examples and keyword definiti
 Self-contained, per R-LANG-5.
 
 - **Normative document.** A document in this project that states requirements with stable IDs.
-  As of 2026-08-01: `specs/turbo-collection-spec.md`, the source specifications under
-  `specs/sources/`, the procedures paired with them, `specs/version-requirement.md`, and this
+  As of 2026-08-16: `specs/turbo-collection-spec.md`, the acquisition route specifications under
+  `specs/acquisition-routes/`, the procedures paired with them, `specs/version-requirement.md`, and this
   document. A normative document is not necessarily a specification: a procedure binds an
   operator, and an authoring standard binds a document author. Only a document whose filename
   ends in `-spec.md` may be cited by code (`turbo-collection-spec.md` R-META-4).
@@ -106,8 +106,8 @@ Self-contained, per R-LANG-5.
 - **Commentary.** Explanatory passages in a normative document: rationale blocks, examples,
   section introductions. Commentary has no binding force.
 
-- **Domain term.** A name for a project-specific concept, such as *collection*, *target*, or
-  *manifest*, defined in a document's terminology section.
+- **Domain term.** A name for a project-specific concept, such as _collection_, _target_, or
+  _manifest_, defined in a document's terminology section.
 
 - **Published.** Issued under a version number without a `-draft` suffix, and thereafter
   immutable. A draft may still change.
@@ -118,10 +118,10 @@ Self-contained, per R-LANG-5.
 
 ### 3.1 Obligations (`R-LANG-3`, `R-LANG-4`, `R-LANG-17`)
 
-| ID | Requirement |
-|---|---|
-| **R-LANG-3** | Every obligation MUST be stated with an RFC 2119 keyword. A sentence without such a keyword carries no obligation. |
-| **R-LANG-4** | Every obligation MUST appear in normative text. Commentary MUST NOT be the only place an obligation is stated. |
+| ID            | Requirement                                                                                                                                                                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-LANG-3**  | Every obligation MUST be stated with an RFC 2119 keyword. A sentence without such a keyword carries no obligation.                                                                                                                                   |
+| **R-LANG-4**  | Every obligation MUST appear in normative text. Commentary MUST NOT be the only place an obligation is stated.                                                                                                                                       |
 | **R-LANG-17** | A document that is not a normative document MUST NOT state an obligation with an RFC 2119 keyword, and MUST NOT label a passage with an identifier of the form used for requirement IDs. Such a document MAY describe a requirement and cite its ID. |
 
 > **Why R-LANG-17 exists.** R-LANG-3 makes RFC 2119 keywords the only way an obligation is stated
@@ -134,18 +134,18 @@ Self-contained, per R-LANG-5.
 > **Why R-LANG-4 exists.** Commentary is deliberately written in freer language (Section 3.5),
 > so it is the part of the document most exposed to drift and to misreading. An obligation that
 > lives only in an explanatory aside is an obligation a future reader can miss. Commentary
-> explains the rules; the tables *are* the rules.
+> explains the rules; the tables _are_ the rules.
 
 ### 3.2 Terms (`R-LANG-5` to `R-LANG-7`)
 
-| ID | Requirement |
-|---|---|
+| ID           | Requirement                                                                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | **R-LANG-5** | A normative document MUST define every domain term it uses, in its own terminology section. It MUST NOT defer a definition to another document. |
-| **R-LANG-6** | A domain concept MUST have exactly one name throughout a document. A defined term MUST NOT be replaced by a synonym or a paraphrase. |
-| **R-LANG-7** | Within one document, an ordinary word SHOULD keep one meaning and one part of speech throughout. |
+| **R-LANG-6** | A domain concept MUST have exactly one name throughout a document. A defined term MUST NOT be replaced by a synonym or a paraphrase.            |
+| **R-LANG-7** | Within one document, an ordinary word SHOULD keep one meaning and one part of speech throughout.                                                |
 
 > **R-LANG-6 in practice.** `spec.md` already lives by this rule: it says "collection" and never
-> "library", "target" and never "destination", and its terminology section records *why* the
+> "library", "target" and never "destination", and its terminology section records _why_ the
 > rejected synonyms are rejected. The failure this prevents: a future reader who meets both
 > "target" and "destination" must guess whether they are two things or one, and the guess is
 > where misinterpretation starts.
@@ -157,18 +157,18 @@ Self-contained, per R-LANG-5.
 
 ### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`, `R-LANG-18`, `R-LANG-19`)
 
-| ID | Requirement |
-|---|---|
-| **R-LANG-8** | A normative statement MUST make clear which actor it binds. A sentence SHOULD state one obligation, and SHOULD use the active voice. |
-| **R-LANG-9** | Normative text MUST NOT rely on idiom, metaphor, irony, humor, or cultural reference to carry a requirement's meaning. |
-| **R-LANG-10** | In normative text, a pronoun MUST have exactly one plausible antecedent. If more than one antecedent is plausible, the noun MUST be repeated in place of the pronoun. |
+| ID            | Requirement                                                                                                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-LANG-8**  | A normative statement MUST make clear which actor it binds. A sentence SHOULD state one obligation, and SHOULD use the active voice.                                                                      |
+| **R-LANG-9**  | Normative text MUST NOT rely on idiom, metaphor, irony, humor, or cultural reference to carry a requirement's meaning.                                                                                    |
+| **R-LANG-10** | In normative text, a pronoun MUST have exactly one plausible antecedent. If more than one antecedent is plausible, the noun MUST be repeated in place of the pronoun.                                     |
 | **R-LANG-18** | In normative text, a definite article MUST mark only a noun that has exactly one identifiable referent in context. A statement about any member of a class MUST use a bare noun or a plural noun instead. |
-| **R-LANG-19** | Prose SHOULD omit a definite article whose removal changes no meaning. |
+| **R-LANG-19** | Prose SHOULD omit a definite article whose removal changes no meaning.                                                                                                                                    |
 
 > **Why definiteness is precision, not style (R-LANG-18).** "The" promises a reader that exactly one
 > referent is meant and that the reader can identify it. Most statements in a specification are
 > general, so that promise is usually false. "The target MUST carry a manifest" invites the question
-> *which* target; "Every target MUST carry a manifest" does not. This is the failure R-LANG-10
+> _which_ target; "Every target MUST carry a manifest" does not. This is the failure R-LANG-10
 > addresses for pronouns, caught one step earlier in the sentence.
 
 > **Where this parts company with ASD-STE100.** Section 1 names STE as an inspiration, and STE
@@ -187,21 +187,21 @@ Self-contained, per R-LANG-5.
 
 ### 3.4 Time, dates, and units (`R-LANG-11`)
 
-| ID | Requirement |
-|---|---|
+| ID            | Requirement                                                                                                                                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **R-LANG-11** | In normative text, a calendar date MUST be absolute and in ISO 8601 form (YYYY-MM-DD), a quantity MUST carry an explicit unit, and a time reference anchored to the moment of writing ("currently", "recently", "modern", "new") MUST NOT appear. |
 
-> **The distinction that matters.** "Every *current* collection file" in `spec.md` is anchored
-> to the moment a run executes, and stays correct forever. "The *current* best tool is rclone"
+> **The distinction that matters.** "Every _current_ collection file" in `spec.md` is anchored
+> to the moment a run executes, and stays correct forever. "The _current_ best tool is rclone"
 > is anchored to the moment of writing, and rots silently. The first is fine; the second
 > belongs in a dated bindings or assumptions section, which is exactly where `spec.md` puts it.
 
 ### 3.5 Commentary and redundant encoding (`R-LANG-12`, `R-LANG-13`)
 
-| ID | Requirement |
-|---|---|
+| ID            | Requirement                                                                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **R-LANG-12** | Commentary MAY use vivid or informal language, and MUST be visually distinct from normative text (in this project: block quotes and prose, never requirement tables). |
-| **R-LANG-13** | A requirement whose misinterpretation could cause data loss MUST be accompanied by commentary stating its rationale, a concrete example, or both. |
+| **R-LANG-13** | A requirement whose misinterpretation could cause data loss MUST be accompanied by commentary stating its rationale, a concrete example, or both.                     |
 
 > **Why looseness is permitted at all.** Commentary is the second, redundant channel for
 > meaning. A future reader triangulates: if the normative sentence has become ambiguous under
@@ -211,8 +211,8 @@ Self-contained, per R-LANG-5.
 
 ### 3.6 Review gate (`R-LANG-14`)
 
-| ID | Requirement |
-|---|---|
+| ID            | Requirement                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | **R-LANG-14** | Before a normative document is published at a new version, every added or changed passage MUST be reviewed against this document. |
 
 > The review fits the project's existing conformance pattern (`spec.md` §13): AI-assisted,
@@ -225,11 +225,12 @@ Self-contained, per R-LANG-5.
 These apply to normative documents as MUST. Other project documents SHOULD follow them in new
 text; existing non-normative text is not retroactively rewritten.
 
-| ID | Requirement |
-|---|---|
-| **R-LANG-15** | Prose MUST NOT use the em-dash character (U+2014). An en-dash (U+2013) MAY appear only inside a numeric range. |
-| **R-LANG-16** | A normative document MUST be plain text (Markdown), and diagrams MUST be stored as plain-text source (Mermaid), never only as images. |
+| ID            | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-LANG-15** | Prose MUST NOT use the em-dash character (U+2014). An en-dash (U+2013) MAY appear only inside a numeric range.                                                                                                                                                                                                                                                                                                                                                      |
+| **R-LANG-16** | A normative document MUST be plain text (Markdown), and diagrams MUST be stored as plain-text source (Mermaid), never only as images.                                                                                                                                                                                                                                                                                                                               |
 | **R-LANG-20** | Requirement IDs MUST be stable and domain-prefixed. Once a normative document is published at a version (`version-requirement.md` R-PUB-3), an ID in that document MUST NOT be renumbered and MUST NOT be reused; a withdrawn requirement keeps its ID and is marked withdrawn. The author of a normative document MUST give it requirement-ID prefixes that no other normative document in this project uses, so that a cited ID resolves to exactly one document. |
+
 > **Why R-LANG-20 is stated once rather than in each document.** Prefix uniqueness is the one rule
 > here that no single document can satisfy alone, since it is a claim about every other document.
 > Stating it separately in each would be three copies of a rule that has to agree with itself, so
@@ -243,11 +244,11 @@ text; existing non-normative text is not retroactively rewritten.
 
 Required of every normative document by `version-requirement.md` R-PUB-1.
 
-| Level | Test |
-|---|---|
+| Level     | Test                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MAJOR** | A rule stated here is withdrawn or tightened, so that a document conforming under the previous version no longer conforms; or document language or obligation vocabulary changes (R-PUB-9). |
-| **MINOR** | Additions only. Every document conforming under the previous version still conforms. |
-| **PATCH** | Prose improvement that changes no rule. |
+| **MINOR** | Additions only. Every document conforming under the previous version still conforms.                                                                                                        |
+| **PATCH** | Prose improvement that changes no rule.                                                                                                                                                     |
 
 ---
 
@@ -256,7 +257,8 @@ Required of every normative document by `version-requirement.md` R-PUB-1.
 Required by `version-requirement.md` R-PUB-6. Versions are immutable once published. A correction is
 a new version, never an edit.
 
-| Version | Date | Change |
-|---|---|---|
-| 0.1.0-draft | 2026-07-16 | First draft: R-LANG-1 to R-LANG-16. |
+| Version     | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.0-draft | 2026-07-16 | First draft: R-LANG-1 to R-LANG-16.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 0.1.0-draft | 2026-08-01 | R-LANG-17 added: a document that is not normative states no obligation with an RFC 2119 keyword and carries no requirement-shaped identifiers. Section 0.1 records that this one rule reaches beyond normative documents. R-LANG-18 and R-LANG-19 added, on definite articles, with commentary noting where they part company with ASD-STE100. Section 2's list of normative documents gained `specs/version-requirement.md` and the procedures, and now states that a normative document is not necessarily a specification. Section 1's reference to `spec.md` R-VER-19 repaired to `version-requirement.md` R-PUB-9. Section 5 added, stating this document's bump test as R-PUB-1 requires. Former Section 5 renamed from "Change log" to "Change ledger", matching the term R-PUB-6 uses. R-LANG-20 added, holding requirement-ID stability and prefix uniqueness, which `turbo-collection-spec.md` and `version-requirement.md` had each restated; both now cite it. R-LANG-21 added **in Section 0.2**, naming American English as the document language, since R-PUB-11 requires exactly one authentic text in exactly one language and "English" alone does not identify one. Placed ahead of every other rule because every other rule presupposes a language: obligation keywords, defined terms, pronouns and articles are all language-specific. Section 1 now names the variant where it discusses language as a binding. `cspell.json` gained a `flagWords` list enforcing it, and Section 0.2 stopped restating requirement-ID stability, which R-LANG-20 now holds. Rationale: [`../docs/decisions/2026-08-01-obligation-keywords-decision.md`](../docs/decisions/2026-08-01-obligation-keywords-decision.md). |
+| 0.1.0-draft | 2026-08-16 | Section 2's list of normative documents now names the acquisition route specifications under `specs/acquisition-routes/`, following the rename of `specs/sources/` and the withdrawal of the vendor surface level in `turbo-collection-spec.md` on this date. No requirement added, amended, or withdrawn.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |

@@ -1,11 +1,15 @@
 # Every directory carries a receipt, and manifests become per-directory
 
 **Status:** Accepted
-**Date:** 2026-08-15
+**Date:** 2026-08-16
+**Replaces:** the 2026-08-15 record of the same topic, which said a receipt records arrivals and
+nothing else. It now records **refusals** as well. That wording generalized past its own rationale;
+the correction is below.
 
-Turbo-Collection writes a **receipt** in every directory it puts content into (`R-REC-1`). A receipt
-records where that content came from, and every **arrival** of it at a copy: the import that brought
-it into the collection, and each mirror that carried it to a target. It records nothing else.
+Turbo-Collection writes a **receipt** in every directory it puts content into, and in every directory
+where content was offered and refused (`R-REC-1`). A receipt records where that content came from,
+every **arrival** of it at a copy (the import that brought it into the collection, and each mirror
+that carried it to a target), and every **refusal**.
 
 Manifests become per-directory at the same time (`R-INT-1`): each directory carries a manifest of its
 own files, covering that directory alone.
@@ -22,17 +26,57 @@ sharpest illustration: without an event record, an empty directory nobody ever i
 empty directory whose photographs were deleted are indistinguishable, because absence of data and
 absence of import look identical to any checksum.
 
-## Why arrivals, and only arrivals
+## Which events belong, and which do not
+
+The test is whether an event changes **whether the source material can safely be deleted**.
 
 An import puts content in one copy. Deleting the source at that moment reduces the number of copies
 rather than increasing it, which `turbo-collection-release-procedure.md` R-REL-5 forbids. So a
 receipt has to record reaching **each** copy, not merely being imported, and an import and a mirror
 are therefore the same kind of event with a different copy named.
 
-Verification is deliberately excluded (`R-REC-2`). It does not change how many copies hold a file, it
-is the highest-volume event a collection generates, and admitting it would turn a five-line file into
-several hundred lines over twenty years. The property being protected is that a person can read the
-record at a glance, which is the only reason it gates anything.
+A **refusal** passes the same test from the other side, and passes it harder. It says something the
+source offered is in no copy at all, which is the strongest possible reason not to delete. A refusal
+is the negative space of an arrival, and it is the one fact about an import that no manifest and no
+checksum can ever recover: an item that never landed leaves no trace to find. A degraded item refused
+under `R-SRC-6`, or an item skipped because its name is already taken by different content, would
+otherwise exist nowhere but a log.
+
+**Verification is excluded** (`R-REC-2`), and fails both halves of the test. It does not change how
+many copies hold a file, and it is the highest-volume event a collection generates, so admitting it
+would turn a five-line file into several hundred lines over twenty years. The property being protected
+is that a person can read the record at a glance, which is the only reason it gates anything. Refusals
+are rare by construction and do not threaten it.
+
+**The 2026-08-15 error worth not repeating.** That record said "arrivals, and only arrivals," and the
+requirement said a receipt "MUST NOT record any other event." But the reasoning offered for the
+exclusion argued entirely about verification: its volume, and its irrelevance to copy count. Neither
+applies to a refusal. The blanket wording swept up a category its own justification never reached, and
+it took an owner correction to notice.
+
+## Where a refusal is recorded
+
+In the directory the refused item **would have occupied**, creating that directory if nothing else has
+landed there. Its path is known even though the file is not: `R-SRC-10` makes a collection path a
+function of the item's bytes, its route-supplied metadata and its route, all in hand at the moment of
+refusal.
+
+A directory holding a receipt and no photograph is a strange object, and it is precisely the signal
+worth finding: it says something was offered here and is not here. Such a directory mirrors to targets
+like any other, so the record is redundant rather than resting on one drive.
+
+A refusal also **outlives the problem it describes** (`R-REC-7`). Deleting it once the item imports
+successfully would be tidier and would destroy the audit trail. *Refused 2026-08-14, arrived
+2026-09-02* tells you a gap existed and closed; the arrival alone says nothing about the weeks when a
+photograph believed safe was in no copy at all.
+
+## What this let logs stop doing
+
+`R-LOG-5` previously required a run's log to be written to the drives, because a backup performed on a
+borrowed computer would otherwise report to a machine never seen again. With refusals in receipts,
+nothing preservation-relevant lives only in a log, so `R-LOG-5` was inverted: a log may now be
+ephemeral and local to the machine performing the run, and is forbidden only from being the sole
+record of a deletion-relevant event.
 
 ## Why not put this in the manifest
 
@@ -84,16 +128,16 @@ manifest per collection, or one per top-level directory).
 
 Two consequences that were not the reason for it:
 
-- **A directory verifies itself.** `sha256sum -c` on the companion manifest, run in that directory,
-  checks it with no tool, no collection, and no Turbo-Collection. A directory separated from
-  everything else stays verifiable, which is what `R-TGT-9` now says.
+- **A directory verifies itself.** Its manifest names its own algorithm and lists one file per line,
+  so that directory can be checked with no collection and no Turbo-Collection. A directory separated
+  from everything else stays verifiable, which is what `R-TGT-9` now says.
 - **Partial verification becomes a natural unit.** Full verification runs at roughly three hours per
   terabyte, so a complete pass over a multi-terabyte copy is a whole day and cannot be routine.
   "Verify 2025", or "verify everything unchecked for six months", is now an ordinary request rather
   than a feature. This shapes the still-open cadence question without answering it.
 
-The cost is permanent and was accepted knowingly: every leaf directory holds three housekeeping files
-beside the photographs. Browsability of a plain tree is this project's thesis, so this is a real
+The cost is permanent and was accepted knowingly: every leaf directory holds two housekeeping files
+beside the photographs, `manifest.json` and `receipt.json`. Browsability of a plain tree is this project's thesis, so this is a real
 price, paid to keep each directory independently interpretable.
 
 ## The scoping this forced
@@ -116,11 +160,10 @@ requires a test asserting no code path can do otherwise.
 | One file per event, rather than appending | The purest reading of *only ever add*, but it puts dozens of files in every leaf directory over the years, against a plain tree meant to be browsed |
 | A hash of the manifest, recorded in the receipt | Self-referential: the manifest covers the receipt, so appending changes the manifest, so the recorded value is wrong the moment it is written, under every ordering. Replaced by a digest over that directory's content, which points downward and stays true |
 | Recording verification events | `R-REC-2`, above |
+| Leaving refusals to the run log | A log is observability only (`R-LOG-2`) and, on a borrowed computer, is left on a machine never seen again. The one class of event a checksum can never recover cannot live only there |
 | Excluding receipts from manifest coverage | Unnecessary. `R-INT-10` already permits replacing a checksum for content Turbo-Collection wrote, and it is a receipt's only writer |
 | Renaming **mirror** to **propagate**, to name the compound operation | Section 3's definition now says a mirror transfers and records, which buys the clarity without renaming nine requirements, a port, and an operation. Noted for the record: append-only had already made "mirror" slightly inaccurate, since `R-MIRROR-3` makes a target a permanent superset. If it is ever renamed, **replicate** is the better word |
 
 ## What this does not settle
 
-Filenames for a manifest, a companion manifest and a receipt are still unstated, as is whether a
-companion manifest uses the plain or the tagged checksum form. Verification cadence is still a number
-nobody has chosen.
+Verification cadence is still a number nobody has chosen.
