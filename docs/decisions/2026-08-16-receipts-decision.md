@@ -58,8 +58,8 @@ it took an owner correction to notice.
 
 In the directory the refused item **would have occupied**, creating that directory if nothing else has
 landed there. Its path is known even though the file is not: `R-SRC-10` makes a collection path a
-function of the item's bytes, its route-supplied metadata and its route, all in hand at the moment of
-refusal.
+function of the item's bytes, the metadata its import source supplies and that import source, all in
+hand at the moment of refusal.
 
 A directory holding a receipt and no photograph is a strange object, and it is precisely the signal
 worth finding: it says something was offered here and is not here. Such a directory mirrors to targets

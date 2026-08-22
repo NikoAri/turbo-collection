@@ -1,0 +1,30 @@
+# Git performs no end-of-line conversion, on any platform, in either direction.
+#
+# gitattributes(5), on unsetting the text attribute:
+#   "Unsetting the text attribute on a path tells Git not to attempt any
+#    end-of-line conversion upon checkin or checkout."
+#
+# This lives here rather than in git config because attributes travel with the
+# repository and configuration does not. Git itself converts nothing by default:
+# core.autocrlf is unset out of the box. The Git for Windows *installer* is what
+# turns conversion on, and its preselected option does exactly that:
+#
+#   case ReplayChoice('CRLF Option','CRLFAlways') of
+#     -- installer/install.iss line 2377, where the second argument is the default
+#
+#   'true':  RecordInferredDefault('CRLF Option','CRLFAlways');
+#   'false': RecordInferredDefault('CRLF Option','CRLFCommitAsIs');
+#   'input': RecordInferredDefault('CRLF Option','LFOnly');
+#     -- install.iss lines 870-872, mapping each option to core.autocrlf
+#
+#   https://github.com/git-for-windows/build-extra/blob/7b61c1c82052183d0d865fa807d69636c5245dbc/installer/install.iss#L2377
+#
+# So a clone on a stock Windows install gets core.autocrlf=true, which
+# git-config(1) describes as "the same as setting the text attribute to 'auto'
+# on all files and core.eol to 'crlf'", and therefore a CRLF working tree. The
+# line below makes that impossible regardless of how any contributor configured
+# their Git.
+#
+# What the bytes actually are is EditorConfig's job (.editorconfig), not Git's.
+
+* -text

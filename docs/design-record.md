@@ -58,7 +58,7 @@ to a **self-controlled** collection of plain files. After that a vendor service 
 little as suits you, and losing one costs you convenience rather than photographs.
 
 That is a better outcome than leaving, and a more honest description of the design: iCloud is
-currently the **acquisition route** for the iPhone, so this project depends on it working well
+currently the **import source** for the iPhone, so this project depends on it working well
 rather than wishing it away.
 
 **Hard goals:**
@@ -109,6 +109,12 @@ Supporting principles:
   GitHub) and are expected to be swapped. Isolate the volatile parts so churn never touches the data.
 - **Minimize dependencies.** Every dependency is a future liability, for both humans and AIs to
   maintain or translate. Prefer standard libraries and single-binary tools.
+- **Non-default configuration is a dependency too.** Every flag, key and configuration file is
+  something to maintain, something that can drift out of step with the tool that reads it, and
+  something a later reader has to reconstruct. Anything non-default therefore needs a good reason,
+  and the test is empirical rather than aesthetic: remove it, and measure whether behavior changes.
+  Settings that look load-bearing frequently are not, and a file that documents a boundary is not the
+  same as a file that enforces one.
 - **AI-optional to operate, AI-assumed to recover.** Operating this system requires no AI: the stack
   is simple enough to run and maintain by hand, and that has not changed. What changed on 2026-08-16
   is the other half. This bullet used to end "AI is an accelerant, not a load-bearing part," which is
@@ -163,10 +169,10 @@ Supporting principles:
   its own backup and its own recovery procedure. The cost accepted instead is repetition, which is
   the redundancy principle applied to metadata. Reasoning:
   [the receipts decision](decisions/2026-08-16-receipts-decision.md).
-- **A vendor may be a route, never a custodian, and the same holds for hardware.** The rule began as
-  a statement about services and tools, and it turns out to describe three layers of the same choice.
-  A **service** may be how photographs are acquired (iCloud) but never where they live. A **tool** may
-  be required to perform an acquisition but never to read the result, which is what disqualifies
+- **A vendor may be an import source, never a custodian, and the same holds for hardware.** The rule
+  began as a statement about services and tools, and it turns out to describe three layers of the same
+  choice. A **service** may be how photographs come in (iCloud) but never where they live. A **tool**
+  may be required to perform an import but never to read the result, which is what disqualifies
   restic, Borg and Kopia as the core. And **silicon** may be in the path but must not hold the only
   key to the data, which is what disqualifies storage soldered into a computer and enclosures that
   encrypt on their own chip. The hardware layer differs in one way worth stating: silicon can never be
@@ -197,7 +203,7 @@ Supporting principles:
 |---|---|
 | **Immich** (self-hosted Google Photos clone) | Excellent, but too heavy; stores metadata in a **PostgreSQL database** (violates "plain files"), felt overwhelming, and it's a *manager* not a *backup*. AGPL (fine for personal use, but not the direction). |
 | **PhotoPrism / LibrePhotos** | Same class as Immich: DB-backed photo managers, heavier than needed. |
-| **Managed cloud services as the *system of record*** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the acquisition route for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup target (Section 10). What is rejected is depending on any of them for custody. |
+| **Managed cloud services as the *system of record*** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the import source for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup target (Section 10). What is rejected is depending on any of them for custody. |
 | **Proprietary backup apps** (e.g., Bvckup 2) | The owner *liked* Bvckup's file-mirroring model, but it's **proprietary** → no full control. We want an open equivalent. |
 | **Full versioned/repo backup tools as the core** (restic/Borg/Kopia) | Great tools, but their **repo format** isn't plain browsable files; you need the tool to read it back. Fine as a *later, optional* versioned layer, not the core. |
 | **POSIX shell as the orchestration language** | Durable on Unix but **not truly OS-independent** (not native on Windows) and less approachable. A high-level language with a cross-platform runtime is more portable. |

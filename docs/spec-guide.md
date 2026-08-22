@@ -10,8 +10,8 @@ in [`decisions/`](decisions/), never here.
 |---|---|---|---|
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
 | [`specs/procedures/*-procedure.md`](../specs/procedures/) | What a person does, one document per sitting: setup, import, backup, off-site, release. Steps only; reasoning lives in [`decisions/`](decisions/). | operator | no |
-| `specs/acquisition-routes/<route>/*-spec.md` | What may be assumed about getting original bytes out of one acquisition route. | implementation | yes |
-| `specs/acquisition-routes/<route>/*-procedure.md` | Steps a human operator follows to acquire by that route. | operator | no |
+| `specs/import-sources/<import-source>/*-spec.md` | What may be assumed about getting original bytes out of one import source. | implementation | yes |
+| `specs/import-sources/<import-source>/*-procedure.md` | Steps a human operator follows to import from that source. | operator | no |
 | [`specs/language-requirement.md`](../specs/language-requirement.md) | How a normative document is written, so its English stays interpretable across decades. | document authors | no |
 | [`specs/version-requirement.md`](../specs/version-requirement.md) | How a normative document is numbered, published, archived, and corrected. | document authors | no |
 | `docs/` | Explanation, rationale, and navigation. | nothing | no |
@@ -47,7 +47,7 @@ Every prefix resolves to exactly one document.
 | `R-REL-*` | `procedures/turbo-collection-release-procedure.md` | destroying a copy held outside a collection |
 | `R-LANG-*` | `language-requirement.md` | how a normative document is written |
 | `R-PUB-*` | `version-requirement.md` | how a normative document is versioned and published |
-| `R-ICLOUD-*` | `specs/acquisition-routes/icloud/` | iCloud acquisition route (planned, stub not yet filled) |
+| `R-ICLOUD-*` | `specs/import-sources/icloud/` | iCloud import source (planned, stub not yet filled) |
 | `R-ALBUM-*` | `specs/layout/` | album layout convention (planned) |
 | `R-PHOTO-*` | `specs/layout/` | photo layout convention (planned) |
 
@@ -83,5 +83,5 @@ Otherwise:
 - **What is this project?** [`../README.md`](../README.md), then [`design-record.md`](design-record.md) sections 1 to 4.
 - **Why is it built this way?** [`design-record.md`](design-record.md), then [`decisions/`](decisions/) for anything decided since.
 - **What am I allowed to build?** Core specification sections 4 to 8, then section 11 for port contracts.
-- **How do I get photos out of a vendor?** The route specification for that acquisition route, paired with its procedure.
+- **How do I get photos out of a vendor?** The specification for that import source, paired with its procedure.
 - **How do I change a normative document?** [`../specs/language-requirement.md`](../specs/language-requirement.md) for wording, [`../specs/version-requirement.md`](../specs/version-requirement.md) for numbering and publication.

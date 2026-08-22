@@ -1,4 +1,4 @@
-# Turbo-Collection: Acquisition Procedure, Apple iCloud Photos
+# Turbo-Collection: Import Procedure, Apple iCloud Photos
 
 > **Version:** 0.1.0-draft
 > **Created:** 2026-07-25
@@ -6,8 +6,10 @@
 > **Satisfies:** [`turbo-collection-icloud-spec.md`](turbo-collection-icloud-spec.md)
 > **Verified against:** nothing yet
 
-This document is the **human execution path** for acquiring photos from the Apple surface. It
-binds the operator, not the implementation, and no code cites it.
+This document is the **human execution path** for importing photos from the iCloud import source.
+It binds the operator, not the implementation, and no code cites it. It is the iCloud-specific
+counterpart of [`../../procedures/turbo-collection-import-procedure.md`](../../procedures/turbo-collection-import-procedure.md),
+which states the steps common to every import source.
 
 It is a peer of the specification, not an appendix to it. The specification states what must be
 true of the result; this document states one known way to achieve that. Each depends on the
@@ -38,7 +40,7 @@ Placeholder.
 
 ## 3. Verification
 
-Placeholder. How the operator confirms the acquisition is complete and intact before treating it
+Placeholder. How the operator confirms the import is complete and intact before treating it
 as done.
 
 ## 4. Validity

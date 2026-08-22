@@ -85,8 +85,8 @@ there is more than one area to group.
 | 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md) | Accepted |
 | 2026-08-13 | [Turbo-Collection only ever adds](2026-08-13-append-only-decision.md) | Accepted |
 | 2026-08-15 | [Drive names, removable storage, and the off-site drive that never travels](2026-08-15-drive-naming-and-hardware-decision.md) | Accepted |
-| 2026-08-16 | [The acquisition route is a path segment, and the only category above a photo](2026-08-16-acquisition-route-decision.md) | Accepted |
 | 2026-08-16 | [A future reader has help, so conveniences are not pre-built](2026-08-16-future-reader-decision.md) | Accepted |
 | 2026-08-16 | [The manifest is JSON, and nothing sits beside it](2026-08-16-manifest-format-decision.md) | Accepted |
 | 2026-08-16 | [Every directory carries a receipt, and manifests become per-directory](2026-08-16-receipts-decision.md) | Accepted |
 | 2026-08-16 | [Artifacts are named on disk, and every copy declares what it is](2026-08-16-artifact-names-and-copy-identity-decision.md) | Accepted |
+| 2026-08-22 | [The import source is a path segment, and the only category above a photo](2026-08-22-import-source-decision.md) | Accepted |

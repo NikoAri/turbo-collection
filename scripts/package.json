@@ -1,0 +1,23 @@
+{
+  "name": "turbo-collection",
+  "version": "0.1.0",
+  "description": "Photo preservation",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "lint": "npm run lint:typecheck && npm run lint:format && npm run lint:spell",
+    "lint:typecheck": "tsc",
+    "lint:format": "prettier --write .",
+    "lint:spell": "cspell .",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "cspell": "^10.1.0",
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
+  }
+}

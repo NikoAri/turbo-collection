@@ -22,10 +22,10 @@ Each document has one job:
   specification, **what** must be true. The language-neutral source of truth from which the tests
   and the implementation are generated, and regenerated, in the way an RFC outlives any single
   implementation of a protocol.
-- [`specs/acquisition-routes/`](specs/acquisition-routes/): one specification per **acquisition
-  route** a photo can come in by, each paired with the procedures a human follows to acquire by it.
-  The core spec is normative over things this project controls; a route specification is normative
-  over things a vendor controls, so it carries dated evidence and expiry dates rather than stable
+- [`specs/import-sources/`](specs/import-sources/): one specification per **import source** a photo
+  can come in by, each paired with the procedures a human follows to import from it. The core spec is
+  normative over things this project controls; an import source specification is normative over
+  things a vendor controls, so it carries dated evidence and expiry dates rather than stable
   promises.
 - [`specs/language-requirement.md`](specs/language-requirement.md): an authoring standard, **how a
   normative document is written**, so its English stays interpretable across decades of language

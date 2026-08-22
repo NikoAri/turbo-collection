@@ -1,0 +1,10 @@
+# EditorConfig: https://editorconfig.org
+#
+# Git does no line-ending conversion here (see .gitattributes), so this is what
+# keeps the committed bytes consistent. VS Code honors it through the
+# EditorConfig extension, recommended in .vscode/extensions.json.
+
+root = true
+
+[*]
+end_of_line = lf

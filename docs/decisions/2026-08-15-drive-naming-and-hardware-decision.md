@@ -94,10 +94,10 @@ Stated as a gradient it is both true and usable:
 | Bare drive in a generic dock, or a verified non-encrypting enclosure | Controller still proprietary, but the bytes are reachable over a standard documented interface using commodity parts |
 | No silicon dependency | Does not exist |
 
-This adds no new principle. **A vendor may be a route, never a custodian** already covers it once the
-gradient is visible: a controller speaking SATA, NVMe or USB mass storage is a *route*, and silicon
-holding the only key is a *custodian*. The hardware layer differs only in that the route cannot be
-removed, so the goal is to keep it standard and replaceable. It also satisfies the project's
+This adds no new principle. **A vendor may be an import source, never a custodian** already covers it
+once the gradient is visible: a controller speaking SATA, NVMe or USB mass storage is a way through,
+and silicon holding the only key is a *custodian*. The hardware layer differs only in that the
+silicon cannot be removed, so the goal is to keep it standard and replaceable. It also satisfies the project's
 simplicity filter, which admits documented operations and standard formats: a storage interface is a
 documented contract, and a vendor's encryption bridge is not.
 
