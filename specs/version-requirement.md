@@ -198,7 +198,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 4. **If the version starts a new MAJOR line:** archive the outgoing line's terminal text into
    `superseded/` (R-PUB-5), and write the changes-from section (R-PUB-7). For
    `turbo-collection-spec.md`, if the new line also begins a new format generation, confirm that the
-   R-VER-15 migration exists and passes its boundary verification, before anything is stamped.
+   R-MFILE-24 migration exists and passes its boundary verification, before anything is stamped.
 5. **Enter the ledger lines** into the document's change ledger (R-PUB-6).
 6. **Stamp** the document: the new version number with its date, in the form required by
    `turbo-collection-spec.md` R-VER-18, with no `-draft` suffix (R-PUB-3).
@@ -207,7 +207,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 > **The checklist is deliberately short, and two steps carry the whole scheme.** Step 1, because the
 > archive pruning of R-PUB-2 is exactly as sound as the classification it rests on; and step 4,
-> because the migration promise of R-VER-15 is exactly as sound as its boundary verification.
+> because the migration promise of R-MFILE-24 is exactly as sound as its boundary verification.
 > Everything else is mechanical.
 
 ---
