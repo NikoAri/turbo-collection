@@ -761,10 +761,10 @@ The semantics of the mirror operation, as distinct from the target contract in S
 
 > **The meta files, and their names on disk.** Every copy carries, at its root, `README.md`
 > (R-MFILE-22), `turbo-collection-config.json` (R-MFILE-17), and optionally a copy of the specification
-> (R-VER-8). Every directory holding content carries `manifest.json` (R-MFILE-8) and `receipt.json`
-> (R-MFILE-14). Root files are named so a stranger who finds one drive and nothing else can tell what
-> they are; files inside the tree are named tersely, because the root already explains them and
-> repeating a prefix in every directory for decades buys nothing.
+> (R-VER-8). Every directory holding content carries `.tc-manifest.json` (R-MFILE-8) and one or more
+> per-run `.tc-receipt-<run>.json` records (R-MFILE-14). Root files are named so a stranger who finds
+> one drive and nothing else can tell what they are; the machine files inside the tree carry a `.tc-`
+> prefix, which marks them as Turbo-Collection's own and groups them out of the way of the content.
 
 ### 8.2 Logging (`R-LOG-*`)
 
