@@ -601,7 +601,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **R-REC-5** | Turbo-Collection MUST append an arrival to a receipt only **after** the content that arrival covers has been completely written to the copy the arrival names.                                                                                                                                                                                                                                                                                                                                                                                   |
 | **R-REC-6** | On a mirror, Turbo-Collection MUST append the arrival to the **collection's** receipt, and MUST then place a copy of that receipt in the corresponding directory at the target. The core performs both writes; a target adapter MUST NOT write a receipt (R-TGT-7).                                                                                                                                                                                                                                                                              |
-| **R-REC-7** | A receipt MUST be replaced only by a receipt containing every arrival and every refusal the existing receipt contains. Turbo-Collection MUST report any replacement that would not satisfy this, and MUST NOT perform it. A refusal MUST remain after the item it names is later imported successfully, so that the receipt states both events.                                                                                                                                                                                                  |
+| **R-REC-7** | A receipt MUST be replaced only by a receipt containing every arrival and every error the existing receipt contains. Turbo-Collection MUST report any replacement that would not satisfy this, and MUST NOT perform it. An error MUST remain after the content it names later reaches the copy successfully, so that the receipt states both events.                                                                                                                                                                                                  |
 | **R-REC-8** | A receipt records where content was **placed**, not where it **remains**. Turbo-Collection MUST NOT treat a receipt as evidence that a copy still exists or is still intact, and MUST NOT state a copy count derived from receipts without stating the date of each arrival counted.                                                                                                                                                                                                                                                             |
 
 > **Why receipts exist at all, and why they are not logs.** A manifest is a **state** record: delete it
@@ -613,30 +613,33 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > meta file and lives in this section. A run log and a receipt are two independent records of one
 > event, which the redundancy principle authorizes rather than merely tolerates.
 
-> **Why arrivals and refusals, and why not verification (R-MFILE-13).** A receipt exists so that a human
+> **Why arrivals and errors, and why not verification (R-MFILE-13).** A receipt exists so that a human
 > can decide whether it is safe to delete the source material a directory came from. Two kinds of event
-> bear on that. An **arrival** says a copy now holds the content. A **refusal** says something the
-> source offered is in no copy at all, and it is the strongest possible reason not to delete, because
-> the refused item exists nowhere else. A refusal is the negative space of an arrival, and it is the
-> one fact about an import that no manifest and no checksum can ever recover: an item that never
-> landed leaves no trace to find. A **verification** is excluded, for two reasons that a refusal fails
-> to meet. It does not change how many copies hold the content, and it is the highest-volume event a
-> collection generates, so admitting it would turn a five-line file into hundreds of lines over twenty
-> years and destroy the property the record exists for, which is that a person can read it at a
-> glance. Refusals are rare by construction. Where verification results belong is R-LOG-1.
+> bear on that. An **arrival** says a copy now holds the content. An **error** says content a run
+> handled did not reach a copy it was meant to: an item an import source offered that landed in no copy
+> at all, the strongest possible reason not to delete, because that item exists nowhere else; or a
+> collection file that failed to reach a target, a copy fewer than intended. The first is the one fact
+> about an import that no manifest and no checksum can ever recover, since an item that never landed
+> leaves no trace to find. A **verification** is excluded, for two reasons an error meets and it does
+> not. An error changes whether, or in how many copies, content is held; a verification changes
+> neither, and it is the highest-volume event a collection generates, so admitting it would turn a
+> short file into hundreds of lines over twenty years and destroy the property the record exists for,
+> which is that a person can read it at a glance. Errors are rarer than arrivals and far rarer than
+> verifications. Where verification results belong is R-LOG-1.
 
-> **Why a refusal creates a directory that holds no photograph (R-MFILE-13).** A refused item never
-> landed, so no directory exists to record it in, yet its path is known: R-SRC-10 makes a collection
-> path a function of the item's bytes, the metadata its import source supplies, and that import
-> source, all of which are in hand at the moment of refusal. Writing the receipt where the item _would_ have gone puts the record
-> exactly where somebody looking for that photograph will look. A directory holding a receipt and no
-> content is a strange object, and it is precisely the signal worth finding: it says something was
-> offered here and is not here.
+> **Why an import error can create a directory that holds no photograph (R-MFILE-13).** An item an
+> import source offered but that never landed has no directory to be recorded in, yet its path is
+> known: R-SRC-10 makes a collection path a function of the item's bytes, the metadata its import
+> source supplies, and that import source, all of which are in hand at the moment the error is
+> recorded. Writing the receipt where the item _would_ have gone puts the record exactly where somebody
+> looking for that photograph will look. A directory holding a receipt and no content is a strange
+> object, and it is precisely the signal worth finding: it says something was offered here and is not
+> here.
 
-> **Why a refusal outlives the problem it describes (R-REC-7).** Deleting the refusal once the item
-> imports successfully would be tidier and would destroy the audit trail. _Refused 2026-08-14, arrived
+> **Why an error outlives the problem it describes (R-REC-7).** Deleting the error once the content
+> reaches the copy would be tidier and would destroy the audit trail. _Failed 2026-08-14, arrived
 > 2026-09-02_ tells you the gap existed and closed; the arrival alone tells you nothing about the
-> three weeks when a photograph you believed was safe was in no copy at all.
+> three weeks when a photograph you believed was safe was in one copy fewer than you thought.
 
 > **Why the digest, when a manifest sits in the same directory (R-MFILE-15).** The manifest states what is
 > present **now**; an arrival states what was covered **then**. The difference between them is the
@@ -676,48 +679,40 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > rather than an inference about someone else's storage. Dates are what keep a stale claim legible as
 > stale, and the release procedure, not this record, remains what authorizes a deletion.
 
-> **A receipt is covered by its directory's manifest.** Appending to one therefore makes its recorded
-> checksum stale. No exception is needed: Turbo-Collection is a receipt's only writer, so R-INT-10
-> already permits replacing that recorded checksum in the same operation. One consequence is
-> deliberate: a receipt is not hand-editable, and a receipt edited by hand will be reported as
-> **corrupt**.
+> **A receipt is not covered by its directory's manifest.** Receipts live in the `.turbo-collection/`
+> subdirectory, which a manifest does not cover (`meta-file-spec.md` R-MFILE-8), and each per-run
+> record is written once and never rewritten (R-MFILE-13). Appending history is therefore creating a
+> new file rather than editing a checksummed one, so no manifest checksum goes stale.
 
-> **A receipt, by example.** Field names match the manifest's, because these two records and the
-> grouping, tombstone and lineage records this project may later want are all one format.
+> **A receipt, by example.** Field names follow the manifest's where the two overlap, because these
+> records and the grouping, tombstone and lineage records this project may later want are all one
+> format. This is one run's record; a directory accumulates one such file per run that touched it.
 >
 > ```json
 > {
->   "specVersion": "turbo-collection-spec 1.0.0 (2027-03-01)",
+>   "version": "0.1.0-draft",
+>   "runId": "2026-08-14T18:04:22Z-3f9a",
 >   "arrivals": [
 >     {
->       "event": "import",
->       "copy": "collection",
+>       "copyName": "collection",
 >       "importSource": "icloud",
 >       "date": "2026-08-14",
 >       "fileCount": 412,
 >       "contentDigest": "9f2a1c..."
 >     },
 >     {
->       "event": "mirror",
->       "copy": "target",
+>       "copyName": "target",
 >       "date": "2026-08-14",
->       "fileCount": 412,
->       "contentDigest": "9f2a1c..."
->     },
->     {
->       "event": "mirror",
->       "copy": "offsite-target",
->       "date": "2026-09-02",
 >       "fileCount": 412,
 >       "contentDigest": "9f2a1c..."
 >     }
 >   ],
->   "refusals": [
+>   "errors": [
 >     {
->       "importSource": "icloud",
->       "date": "2026-08-14",
+>       "message": "icloud offered IMG_0001.HEIC as a degraded copy; refused by policy (R-SRC-6)",
 >       "file": "IMG_0001.HEIC",
->       "reason": "degraded"
+>       "importSource": "icloud",
+>       "details": { "kind": "degraded" }
 >     }
 >   ]
 > }
@@ -761,10 +756,11 @@ The semantics of the mirror operation, as distinct from the target contract in S
 
 > **The meta files, and their names on disk.** Every copy carries, at its root, `README.md`
 > (R-MFILE-22), `turbo-collection-config.json` (R-MFILE-17), and optionally a copy of the specification
-> (R-VER-8). Every directory holding content carries `.tc-manifest.json` (R-MFILE-8) and one or more
-> per-run `.tc-receipt-<run>.json` records (R-MFILE-14). Root files are named so a stranger who finds
-> one drive and nothing else can tell what they are; the machine files inside the tree carry a `.tc-`
-> prefix, which marks them as Turbo-Collection's own and groups them out of the way of the content.
+> (R-VER-8). Every directory holding content carries a `.turbo-collection/` subdirectory holding
+> `manifest.json` (R-MFILE-8) and one or more per-run `receipt-<run>.json` records (R-MFILE-14). Root
+> files are named so a stranger who finds one drive and nothing else can tell what they are; the
+> machine files inside the tree are gathered into a `.turbo-collection/` subdirectory, which marks them
+> as Turbo-Collection's own and groups them out of the way of the content.
 
 ### 8.2 Logging (`R-LOG-*`)
 
@@ -955,7 +951,7 @@ The core depends on these interfaces, never on the tools or vendors behind them.
 | Operations    | `capabilities() -> Capabilities`; `push(collection, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                                              |
 | Capabilities  | Declares whether the target is a plain tree, whether it can be verified in place, and whether it is remote (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                                                                                    |
 | Precondition  | The target is reachable and writable, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                                     |
-| Postcondition | The target contains every current collection file (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording a refusal** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY also contain files the collection no longer holds (R-COL-4) |
+| Postcondition | The target contains every current collection file (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY also contain files the collection no longer holds (R-COL-4) |
 | MUST NOT      | Modify the collection (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data in a non-plain layout (R-COL-4)                                                                                           |
 | Errors        | Target unreachable, unmounted, or unwritable; target does not declare itself a plain tree; transfer failure                                                                                                                                                                                              |
 

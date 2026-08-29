@@ -12,7 +12,8 @@
     "lint:typecheck": "tsc",
     "lint:format": "prettier --write .",
     "lint:spell": "cspell .",
-    "test": "node --test"
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage"
   },
   "devDependencies": {
     "@types/node": "^24.1.0",
