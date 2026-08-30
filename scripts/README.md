@@ -9,7 +9,7 @@ here, not at the repository root, so the root stays a documents repository.
 
 ### Prerequisites
 
-One prerequisite: **Node 24 or newer**.
+One prerequisite: **Node 24.20.0 or newer**.
 
 On Windows 11:
 
@@ -23,9 +23,11 @@ On macOS:
 brew install node
 ```
 
-The floor is Node 24 because Node strips TypeScript types as it loads each file, and that is enabled
-by default only from Node 22.18 and 24 onward. [`package.json`](package.json) records it in
-`engines`, which npm reports on but does not enforce.
+The floor is Node 24.20.0. Two things need a recent Node 24: stripping TypeScript types as each file
+loads, enabled by default only from Node 22.18 and 24.0 onward, and the `import.meta.main` run-guard
+in [`package-json-npm-updater.ts`](package-json-npm-updater.ts), added in Node 24.2.0. 24.20.0 clears
+both. [`package.json`](package.json) records the floor in `engines`, and [`.npmrc`](.npmrc) sets
+`engine-strict=true`, so `npm install` fails on an older Node rather than only warning.
 
 There is no setup script, deliberately: one `winget install` does not need wrapping.
 

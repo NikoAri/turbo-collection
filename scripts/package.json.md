@@ -7,7 +7,7 @@ something to maintain, something that can drift out of step with the tool, and s
 has to work out later. Several things that looked necessary in this file turned out not to be, and
 the reasoning is recorded here so they do not come back by habit.
 
-## The scripts carry no flags
+## The scripts carry no preference flags
 
 ```
 lint             npm run lint:typecheck && npm run lint:format && npm run lint:spell
@@ -15,10 +15,15 @@ lint:typecheck   tsc
 lint:format      prettier --write .
 lint:spell       cspell .
 test             node --test
+test:coverage    node --test --experimental-test-coverage
 ```
 
-Each is the tool's default behavior pointed at the current directory. `node --test` takes no path
-either: it discovers `test/` and any `*.test.ts` on its own.
+The flags that do appear (`--write`, `--test`, `--experimental-test-coverage`) select a mode or turn
+on a capability; none tunes a preference, and that is the line worth holding. Each script is otherwise
+the tool's default behavior pointed at the current directory. `node --test` takes no path: it
+discovers `test/` and any `*.test.ts` on its own. `test:coverage` adds `--experimental-test-coverage`
+because Node exposes coverage no other way; it only reports and sets no threshold, so it never fails a
+run, and plain `test` stays without it.
 
 **`tsc` takes no arguments on purpose.** Given no input files it reads
 [`tsconfig.json`](tsconfig.json), which is where `noEmit`, `strict` and `erasableSyntaxOnly` live.
@@ -107,6 +112,23 @@ R-LOG-3 asks for the version without saying how it is chosen. Settle that when l
 Also still open: when a `--version` flag exists, decide whether it prints this number, the
 specification version, or both. R-LOG-3 wants both in a log, so probably both.
 
+## The `.npmrc` enforces the Node floor
+
+[`.npmrc`](.npmrc) sets `engine-strict=true`, which makes `npm install` **fail** when the running Node
+is below the `engines` floor instead of only warning. Verified on this project: below `>=24.20.0`, npm
+exits non-zero with an `EBADENGINE` error naming the required and actual versions; at or above it,
+install proceeds. The check reads the project's own `engines`, gates `npm install` only (not running
+the tool), and yields to `--force`.
+
+This **reverses the 2026-08-22 decision** to leave the floor unenforced, which reasoned that nobody
+would run an older Node so the scenario was not worth covering. What changed: the floor rose to
+24.20.0 to cover the `import.meta.main` run-guard in
+[`package-json-npm-updater.ts`](package-json-npm-updater.ts), above what a stock recent install
+necessarily carries, so a wrong-Node install became a real possibility. The flag earns its keep by
+converting a later, more confusing failure (`ERR_UNKNOWN_FILE_EXTENSION` on a `.ts` file, which names
+neither Node nor its version) into an accurate one at install time. It sits in the project `.npmrc` so
+it travels with the repository and binds every contributor, not only this machine.
+
 ## What is deliberately absent
 
 **No `version` was tried, and reversed.** It was removed on 2026-08-22 as inert metadata and restored
@@ -129,13 +151,6 @@ the repository is public and MIT licensed either way.
 happened. Declaring a capability that is never exercised is what R-META-3 calls unauthorized: add the
 requirement, or remove the code, and there is no third option. When the tool is really installed, a
 `bin` entry is what turns `node turbo-collection.ts` into `turbo-collection`.
-
-**No `engine-strict`.** The `engines` field records the Node 24 floor but nothing enforces it, by
-the owner's decision on 2026-08-22: nobody is expected to run an older Node, so it is not a scenario
-worth covering. For the record of what enforcement would have bought, `.npmrc` with
-`engine-strict=true` turns npm's `EBADENGINE` warning into a non-zero exit, which converts a later
-and more confusing failure (`ERR_UNKNOWN_FILE_EXTENSION` on a `.ts` file, which names neither Node
-nor its version) into an accurate one at install time.
 
 ## Dependencies
 
