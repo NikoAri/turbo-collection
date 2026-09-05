@@ -524,26 +524,10 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > duplicate report would flag as waste. Whenever a report is added, ask which of its findings are
 > designed behavior, and say so in the report rather than in a footnote.
 
-> **The manifest, by example.** Field names are spelled out rather than
-> abbreviated, because R-MFILE-6 asks whether a stranger can figure the meta file out by looking at it.
->
-> ```json
-> {
->   "specVersion": "turbo-collection-spec 1.0.0 (2027-03-01)",
->   "layoutConvention": "turbo-collection-photo-layout 1.0.0",
->   "algorithm": "SHA-256",
->   "files": [
->     {
->       "filePath": "2026/2026-08/canon-eos-r6/IMG_1234.HEIC",
->       "checksum": "e3b0c442..."
->     },
->     {
->       "filePath": "2026/2026-08/canon-eos-r6/IMG_1235.HEIC",
->       "checksum": "a1b2c3d4..."
->     }
->   ]
-> }
-> ```
+> **The manifest.** Its name, placement, fields, and format are stated by
+> [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-8 through R-MFILE-12), which is the only document
+> code may cite for them. Field names are spelled out there rather than abbreviated, because R-MFILE-6
+> asks whether a stranger can figure the meta file out by looking at it.
 
 > **Why the manifest is JSON, and why a second copy is not.** The earlier text required the manifest
 > to be in "a standard checksum format, such that a standard checksum utility can verify it". That
@@ -691,6 +675,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > ```json
 > {
 >   "version": "0.1.0-draft",
+>   "specVersion": "0.1.0-draft",
 >   "runId": "2026-08-14T18:04:22Z-3f9a",
 >   "arrivals": [
 >     {
@@ -1185,3 +1170,4 @@ no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-08-27 | **Layout stops being singular, and the core stops assuming photographs.** `R-SRC-15` added: a layout specification states which items it claims, as a condition on an item's own bytes, the metadata its import source supplies with it, and that import source; Turbo-Collection determines a path under the specification that claims an item; an item no specification claims is not imported and is reported; two claims are a refusal to run. This is the seam that lets a second kind of content arrive as one new document, with no requirement here changing, and it keeps R-SRC-10's guarantee intact by making convention selection a function of the same three inputs a path already depends on. `R-COL-4` pluralized, since several conventions may now govern one collection, and its commentary with it. Section 3: *layout convention* narrowed to content files, because meta file placement is stated by the requirements that define each meta file rather than by a layout; *layout specification* added as a term (R-LANG-5). Scope is unchanged: a collection still holds photographs and videos (Section 1.3), and no definition widened. |
 | 0.1.0-draft | 2026-08-27 | **The meta file format and the path layout leave this document.** Two specifications extracted, so that a format break is a document version rather than a proxy: `meta-file-spec.md` takes `R-INT-1`, `R-INT-4`, `R-REC-1` to `R-REC-4`, `R-REC-9`, `R-CFG-2`, `R-CFG-6`, `R-TGT-10`, `R-VER-3` to `R-VER-6`, `R-VER-15` and `R-VER-16`, renumbered under `R-MFILE-*`; `photo-path-layout-spec.md` takes the tree shape under `R-PHOTO-*`. Receipt behavior stays here (`R-REC-5` to `R-REC-8`), as does configuration validation (`R-CFG-1`, `R-CFG-3` to `R-CFG-5`). **`R-VER-1` rewritten**: this document's bump is now measured on **behavior**, since it no longer owns a format or a layout to break; each extracted document states its own bump test. Section 9.4 became a pointer, its migration requirements having moved. **`artifact` retired for `meta file`** throughout, and *format generation* withdrawn as a term: a format break is now a MAJOR of `meta-file-spec.md` by construction. **`R-LOG-5` amended**: a log MUST NOT be written inside a copy, which keeps run logs out of manifests and off every target, and makes a log the one persisted file that is not a meta file. **`R-META-1` amended** to say which document owns which subject, and Section 0.2 now names the foreign prefixes this document cites. **Section 12.1 relaxed** from *zero third-party dependencies* to *minimal*, with a three-part test (documented format, no transitive dependencies, vendored), admitting `ignore` for gitignore pattern matching. Section 3: *meta file* redefined and *format generation* removed. |
 | 0.1.0-draft | 2026-08-29 | **Receipts: refusals become errors, and the example catches up to the ledger shape.** `R-REC-7` reworded from "every arrival and every refusal" to "every arrival and every error," and an error now outlives the problem once the content reaches the copy rather than once an item imports, generalizing the import-only refusal to any file a run failed to copy on either the import or the mirror leg. The receipt-format change itself lives in `meta-file-spec.md` (`R-MFILE-13`, `R-MFILE-14`, `R-MFILE-16`). The Section 7.4 rationale and the receipt example were rewritten to the per-run ledger shape: the example is now one run's record carrying `version` and `runId`, an arrival's `copy` renamed `copyName`, the `event` field dropped since `importSource` presence already distinguishes an import from a mirror, and `refusals` replaced by `errors`. The "a receipt is covered by its directory's manifest" note was corrected, because meta files now sit in a `.turbo-collection/` subdirectory a manifest does not cover and per-run records are never rewritten. The Target port postcondition reworded from "recording a refusal" to "recording an error." |
+| 0.1.0-draft | 2026-09-05 | **Manifest example replaced by a pointer, and the receipt example gains `specVersion`.** The inline manifest example was removed in favor of a pointer to `meta-file-spec.md` (R-MFILE-8 through R-MFILE-12), which owns the manifest format; the removed example predated the extraction and used a `filePath` carrying a directory path, which R-MFILE-10 forbids. The receipt example gained a `specVersion` field after `version`, tracking its move off the manifest and onto the per-run record in `meta-file-spec.md` (R-MFILE-9, R-MFILE-14). No requirement here changed. |
