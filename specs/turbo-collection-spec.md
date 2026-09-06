@@ -46,7 +46,7 @@ still unambiguous. Prefixes cited by this document and defined elsewhere: `R-MFI
 
 **Document language.** This document is written in **American English**
 (`language-requirement.md` R-LANG-21). Stating it here rather than only by reference matters,
-because R-VER-8 scatters copies of this document onto every target, and `language-requirement.md`
+because R-VER-8 scatters copies of this document onto every copy, and `language-requirement.md`
 does not travel with them.
 
 **Writing rules.** The language discipline this document is written under (controlled vocabulary,
@@ -58,40 +58,35 @@ which binds every normative document in this project.
 ## 1. Scope, non-goals, and invocation
 
 The diagram below _is_ the scope statement. It draws the line between what this document owns, what
-the import source specifications own, and what sits outside Turbo-Collection entirely. Note the symmetry: a port on
-each end, and nothing vendor-specific in the middle.
+the import source specifications own, and what sits outside Turbo-Collection entirely. Note the two
+ports: one where content enters, one where a copy is read and written, and nothing vendor-specific
+between them.
 
 ```mermaid
 flowchart LR
     IN["Import sources<br/>iPhone, iCloud, OneDrive,<br/>SD card, existing archive<br/>(specs/import-sources/)"]
 
-    subgraph CORE["Core: this document"]
-        COL["Collection<br/>plain file tree"]
-        MAN["Manifest<br/>SHA-256"]
-        COL --- MAN
+    subgraph COLL["The collection: one dataset, many peer copies"]
+        C1["Copy<br/>plain tree + manifest"]
+        C2["Copy, off-site<br/>plain tree + manifest"]
+        C3["Copy, cloud, optional<br/>plain tree + manifest"]
+        C1 <-->|reconcile| C2
+        C2 <-->|reconcile| C3
+        C1 <-->|reconcile| C3
     end
 
-    T1["Target: primary drive<br/>plain mirror"]
-    T2["Target: off-site drive<br/>plain mirror"]
-    T3["Target: cloud, optional<br/>plain mirror"]
-
-    IN -->|Source port| CORE
-    CORE -->|Target port| T1
-    CORE -->|Target port| T2
-    CORE -->|Target port| T3
-
-    MAN -.->|verify| T1
-    MAN -.->|verify| T2
-    MAN -.->|verify| T3
+    IN -->|Source port| COLL
 ```
 
-Every copy of the collection (the collection itself, and each target's mirror of it) is verifiable
-against the manifest independently, and each target carries its own copy of the manifest (R-TGT-9).
-**No copy is privileged.** Fixity, not location, is what establishes that data is intact.
+Every copy is a plain tree carrying its own manifest, verifiable against it independently and
+reachable through the Storage port (R-TGT-9). **Copies are peers: no copy is privileged.** Reconcile
+is symmetric and add-only, filling whichever copy lacks a file another holds, in whichever direction
+each file needs; on a mismatch neither side is authoritative (R-INT-7). Fixity, not location, is what
+establishes that data is intact.
 
 ### 1.1 In scope
 
-The durable core: the Source contract, the Target contract, mirror semantics, integrity, filename
+The durable core: the Source contract, the Storage contract, reconcile semantics, integrity, filename
 safety, meta file versioning, configuration, logging, and the command-line contract.
 
 ### 1.2 Out of scope
@@ -137,7 +132,7 @@ with a principle, the conflict is a defect, and one of the two must change.
   be so plain that any tool can read it, so that when a tool dies the data does not.
 
 - **Turbo-Collection only ever adds.** Every operation creates something or reports something.
-  Turbo-Collection never deletes a photograph, at a source, in the collection, or at a target, and
+  Turbo-Collection never deletes a photograph, at a source or in any copy of the collection, and
   no configuration setting exists that would let it. Deleting is a human act, performed with
   ordinary tools, on evidence Turbo-Collection supplies. This principle names a rule seven
   requirements already followed separately (R-COL-2, R-COL-5, R-SRC-7, R-MIRROR-2, R-INT-6,
@@ -148,12 +143,12 @@ with a principle, the conflict is a defect, and one of the two must change.
   space-saving mechanism (symlinks, hardlinks, in-place transformation, deduplication) and simply
   storing another copy, choose the copy. Duplication that increases the number of independent,
   self-sufficient copies is a feature, not waste. This principle authorizes R-COL-5 (keep the
-  original _and_ the derivative) and R-TGT-9 (every target carries its own manifest), and it is why
+  original _and_ the derivative) and R-TGT-9 (every copy carries its own manifest), and it is why
   symlink-based schemes are rejected in advance.
 
 - **The core is indifferent to both ends.** The core knows nothing about **how a file arrived**
-  (Source port) or **where and how it is stored** (Target port). It knows only the collection and the
-  two contracts. Every vendor-specific, device-specific, and storage-specific fact lives in an
+  (Source port) or **the medium a copy is stored on** (Storage port). It knows only the collection and
+  the two contracts. Every vendor-specific, device-specific, and storage-specific fact lives in an
   adapter, never in the core.
 
 - **Declare, do not assume.** Both ports state what they can guarantee, and Turbo-Collection refuses
@@ -174,7 +169,7 @@ with a principle, the conflict is a defect, and one of the two must change.
 
 - **Data outlives code, and the specification travels with the data.** The orchestrator is small and
   regenerable from this document, so it is disposable. This document is not, because it is what makes
-  regeneration possible. So a copy of it lives on every target, beside the photos it describes, and
+  regeneration possible. So a copy of it lives on every copy of the collection, beside the photos it describes, and
   meta files are written so they can be read even if it is lost anyway (Section 9).
 
 ---
@@ -185,9 +180,10 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Turbo-Collection.** This system: the orchestrator, its ports, and its adapters.
 
-- **Collection.** The authoritative set of original photo and video files, stored as a plain file
-  tree. This is the data Turbo-Collection exists to protect. (The word "library" is deliberately
-  avoided, because it collides with "code library".)
+- **Collection.** The set of original photo and video files this project preserves. It is one
+  logical dataset, held as one or more **peer copies**, each a plain tree (R-COL-1). This is the data
+  Turbo-Collection exists to protect. (The word "library" is deliberately avoided, because it
+  collides with "code library".)
 
 - **Plain tree.** A directory structure in which every original exists as **exactly one file**,
   **byte-identical** to the original, at a path derived from its path in the collection, and
@@ -198,7 +194,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Layout convention.** A rule that determines where in the collection a content file is stored,
   given that file's own bytes, the metadata its import source supplied with it, and that import
-  source. R-COL-4 requires every target to follow the collection's layout conventions, and R-SRC-10
+  source. R-COL-4 requires every copy to follow the collection's layout conventions, and R-SRC-10
   requires a convention to depend on nothing beyond those three.
 
 - **Layout specification.** A normative document that defines one layout convention and states which
@@ -206,25 +202,33 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   content, so that this document binds no particular directory shape.
 
 - **Import source.** One way of getting original bytes into the collection, such as iCloud or a
-  camera card. A Source adapter implements exactly one import source; configuration names it
-  (R-SRC-3), and R-SRC-10 admits that name into a collection path. What may be assumed about one
-  import source is stated in its own specification under `specs/import-sources/`.
+  camera card. An import source is an **instance**: a personal and a work iCloud account are two
+  import sources, each named by the operator (`icloud-personal`, `icloud-work`). A Source adapter
+  implements exactly one import source; the leaf manifest records which import source placed a
+  directory (its `importSource` block, `meta-file-spec.md` R-MFILE-9), and R-SRC-10 admits that name
+  into a collection path. What may be assumed about one import source is stated in its own
+  specification under `specs/import-sources/`, one specification per import source; such specifications
+  may reference one another.
 
-- **Copy.** The collection, or a target's mirror of it. No copy is privileged: each carries its own
-  manifest and is verifiable against it independently (R-TGT-9).
+- **Copy.** One physical instance of the collection, held on one storage medium and reached through
+  the Storage port. Copies are **peers**: no copy is privileged, each carries its own manifest and is
+  verifiable against it independently (R-TGT-9), and reconcile is symmetric among them.
 
 - **Source.** An origin that supplies files into the collection, reached through the Source port.
   _Source_ names the port and its adapters; _import source_ names the way in that one adapter
   reaches. One adapter reaches exactly one import source.
 
-- **Target.** A backup copy of the collection, reached through the Target port. (The word
-  "destination" is deliberately avoided, so that one concept has one name.)
+- **Storage port.** The contract through which a copy is read from and written to its storage medium,
+  whatever that medium is: a local drive, a removable drive, or a cloud bucket. It is bidirectional,
+  because reconcile and verify both act on every copy. (Renamed from the _Target port_; the `R-TGT-*`
+  requirements keep their IDs and now constrain it and the copies it reaches. The words "target" and
+  "destination" are deliberately retired, so that copies read as the peers they are.)
 
-- **Port.** A contract the core depends on: Source, Target, MirrorEngine, IntegrityStore, Config,
+- **Port.** A contract the core depends on: Source, Storage, ReconcileEngine, IntegrityStore, Config,
   Logger. Durable, and specified normatively in this document.
 
-- **Adapter.** A concrete implementation of a port: an iCloud source, a local-drive target, an rclone
-  mirror engine. Swappable, and named only in Section 12.
+- **Adapter.** A concrete implementation of a port: an iCloud source, a local-drive store, an rclone
+  reconcile engine. Swappable, and named only in Section 12.
 
 - **Original.** A file exactly as it arrived, byte-for-byte.
 
@@ -263,19 +267,23 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 - **Procedure.** A normative document stating the steps a human operator performs to achieve a
   result this specification requires. It binds the operator, not the implementation (R-META-4).
 
-- **Mirror.** To make a target hold every file the collection holds, transferring only files absent
-  at that target (R-MIRROR-1), and to record the arrival in the receipt of each directory written
-  (R-REC-5). Both are parts of one operation; a transfer whose arrival is unrecorded is an
-  incomplete mirror.
+- **Reconcile.** To bring peer copies into agreement by copying to a copy any content file another
+  copy holds and it lacks (R-MIRROR-1), and recording each arrival in the receipt of each directory
+  written (R-REC-5). Reconcile is **symmetric** (no copy is privileged; it fills whichever copy is
+  missing a file, in whichever direction each file needs) and **add-only** (it never overwrites a
+  differing file and never deletes). Both the transfer and its record are parts of one operation; a
+  transfer whose arrival is unrecorded is an incomplete reconcile. (Formerly _mirror_; the
+  `R-MIRROR-*` requirements keep their IDs.)
 
 - **Receipt.** A per-directory record of the arrivals of that directory's content: where it came
   from, and the dated arrival of that content at each copy (R-MFILE-13). A manifest states what is
   present now and can be rebuilt by rescanning; a receipt states what happened and can be rebuilt
   from nothing.
 
-- **Arrival.** One event in which content reaches a copy: an import reaching the collection, or a
-  mirror reaching a target. Arrivals are what change the number of copies holding a file, and are
-  therefore the only events a receipt records (R-MFILE-13).
+- **Arrival.** One event in which content reaches a copy: an import bringing external bytes into a
+  copy, or a reconcile bringing to a copy content another copy already holds. Arrivals are what change
+  the number of copies holding a file, and are therefore the only events a receipt records
+  (R-MFILE-13).
 
 - **Dry-run.** A mode in which Turbo-Collection reports what an operation would do and mutates
   nothing (R-SRC-14, R-MIRROR-7).
@@ -310,11 +318,11 @@ that conflicts with them is wrong and must be changed.
 | **R-COL-1** | The collection MUST be a plain directory tree of ordinary files. Turbo-Collection MUST NOT introduce a database, archive, container, or any other format that requires software to read the files back.                                                                                            |
 | **R-COL-2** | Turbo-Collection MUST preserve originals byte-for-byte. It MUST NOT transcode, recompress, resize, or strip metadata from an original, under any circumstance, including at import.                                                                                                                |
 | **R-COL-3** | The collection MUST remain fully usable without Turbo-Collection. Any ordinary file manager or file-copy tool MUST be sufficient to browse it and recover its contents.                                                                                                                            |
-| **R-COL-4** | **Every** target MUST be a plain tree, laid out under the same layout conventions as the collection, so that a file's path at a target is derived from its path in the collection. A target MAY hold a file that the collection no longer holds.                                                    |
+| **R-COL-4** | **Every** copy MUST be a plain tree, laid out under the same layout conventions, so that a content file's path is derived the same way in every copy. A copy MAY hold a content file that another copy does not.                                                    |
 | **R-COL-5** | A derivative in an open format (for example, a JPEG rendered from a HEIC, or a DNG from a proprietary RAW) MAY be stored **in addition to** the original. It MUST be identifiable as derived, and it MUST NEVER replace an original. Deleting every derivative MUST leave the collection complete. |
 
 > **Why R-COL-4 says "every" and grants no exceptions.** It would be tempting to require only that
-> _at least one_ target be a plain tree, leaving room for a future versioned repository alongside it.
+> _at least one_ copy be a plain tree, leaving room for a future versioned repository alongside it.
 > That would be a permission carved out for a feature that does not exist and is not wanted yet, and
 > it would weaken today's guarantee to serve a hypothetical. As written, the guarantee is the
 > strongest available: **every copy in existence is browsable with no tool at all.** The path to
@@ -322,13 +330,13 @@ that conflicts with them is wrong and must be changed.
 > without being left ajar.
 
 > **Why R-COL-4 no longer says "structurally equivalent".** It did, and that phrasing stopped being
-> true once Turbo-Collection lost the ability to delete at a target (R-MIRROR-3). A target keeps every
-> file it has ever received, so if a photograph is removed from the collection by hand, the target
-> still holds it and the two trees are no longer equivalent. **A target is a superset of the
-> collection, not a copy of it**, and that is the intended behavior rather than drift: it is what
-> makes an accidental deletion in the collection recoverable. What R-COL-4 still guarantees is the
-> part that matters to a finder with no software: layout is the same, so a file's location is
-> predictable from the collection's conventions alone.
+> true once Turbo-Collection lost the ability to delete (R-MIRROR-3). A copy keeps every file it has
+> ever received, so if a photograph is removed from one copy by hand, another copy still holds it and
+> the two trees are no longer equivalent. **A copy may be a superset of another, and copies are not
+> required to be byte-for-byte the same tree**, and that is the intended behavior rather than drift:
+> it is what makes an accidental hand-deletion in one copy recoverable from another. What R-COL-4
+> still guarantees is the part that matters to a finder with no software: layout is the same, so a
+> file's location is predictable from the shared conventions alone, in whichever copy is in hand.
 
 > **Why R-COL-5 is not specific to HEIC.** The risk is proprietary formats generally. Camera RAW
 > formats (CR3, NEF, ARW) are undocumented and single-vendor; HEIC and HEVC are patent-encumbered.
@@ -350,7 +358,7 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **R-SRC-1**  | Files MUST enter the collection only through the Source port. The core MUST contain no logic specific to any individual source, device, vendor, or service.                                                                                                                                                                                                                    |
 | **R-SRC-2**  | Adding support for a new source MUST require writing only a new adapter. It MUST NOT require changing the core, this specification's requirements, or any existing adapter.                                                                                                                                                                                                    |
-| **R-SRC-3**  | Which sources are active, and their settings, MUST be declared in configuration, not in code. A source MUST be able to be enabled or disabled without a code change.                                                                                                                                                                                                           |
+| **R-SRC-3**  | Which import sources a run draws from, and their settings, MUST be supplied to Turbo-Collection as data rather than hardcoded in code. An import source MUST be able to be added or removed without a code change.                                                                                                                                                                                                           |
 | **R-SRC-4**  | Multiple sources MUST be able to coexist and MUST be importable independently. The failure of one source MUST NOT prevent import from another, and MUST still be reported.                                                                                                                                                                                                     |
 | **R-SRC-5**  | A source adapter MUST supply the **original bytes** of each item. It MUST NOT transcode, recompress, or strip metadata in the course of importing.                                                                                                                                                                                                                             |
 | **R-SRC-6**  | **The honesty requirement.** If a source **cannot** supply original bytes, the adapter MUST declare this, and Turbo-Collection MUST report it. Turbo-Collection MUST NOT silently accept a degraded file as though it were an original. A degraded import MUST be either refused or explicitly recorded as degraded, per configuration, and **the default MUST be to refuse**. |
@@ -363,6 +371,7 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 | **R-SRC-13** | Turbo-Collection MUST NOT compute, record, or report which items a source no longer supplies. Turbo-Collection MUST hold no record of a source's contents between runs, and MUST establish that an item is already imported by inspecting the collection rather than by comparing against a previous state of the source.                                                      |
 | **R-SRC-14** | Turbo-Collection MUST support a dry-run mode for import that reports every item a real import would add to the collection, and mutates nothing.                                                                                                                                                                                                                                |
 | **R-SRC-15** | A layout specification MUST state which items it claims, as a condition on an item's own bytes, the metadata its import source supplies with it, and that import source. Turbo-Collection MUST determine an item's collection path under the layout specification that claims that item. Turbo-Collection MUST NOT import an item that no layout specification claims, and MUST report every such item. If more than one layout specification claims an item, Turbo-Collection MUST refuse to run. |
+| **R-SRC-16** | On importing into an existing import-source directory, Turbo-Collection MUST compare the running import source's version against the `importSource.version` that directory's manifest records (`meta-file-spec.md` R-MFILE-9). If they share the same MAJOR line (`version-requirement.md` R-PUB-1), Turbo-Collection MAY reuse the directory, and where it writes to it MUST re-stamp `importSource.version` to the running version. If the running version begins a new MAJOR line, Turbo-Collection MUST NOT reuse the directory, and MUST place the imported content under a different import-source instance name. What compatibility an import source guarantees within a MAJOR line is stated by that import source's own specification; the core does not adjudicate it. |
 
 > **What R-SRC-10 still forbids, now that the import source is admitted.** This requirement once said
 > the collection layout MUST NOT depend on which source supplied a file, so that two identical photos
@@ -419,37 +428,53 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 > R-SRC-14 is what makes that confirmation possible, because an import dry-run reporting zero pending
 > items is exactly the evidence that everything at the source has already reached the collection.
 
+> **Why R-SRC-16 leans on the version scheme rather than inventing a compatibility test.** "Compatible"
+> already has a definition: within one MAJOR line, everything that conformed still conforms, and a new
+> MAJOR line is exactly where that breaks (`version-requirement.md` R-PUB-1). So the re-stamp needs no
+> new contract; it reads the MAJOR component of a version already on disk. An import source's own bump
+> test (R-PUB-1 requires each specification to state one) is what decides which of its changes are
+> MAJOR, so the domain judgment stays where the domain knowledge is. The manifest's `importSource.version`
+> is therefore a **current claim**, "the latest version that took ownership of this directory as
+> compatible", not a full history; the per-run receipt records hold the authoritative version trail
+> (`meta-file-spec.md` R-MFILE-14). A mis-declared compatibility can never lose or relocate data, because
+> add-only (R-SRC-12) and the pure-function path (R-SRC-10) bind regardless; at worst it leaves an
+> inaccurate claim in one field, recoverable from the receipts. Layout needs no companion rule: a
+> structural layout change alters the path (R-SRC-10) and so lands in a new, differently structured
+> directory, which makes any one directory layout-homogeneous by construction.
+
 ---
 
-## 6. The Target port (`R-TGT-*`)
+## 6. The Storage port (`R-TGT-*`)
 
-Symmetric to the Source port, and held to the same discipline. Data leaves Turbo-Collection only
-through the Target port.
+The contract through which a copy is read from and written to its storage medium, held to the same
+discipline as the Source port. A copy is reached only through the Storage port.
 
-A target is **not merely a path.** It is an adapter that declares what it can and cannot guarantee.
+A copy is **not merely a path.** Its store is an adapter that declares what it can and cannot
+guarantee. (The `R-TGT-*` requirements keep the IDs they carried when this was the Target port; the
+concept is reframed, the numbers are not.)
 
 | ID           | Requirement                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-TGT-1**  | Data MUST leave the collection only through the Target port. The core MUST contain no logic specific to any individual target, medium, vendor, or service.                                                                                                                                                                                                                              |
-| **R-TGT-2**  | Adding support for a new target MUST require writing only a new adapter. It MUST NOT require changing the core, this specification's requirements, or any existing adapter.                                                                                                                                                                                                             |
-| **R-TGT-3**  | Which targets are active, and their settings, MUST be declared in configuration, not in code.                                                                                                                                                                                                                                                                                           |
-| **R-TGT-4**  | Multiple targets MUST be able to coexist and MUST be written independently. The failure of one target MUST NOT prevent the attempt against another, and MUST still be reported.                                                                                                                                                                                                         |
-| **R-TGT-5**  | A target adapter MUST declare its capabilities: whether it is a plain tree, whether it can be verified in place, and whether it is remote.                                                                                                                                                                                                                                              |
-| **R-TGT-6**  | **The plain-mirror guarantee.** Turbo-Collection MUST refuse to run if any configured target does not declare itself a plain tree. This check MUST happen before any work is done, enforcing R-COL-4 rather than merely hoping for it.                                                                                                                                                  |
-| **R-TGT-7**  | A target adapter MUST be read-only with respect to the collection. It MUST NOT modify, rename, move, or delete any collection file, meta files included. Writing the collection's receipt is the core's responsibility, never an adapter's (R-REC-6).                                                                                                                                    |
-| **R-TGT-8**  | A target adapter MUST NOT delete a file it holds, and MUST NOT expose an operation that deletes a file it holds. (This is the adapter-level counterpart of R-MIRROR-3, deliberately duplicated so that a defect in one layer alone cannot destroy data.)                                                                                                                                |
-| **R-TGT-9**  | Each target MUST carry, in each of its directories, a manifest covering **that directory's own** contents (R-MFILE-8), so that the target is self-verifying without the collection and without Turbo-Collection, and so that any single directory remains verifiable when separated from the rest.                                                                                        |
-| **R-TGT-11** | Every target MUST be restorable by ordinary file copy, using no Turbo-Collection software.                                                                                                                                                                                                                                                                                              |
-| **R-TGT-12** | A target's capabilities MUST be re-evaluated on every run and MUST NOT be cached from a previous run (symmetric to R-SRC-11). A target that has ceased to be a plain tree MUST be caught **before** it is written to, not after.                                                                                                                                                        |
+| **R-TGT-1**  | A copy MUST be read and written only through the Storage port. The core MUST contain no logic specific to any individual storage medium, vendor, or service.                                                                                                                                                                                                                              |
+| **R-TGT-2**  | Adding support for a new kind of storage medium MUST require writing only a new adapter. It MUST NOT require changing the core, this specification's requirements, or any existing adapter.                                                                                                                                                                                                             |
+| **R-TGT-3**  | Which copies a run acts on, and the storage settings each needs, MUST be supplied to Turbo-Collection as data rather than hardcoded in code.                                                                                                                                                                                                                                                           |
+| **R-TGT-4**  | Multiple copies MUST be able to coexist and MUST be acted on independently. The failure against one copy MUST NOT prevent the attempt against another, and MUST still be reported.                                                                                                                                                                                                         |
+| **R-TGT-5**  | A storage adapter MUST declare its capabilities: whether the copy it backs is a plain tree, whether it can be verified in place, and whether it is remote.                                                                                                                                                                                                                              |
+| **R-TGT-6**  | **The plain-tree guarantee.** Turbo-Collection MUST refuse to run if any copy it would act on does not declare itself a plain tree. This check MUST happen before any work is done, enforcing R-COL-4 rather than merely hoping for it.                                                                                                                                                  |
+| **R-TGT-7**  | A storage adapter MUST NOT modify, rename, move, or delete a file already present in the copy it backs, meta files included. Adding a new file the core hands it is not a modification. Writing a copy's receipt is the core's responsibility, never an adapter's (R-REC-6).                                                                                                                                    |
+| **R-TGT-8**  | A storage adapter MUST NOT delete a file it holds, and MUST NOT expose an operation that deletes a file it holds. (This is the adapter-level counterpart of R-MIRROR-3, deliberately duplicated so that a defect in one layer alone cannot destroy data.)                                                                                                                                |
+| **R-TGT-9**  | Each copy MUST carry, in each of its directories, a manifest covering **that directory's own** contents (R-MFILE-8), so that the copy is self-verifying without any other copy and without Turbo-Collection, and so that any single directory remains verifiable when separated from the rest.                                                                                        |
+| **R-TGT-11** | Every copy MUST be restorable by ordinary file copy, using no Turbo-Collection software.                                                                                                                                                                                                                                                                                              |
+| **R-TGT-12** | A copy's storage capabilities MUST be re-evaluated on every run and MUST NOT be cached from a previous run (symmetric to R-SRC-11). A copy that has ceased to be a plain tree MUST be caught **before** it is written to, not after.                                                                                                                                                        |
 
-> **R-TGT-6 is what makes the architecture honest.** R-COL-4 demands that every target be a plain
+> **R-TGT-6 is what makes the architecture honest.** R-COL-4 demands that every copy be a plain
 > tree. Without a capability declaration, that demand is merely a hope. With one, Turbo-Collection
-> can check it before doing any work and refuse a configuration that would leave a copy locked behind
+> can check it before doing any work and refuse to act on a copy that would leave data locked behind
 > a tool.
 
-> **What a target carries, and why.** Four things, all of them plain text, all of them negligible
+> **What a copy carries, and why.** Four things, all of them plain text, all of them negligible
 > against terabytes of photos: the **files** themselves, a **manifest** of their checksums (R-TGT-9),
-> a **`README.md`** (R-MFILE-22), and optionally a copy of the **specification** the target was written
+> a **`README.md`** (R-MFILE-22), and optionally a copy of the **specification** the copy was written
 > under (R-VER-8). They serve a single scenario, in escalating order of need: _someone finds this
 > drive in forty years, and Turbo-Collection no longer exists._ They read the note to learn what the
 > drive is; they verify the files against the manifest, which states its own algorithm and lists one
@@ -460,29 +485,31 @@ A target is **not merely a path.** It is an adapter that declares what it can an
 
 ## 7. Preservation requirements
 
-### 7.1 Mirroring (`R-MIRROR-*`)
+### 7.1 Reconciliation (`R-MIRROR-*`)
 
-The semantics of the mirror operation, as distinct from the target contract in Section 6.
+The semantics of the reconcile operation, as distinct from the storage contract in Section 6.
+Reconcile is symmetric between peer copies; the `R-MIRROR-*` requirements keep the IDs they carried
+when this operation was called mirror.
 
 | ID             | Requirement                                                                                                                                                                                                                                                                                                                                                                                                             |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-MIRROR-1** | Turbo-Collection MUST copy to a target every collection file that is absent at that target. If a collection **content file** is present at a target with differing content, Turbo-Collection MUST NOT overwrite the target's copy, and MUST report the difference (R-INT-7). A meta file at a target MAY be replaced, under the conditions its own requirements state (R-REC-7 for a receipt, R-INT-10 for a manifest). |
-| **R-MIRROR-2** | Mirroring MUST be read-only with respect to every collection **content file**. It MUST NOT modify, rename, move, or delete one. Mirroring MUST write the collection's receipt, and MUST NOT write any other collection file (R-REC-5).                                                                                                                                                                                  |
-| **R-MIRROR-3** | Turbo-Collection MUST NOT delete a file at a target, and MUST NOT provide a configuration setting or a command-line flag that permits deletion at a target. The single exception is R-MIRROR-8.                                                                                                                                                                                                                         |
-| **R-MIRROR-4** | **Idempotence.** A run against an unchanged collection MUST transfer no file data.                                                                                                                                                                                                                                                                                                                                      |
-| **R-MIRROR-5** | Turbo-Collection MUST support more than one target and MUST treat each independently: a failure against one MUST NOT prevent the attempt against another, and MUST still be reported.                                                                                                                                                                                                                                   |
-| **R-MIRROR-6** | An interrupted run (power loss, disconnected drive, termination) MUST leave the target in a state from which a subsequent run converges to a correct mirror. A run MUST NOT leave a partially-written file that a later run would mistake for a complete one.                                                                                                                                                           |
+| **R-MIRROR-1** | When reconciling two copies, Turbo-Collection MUST copy to each copy every content file the other holds that is absent at it. If a **content file** is present in both copies with differing content, Turbo-Collection MUST NOT overwrite either copy, and MUST report the difference (R-INT-7). A meta file MAY be replaced, under the conditions its own requirements state (R-REC-7 for a receipt, R-INT-10 for a manifest). |
+| **R-MIRROR-2** | Reconcile MUST be read-only with respect to every **content file** already present in a copy. It MUST NOT modify, rename, move, or delete one. Reconcile MUST record each arrival it makes in that directory's receipt, and beyond the content files it adds and the meta files R-MIRROR-1 permits, MUST write no other file into a copy (R-REC-5).                                                                                                                                                                                  |
+| **R-MIRROR-3** | Turbo-Collection MUST NOT delete a file in any copy, and MUST NOT provide a configuration setting or a command-line flag that permits deletion in a copy. The single exception is R-MIRROR-8.                                                                                                                                                                                                                         |
+| **R-MIRROR-4** | **Idempotence.** A reconcile between copies already in agreement MUST transfer no file data.                                                                                                                                                                                                                                                                                                                      |
+| **R-MIRROR-5** | Turbo-Collection MUST support more than one copy and MUST treat each independently: a failure against one MUST NOT prevent the attempt against another, and MUST still be reported.                                                                                                                                                                                                                                   |
+| **R-MIRROR-6** | An interrupted run (power loss, disconnected drive, termination) MUST leave a copy in a state from which a subsequent run converges to a correct reconcile. A run MUST NOT leave a partially-written file that a later run would mistake for a complete one.                                                                                                                                                           |
 | **R-MIRROR-7** | Turbo-Collection MUST support a dry-run mode that reports exactly what a real run would transfer, and mutates nothing.                                                                                                                                                                                                                                                                                                  |
 | **R-MIRROR-8** | **The carve-out for incomplete work.** Turbo-Collection MAY remove a temporary file (Section 3) that Turbo-Collection itself created. Turbo-Collection MUST NOT remove anything else. A temporary file MUST be identifiable as a temporary file by its name or its location, so that a human can audit every such removal without Turbo-Collection.                                                                     |
-| **R-MIRROR-9** | Turbo-Collection MUST verify a collection file against the manifest immediately before copying that file to a target. Turbo-Collection MUST NOT copy a file whose checksum does not match, and MUST report the mismatch.                                                                                                                                                                                                |
+| **R-MIRROR-9** | Turbo-Collection MUST verify a content file against its copy's manifest immediately before copying that file to another copy. Turbo-Collection MUST NOT copy a file whose checksum does not match, and MUST report the mismatch.                                                                                                                                                                                                |
 
-> **Why R-MIRROR-1 no longer overwrites, and what that costs.** The previous text copied every file
-> that "differs from the collection's copy", which treated the collection as authoritative. R-INT-7
+> **Why R-MIRROR-1 no longer overwrites, and what that costs.** An earlier text copied every file
+> that "differs from the collection's copy", which treated one copy as authoritative. R-INT-7
 > says the opposite: on a mismatch neither side is authoritative, and choosing the surviving copy is
 > a human decision. Those were two MUSTs in conflict, and R-INT-7 wins. The cost is real and accepted:
-> a corrupt file at a target is never healed automatically, and repair becomes an action a human
-> requests, consistent with R-INT-6. What is bought is larger. A collection file that corrupts
-> silently can no longer overwrite the good copy at every target on the next run.
+> a corrupt file in one copy is never healed automatically, and repair becomes an action a human
+> requests, consistent with R-INT-6. What is bought is larger. A file that corrupts silently in one
+> copy can no longer overwrite the good copy in every other copy on the next run.
 
 > **Why R-MIRROR-8 is worded so narrowly.** A carve-out from "never deletes" is the one place this
 > specification can reopen the hole it just closed, so it is bounded on three sides at once: only a
@@ -493,30 +520,32 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > it, so without this carve-out R-MIRROR-6 would be unimplementable.
 
 > **Why R-MIRROR-9 exists, and what append-only does not protect.** Never deleting protects copies
-> that already exist. It does nothing to stop bad bytes reaching new ones. If a collection file
-> corrupts silently and is then mirrored to a **fresh** target before anyone notices, the corrupt
-> version is the only version that target will ever hold, because R-MIRROR-1 will not overwrite it
-> later. Verifying immediately before the copy closes that gap at almost no cost, since the file is
-> being read anyway.
+> that already exist. It does nothing to stop bad bytes reaching new ones. If a content file
+> corrupts silently in one copy and is then copied to a **fresh** copy before anyone notices, the
+> corrupt version is the only version that fresh copy will ever hold, because R-MIRROR-1 will not
+> overwrite it later. Verifying immediately before the copy closes that gap at almost no cost, since
+> the file is being read anyway.
 
 ### 7.2 Integrity (`R-INT-*`)
 
 | ID           | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-INT-2**  | Turbo-Collection MUST be able to verify a collection or a target against a manifest, and MUST report every discrepancy it finds.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **R-INT-2**  | Turbo-Collection MUST be able to verify any copy against a manifest, and MUST report every discrepancy it finds.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **R-INT-3**  | Verification MUST distinguish these outcomes per file, and MUST NOT conflate them: **ok**; **missing** (in the manifest, absent on disk); **corrupt** (present, but the checksum differs); **extra** (present on disk, absent from the manifest).                                                                                                                                                                                                                                                                                                                             |
 | **R-INT-5**  | The manifest MUST record which hash algorithm produced it, so that changing the algorithm later is explicit and detectable rather than silent.                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | **R-INT-6**  | Verification MUST NOT repair, overwrite, or delete anything as a side effect. It reports. Any repair MUST be a separate, explicitly requested action.                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| **R-INT-7**  | On a mismatch between a collection **content file** and a target's copy of it, Turbo-Collection MUST report **which side differs** and MUST NOT treat either side as authoritative. Choosing the surviving copy is a human decision. This requirement MUST NOT be applied to meta files, which are per-copy records and are expected to differ between copies.                                                                                                                                                                                                                 |
-| **R-INT-8**  | Turbo-Collection MUST NOT treat a verification result of **extra** at a target as an error, and this outcome alone MUST NOT cause a non-zero exit status. Turbo-Collection MUST report a verification result of **extra** at the collection as a finding. Turbo-Collection MUST NOT report a manifest as **extra** in any copy, since R-MFILE-8 excludes it by design.                                                                                                                                                                                                          |
+| **R-INT-7**  | On a mismatch between two copies' **content files** at the same path, Turbo-Collection MUST report **which copies differ** and MUST NOT treat any copy as authoritative. Choosing the surviving copy is a human decision. This requirement MUST NOT be applied to meta files, which are per-copy records and are expected to differ between copies.                                                                                                                                                                                                                 |
+| **R-INT-8**  | Turbo-Collection MUST report a **content file** that is **extra** (present on disk, absent from its directory's manifest) as a finding, in whichever copy it appears. This outcome alone MUST NOT cause a non-zero exit status, because a copy may legitimately hold a content file that a not-yet-reconciled manifest does not list. Turbo-Collection MUST NOT report a manifest as **extra** in any copy, since R-MFILE-8 excludes it by design.                                                                                                                                                                                                          |
 | **R-INT-10** | Turbo-Collection MUST NOT replace a file's recorded checksum with a newly computed one unless Turbo-Collection wrote that file's current content itself. Rebuilding a manifest from a copy's present contents MUST be an action a human explicitly requests, and MUST report every difference against the existing manifest rather than overwriting it silently. Adding an entry for a file not yet covered is not a replacement and is unrestricted.                                                                                                                         |
 
-> **Why R-INT-8 singles out one outcome.** R-MIRROR-3 makes a target a superset of the collection
-> over time, so files at a target that the manifest does not list are the **expected** steady state
-> rather than an anomaly. Without R-INT-8 the healthiest possible target reports the longest list of
-> problems, and an operator learns to ignore verification output, which is the failure that costs the
-> most here. At the collection the same outcome means something entirely different, an unimported or
-> stray file, so it stays a finding there.
+> **Why R-INT-8 does not make an extra fatal.** Reconcile is add-only and converges copies upward:
+> a content file one copy holds and another lacks is copied to the copy that lacks it (R-MIRROR-1),
+> so between runs a copy can legitimately hold a file that its own manifest, written before that file
+> arrived, does not yet list. Treating that as an error would make the healthiest copy mid-reconcile
+> report the longest list of problems, and an operator learns to ignore verification output, which is
+> the failure that costs the most here. So an extra is always **reported**, because a genuinely stray
+> hand-dropped file should surface, but the outcome alone never fails the run. No copy is privileged,
+> so the rule reads the same in every copy.
 
 > **A recurring hazard, named so it is recognized next time.** A healthy state of this design reads
 > as a finding to a naive report. This is the second instance: the first is that a grouping holding
@@ -584,7 +613,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 | ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **R-REC-5** | Turbo-Collection MUST append an arrival to a receipt only **after** the content that arrival covers has been completely written to the copy the arrival names.                                                                                                                                                                                                                                                                                                                                                                                   |
-| **R-REC-6** | On a mirror, Turbo-Collection MUST append the arrival to the **collection's** receipt, and MUST then place a copy of that receipt in the corresponding directory at the target. The core performs both writes; a target adapter MUST NOT write a receipt (R-TGT-7).                                                                                                                                                                                                                                                                              |
+| **R-REC-6** | On a reconcile, Turbo-Collection MUST record each arrival it makes as a per-run receipt record (R-MFILE-13, R-MFILE-14). Every receipt write is the core's responsibility; a storage adapter MUST NOT write a receipt (R-TGT-7).                                                                                                                                                                                                                                                                              |
 | **R-REC-7** | A receipt MUST be replaced only by a receipt containing every arrival and every error the existing receipt contains. Turbo-Collection MUST report any replacement that would not satisfy this, and MUST NOT perform it. An error MUST remain after the content it names later reaches the copy successfully, so that the receipt states both events.                                                                                                                                                                                                  |
 | **R-REC-8** | A receipt records where content was **placed**, not where it **remains**. Turbo-Collection MUST NOT treat a receipt as evidence that a copy still exists or is still intact, and MUST NOT state a copy count derived from receipts without stating the date of each arrival counted.                                                                                                                                                                                                                                                             |
 
@@ -602,7 +631,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > bear on that. An **arrival** says a copy now holds the content. An **error** says content a run
 > handled did not reach a copy it was meant to: an item an import source offered that landed in no copy
 > at all, the strongest possible reason not to delete, because that item exists nowhere else; or a
-> collection file that failed to reach a target, a copy fewer than intended. The first is the one fact
+> content file that failed to reach a copy it was being reconciled into, a copy fewer than intended. The first is the one fact
 > about an import that no manifest and no checksum can ever recover, since an item that never landed
 > leaves no trace to find. A **verification** is excluded, for two reasons an error meets and it does
 > not. An error changes whether, or in how many copies, content is held; a verification changes
@@ -636,18 +665,20 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > over-reporting, and a receipt that over-reports can talk an operator into deleting the only other
 > copy. Under-reporting is safe and self-correcting; over-reporting is neither.
 
-> **Why one writer (R-REC-6).** Every mirror runs with the collection present, so the collection is
-> the only copy party to every arrival and its receipt is the only complete one. Writing at both ends
-> independently would leave two receipts that had each been appended to separately, and reconciling
-> them would require a merge operation that R-MIRROR-1 does not describe and that nothing else in this
-> specification needs. Copying the collection's receipt outward instead keeps one writer per file,
-> keeps the copy an ordinary file copy, and gives every drive the same history.
+> **Why per-run records need no merge (R-REC-6).** Two parties appending to one shared receipt would
+> leave records grown separately, and reconciling them would need a merge operation R-MIRROR-1 does not
+> describe and nothing else here needs. Per-run records avoid it: each run writes new records and never
+> reopens an earlier one (R-MFILE-13), so no receipt file is ever appended to by two parties, and a
+> copy's arrival history is simply the union of the per-run records present in its `.turbo-collection/`.
+> No copy is privileged. How per-run records are placed across peer copies is a receipt-format matter,
+> stated by `meta-file-spec.md`.
 
-> **What a target's receipt can and cannot tell you.** A target learns of an arrival only while it is
-> connected, so its receipt is complete **as of its last mirror** and silent about anything later. It
-> therefore under-reports and never over-reports: it can show fewer copies than exist, never more. For
-> a record consulted before an irreversible deletion, that is the correct direction to be wrong, and
-> the gap closes by itself at the next mirror.
+> **What one copy's receipt can and cannot tell you.** A copy's receipts are complete only for what has
+> been recorded there; anything more recent, or recorded only elsewhere, may not yet appear. So a
+> receipt read on one copy under-reports and never over-reports: it can show fewer copies holding
+> content than exist, never more. Answering how many copies hold given content means reading the
+> receipts of the copies in hand (R-CLI-10). For a record consulted before an irreversible deletion,
+> that is the correct direction to be wrong.
 
 > **Why R-REC-7 exists.** Everything else in a copy can be rebuilt: content from another copy, a
 > manifest by rescanning. Arrival history can be rebuilt from nothing, which makes a receipt the one
@@ -659,8 +690,8 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > describes bytes that are not present, so it is the only one that can become false without anything
 > local changing. A drive that dies in November does not edit the claim recorded in August. R-SRC-13
 > forbids remembering a source's contents between runs for exactly this reason; receipts are permitted
-> the same shape pointed at targets only because an arrival is a fact Turbo-Collection performed itself
-> rather than an inference about someone else's storage. Dates are what keep a stale claim legible as
+> the same shape pointed at other copies only because an arrival is a fact Turbo-Collection performed
+> itself rather than an inference about someone else's storage. Dates are what keep a stale claim legible as
 > stale, and the release procedure, not this record, remains what authorizes a deletion.
 
 > **A receipt is not covered by its directory's manifest.** Receipts live in the `.turbo-collection/`
@@ -679,14 +710,15 @@ The semantics of the mirror operation, as distinct from the target contract in S
 >   "runId": "2026-08-14T18:04:22Z-3f9a",
 >   "arrivals": [
 >     {
->       "copyName": "collection",
+>       "copyName": "laptop",
 >       "importSource": "icloud",
 >       "date": "2026-08-14",
 >       "fileCount": 412,
 >       "contentDigest": "9f2a1c..."
 >     },
 >     {
->       "copyName": "target",
+>       "copyName": "backup1",
+>       "importSource": "icloud",
 >       "date": "2026-08-14",
 >       "fileCount": 412,
 >       "contentDigest": "9f2a1c..."
@@ -716,7 +748,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 
 | ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-CFG-1** | Turbo-Collection MUST read import source declarations, the copies expected to exist, and every option from an external configuration file, whose contents `meta-file-spec.md` states. It MUST NOT hardcode any path.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **R-CFG-1** | Turbo-Collection MUST read a copy's own identity and any persisted option from an external configuration file, whose contents `meta-file-spec.md` states, rather than hardcoding them. It MUST NOT hardcode any path, and MUST NOT require a copy to declare the other copies expected to exist, which are discovered at run time.                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **R-CFG-3** | Turbo-Collection MUST validate configuration **before** performing any filesystem mutation. Invalid configuration MUST cause the run to fail immediately, with no partial effect.                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | **R-CFG-4** | Turbo-Collection MUST fail rather than guess. A missing, ambiguous, or unparseable setting MUST NOT be silently defaulted into a behavior that loses data or accepts a worse file. In particular, it MUST NOT default into accepting a degraded import (R-SRC-6).                                                                                                                                                                                                                                                                                                                                        |
 | **R-CFG-5** | Turbo-Collection MUST be fully operable with configuration supplied from the collection's own storage or on the command line, and MUST NOT require configuration held on the host computer. A host-specific location MAY be searched as a convenience; it MUST NOT be the only place configuration can live.                                                                                                                                                                                                                                                                                             |
@@ -735,7 +767,7 @@ The semantics of the mirror operation, as distinct from the target contract in S
 > `/Volumes` entry on another, and it changes between sessions. A **command-line argument** puts the
 > permanent record at the mercy of a typo. Reading the name off the copy itself fails none of these,
 > and it buys a safety property the others cannot: plugging in the wrong drive becomes detectable
-> rather than silent, which is the same reasoning that already makes R-TGT-6 require a target to
+> rather than silent, which is the same reasoning that already makes R-TGT-6 require a copy to
 > declare that it is a plain tree. It also makes the tool indifferent to where a drive is mounted,
 > which is what lets a backup run on a borrowed computer that assigns whatever letter it likes.
 
@@ -751,8 +783,8 @@ The semantics of the mirror operation, as distinct from the target contract in S
 
 | ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                    |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-LOG-1** | Every run MUST write a plain-text log recording at minimum: start time; end time; the configuration used; per source, the count of items imported and any degraded or refused items; per target, the count and byte total of files transferred; every error encountered; and the final outcome.                                                                                |
-| **R-LOG-2** | Logs MUST be observability only. The correctness of the collection or of any target MUST NOT depend on a log file existing or being readable.                                                                                                                                                                                                                                  |
+| **R-LOG-1** | Every run MUST write a plain-text log recording at minimum: start time; end time; the configuration used; per source, the count of items imported and any degraded or refused items; per copy, the count and byte total of files transferred; every error encountered; and the final outcome.                                                                                |
+| **R-LOG-2** | Logs MUST be observability only. The correctness of any copy of the collection MUST NOT depend on a log file existing or being readable.                                                                                                                                                                                                                                  |
 | **R-LOG-3** | A run's log MUST record the Turbo-Collection version and the specification version it conforms to, so that a past run's behavior can be reconstructed.                                                                                                                                                                                                                         |
 | **R-LOG-4** | Failures MUST be reported in the log even when the process exits non-zero. A crash MUST NOT be the only evidence that something went wrong.                                                                                                                                                                                                                                    |
 | **R-LOG-5** | A log MUST NOT be the only record of an event that changes whether source material can safely be deleted. Such events are recorded in receipts (R-MFILE-13); a log MAY additionally record them and MUST NOT be relied on to. Turbo-Collection MUST NOT write a log inside a copy. A log MAY be written elsewhere on a drive that holds a copy, and MAY be ephemeral and local to the computer performing the run. |
@@ -764,13 +796,13 @@ The semantics of the mirror operation, as distinct from the target contract in S
 | **R-CLI-1**  | Turbo-Collection MUST exit **0** on success and non-zero on failure. (The taxonomy of failure classes is deliberately deferred; see Section 8.5 and Section 14.)                                                                                                                                                                                                                             |
 | **R-CLI-2**  | **One-shot.** Turbo-Collection MUST perform one run and exit. It MUST NOT daemonize, poll, or schedule itself. _When_ it runs is the responsibility of whatever invokes it.                                                                                                                                                                                                                  |
 | **R-CLI-3**  | Turbo-Collection MUST be fully operable from a command line, with no graphical interface required. A graphical interface, if one is ever built, MUST be a consumer of this core and MUST NOT be a dependency of it.                                                                                                                                                                          |
-| **R-CLI-4**  | Turbo-Collection MUST NOT require network access to mirror to a locally-attached target.                                                                                                                                                                                                                                                                                                     |
-| **R-CLI-5**  | Every operation (**check**, **import**, **mirror**, **verify**, **check-names**, **propagation**) MUST be independently invocable on demand, not only as part of a combined run. Dry-run MUST be a mode of **import** (R-SRC-14) and of **mirror** (R-MIRROR-7), not a separate operation.                                                                                                   |
+| **R-CLI-4**  | Turbo-Collection MUST NOT require network access to reconcile to a locally-attached copy.                                                                                                                                                                                                                                                                                                     |
+| **R-CLI-5**  | Every operation (**check**, **import**, **reconcile**, **verify**, **check-names**, **propagation**) MUST be independently invocable on demand, not only as part of a combined run. Dry-run MUST be a mode of **import** (R-SRC-14) and of **reconcile** (R-MIRROR-7), not a separate operation.                                                                                                   |
 | **R-CLI-6**  | Turbo-Collection MUST be fully usable with **no scheduler installed or configured**. Scheduling is optional.                                                                                                                                                                                                                                                                                 |
 | **R-CLI-7**  | Effects MUST be identical whether Turbo-Collection is invoked by a human or by a scheduler. Output formatting MAY differ (for example, progress reporting on a terminal); effects MUST NOT.                                                                                                                                                                                                  |
 | **R-CLI-8**  | An operation MUST NOT require an interactive prompt to complete, because a scheduled run cannot answer one. Every option that changes what a run does MUST be settable in configuration or by a command-line flag.                                                                                                                                                                           |
-| **R-CLI-9**  | Turbo-Collection MUST provide a read-only **check** operation that transfers and modifies nothing, and that reports, for every configured source and target: whether it is reachable and authorized; what capabilities it **currently** declares (R-SRC-11, R-TGT-12); and whether the configuration would be refused (R-TGT-6).                                                             |
-| **R-CLI-10** | Turbo-Collection MUST provide a read-only **propagation** operation that reports, from receipts alone and with no target connected, which copies each directory's content has reached, the date of each arrival, and the content present that has reached no target. It MUST report every arrival's date (R-REC-8), and MUST NOT state or imply that a copy still exists or is still intact. |
+| **R-CLI-9**  | Turbo-Collection MUST provide a read-only **check** operation that transfers and modifies nothing, and that reports, for every source and copy a run would act on: whether it is reachable and authorized; what capabilities it **currently** declares (R-SRC-11, R-TGT-12); and whether the configuration would be refused (R-TGT-6).                                                             |
+| **R-CLI-10** | Turbo-Collection MUST provide a read-only **propagation** operation that reports, from receipts alone and with no other copy connected, which copies each directory's content has reached, the date of each arrival, and the content present that has reached no other copy. It MUST report every arrival's date (R-REC-8), and MUST NOT state or imply that a copy still exists or is still intact. |
 
 ### 8.4 Five distinct read-only inspections
 
@@ -779,9 +811,9 @@ because they fail in different ways and at different times.
 
 | Question                                                                                 | Operation                | Requirement |
 | ---------------------------------------------------------------------------------------- | ------------------------ | ----------- |
-| Are my sources and targets reachable, authorized, and still honoring what they promised? | **check**                | R-CLI-9     |
+| Are my sources and copies reachable, authorized, and still honoring what they promised?  | **check**                | R-CLI-9     |
 | Do the bytes on this copy still match the manifest? (fixity)                             | **verify**               | R-INT-2     |
-| How far behind is this target? What _would_ a run transfer? (drift)                      | **mirror**, dry-run mode | R-MIRROR-7  |
+| How far apart are two copies? What _would_ a run transfer? (drift)                        | **reconcile**, dry-run mode | R-MIRROR-7  |
 | What does this source still hold that the collection lacks? (source coverage)            | **import**, dry-run mode | R-SRC-14    |
 | How many copies hold this content, and when did each receive it? (propagation)           | **propagation**          | R-CLI-10    |
 
@@ -800,7 +832,7 @@ because they fail in different ways and at different times.
 > **Why propagation is separate, and why it needs no drive.** Source coverage establishes that content
 > reached the collection. That is one copy, and deleting the source at that point leaves fewer copies
 > than before. Propagation answers the other half, which is whether the content then reached anywhere
-> else, and it is answerable from receipts alone with no target connected (R-MFILE-13). It is the only
+> else, and it is answerable from receipts alone with no other copy connected (R-MFILE-13). It is the only
 > inspection that reports on storage that is not present, so R-REC-8 governs how it may speak: it
 > states where content was placed and when, never that a copy still exists. An operator combines it
 > with a real verification before releasing anything, which is what the release procedure requires.
@@ -834,8 +866,8 @@ changes too**, which appears to relocate the problem rather than solve it: now w
 version a meta file was written under, and we must preserve the specification itself. That is a real
 objection, and it is answered in three moves.
 
-1. **The specification is a meta file, and it travels with the data.** Every target carries a copy of
-   the version it was written under (R-VER-8). It is a few tens of kilobytes against terabytes; the
+1. **The specification is a meta file, and it travels with the data.** Every copy carries the
+   version it was written under (R-VER-8). It is a few tens of kilobytes against terabytes; the
    redundancy principle (Section 2) authorizes this without argument. The specification cannot float
    away into abstraction, and it cannot die with a code-hosting service: it survives as long as any
    copy of the collection survives.
@@ -904,10 +936,10 @@ demonstration of what a change would cost is worth something.
 | **Albums and tags** (groupings)                        | A grouping is a plain-text list of members. **R-COL-2 already pre-decides the hard part**: membership can never live inside a photo's own metadata, because originals are immutable, so it must be an external plain file. The manifest format (R-MFILE-9) is already exactly the shape of a membership list, so a grouping is a _subset of a manifest_: there is no new format to invent, and a JSON manifest has room for the fields a grouping needs beyond membership, such as curated order. R-MFILE-8's per-file SHA-256 supplies a stable identity that survives renames and reorganization. Grouping files are ordinary files in the collection, so they are mirrored, checksummed, and verified by machinery that already exists. | R-COL-2, R-MFILE-8, R-MFILE-9, R-MIRROR-1                | **None in the core.** One extension to the Source port, so adapters can report groupings. R-SRC-2 already anticipates exactly this. |
 | **Captions, ratings, faces**                           | The same shape: per-photo metadata in sidecar files beside the original, never inside it (R-COL-2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | R-COL-2, R-COL-5                                     | None. Sidecars are ordinary files.                                                                                                  |
 | **Open-format derivatives, and format-risk reporting** | Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) are a genuine long-term readability risk. A derivation step writes an open-format copy beside each at-risk original, and a read-only report lists which formats in the collection are proprietary or single-vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | R-COL-5 (derivatives are already permitted), R-MFILE-8 | None. Derivatives are ordinary files; the report only reads data that already exists.                                               |
-| **Versioning and snapshots of the collection**         | A target using a repository format (restic, Borg, Kopia). **This is the one deferred goal that requires amending a requirement rather than merely adding an adapter:** R-COL-4 would change from "every target MUST be a plain tree" to "at least one target MUST be", and R-TGT-6's check would relax from _all_ to _at least one_. The capability machinery (R-TGT-5) already exists to express it; the new adapter simply declares that it is not a plain tree.                                                                                                                                                                                                                                                                     | R-TGT-1, R-TGT-2, R-TGT-5, R-TGT-6                   | **One requirement amended (R-COL-4), one check relaxed (R-TGT-6), one adapter added.** No structural change.                        |
-| **Cloud off-site**                                     | A target that happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | R-TGT-1, R-TGT-5                                     | None. A new Target adapter.                                                                                                         |
+| **Versioning and snapshots of the collection**         | A copy using a repository format (restic, Borg, Kopia). **This is the one deferred goal that requires amending a requirement rather than merely adding an adapter:** R-COL-4 would change from "every copy MUST be a plain tree" to "at least one copy MUST be", and R-TGT-6's check would relax from _all_ to _at least one_. The capability machinery (R-TGT-5) already exists to express it; the new adapter simply declares that it is not a plain tree.                                                                                                                                                                                                                                                                     | R-TGT-1, R-TGT-2, R-TGT-5, R-TGT-6                   | **One requirement amended (R-COL-4), one check relaxed (R-TGT-6), one adapter added.** No structural change.                        |
+| **Cloud off-site**                                     | A copy whose store happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | R-TGT-1, R-TGT-5                                     | None. A new Storage adapter.                                                                                                         |
 | **Deduplication**                                      | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: the redundancy principle (Section 2) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | R-MFILE-8                                              | None.                                                                                                                               |
-| **Third-party adapters loaded as plugins**             | The Source and Target contracts are already specified completely enough for anyone to implement an adapter (R-META-1). Making adapters _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                       | R-SRC-2, R-TGT-2, R-META-1                           | **None. This specification never says how adapters are loaded**, so this is a change to Section 12 and nothing more.                |
+| **Third-party adapters loaded as plugins**             | The Source and Storage contracts are already specified completely enough for anyone to implement an adapter (R-META-1). Making adapters _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                       | R-SRC-2, R-TGT-2, R-META-1                           | **None. This specification never says how adapters are loaded**, so this is a change to Section 12 and nothing more.                |
 | **Browsing GUI, AI search, face recognition**          | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | R-COL-1, R-COL-3, R-CLI-3                            | **None, ever.** This is the entire payoff of plain files.                                                                           |
 
 ---
@@ -929,31 +961,31 @@ The core depends on these interfaces, never on the tools or vendors behind them.
 | MUST NOT      | Delete or modify anything at the origin (R-SRC-7); transcode or strip metadata (R-SRC-5); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the source no longer supplies (R-SRC-13) |
 | Errors        | Source unreachable or unauthorized; source cannot supply originals and degradation is not permitted (R-SRC-6)                                                                                                                                                                                                 |
 
-### Target
+### Storage
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                 |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `capabilities() -> Capabilities`; `push(collection, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                                              |
-| Capabilities  | Declares whether the target is a plain tree, whether it can be verified in place, and whether it is remote (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                                                                                    |
-| Precondition  | The target is reachable and writable, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                                     |
-| Postcondition | The target contains every current collection file (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY also contain files the collection no longer holds (R-COL-4) |
-| MUST NOT      | Modify the collection (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data in a non-plain layout (R-COL-4)                                                                                           |
-| Errors        | Target unreachable, unmounted, or unwritable; target does not declare itself a plain tree; transfer failure                                                                                                                                                                                              |
+| Operations    | `capabilities() -> Capabilities`; `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                                              |
+| Capabilities  | Declares whether the copy is a plain tree, whether it can be verified in place, and whether it is remote (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                                                                                    |
+| Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                                     |
+| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY hold a content file another copy does not (R-COL-4) |
+| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data in a non-plain layout (R-COL-4)                                                                                           |
+| Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                                              |
 
-### MirrorEngine
+### ReconcileEngine
 
-Scoped as _the mechanism by which a target makes itself match the collection_. This is what keeps the
-"swap rclone for rsync by changing one adapter" property intact, while the Target port handles _what_
-a target is.
+Scoped as _the mechanism by which two copies are brought into agreement_. This is what keeps the
+"swap rclone for rsync by changing one adapter" property intact, while the Storage port handles _what_
+a copy is.
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Operation     | `mirror(collection, target, excludes, options) -> MirrorResult`                                                                                                                                                                                                                                                                                                                                              |
-| Precondition  | Collection readable; target writable                                                                                                                                                                                                                                                                                                                                                                         |
-| Postcondition | Target contains every current collection file (R-MIRROR-1); only absent files were transferred (R-MIRROR-4); each arrival is recorded in the collection's receipt and copied to the target (R-REC-6)                                                                                                                                                                                                         |
-| Result        | Files transferred, bytes transferred, content files present at the target with differing content (R-MIRROR-1), arrivals recorded, per-file errors                                                                                                                                                                                                                                                            |
-| MUST NOT      | Modify a collection content file (R-MIRROR-2); delete at the target, apart from its own temporary files (R-MIRROR-3, R-MIRROR-8); overwrite a differing content file at the target (R-MIRROR-1); record an arrival before its content is completely written (R-REC-5); replace a receipt with one holding fewer arrivals (R-REC-7); leave a partial file that a later run mistakes for complete (R-MIRROR-6) |
-| Errors        | Collection unreadable; target unwritable; transfer failure                                                                                                                                                                                                                                                                                                                                                   |
+| Operation     | `reconcile(copyA, copyB, excludes, options) -> ReconcileResult`                                                                                                                                                                                                                                                                                                                                              |
+| Precondition  | Both copies readable; the copy being written is writable                                                                                                                                                                                                                                                                                                                                                         |
+| Postcondition | Each copy holds every content file the other holds (R-MIRROR-1); only absent files were transferred (R-MIRROR-4); each arrival is recorded in a per-run receipt record (R-REC-6)                                                                                                                                                                                                         |
+| Result        | Files transferred, bytes transferred, content files present in both copies with differing content (R-MIRROR-1), arrivals recorded, per-file errors                                                                                                                                                                                                                                                            |
+| MUST NOT      | Modify a content file already present in a copy (R-MIRROR-2); delete in a copy, apart from its own temporary files (R-MIRROR-3, R-MIRROR-8); overwrite a differing content file (R-MIRROR-1); record an arrival before its content is completely written (R-REC-5); replace a receipt with one holding fewer arrivals (R-REC-7); leave a partial file that a later run mistakes for complete (R-MIRROR-6) |
+| Errors        | A copy unreadable; a copy unwritable; transfer failure                                                                                                                                                                                                                                                                                                                                                   |
 
 ### IntegrityStore
 
@@ -1002,7 +1034,7 @@ definitions for common operating systems, but contains no scheduling logic.
 
 | Concern              | Today's binding                                                                |
 | -------------------- | ------------------------------------------------------------------------------ |
-| MirrorEngine         | rclone (MIT licensed), with rsync as the named fallback                        |
+| ReconcileEngine      | rclone (MIT licensed), with rsync as the named fallback                        |
 | IntegrityStore       | SHA-256; JSON manifest (R-MFILE-9)                                               |
 | Config               | JSON, parsed by the runtime's standard library, with no third-party dependency |
 | Logger               | Plain-text files, one per run, written outside every copy (R-LOG-5)            |
@@ -1037,7 +1069,7 @@ nothing about how an adapter is loaded, so a plugin-style loader could replace t
 the specification (Section 10).
 
 Changing a binding is expected to require changing one adapter and no data. **If a proposed change to
-a binding would require rewriting the contents of a target, it violates R-COL-4 and the proposal is
+a binding would require rewriting the contents of a copy, it violates R-COL-4 and the proposal is
 wrong.**
 
 ### 12.2 Open research question, not an assumption
@@ -1083,7 +1115,7 @@ bidirectional: code that does something this specification does not describe is 
 per R-META-3 it is either a specification gap or unauthorized behavior.
 
 **External: this specification against the world.** Periodically re-validate the assumptions in
-Section 12.3. Is the mirror engine still maintained and permissively licensed? Has a better one
+Section 12.3. Is the reconcile engine still maintained and permissively licensed? Has a better one
 appeared? Is SHA-256 still adequate? Have filesystem or hardware norms shifted? And, most
 importantly for R-SRC-11: **has a source's behavior changed underneath us?**
 
@@ -1094,7 +1126,7 @@ R-META-2, code cites **only** specification IDs. Code declares the specification
 to (R-VER-9).
 
 **The no-deletion test.** Conformance MUST include a test asserting that no code path deletes a file
-at a target or in the collection, apart from the temporary-file carve-out (R-MIRROR-8). This is
+in any copy of the collection, apart from the temporary-file carve-out (R-MIRROR-8). This is
 checked as a property of the code rather than only as a behavior of a run, because a deletion path
 that exists but is not reached today is a defect that a later change activates silently. Under
 R-META-3, a delete call traceable to no requirement is unauthorized behavior and is removed.
@@ -1127,14 +1159,14 @@ Two deserve their own working session, because each is a design problem rather t
 
 Smaller, and answerable in passing:
 
-- **Cloud as an additional off-site target.** The physical off-site method is settled in
-  `procedures/turbo-collection-offsite-procedure.md`. Whether a cloud target is ever added alongside
+- **Cloud as an additional off-site copy.** The physical off-site method is settled in
+  `procedures/turbo-collection-offsite-procedure.md`. Whether a cloud copy is ever added alongside
   it stays open; R-MIRROR-5 and R-TGT-4 are written to accommodate one without change.
 - **Verification cadence:** full verification of a multi-terabyte copy is expensive. Verify
   everything on some schedule, verify a random sample per run, or both? The requirements above permit
   any of these. Per-directory manifests (R-MFILE-8) make a partial pass a natural unit, which shapes
   this question without answering it.
-- **Where derivatives live:** beside the original, or in a parallel tree? Mirrored to targets, or
+- **Where derivatives live:** beside the original, or in a parallel tree? Reconciled to every copy, or
   regenerated on demand?
 
 ---
@@ -1171,3 +1203,4 @@ no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-08-27 | **The meta file format and the path layout leave this document.** Two specifications extracted, so that a format break is a document version rather than a proxy: `meta-file-spec.md` takes `R-INT-1`, `R-INT-4`, `R-REC-1` to `R-REC-4`, `R-REC-9`, `R-CFG-2`, `R-CFG-6`, `R-TGT-10`, `R-VER-3` to `R-VER-6`, `R-VER-15` and `R-VER-16`, renumbered under `R-MFILE-*`; `photo-path-layout-spec.md` takes the tree shape under `R-PHOTO-*`. Receipt behavior stays here (`R-REC-5` to `R-REC-8`), as does configuration validation (`R-CFG-1`, `R-CFG-3` to `R-CFG-5`). **`R-VER-1` rewritten**: this document's bump is now measured on **behavior**, since it no longer owns a format or a layout to break; each extracted document states its own bump test. Section 9.4 became a pointer, its migration requirements having moved. **`artifact` retired for `meta file`** throughout, and *format generation* withdrawn as a term: a format break is now a MAJOR of `meta-file-spec.md` by construction. **`R-LOG-5` amended**: a log MUST NOT be written inside a copy, which keeps run logs out of manifests and off every target, and makes a log the one persisted file that is not a meta file. **`R-META-1` amended** to say which document owns which subject, and Section 0.2 now names the foreign prefixes this document cites. **Section 12.1 relaxed** from *zero third-party dependencies* to *minimal*, with a three-part test (documented format, no transitive dependencies, vendored), admitting `ignore` for gitignore pattern matching. Section 3: *meta file* redefined and *format generation* removed. |
 | 0.1.0-draft | 2026-08-29 | **Receipts: refusals become errors, and the example catches up to the ledger shape.** `R-REC-7` reworded from "every arrival and every refusal" to "every arrival and every error," and an error now outlives the problem once the content reaches the copy rather than once an item imports, generalizing the import-only refusal to any file a run failed to copy on either the import or the mirror leg. The receipt-format change itself lives in `meta-file-spec.md` (`R-MFILE-13`, `R-MFILE-14`, `R-MFILE-16`). The Section 7.4 rationale and the receipt example were rewritten to the per-run ledger shape: the example is now one run's record carrying `version` and `runId`, an arrival's `copy` renamed `copyName`, the `event` field dropped since `importSource` presence already distinguishes an import from a mirror, and `refusals` replaced by `errors`. The "a receipt is covered by its directory's manifest" note was corrected, because meta files now sit in a `.turbo-collection/` subdirectory a manifest does not cover and per-run records are never rewritten. The Target port postcondition reworded from "recording a refusal" to "recording an error." |
 | 0.1.0-draft | 2026-09-05 | **Manifest example replaced by a pointer, and the receipt example gains `specVersion`.** The inline manifest example was removed in favor of a pointer to `meta-file-spec.md` (R-MFILE-8 through R-MFILE-12), which owns the manifest format; the removed example predated the extraction and used a `filePath` carrying a directory path, which R-MFILE-10 forbids. The receipt example gained a `specVersion` field after `version`, tracking its move off the manifest and onto the per-run record in `meta-file-spec.md` (R-MFILE-9, R-MFILE-14). No requirement here changed. |
+| 0.1.0-draft | 2026-09-05 | **Copies become peers; the collection/target hierarchy is retired.** Reframed throughout so that every copy of the collection is a peer, with no privileged collection and no subordinate target. Glossary: _Collection_ is the logical dataset held as peer copies; _Copy_ is one physical instance; _Target_ as a role is retired, and its port is renamed the **Storage port**, now bidirectional; _Mirror_ becomes **Reconcile**, symmetric and add-only. `R-COL-4` amended (every **copy** is a plain tree). The `R-TGT-*` family keeps its IDs and now constrains the Storage port and the copies it reaches (Section 6 retitled). The `R-MIRROR-*` family keeps its IDs and now describes symmetric reconcile (`R-MIRROR-1` to `R-MIRROR-6` and `R-MIRROR-9` reworded; Section 7.1 retitled Reconciliation). `R-INT-7` reworded to a mismatch between two copies; `R-INT-8` reworded so an _extra_ is reported in any copy and alone never fatal, dropping the collection/target asymmetry; `R-INT-2` to any copy. `R-SRC-3` reworded so active import sources are supplied as data rather than declared in a config-file roster; `R-CFG-1` reworded so configuration carries a copy's own identity and no roster of expected copies. `R-REC-6` reworded to per-run receipt records with no privileged writer. `R-CLI-4`, `R-CLI-5` (the **mirror** operation renamed **reconcile**), `R-CLI-9`, `R-CLI-10`, `R-LOG-1`, `R-LOG-2` reframed to copies. `R-SRC-16` **added**: on re-import into an existing directory, same-MAJOR-line reuse re-stamps `importSource.version` and a new MAJOR line forks a new import-source instance name; compatibility is the version scheme's (`version-requirement.md` R-PUB-1), the domain judgment each import source's own bump test. Import sources are **instances**, one specification each, which may reference one another. Port contracts (Section 11): _Target_ renamed _Storage_, _MirrorEngine_ renamed _ReconcileEngine_; the Section 12.1 bindings row and the Section 10 and 14 wording updated to match. Had any version been published this would be MAJOR (`R-VER-1`); a draft changes freely and is archived by nothing (`version-requirement.md` R-PUB-3). |

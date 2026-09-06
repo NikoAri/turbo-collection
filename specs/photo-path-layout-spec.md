@@ -30,9 +30,9 @@ a kind of content this one does not claim, is a second document and changes noth
 
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
-- **Collection.** The authoritative tree of files this project preserves.
+- **Collection.** The set of files this project preserves, held as one or more peer copies.
 
-- **Copy.** The collection, or a mirror of it held elsewhere.
+- **Copy.** One physical instance of the collection, held on one storage medium; copies are peers.
 
 - **Content file.** A photograph or a video held in a copy, as distinct from files that describe a
   copy.
@@ -49,10 +49,8 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   item (R-PHOTO-2).
 
 - **Import source.** One way of getting original bytes into the collection, such as iCloud or a
-  camera card. Configuration names each one.
-
-- **Configuration.** Settings a copy carries that state how Turbo-Collection runs against it,
-  including which import sources are declared and what each one is called.
+  camera card. An import source is an instance, named by the operator; a leaf manifest records which
+  one placed a directory (`meta-file-spec.md` R-MFILE-9).
 
 - **Run.** A single invocation of Turbo-Collection, which performs its work once and exits.
 
@@ -103,7 +101,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 | ID            | Requirement                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-PHOTO-3** | Turbo-Collection MUST store every content file of a claimed item in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the name configuration gives that import source. |
+| **R-PHOTO-3** | Turbo-Collection MUST store every content file of a claimed item in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the name of the import source instance that placed the item, as recorded in that directory's manifest (`meta-file-spec.md` R-MFILE-9). |
 | **R-PHOTO-4** | Turbo-Collection MUST write `<YYYY>` as four digits and `<MM>` as two digits, zero-padded, in the proleptic Gregorian calendar, following ISO 8601 basic format.                                                                                                                                                                                                                                             |
 | **R-PHOTO-5** | Turbo-Collection MUST place every content file of one item in one directory, under one governing timestamp.                                                                                                                                                                                                                                                                                                  |
 
@@ -200,3 +198,4 @@ entry below is informal; a draft carries no obligations and receives no per-ID l
 | Version     | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ----------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.0-draft | 2026-08-27 | First draft, carrying decisions taken between 2026-07-21 and 2026-08-16 and unblocked by `turbo-collection-spec.md` R-SRC-15. States the claim (R-PHOTO-1, R-PHOTO-2), the directory `<YYYY>/<YYYY>-<MM>/<import source>/` (R-PHOTO-3 to R-PHOTO-5), the governing timestamp and its ladder (R-PHOTO-6 to R-PHOTO-8), the filename boundary (R-PHOTO-9), and how a directory records this convention (R-PHOTO-10). Albums are absent deliberately: grouping is a non-goal, and the Source port cannot report one. |
+| 0.1.0-draft | 2026-09-05 | **Peer model.** Terminology reframed: _Collection_ is the dataset held as peer copies, _Copy_ one physical instance, _Import source_ an instance recorded in a leaf manifest; the _Configuration_ term is removed, because configuration no longer names import sources. `R-PHOTO-3` amended: the `<import source>` path segment is the import source instance's name as recorded in that directory's manifest (`meta-file-spec.md` R-MFILE-9), no longer "the name configuration gives". The path shape is unchanged. No requirement added or withdrawn. |
