@@ -7,7 +7,7 @@ import {
   ranges,
   updateNpmPackageVersions,
   type UpdateDependencies,
-} from "../package-json-npm-updater.ts";
+} from "../helpers/package-json-npm-updater.ts";
 
 type Manifest = ReturnType<UpdateDependencies["packageJsonManifest"]>;
 

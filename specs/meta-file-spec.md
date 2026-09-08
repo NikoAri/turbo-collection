@@ -81,7 +81,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 | ID            | Requirement                                                                                                                                                                                                                                                                        |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **R-MFILE-1** | A meta file's format MUST be determinable from that file's name alone, without reading its content. Turbo-Collection MUST NOT read a meta file whose name it does not recognize, and MUST report such a file instead.                     |
-| **R-MFILE-2** | Turbo-Collection MUST use these names and places, relative to a copy's root: `turbo-collection-config.json` and `.tcignore` and `README.md` at the root; and, for each directory holding content, a `.turbo-collection/` subdirectory of that directory holding a manifest named `manifest.json` and per-run receipts named `receipt-<runId>.json`. A carried copy of a specification MUST be named for the document and the full version of the text it holds. |
+| **R-MFILE-2** | Turbo-Collection MUST use these names and places, relative to a copy's root: `turbo-collection-config.json` and `.tcignore` and `README.md` at the root; and, for each directory holding content, a `.turbo-collection/` subdirectory of that directory holding a manifest named `manifest.json` and per-event receipt files named `receipt-<runId>-<copyName>.arrival.json` and `receipt-<runId>-<copyName>.error.json`. A carried copy of a specification MUST be named for the document and the full version of the text it holds. |
 
 > **Why an extension carries the format, and what that buys.** A reader must know how to parse a file
 > before it can find anything inside it, so nothing inside can carry that fact. A name can, and a name
@@ -94,12 +94,12 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 > stranger who finds one drive and nothing else can tell what `turbo-collection-config.json` belongs
 > to, which is why the files a person is meant to find, the configuration, the `README.md`, and any
 > carried specification, keep full self-describing names at the root. The files Turbo-Collection
-> maintains for itself inside the tree, a directory's manifest and its receipts, go instead into a
+> maintains for itself inside the tree, a directory's manifest and its receipt files, go instead into a
 > `.turbo-collection/` subdirectory of that directory. One entry beside the content holds all of them,
-> however many per-run receipts a directory accumulates, so the machinery stays out of the way of the
+> however many receipt files a directory accumulates, so the machinery stays out of the way of the
 > photographs a person browses, and a directory boundary rather than a name prefix separates meta from
 > content. The subdirectory carries the identity, which is why the files inside are named plainly:
-> `manifest.json` and `receipt-<runId>.json` need no prefix to say whose they are, because the directory
+> `manifest.json` and the `receipt-` files need no prefix to say whose they are, because the directory
 > holding them already does. It is a grouping convention, not a promise of hiding, since not every
 > platform hides a name by its leading dot. `.tcignore` shares the reason its own format supplies: an
 > ignore file is a short dotfile, and it is the one root file a person edits rather than finds by
@@ -122,17 +122,19 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 > **Why `version` is bare while other version fields are qualified.** A file named `manifest.json`
 > has already said what it is and how it parses, so its own top-level `version` can only mean which
-> version of that format it holds. A version that points outward is namespaced inside the block it
-> qualifies, `layout.version` and `importSource.version` in a manifest and `specVersion` in a receipt,
-> so it is never confused with the file's own. Bare for self, namespaced for everything else.
+> version of that format it holds. A version that points outward is set apart from the file's own:
+> namespaced inside the block it qualifies (`layout.version` and `importSource.version`, in a manifest
+> and in an import arrival), or given a qualified name (`tcSpecVersion`, the core specification's
+> version, in a receipt), so it is never confused with the file's own. Bare for self, qualified for
+> everything else.
 
 > **Why unknown fields are ignored rather than rejected, and why that needs no minor number.** An
 > addition that older software can ignore safely is not a break, so the format version does not move
 > for it at all. Preserving unknown fields verbatim matters wherever Turbo-Collection rewrites a meta
 > file rather than creating a new one: a manifest is regenerated when its directory's content changes,
 > and a rewrite that dropped fields it did not understand would quietly destroy what a newer writer
-> recorded. Per-run receipt records are never rewritten (R-MFILE-13), so the concern does not arise for
-> them; reconcile copies such a record between copies byte for byte. A field that changes how an existing field must be read is not an addition
+> recorded. Receipt files are never rewritten (R-MFILE-13), so the concern does not arise for
+> them; reconcile copies such a file between copies byte for byte. A field that changes how an existing field must be read is not an addition
 > at all, and is MAJOR under Section 10.
 
 ## 4. The manifest
@@ -218,26 +220,46 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 | ID             | Requirement                                                                                                                                                                                                                                                                                                                                    |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-MFILE-13** | Turbo-Collection MUST maintain a receipt in every directory into which it writes a content file, and in every directory in which it recorded an error affecting that directory's content. A receipt is a set of per-run records, each stored in that directory's `.turbo-collection/` subdirectory and named `receipt-<runId>.json`, where `<runId>` identifies the run and orders the records by the time the run occurred. A receipt MUST record every arrival of that directory's content at a copy and every error. Turbo-Collection MUST NOT modify a record after writing it. |
-| **R-MFILE-14** | A per-run record's fields MUST be, in this order: `version` (R-MFILE-4); `specVersion`, stating the version of `turbo-collection-spec.md` the run conformed to; `runId`, identifying the run that wrote the record; `arrivals`, an array holding one object per arrival; and, where that run recorded any error, `errors`, an array holding one object per error. A record MUST be written with whitespace that places each arrival and each error on its own line.                                                                                                                                                 |
-| **R-MFILE-15** | Each arrival MUST state, in fields of these names: the copy reached (`copyName`); the date it was reached (`date`); the number of content files present in the directory at that moment (`fileCount`); a content digest (`contentDigest`); and the import source that originally supplied the content (`importSource`). An arrival MAY also state further detail about that import (`importSourceDetails`). An `importSourceDetails` value MUST be a JSON object whose contents that import source's own specification states, and Turbo-Collection MUST NOT depend on its contents. A content digest MUST cover content files only, so that no meta file contributes to it. A `contentDigest` MUST be computed as the SHA-256 of the text formed by taking each content file's SHA-256 checksum as lowercase hexadecimal, ordering those checksums in ascending Unicode code point order, and joining them with a single newline (`U+000A`) between each. |
-| **R-MFILE-16** | Each error MUST state a human-readable description of what went wrong (`message`), in plain language and intelligible without the importer or adapter that produced it; the description is best-effort and MAY be incomplete. An error MAY also state the file it concerns (`file`); the import source that produced it (`importSource`) or, for an error on a reconcile, the copy it failed to reach (`copyName`); and further detail (`details`). A `file` value states whatever identifies the file that failed and MAY be a path, and is not bound by R-MFILE-10's name-only rule, because an error may name a source item or an intended collection path no manifest covers. A `details` value MUST be a JSON object whose contents the piece that produced the error states in its own specification, and Turbo-Collection MUST NOT depend on its contents nor act on any field within it. |
+| **R-MFILE-13** | Turbo-Collection MUST maintain a receipt in every directory into which it writes a content file, and in every directory in which it recorded an error affecting that directory's content. A receipt is a set of per-event files, each stored in that directory's `.turbo-collection/` subdirectory: one file per arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run that recorded any error for the directory, one file named `receipt-<runId>-<copyName>.error.json`. `<runId>` identifies the run and MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`) followed by `-` and a short disambiguating suffix, so it contains no character illegal in a filename and orders files by the time the run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses the same basic format). `<copyName>` names the copy the run wrote to, or attempted to write to, for that event (R-MFILE-19), and appears in the filename so that files two copies author in one run cannot collide; R-MFILE-19 constrains `copyName` to a portable filename character set for this reason. A receipt MUST record every arrival of that directory's content at a copy and every error. Turbo-Collection MUST NOT modify or delete a receipt file after writing it. |
+| **R-MFILE-14** | An arrival file MUST contain one arrival. Its fields MUST be, in this order: `version` (R-MFILE-4); `tcSpecVersion`, stating the version of `turbo-collection-spec.md` the run conformed to; `runId`, identifying the run that wrote the file; `copyName`, the copy the content reached; `date`, the date and time it was reached; `fileCount`, the number of content files present in the directory at that moment; `contentDigest`, a content digest over them (R-MFILE-15); and, where the arrival newly acquired the content from an import source, `layout`, `importSource`, and optionally `importSourceDetails` (R-MFILE-15). A `date` MUST be a full ISO 8601 calendar date and time (`YYYY-MM-DDThh:mm:ss`) carrying a time-zone offset (`Z` for UTC, or `±hh:mm`); Turbo-Collection records it from the run's own clock, so unlike an import source's `date` (R-MFILE-11) the offset is never omitted. An arrival file MUST be written with whitespace that places each field on its own line. |
+| **R-MFILE-15** | An arrival records how content reached a copy, and the two ways differ. An arrival that newly acquired content from an import source (an import) MUST carry `layout` and `importSource`, and MAY carry `importSourceDetails`. An arrival that propagated content already held by another copy (a reconcile) MUST carry neither `layout` nor `importSource`, because it acquired nothing from outside and applied no layout; its provenance is the import arrival that placed the content, which travels to it (`turbo-collection-spec.md` R-REC-6). `layout` MUST be an object stating the layout convention's identifier (`specId`) and that specification's `version`; `importSource` MUST be an object stating the import source specification's identifier (`specId`, which is also the directory's `<import source>` path segment) and the `version` of that specification the run conformed to. An `importSourceDetails` value MUST be a JSON object whose contents that import source's own specification states, and Turbo-Collection MUST NOT depend on its contents. A content digest MUST cover content files only, so that no meta file contributes to it. A `contentDigest` MUST be computed as the SHA-256 of the text formed by taking each content file's SHA-256 checksum as lowercase hexadecimal, ordering those checksums in ascending Unicode code point order, and joining them with a single newline (`U+000A`) between each. |
+| **R-MFILE-16** | An error file MUST contain the errors a run recorded for the directory. Its fields MUST be, in this order: `version` (R-MFILE-4); `tcSpecVersion`; `runId`; `copyName`, the copy the run wrote to or attempted to write to; and `errors`, an array holding one object per error. An error file MUST be written with whitespace that places each error on its own line. Each error MUST state a human-readable description of what went wrong (`message`), in plain language and intelligible without the importer or adapter that produced it; the description is best-effort and MAY be incomplete. An error MAY also state the file it concerns (`file`); the import source that produced it (`importSource`, the same `{specId, version}` shape as on an arrival), whose presence marks it an import error and whose absence marks a reconcile error that failed to reach the file's `copyName`; and further detail (`details`). A `file` value states whatever identifies the file that failed and MAY be a path, and is not bound by R-MFILE-10's name-only rule, because an error may name a source item or an intended collection path no manifest covers. A `details` value MUST be a JSON object whose contents the piece that produced the error states in its own specification, and Turbo-Collection MUST NOT depend on its contents nor act on any field within it. |
 
-> **Why the receipt is a set of per-run records, while the manifest is one file.** A manifest states
+> **Why a receipt is a set of per-event files, while the manifest is one file.** A manifest states
 > what a directory holds now, so recomputing and rewriting it whole is the operation that fits it. A
-> receipt instead accumulates events that never restate the past, and rewriting a whole file to append
-> one event would reread and rewrite all of history, scale its cost with the record's age, and lean on
-> an atomic replace. A run writes one new record and never reopens an earlier one, so an append cannot
-> lose or corrupt what came before, and a copy on removable media needs only an atomic create.
+> receipt instead accumulates events that never restate the past. Making each event its own immutable
+> file means a run only ever creates files, never reopens or rewrites one, so writing a new event can
+> neither lose nor corrupt what came before, and a copy on removable media needs only an atomic create.
+> It also makes a receipt trivial to bring between copies: because every file is immutable and its name
+> identifies the run and the copy that authored it, catching one copy up to another is a union of
+> files, never a merge. One arrival is one file; a run's errors for a directory are one file, since a
+> run can fail on several files at once.
 
 > **Why a run's specification version lives here, not in the manifest.** The version of
-> `turbo-collection-spec.md` a run conformed to is a fact about the run, uniform across every directory
-> the run touched, so recording it once per run records it where it varies. A manifest instead records
-> what varies per directory, the layout convention that placed the directory's content. A meta file
-> otherwise carries only the version needed to parse itself, the format `version` (R-MFILE-4);
-> provenance about a run belongs in the run's own record. That record travels with a directory, since
-> it sits beside the manifest in the same `.turbo-collection/` subdirectory, so a directory carried on
-> its own still states which version wrote each of its arrivals.
+> `turbo-collection-spec.md` a run conformed to, `tcSpecVersion`, is a fact about the run, uniform
+> across every directory the run touched, so recording it on each event records it where it belongs
+> rather than stamping it on every directory's manifest. A manifest instead records what varies per
+> directory, the layout convention and import source that placed the content. A meta file otherwise
+> carries only the version needed to parse itself, the format `version` (R-MFILE-4). An event file
+> travels with its directory, sitting beside the manifest in the same `.turbo-collection/`
+> subdirectory, so a directory carried on its own still states which version wrote each of its arrivals
+> and errors.
+
+> **Why an import arrival and a reconcile arrival differ, and why a partial arrival is honest.** An
+> import brings bytes from outside that the content cannot describe itself, so an import arrival records
+> the `importSource` and `layout` that placed them, the durable trail of which versioned specifications
+> governed the placement. The manifest's matching blocks are a current claim that a later compatible
+> run re-stamps (`turbo-collection-spec.md` R-SRC-16), so the receipt is the only place the originating
+> version survives. A reconcile copies bytes already vouched for by another copy, acquiring nothing and
+> applying no layout, so its arrival records neither; the import arrival that first placed the content
+> travels to the copy alongside (R-REC-6), carrying that provenance with it. Either arrival records a
+> `fileCount` and a `contentDigest` over the content present at that moment, which may be less than the
+> whole directory when a run lands some files and fails on others. A partial arrival is not a half-truth
+> but an honest snapshot, because every file it counts is completely written
+> (`turbo-collection-spec.md` R-REC-5). Whether a copy is complete is then read not from any single
+> field but from its newest event: a run that left no error file for the directory placed everything it
+> attempted. What a following run must still correct is derived by comparing the copy's manifest with
+> what it should hold, never by reading the error list as a queue of outstanding work.
 
 > **Why an import source may add detail, and why nothing may read it.** Import sources differ in
 > what they can say about an arrival, and a format that tried to anticipate all of it would either
@@ -263,8 +285,23 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 > nothing depends on its contents. What the core does guarantee is the meaning of the array itself: an
 > entry in `errors` records content a run handled that did not reach a copy, which is the fact a
 > person needs before deleting the source it came from (`turbo-collection-spec.md` R-LOG-5). An import
-> error is anchored by its `importSource`; a reconcile error also names the `copyName` it failed to
-> reach.
+> error is anchored by its `importSource`; a reconcile error carries no `importSource`, the copy it
+> failed to reach being the error file's own `copyName`.
+
+> **Why receipt files travel between copies, and its one limit.** A reconcile copies into each copy the
+> event files the other holds that it lacks, never overwriting one (`turbo-collection-spec.md`
+> R-REC-6), so a single drive inspected alone carries not only its own history but what it has heard of
+> every other copy's. From one connected copy a person can read, per directory, which copies held the
+> content and when, and whether each was complete, without connecting those drives. The limit is honest
+> and unavoidable: a copy knows another's state only as of the last time their histories touched, which
+> is why an arrival always carries its `date` and a copy count is never stated without it
+> (`turbo-collection-spec.md` R-REC-8). This travel is also what guards a receipt's own integrity. A
+> receipt is covered by no manifest, since meta files sit outside the content a manifest describes, so a
+> hand-edited receipt that stays valid JSON is caught by no checksum. What catches it instead is
+> immutability plus this travel: the same event file, named for its run and copy, exists on several
+> copies, and one that has been altered simply disagrees with its unaltered twins. A lone copy never
+> compared to another cannot detect the edit, but a system whose whole thesis is more than one copy
+> answers that by keeping more than one.
 
 ## 6. Configuration and the ignore file
 
@@ -272,7 +309,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **R-MFILE-17** | Configuration MUST be plain data in a text format a person can read and edit, and that a tool other than Turbo-Collection can parse. It MUST be named `turbo-collection-config.json` and MUST sit at the root of the copy it describes.                                                                                                          |
 | **R-MFILE-18** | A configuration file's fields MUST be, in this order: `version` (R-MFILE-4); and `copyName`, stating the name receipts use for this copy. `copyName` MUST be non-empty. Configuration states a copy's own identity and nothing about other copies: it declares no role and no roster of copies expected to exist, since copies are peers and are discovered at run time. |
-| **R-MFILE-19** | Every copy MUST declare its own identity in its own configuration file. Turbo-Collection MUST determine a copy's name by reading that declaration, and MUST NOT infer it from a volume label, a mount path, a drive letter, or a command-line argument. Turbo-Collection MUST refuse the whole run when two connected copies state one name. |
+| **R-MFILE-19** | Every copy MUST declare its own identity in its own configuration file. Turbo-Collection MUST determine a copy's name by reading that declaration, and MUST NOT infer it from a volume label, a mount path, a drive letter, or a command-line argument. `copyName` MUST consist only of characters that are portable across common filesystems, namely ASCII letters `A` through `Z` and `a` through `z`, digits `0` through `9`, hyphen, and underscore, because it appears verbatim in receipt filenames (R-MFILE-13). Turbo-Collection MUST refuse the whole run when two connected copies state one name. |
 | **R-MFILE-20** | A copy MAY carry an ignore file named `.tcignore` at its root. It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines skipped and a line beginning with `#` treated as a comment. Pattern syntax and matching MUST follow `gitignore(5)`, evaluated relative to the copy root. |
 | **R-MFILE-21** | Turbo-Collection MUST exclude an ignored file from every manifest and MUST NOT copy one to another copy. Every run MUST report, per pattern, how many files that pattern matched. Turbo-Collection MUST report a pattern it cannot evaluate and MUST NOT apply it.                                                                                   |
 
@@ -365,3 +402,4 @@ entry below is informal; a draft carries no obligations and receives no per-ID l
 | 0.1.0-draft | 2026-08-29 | Per-directory meta files moved off the `.tc-` prefix and into a `.turbo-collection/` subdirectory of each content directory, holding `manifest.json` and per-run `receipt-<run>.json` records (R-MFILE-2, R-MFILE-8, R-MFILE-13). The prefix had been a sorting convention to keep the manifest and receipt out of the way of the content; the 2026-08-28 ledger turned one receipt into many, which a directory boundary collapses to a single entry however many runs accumulate. The subdirectory carries the identity, so the files inside drop the prefix, and a directory boundary rather than a name test separates meta from content. Root files (`turbo-collection-config.json`, `README.md`, `.tcignore`) stay visible and self-describing, as the files a person is meant to find. The receipt's `refusals` became `errors` (R-MFILE-13, R-MFILE-14, R-MFILE-16): an error records any file a run failed to copy, whether on import or on mirror, and its shape is a core-understood `message` plus an opaque importer- or adapter-defined `details`, alongside the file it concerns and the `importSource` or `copyName` it involves. An arrival's `copy` became `copyName`, matching the configuration field (R-MFILE-15, R-MFILE-18). A per-run record now states its `runId` first after `version` (R-MFILE-14), and receipts are named `receipt-<runId>.json`. R-MFILE-8 dropped its "no meta file" clause, which the `.turbo-collection/` subdirectory exclusion now covers. |
 | 0.1.0-draft | 2026-09-05 | Manifest fields finalized field by field. `specVersion` removed from the manifest (R-MFILE-9) and added to the per-run receipt record (R-MFILE-14), because the core-spec version is uniform across a run rather than varying per directory the way a layout convention does, so it is recorded once per run where it varies rather than stamped on every directory. `layoutConvention` now names the layout convention by its convention identifier rather than a specification filename, and `checksumAlgorithm` states `SHA-256` explicitly (R-MFILE-9). `checksum` values are lowercase hexadecimal and `file` names preserve casing verbatim (R-MFILE-10). `date` reworked (R-MFILE-11): the import source sets the value and its meaning, Turbo-Collection does not interpret it, the format is ISO 8601 with a best-effort UTC offset, and a filesystem timestamp is forbidden as a source. Manifest `files` entries are ordered by a locale-independent case-insensitive comparison (R-MFILE-12). `contentDigest` construction pinned (R-MFILE-15): SHA-256 of the content files' lowercase-hex checksums, sorted ascending and newline-joined. |
 | 0.1.0-draft | 2026-09-05 | **Peer model, and the manifest's identity blocks.** Terminology reframed: _Collection_ is the dataset held as peer copies, _Copy_ one physical instance, _Import source_ an instance (one specification each, which may reference one another). `R-MFILE-9` restructured: the flat `layoutConvention` and `layoutVersion` become a `layout` object with `specId` and `version`, and a new `importSource` object with `specId` and `version` records the import source instance that placed a directory (`importSource.specId` is also the directory's `<import source>` path segment) and the version of its specification that governs the directory, a current claim re-stamped per `turbo-collection-spec.md` R-SRC-16. Each block is thus a `{specId, version}` pinned-dependency shape. `R-MFILE-15` amended so every arrival states `importSource`; the "an arrival recording a mirror states no `importSource`" clause is withdrawn, because provenance is uniform across peer copies. `R-MFILE-18` amended: configuration is identity only, `version` and a non-empty `copyName`; `role` and `importSources` withdrawn. `R-MFILE-19` amended: name only, no role, and whole-run refuse on a name collision. `R-MFILE-16` and several commentaries reworded from mirror to reconcile; a stale `R-MFILE-17` citation corrected to `R-MFILE-19`. A field renamed and restructured makes this MAJOR by this document's bump test, but a draft is archived by nothing (`version-requirement.md` R-PUB-3). |
+| 0.1.0-draft | 2026-09-07 | **The receipt session: per-event files.** The per-run record, one file with `arrivals` and `errors` arrays, becomes a set of per-event files (R-MFILE-13): one arrival per file, named `receipt-<runId>-<copyName>.arrival.json`, and a run's errors for a directory in one file, named `receipt-<runId>-<copyName>.error.json`, both immutable, so catching one copy up to another is a union of files and never a merge. `<runId>` is pinned to ISO 8601 basic format in UTC with a suffix, colon-free so it is a legal filename and time-sortable (R-MFILE-13); `copyName` enters the filename and is therefore constrained to a portable character set (R-MFILE-19). An arrival file (R-MFILE-14) carries `version`, `tcSpecVersion` (the core-spec version, renamed from `specVersion`), `runId`, `copyName`, `date`, `fileCount`, `contentDigest`, and, only for an import, `layout` and `importSource` as `{specId, version}` blocks plus optional `importSourceDetails`; a reconcile arrival carries neither block, its provenance traveling in the propagated import arrival (R-MFILE-15). An arrival is an honest snapshot of what was present, which may be partial; completeness is derived from a run leaving no error file, not from a field. An error file (R-MFILE-16) carries the common header plus an `errors` array; a top-level `copyName` names the copy each error concerns, so an entry keeps only `message` (required), optional `file`, optional `importSource` (whose absence marks a reconcile error), and optional `details`. Receipt files propagate on reconcile (`turbo-collection-spec.md` R-REC-6), which is what lets one drive report another copy's state and what guards a receipt against hand-editing (divergence between immutable twins), with the lone-copy limit acknowledged. An arrival's `date` is a full ISO 8601 date and time with a mandatory time-zone offset, set from the run's own clock, since unlike an import source's `date` Turbo-Collection always knows its own zone (R-MFILE-14). |

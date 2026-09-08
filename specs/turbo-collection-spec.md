@@ -435,7 +435,7 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 > test (R-PUB-1 requires each specification to state one) is what decides which of its changes are
 > MAJOR, so the domain judgment stays where the domain knowledge is. The manifest's `importSource.version`
 > is therefore a **current claim**, "the latest version that took ownership of this directory as
-> compatible", not a full history; the per-run receipt records hold the authoritative version trail
+> compatible", not a full history; the receipt files hold the authoritative version trail
 > (`meta-file-spec.md` R-MFILE-14). A mis-declared compatibility can never lose or relocate data, because
 > add-only (R-SRC-12) and the pure-function path (R-SRC-10) bind regardless; at worst it leaves an
 > inaccurate claim in one field, recoverable from the receipts. Layout needs no companion rule: a
@@ -612,9 +612,9 @@ when this operation was called mirror.
 
 | ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-REC-5** | Turbo-Collection MUST append an arrival to a receipt only **after** the content that arrival covers has been completely written to the copy the arrival names.                                                                                                                                                                                                                                                                                                                                                                                   |
-| **R-REC-6** | On a reconcile, Turbo-Collection MUST record each arrival it makes as a per-run receipt record (R-MFILE-13, R-MFILE-14). Every receipt write is the core's responsibility; a storage adapter MUST NOT write a receipt (R-TGT-7).                                                                                                                                                                                                                                                                              |
-| **R-REC-7** | A receipt MUST be replaced only by a receipt containing every arrival and every error the existing receipt contains. Turbo-Collection MUST report any replacement that would not satisfy this, and MUST NOT perform it. An error MUST remain after the content it names later reaches the copy successfully, so that the receipt states both events.                                                                                                                                                                                                  |
+| **R-REC-5** | Turbo-Collection MUST write an arrival file only **after** the content that arrival covers has been completely written to the copy the arrival names. The content an arrival covers is the content present in the directory at that moment, which MAY be less than the whole directory; every file it covers MUST be completely written, so that a partial arrival is still an honest snapshot.                                                                                                                                                                                                                                                                                                                                                                                   |
+| **R-REC-6** | On a reconcile, Turbo-Collection MUST record each arrival it makes as a receipt file (R-MFILE-13, R-MFILE-14), and MUST bring both copies' receipt files for each reconciled directory to the union of the two, copying into a copy every receipt file the other holds that it lacks and never overwriting one, since receipt files are immutable (R-MFILE-13). Every receipt write is the core's responsibility; a storage adapter MUST NOT write a receipt (R-TGT-7).                                                                                                                                                                                                                                                                              |
+| **R-REC-7** | Turbo-Collection MUST NOT delete or alter a receipt file (R-MFILE-13). An error therefore outlives the problem it describes: when the content an error names later reaches the copy, the arrival is a new file and the earlier error file remains, so the receipt states both events.                                                                                                                                                                                                  |
 | **R-REC-8** | A receipt records where content was **placed**, not where it **remains**. Turbo-Collection MUST NOT treat a receipt as evidence that a copy still exists or is still intact, and MUST NOT state a copy count derived from receipts without stating the date of each arrival counted.                                                                                                                                                                                                                                                             |
 
 > **Why receipts exist at all, and why they are not logs.** A manifest is a **state** record: delete it
@@ -665,13 +665,15 @@ when this operation was called mirror.
 > over-reporting, and a receipt that over-reports can talk an operator into deleting the only other
 > copy. Under-reporting is safe and self-correcting; over-reporting is neither.
 
-> **Why per-run records need no merge (R-REC-6).** Two parties appending to one shared receipt would
+> **Why receipt files need no merge (R-REC-6).** Two parties appending to one shared receipt would
 > leave records grown separately, and reconciling them would need a merge operation R-MIRROR-1 does not
-> describe and nothing else here needs. Per-run records avoid it: each run writes new records and never
-> reopens an earlier one (R-MFILE-13), so no receipt file is ever appended to by two parties, and a
-> copy's arrival history is simply the union of the per-run records present in its `.turbo-collection/`.
-> No copy is privileged. How per-run records are placed across peer copies is a receipt-format matter,
-> stated by `meta-file-spec.md`.
+> describe and nothing else here needs. Per-event files avoid it: each is immutable and named for the
+> run and the copy that authored it (R-MFILE-13), so no file is ever appended to by two parties, and a
+> copy's history is simply the union of the files present in its `.turbo-collection/`. Bringing one copy
+> up to another is therefore a copy of the files it lacks, add-only and conflict-free, and no copy is
+> privileged. This is what lets one connected drive report where content has reached, and whether each
+> copy was complete, without those other drives present. The exact shape and naming of the files is a
+> receipt-format matter, stated by `meta-file-spec.md`.
 
 > **What one copy's receipt can and cannot tell you.** A copy's receipts are complete only for what has
 > been recorded there; anything more recent, or recorded only elsewhere, may not yet appear. So a
@@ -681,10 +683,11 @@ when this operation was called mirror.
 > that is the correct direction to be wrong.
 
 > **Why R-REC-7 exists.** Everything else in a copy can be rebuilt: content from another copy, a
-> manifest by rescanning. Arrival history can be rebuilt from nothing, which makes a receipt the one
-> file where an overwrite is unrecoverable. Requiring a replacement to be a strict extension is the
-> receipt's counterpart to R-INT-10, and for the same reason: the destructive act is not writing, it is
-> writing something that contains less than what was there.
+> manifest by rescanning. Arrival history can be rebuilt from nothing, which makes a receipt file the
+> one file whose loss or alteration is unrecoverable. So a receipt file is written once and never
+> touched again, the receipt's counterpart to R-INT-10 and stronger: there is no rewrite to get wrong,
+> because the destructive act, writing something that contains less than what was there, is simply never
+> performed.
 
 > **Why R-REC-8 is stated as a prohibition.** A receipt is the only record in this design that
 > describes bytes that are not present, so it is the only one that can become false without anything
@@ -695,40 +698,60 @@ when this operation was called mirror.
 > stale, and the release procedure, not this record, remains what authorizes a deletion.
 
 > **A receipt is not covered by its directory's manifest.** Receipts live in the `.turbo-collection/`
-> subdirectory, which a manifest does not cover (`meta-file-spec.md` R-MFILE-8), and each per-run
-> record is written once and never rewritten (R-MFILE-13). Appending history is therefore creating a
+> subdirectory, which a manifest does not cover (`meta-file-spec.md` R-MFILE-8), and each receipt file
+> is written once and never rewritten (R-MFILE-13). Appending history is therefore creating a
 > new file rather than editing a checksummed one, so no manifest checksum goes stale.
 
-> **A receipt, by example.** Field names follow the manifest's where the two overlap, because these
-> records and the grouping, tombstone and lineage records this project may later want are all one
-> format. This is one run's record; a directory accumulates one such file per run that touched it.
+> **A receipt, by example.** A receipt is a set of per-event files in a directory's
+> `.turbo-collection/`; field names follow the manifest's where the two overlap. An import arrival
+> records the versioned specifications that placed the content, in
+> `receipt-20260814T180422Z-3f9a-laptop.arrival.json`:
 >
 > ```json
 > {
 >   "version": "0.1.0-draft",
->   "specVersion": "0.1.0-draft",
->   "runId": "2026-08-14T18:04:22Z-3f9a",
->   "arrivals": [
->     {
->       "copyName": "laptop",
->       "importSource": "icloud",
->       "date": "2026-08-14",
->       "fileCount": 412,
->       "contentDigest": "9f2a1c..."
->     },
->     {
->       "copyName": "backup1",
->       "importSource": "icloud",
->       "date": "2026-08-14",
->       "fileCount": 412,
->       "contentDigest": "9f2a1c..."
->     }
->   ],
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260814T180422Z-3f9a",
+>   "copyName": "laptop",
+>   "date": "2026-08-14T18:04:22Z",
+>   "fileCount": 412,
+>   "contentDigest": "9f2a1c...",
+>   "layout": { "specId": "photo-path-layout", "version": "0.1.0" },
+>   "importSource": { "specId": "icloud", "version": "0.1.0" }
+> }
+> ```
+>
+> A later reconcile to `backup1` records the same content reaching another copy, in
+> `receipt-20260902T090500Z-b1d2-backup1.arrival.json`. It names no `importSource` or `layout`, because
+> it acquired nothing and the import arrival above travels to `backup1` alongside it; the matching
+> `contentDigest` proves identical content arrived:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260902T090500Z-b1d2",
+>   "copyName": "backup1",
+>   "date": "2026-09-02T09:05:00Z",
+>   "fileCount": 412,
+>   "contentDigest": "9f2a1c..."
+> }
+> ```
+>
+> A run that failed on a file records it in an error file for the same run and copy,
+> `receipt-20260814T180422Z-3f9a-laptop.error.json`:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260814T180422Z-3f9a",
+>   "copyName": "laptop",
 >   "errors": [
 >     {
 >       "message": "icloud offered IMG_0001.HEIC as a degraded copy; refused by policy (R-SRC-6)",
 >       "file": "IMG_0001.HEIC",
->       "importSource": "icloud",
+>       "importSource": { "specId": "icloud", "version": "0.1.0" },
 >       "details": { "kind": "degraded" }
 >     }
 >   ]
@@ -774,7 +797,8 @@ when this operation was called mirror.
 > **The meta files, and their names on disk.** Every copy carries, at its root, `README.md`
 > (R-MFILE-22), `turbo-collection-config.json` (R-MFILE-17), and optionally a copy of the specification
 > (R-VER-8). Every directory holding content carries a `.turbo-collection/` subdirectory holding
-> `manifest.json` (R-MFILE-8) and one or more per-run `receipt-<run>.json` records (R-MFILE-14). Root
+> `manifest.json` (R-MFILE-8) and per-event `receipt-<runId>-<copyName>.arrival.json` and
+> `receipt-<runId>-<copyName>.error.json` files (R-MFILE-13). Root
 > files are named so a stranger who finds one drive and nothing else can tell what they are; the
 > machine files inside the tree are gathered into a `.turbo-collection/` subdirectory, which marks them
 > as Turbo-Collection's own and groups them out of the way of the content.
@@ -982,9 +1006,9 @@ a copy is.
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Operation     | `reconcile(copyA, copyB, excludes, options) -> ReconcileResult`                                                                                                                                                                                                                                                                                                                                              |
 | Precondition  | Both copies readable; the copy being written is writable                                                                                                                                                                                                                                                                                                                                                         |
-| Postcondition | Each copy holds every content file the other holds (R-MIRROR-1); only absent files were transferred (R-MIRROR-4); each arrival is recorded in a per-run receipt record (R-REC-6)                                                                                                                                                                                                         |
+| Postcondition | Each copy holds every content file the other holds (R-MIRROR-1); only absent files were transferred (R-MIRROR-4); each arrival is recorded in a receipt file and both copies' receipt files are brought to their union (R-REC-6)                                                                                                                                                                                                         |
 | Result        | Files transferred, bytes transferred, content files present in both copies with differing content (R-MIRROR-1), arrivals recorded, per-file errors                                                                                                                                                                                                                                                            |
-| MUST NOT      | Modify a content file already present in a copy (R-MIRROR-2); delete in a copy, apart from its own temporary files (R-MIRROR-3, R-MIRROR-8); overwrite a differing content file (R-MIRROR-1); record an arrival before its content is completely written (R-REC-5); replace a receipt with one holding fewer arrivals (R-REC-7); leave a partial file that a later run mistakes for complete (R-MIRROR-6) |
+| MUST NOT      | Modify a content file already present in a copy (R-MIRROR-2); delete in a copy, apart from its own temporary files (R-MIRROR-3, R-MIRROR-8); overwrite a differing content file (R-MIRROR-1); record an arrival before its content is completely written (R-REC-5); delete or alter a receipt file (R-REC-7); leave a partial file that a later run mistakes for complete (R-MIRROR-6) |
 | Errors        | A copy unreadable; a copy unwritable; transfer failure                                                                                                                                                                                                                                                                                                                                                   |
 
 ### IntegrityStore
@@ -1204,3 +1228,4 @@ no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-08-29 | **Receipts: refusals become errors, and the example catches up to the ledger shape.** `R-REC-7` reworded from "every arrival and every refusal" to "every arrival and every error," and an error now outlives the problem once the content reaches the copy rather than once an item imports, generalizing the import-only refusal to any file a run failed to copy on either the import or the mirror leg. The receipt-format change itself lives in `meta-file-spec.md` (`R-MFILE-13`, `R-MFILE-14`, `R-MFILE-16`). The Section 7.4 rationale and the receipt example were rewritten to the per-run ledger shape: the example is now one run's record carrying `version` and `runId`, an arrival's `copy` renamed `copyName`, the `event` field dropped since `importSource` presence already distinguishes an import from a mirror, and `refusals` replaced by `errors`. The "a receipt is covered by its directory's manifest" note was corrected, because meta files now sit in a `.turbo-collection/` subdirectory a manifest does not cover and per-run records are never rewritten. The Target port postcondition reworded from "recording a refusal" to "recording an error." |
 | 0.1.0-draft | 2026-09-05 | **Manifest example replaced by a pointer, and the receipt example gains `specVersion`.** The inline manifest example was removed in favor of a pointer to `meta-file-spec.md` (R-MFILE-8 through R-MFILE-12), which owns the manifest format; the removed example predated the extraction and used a `filePath` carrying a directory path, which R-MFILE-10 forbids. The receipt example gained a `specVersion` field after `version`, tracking its move off the manifest and onto the per-run record in `meta-file-spec.md` (R-MFILE-9, R-MFILE-14). No requirement here changed. |
 | 0.1.0-draft | 2026-09-05 | **Copies become peers; the collection/target hierarchy is retired.** Reframed throughout so that every copy of the collection is a peer, with no privileged collection and no subordinate target. Glossary: _Collection_ is the logical dataset held as peer copies; _Copy_ is one physical instance; _Target_ as a role is retired, and its port is renamed the **Storage port**, now bidirectional; _Mirror_ becomes **Reconcile**, symmetric and add-only. `R-COL-4` amended (every **copy** is a plain tree). The `R-TGT-*` family keeps its IDs and now constrains the Storage port and the copies it reaches (Section 6 retitled). The `R-MIRROR-*` family keeps its IDs and now describes symmetric reconcile (`R-MIRROR-1` to `R-MIRROR-6` and `R-MIRROR-9` reworded; Section 7.1 retitled Reconciliation). `R-INT-7` reworded to a mismatch between two copies; `R-INT-8` reworded so an _extra_ is reported in any copy and alone never fatal, dropping the collection/target asymmetry; `R-INT-2` to any copy. `R-SRC-3` reworded so active import sources are supplied as data rather than declared in a config-file roster; `R-CFG-1` reworded so configuration carries a copy's own identity and no roster of expected copies. `R-REC-6` reworded to per-run receipt records with no privileged writer. `R-CLI-4`, `R-CLI-5` (the **mirror** operation renamed **reconcile**), `R-CLI-9`, `R-CLI-10`, `R-LOG-1`, `R-LOG-2` reframed to copies. `R-SRC-16` **added**: on re-import into an existing directory, same-MAJOR-line reuse re-stamps `importSource.version` and a new MAJOR line forks a new import-source `specId`; compatibility is the version scheme's (`version-requirement.md` R-PUB-1), the domain judgment each import source's own bump test. The manifest's identity blocks are `layout { specId, version }` and `importSource { specId, version }` (`meta-file-spec.md` R-MFILE-9), each the shape of a pinned dependency. Import sources are **instances**, one specification each, which may reference one another. Port contracts (Section 11): _Target_ renamed _Storage_, _MirrorEngine_ renamed _ReconcileEngine_; the Section 12.1 bindings row and the Section 10 and 14 wording updated to match. Had any version been published this would be MAJOR (`R-VER-1`); a draft changes freely and is archived by nothing (`version-requirement.md` R-PUB-3). |
+| 0.1.0-draft | 2026-09-07 | **The receipt session (behavior side).** Tracks the receipt reshaping in `meta-file-spec.md` (R-MFILE-13 to R-MFILE-16): a receipt is now a set of immutable per-event files, one per arrival and one per run's errors for a directory. `R-REC-5` reworded to writing an arrival file, and made explicit that an arrival covers the content present at that moment, which may be partial, every covered file being completely written so a partial arrival is an honest snapshot. `R-REC-6` gained receipt-file **propagation**: on a reconcile, both copies' receipt files for a directory are brought to their union, add-only and never overwriting, since files are immutable; this is what lets one connected drive report where content has reached and whether each copy was complete. `R-REC-7` reworded from "a replacement must be a strict extension" to "MUST NOT delete or alter a receipt file", which immutable per-event files make stronger and simpler. The Section 7.4 receipt example was rewritten to three per-event files (an import arrival carrying `layout` and `importSource` as `{specId, version}` blocks, a reconcile arrival carrying neither, and an error file), `specVersion` renamed `tcSpecVersion`, and `runId` shown in colon-free ISO 8601 basic format. The Storage port postcondition and MUST-NOT rows and the R-REC-6/7 commentaries updated to match. No published version, so a draft is archived by nothing (`version-requirement.md` R-PUB-3). |

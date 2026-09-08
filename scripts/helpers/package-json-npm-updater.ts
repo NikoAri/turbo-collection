@@ -14,16 +14,24 @@ import { fileURLToPath } from "node:url";
 // first is what makes package.json move: `npm install pkg@^24` leaves an existing `^24.1.0` range
 // untouched, so the floor would never rise. `npm install pkg@24.13.3` rewrites it to `^24.13.3`.
 
-const here = new URL(".", import.meta.url);
-const scriptsDir = fileURLToPath(here);
+// This script lives in scripts/helpers/. package.json and package-lock.json live one level up in
+// scripts/, which is also where npm must run so it edits the right manifest and lockfile.
+// npm-version-exceptions.json sits next to this script.
+const packageDir = new URL("../", import.meta.url);
+const packageJsonUrl = new URL("package.json", packageDir);
+const npmVersionExceptionsUrl = new URL(
+  "npm-version-exceptions.json",
+  import.meta.url,
+);
+const npmCwd = fileURLToPath(packageDir);
 
 type PackageJsonManifest = {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
 };
 
-function readJson<T>(name: string): T {
-  return JSON.parse(readFileSync(new URL(name, here), "utf8")) as T;
+function readJson<T>(url: URL): T {
+  return JSON.parse(readFileSync(url, "utf8")) as T;
 }
 
 export function ranges(manifest: PackageJsonManifest): Record<string, string> {
@@ -37,7 +45,7 @@ export function ranges(manifest: PackageJsonManifest): Record<string, string> {
 function execNpm(args: string[], captureOutput: boolean): string {
   const command = `npm ${args.map((token) => `"${token}"`).join(" ")}`;
   return execSync(command, {
-    cwd: scriptsDir,
+    cwd: npmCwd,
     encoding: "utf8",
     stdio: captureOutput ? ["ignore", "pipe", "inherit"] : "inherit",
   });
@@ -103,11 +111,10 @@ export type UpdateDependencies = {
 };
 
 const realDependencies: UpdateDependencies = {
-  packageJsonManifest: () => readJson<PackageJsonManifest>("package.json"),
+  packageJsonManifest: () => readJson<PackageJsonManifest>(packageJsonUrl),
   npmVersionExceptions: () =>
-    readJson<{ packages?: Record<string, string> }>(
-      "npm-version-exceptions.json",
-    ).packages ?? {},
+    readJson<{ packages?: Record<string, string> }>(npmVersionExceptionsUrl)
+      .packages ?? {},
   newestVersion: queryNewestVersion,
   install: (specs) => {
     execNpm(["install", ...specs], false);
@@ -227,6 +234,7 @@ function main(): void {
   const npmUpdaterCliArgs: NpmUpdaterCliArgs = parseCliArgs(
     process.argv.slice(2),
   );
+
   updateNpmPackageVersions(npmUpdaterCliArgs);
 }
 
