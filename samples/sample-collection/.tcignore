@@ -1,0 +1,4 @@
+# Operating-system cruft that must never enter a copy.
+# gitignore(5) syntax, evaluated from the copy root (R-MFILE-20).
+.DS_Store
+Thumbs.db

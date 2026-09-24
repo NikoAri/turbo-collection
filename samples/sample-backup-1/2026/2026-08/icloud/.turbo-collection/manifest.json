@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "photo-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "icloud", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "IMG_4108.HEIC",
+      "size": 38,
+      "checksum": "e4ed4f70928d00692349b72b0b180969c42430f384b7175e75751a44f22c2a38",
+      "date": "2026-08-02T09:15:44-07:00"
+    }
+  ]
+}

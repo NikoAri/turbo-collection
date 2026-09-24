@@ -54,6 +54,10 @@ Directories group by topic; the name carries the classification. A top-level `su
 directory will hold the frozen terminal text of each superseded specification line once one
 exists.
 
+A top-level [`samples/`](samples/) directory holds a worked example: a small collection and one
+backup copy with real manifests and receipts, that any file manager can browse and any SHA-256
+tool can verify.
+
 ## License
 
 MIT; see [`LICENSE`](LICENSE).

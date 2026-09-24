@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "photo-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "icloud", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "IMG_4021.HEIC",
+      "size": 38,
+      "checksum": "b293c9477bd73f27a0ec60fc2164e285704e802585e3f475018a06ddcf00ffe9",
+      "date": "2026-07-14T15:32:07-07:00"
+    },
+    {
+      "file": "IMG_4021.MOV",
+      "size": 37,
+      "checksum": "514cd11a2476365af65e11de360119fbb189305fae2186367751be4814860dba",
+      "date": "2026-07-14T15:32:07-07:00"
+    },
+    {
+      "file": "IMG_4022.HEIC",
+      "size": 38,
+      "checksum": "95f1175c4dc401b4d8d208a82b2b2b682062666f507b8127df631ec4b2180fd1",
+      "date": "2026-07-14T15:33:11-07:00"
+    }
+  ]
+}

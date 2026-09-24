@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "photo-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "icloud", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "IMG_3901.HEIC",
+      "size": 38,
+      "checksum": "6609bb5e557252c57953ff36bb03ffc743ae7f6f078501c62298e7a7954a73aa",
+      "date": "2025-12-19T20:14:33-08:00"
+    },
+    {
+      "file": "IMG_3902.HEIC",
+      "size": 38,
+      "checksum": "a9b8353f1d9046b61275b4d506192ba856c58c6ad2a7017a68a00ea6985f0336",
+      "date": "2025-12-19T20:15:02-08:00"
+    }
+  ]
+}
