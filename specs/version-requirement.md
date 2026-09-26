@@ -69,6 +69,10 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   subject is Turbo-Collection itself; for an import source specification it is one import source;
   for this document it is the normative documents of this project.
 
+- **Normative dependency.** Another normative document that a document relies on to determine its
+  own obligations, declared in the depending document's header (R-PUB-13). A citation that only
+  directs a reader to related or explanatory material is informative, not a normative dependency.
+
 - **Published.** Issued under a version number carrying no `-draft` suffix, and stamped into
   something that has left the machine on which it was written (R-PUB-3). A published text is
   thereafter immutable in identity (R-PUB-2).
@@ -154,6 +158,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 | ID          | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **R-PUB-4** | Every version of a normative document MUST be fully self-contained for the subject it describes, and MUST describe only that subject. Determining a current obligation MUST NOT require reading any other version of that document, and a document MUST NOT carry a catalog of its own superseded versions. A superseded state of a subject is defined by the archived terminal text of its own line (R-PUB-5).                                                                                               |
+| **R-PUB-13** | A normative document MAY rely on another normative document to determine its obligations. Each such reliance is a **normative dependency** and MUST be declared in a depending document's header, naming the depended-on document's identifier and the MAJOR line depended on. A citation that only directs a reader to related or explanatory material is informative, not a normative dependency, and MUST NOT be declared as one.                                                                         |
 | **R-PUB-5** | When a MAJOR line is superseded, its terminal text MUST be archived as a plain Markdown file in the repository's top-level `superseded/` directory, named with the document's own filename and its full version number (for example, `superseded/turbo-collection-spec-1.4.2.md`). The `superseded/` directory MUST contain the terminal text of every superseded MAJOR line of every normative document. Intermediate texts MAY live in version control as best effort; they are not load-bearing (R-PUB-2). |
 | **R-PUB-6** | Every normative document MUST carry a change ledger, inside the document, holding one entry per published version: the version stamp; one line per requirement ID added, amended, or withdrawn, stating what changed and why; and one line per normative document whose filename changed, stating the previous filename, the new filename, and the version at which the change took effect. The author of a filename change MUST also update every reference to that document in this project.                |
 | **R-PUB-7** | The first published version of a new MAJOR line MUST contain a changes-from section stating its differences from the terminal text of the previous line, at **conversion grade**. The section MUST name the archived terminal text of the previous line by its full version stamp.                                                                                                                                                                                                                            |
@@ -179,6 +184,21 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 > travel with every copy of the document. For `turbo-collection-spec.md` this matters most of all,
 > because its R-VER-8 scatters stamped copies onto every copy of the collection, which makes the
 > versions actually governing data in the wild the most redundantly stored of all.
+
+> **Why a normative dependency is declared, and why against a MAJOR line (R-PUB-13).** A document is
+> self-contained for its own subject (R-PUB-4), never for a subject another document owns, so shared
+> mechanics may live in one document that others depend on: an import source specification, for
+> example, can factor common mechanics into a base specification and depend on it. `turbo-collection-spec.md`
+> R-META-1 makes the set of documents that bind the implementation jointly sufficient, but sufficiency
+> is worth little if a reader cannot tell which documents are in the set, so the dependency is declared
+> where a reader will find it. A dependency names a MAJOR line, not an exact version, because a
+> depending document is present-tense: it tracks the current text of that line and needs no re-issue
+> when a dependency only adds to it (R-PUB-1). Whether a dependency's own MAJOR change forces a MAJOR
+> here is left to this document's bump test, the test every change passes; a depending document that
+> has not yet caught up still resolves, because a superseded line is archived whole (R-PUB-5), and it
+> may stay behind with no time limit. The artifact-side counterpart is different in kind: a meta file
+> pins an exact `{specId, version}` naming what governed specific bytes (`meta-file-spec.md` R-MFILE-9),
+> a dated claim about the past where present-tense tracking would be wrong.
 
 ---
 
@@ -235,3 +255,4 @@ draft carries no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-08-16 | The **Subject** term reworded: a normative document about acquisition is now normative over one **acquisition route** rather than over one vendor surface, and the R-PUB-1 commentary calls such a document a route specification. Follows `turbo-collection-spec.md`, which withdrew the vendor surface level on this date and renamed `specs/sources/` to `specs/acquisition-routes/`. No requirement added, amended, or withdrawn.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 0.1.0-draft | 2026-08-22 | The **Subject** term and the R-PUB-1 commentary reworded: a normative document about getting bytes in is normative over one **import source** rather than over one acquisition route, and such a document is now called an import source specification. Follows `turbo-collection-spec.md`, which retired the term _acquisition route_ on this date and renamed `specs/acquisition-routes/` to `specs/import-sources/`. No requirement added, amended, or withdrawn. |
 | 0.1.0-draft | 2026-09-05 | Commentary reworded: R-VER-8 scatters stamped copies onto every **copy** of the collection rather than every target, following `turbo-collection-spec.md`'s retirement of the collection/target hierarchy for a peer model. No requirement added, amended, or withdrawn. |
+| 0.1.0-draft | 2026-09-26 | **Normative dependencies between documents.** `R-PUB-13` added: a normative document that relies on another to determine its obligations MUST declare each such dependency in its header, naming the depended-on document's identifier and the MAJOR line depended on. A dependency names a MAJOR line, not an exact version; adopting a dependency's newer MAJOR line is governed by this document's own bump test (R-PUB-1), and lagging behind one is allowed with no time limit since a superseded line is archived whole (R-PUB-5). The **Normative dependency** term added to Section 2. Adding a requirement is MINOR by this document's bump test, but a draft is archived by nothing (R-PUB-3). Rationale: [`../docs/decisions/2026-09-26-spec-dependency-decision.md`](../docs/decisions/2026-09-26-spec-dependency-decision.md). |
