@@ -12,18 +12,19 @@ property of an operation, not of a distinguished drive: every copy can import.
 Three renames carry the reframing:
 
 - **Target** as a role is retired. Its port stays, renamed the **Storage port** (`R-TGT-*`, IDs
-  frozen), which reconcile and verify act on for every copy.
-- **Mirror** as an operation becomes **Reconcile** (`R-MIRROR-*`, IDs frozen): symmetric and
-  add-only, never one-way.
+  frozen), which mirroring and verify act on for every copy.
+- The operation over copies is **symmetric and add-only, never one-way** (`R-MIRROR-*`, IDs frozen),
+  not a one-directional push from a privileged copy. Its naming (the **mirror** mechanism, the
+  **backup** operation) is settled in [the backup-naming decision](2026-09-27-backup-naming-decision.md).
 - `role` is withdrawn from configuration. A copy still declares its own identity, now `copyName`
   alone (`R-MFILE-18`).
 
 Directionality can go because the safety it seemed to buy was already bought by content. Which bytes
 are correct is decided by a recorded checksum, never by a label (`R-INT-7`), and that checksum is
-immutable once written for an existing file (`R-SRC-12`); reconcile never overwrites a differing file
+immutable once written for an existing file (`R-SRC-12`); the mirror never overwrites a differing file
 and never deletes at the far copy. A one-way mirror was guarding a catastrophe the add-only rules
 already forbid, that a corrupt copy overwrites good ones. Restoring a damaged copy is therefore not a
-reversed mirror but ordinary reconciliation toward whichever copy verifies clean, per file and per
+reversed mirror but ordinary mirroring toward whichever copy verifies clean, per file and per
 directory (`R-TGT-9`).
 
 Authority splits once role is gone. Authority over **bytes**, which copy of a file is correct, is
@@ -43,8 +44,8 @@ conflicting.
   sits in a manifest: an imported photo has an entry, a hand-dropped file does not, and that test runs
   on any copy. Importing into an unexpected copy causes no harm; it propagates and converges.
 - **A privileged collection to serialize layout-path collisions.** Were two different photos ever to
-  compute one path, peers importing separately would meet a *reported* conflict on reconcile, never
-  silent loss, because add-only never overwrites. Whether that collision can occur is a layout-spec
+  compute one path, peers importing separately would meet a *reported* conflict when next mirrored,
+  never silent loss, because add-only never overwrites. Whether that collision can occur is a layout-spec
   question, not grounds to privilege a drive.
 
 ## Deferred
@@ -57,10 +58,11 @@ peer-symmetric.
 ## Touches
 
 - **`turbo-collection-spec.md`:** the glossary (**Collection**, **Copy**, **Storage port** for
-  **Target**, **Reconcile** for **Mirror**), Section 1 scope and diagram, Section 2 principles,
-  `R-COL-4`, `R-INT-2/7/8`, `R-CFG-1`, `R-CLI-4/5/9/10`, `R-LOG-1/2`, Section 7.1 reconciliation
+  **Target**), Section 1 scope and diagram, Section 2 principles,
+  `R-COL-4`, `R-INT-2/7/8`, `R-CFG-1`, `R-CLI-4/5/9/10`, `R-LOG-1/2`, Section 7.1
   (`R-MIRROR-*`, IDs frozen), the storage rules (`R-TGT-*`, IDs frozen), and the Section 11 port
-  contracts (`MirrorEngine` to `ReconcileEngine`).
+  contracts (the `MirrorEngine` port). The operation's naming is settled in
+  [the backup-naming decision](2026-09-27-backup-naming-decision.md).
 - **`meta-file-spec.md`:** `R-MFILE-18` (a copy declares `copyName` only; `role` and any roster of
   other copies withdrawn) and `R-MFILE-19` (a `copyName` collision refuses the whole run).
 

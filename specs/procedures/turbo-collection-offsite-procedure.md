@@ -9,7 +9,7 @@
 Bringing the off-site copy up to date. **Off-site** means in a different building from every other
 copy; the off-site copy is one of the three copies named in `turbo-collection-setup-procedure.md`.
 
-**The off-site copy never travels.** You take the working copy to it, and reconcile there.
+**The off-site copy never travels.** You take the working copy to it, and back up there.
 
 Written under [`../language-requirement.md`](../language-requirement.md). Terms: `turbo-collection-spec.md` Section 3. Prefix: `R-OFF-*`.
 
@@ -20,9 +20,9 @@ was withdrawn and its number is not reused.
 
 | ID | Do this |
 |---|---|
-| **R-OFF-7** | Before traveling, reconcile the working copy with the **home copy**, and confirm the run reported no error. |
+| **R-OFF-7** | Before traveling, back up the working copy with the **home copy**, and confirm the run reported no error. |
 | **R-OFF-1** | Take the **working copy** to the building where the off-site copy is kept. Do not bring the off-site copy to the working copy. |
-| **R-OFF-2** | Run the Turbo-Collection reconcile there. Any computer will do, including one you do not own. |
+| **R-OFF-2** | Run the Turbo-Collection backup there. Any computer will do, including one you do not own. |
 | **R-OFF-3** | Read the report. |
 | **R-OFF-4** | Leave the off-site copy **off-site**. Bring home only the working copy. |
 | **R-OFF-5** | Keep at least one copy off-site at all times. |
@@ -36,7 +36,7 @@ was withdrawn and its number is not reused.
 > puts more than two copies under one roof.
 
 > **Why R-OFF-7 comes first.** With the working copy traveling, it is the copy exposed to a car, a
-> bag, and a journey. Reconciling with the home copy before leaving means a lost or dropped working
+> bag, and a journey. Backing up with the home copy before leaving means a lost or dropped working
 > copy costs a drive and no photographs, because a current copy stayed at home. Without it, the trip
 > is taken with the only current copy in hand.
 
@@ -72,6 +72,7 @@ informal.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1.0-draft | 2026-09-27 | **Backup names the operation.** Following the core spec's re-layer (`turbo-collection-spec.md` Section 15, 2026-09-27), the operator-facing operation is **backup**, not *reconcile*: R-OFF-7 (*back up the working copy with the home copy*), R-OFF-2 (*run the Turbo-Collection backup*), and the opening line and the R-OFF-7 commentary reworded from *reconcile* / *reconciling* to *back up* / *backing up*. The symmetric add-only mechanism, the mirror, is unchanged. No obligation changed. |
 | 0.1.0-draft | 2026-09-26 | **Peer-model pass.** *Target* and *offsite target drive* gave way to the peer names **working copy** and **off-site copy** (`turbo-collection-spec.md` Section 3). R-OFF-7 changed from *mirror the collection to the target drive* to *reconcile the working copy with the home copy* (the operation Mirror was renamed Reconcile, symmetric and add-only); R-OFF-1, R-OFF-2 and R-OFF-4 reworded to the new names and to *reconcile*. Commentary revised to the new terms. The `R-OFF-*` prefix keeps its letters (R-LANG-20; nothing published, R-PUB-3). No obligation changed. |
 | 0.1.0-draft | 2026-08-08 | First draft, R-OFF-1 to R-OFF-6. Split out of `turbo-collection-procedure.md`. |
 | 0.1.0-draft | 2026-08-15 | **The off-site drive no longer travels.** R-OFF-1 amended from fetching the off-site drive to taking the **collection drive** to it, and R-OFF-4 from returning the drive to leaving it in place. Fetching it put all three copies in one building for as long as it was there, so one fire during that window destroyed every copy, which is the event off-site storage exists to prevent. R-OFF-7 added: mirror to the target drive before traveling, so that the journey risks a drive rather than photographs, since the collection is now the copy that moves. R-OFF-2 amended to state that any computer will do, including one the operator does not own, which `turbo-collection-spec.md` R-CFG-5 and R-LOG-5 are what make true. R-OFF-5 lost its clause about the off-site drive being in the operator's possession, a state this model no longer produces. Requirement numbers are no longer in reading order, and the document now says so, because R-OFF-6 is withdrawn and numbers are not reused. Rationale: [`../../docs/decisions/2026-08-15-drive-naming-and-hardware-decision.md`](../../docs/decisions/2026-08-15-drive-naming-and-hardware-decision.md). |

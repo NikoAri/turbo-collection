@@ -87,9 +87,10 @@ there is more than one area to group.
 | 2026-08-15 | [Drive names, removable storage, and the off-site drive that never travels](2026-08-15-drive-naming-and-hardware-decision.md) | Accepted |
 | 2026-08-16 | [A future reader has help, so conveniences are not pre-built](2026-08-16-future-reader-decision.md) | Accepted |
 | 2026-08-16 | [The manifest is JSON, and nothing sits beside it](2026-08-16-manifest-format-decision.md) | Accepted |
-| 2026-08-16 | [Artifacts are named on disk, and every copy declares what it is](2026-08-16-artifact-names-and-copy-identity-decision.md) | Accepted |
 | 2026-08-22 | [The import source is a path segment, and the only category above a photo](2026-08-22-import-source-decision.md) | Accepted |
 | 2026-09-05 | [Copies are peers, with no privileged collection](2026-09-05-peer-model-decision.md) | Accepted |
 | 2026-09-07 | [A receipt is a set of immutable per-event files, and manifests are per-directory](2026-09-07-receipts-decision.md) | Accepted |
 | 2026-09-10 | [A copy records its own location as a location receipt](2026-09-10-location-receipt-decision.md) | Accepted |
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md) | Accepted |
+| 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
+| 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |

@@ -16,6 +16,11 @@ files, named `receipt-<runId>-<copyName>.arrival.json` and
 `receipt-<runId>-<copyName>.error.json`, recording each arrival of the content at a copy
 and any error.
 
+The copy root has its own `.turbo-collection/` subdirectory holding
+`turbo-collection-config.json` (this copy's name and the meta-file format version) and any
+location receipts. Everything Turbo-Collection writes for itself lives in a
+`.turbo-collection/` directory; the rest is content you can browse.
+
 ## How to verify it
 
 From any content directory, `sha256sum *` and compare against `manifest.json`. A copy is
