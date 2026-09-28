@@ -13,7 +13,8 @@
     "lint:format": "prettier --write .",
     "lint:spell": "cspell .",
     "test": "node --test",
-    "test:coverage": "node --test --experimental-test-coverage"
+    "test:coverage": "node --test --experimental-test-coverage",
+    "update": "node helpers/package-json-npm-updater.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.0",
