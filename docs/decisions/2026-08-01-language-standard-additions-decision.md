@@ -53,6 +53,6 @@ R-LANG-17 reaches beyond normative documents; Section 0.2 stopped restating iden
 Section 1 now names the language variant where it discusses language as a binding.
 
 `turbo-collection-spec.md` Section 0.2 declares American English directly rather than by reference,
-because R-VER-8 scatters copies of it onto every target while `language-requirement.md` does not
+because R-VER-8 scatters copies of it onto every drive while `language-requirement.md` does not
 travel with them. `version-requirement.md` R-PUB-10 step 3 now names every checker-enforceable rule.
 `cspell.json` gained the `flagWords` list.

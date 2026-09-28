@@ -84,7 +84,7 @@ there is more than one area to group.
 | 2026-08-08 | [An operator procedure, and the test for what belongs in it](2026-08-08-operator-procedure-decision.md) | Accepted |
 | 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md) | Accepted |
 | 2026-08-13 | [Turbo-Collection only ever adds](2026-08-13-append-only-decision.md) | Accepted |
-| 2026-08-15 | [Drive names, removable storage, and the off-site drive that never travels](2026-08-15-drive-naming-and-hardware-decision.md) | Accepted |
+| 2026-08-15 | [Removable storage, and the off-site copy that never travels](2026-08-15-drive-naming-and-hardware-decision.md) | Accepted |
 | 2026-08-16 | [A future reader has help, so conveniences are not pre-built](2026-08-16-future-reader-decision.md) | Accepted |
 | 2026-08-16 | [The manifest is JSON, and nothing sits beside it](2026-08-16-manifest-format-decision.md) | Accepted |
 | 2026-08-22 | [The import source is a path segment, and the only category above a photo](2026-08-22-import-source-decision.md) | Accepted |
@@ -94,3 +94,4 @@ there is more than one area to group.
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md) | Accepted |
 | 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
 | 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |
+| 2026-09-28 | [A copy's name is its `collectionName`, chosen for where it permanently rests](2026-09-28-collection-naming-decision.md) | Accepted |

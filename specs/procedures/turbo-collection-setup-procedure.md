@@ -32,7 +32,7 @@ They differ only in what you do with each and where it sits:
 > retired, because each casts one copy as subordinate to another when the copies are peers. *Working*,
 > *home* and *off-site* name what a copy is for and where it rests, not a rank. Which drive becomes the
 > working copy is a convention you adopt, not a property Turbo-Collection depends on: it identifies a
-> copy by its `copyName` in configuration, not by which one you import into.
+> copy by its `collectionName` in configuration, not by which one you import into.
 
 ## 2. Get three drives
 
@@ -135,6 +135,7 @@ informal.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.1.0-draft | 2026-09-28 | The Section 1 commentary field reference `copyName` updated to `collectionName`, tracking the field rename in `meta-file-spec.md` (2026-09-28). Commentary only; no requirement changed. |
 | 0.1.0-draft | 2026-09-27 | **Backup names the operation.** Following the core spec's re-layer (`turbo-collection-spec.md` Section 15, 2026-09-27), the home copy's role reads *backed up with the working copy* rather than *reconciled with it*, matching the operator verb **backup**. No obligation changed. |
 | 0.1.0-draft | 2026-09-26 | **Peer-model pass.** The three drive roles collection / target / offsite target were renamed **working copy**, **home copy** and **off-site copy**, retiring *target* and *backup*, which `turbo-collection-spec.md` Section 3 dropped when copies became peers. R-SET-6 no longer sets a volume label: a copy is identified by its `copyName` in configuration (`meta-file-spec.md` R-MFILE-19), which survives a reformat where a label does not, so the label was redundant. R-SET-7 narrowed from a MUST to a SHOULD, because marking a drive is a memory aid and a release depends on where a drive physically sits, not on a word on its case. Section 1 now states the three copies are peers and recommends which drive holds which. R-SET-8 to R-SET-12 reworded to the new copy names. IDs keep their numbers (R-LANG-20; nothing published, R-PUB-3). A narrowing, so MAJOR in spirit, but every document here is `0.1.0-draft`, so no version changes. |
 | 0.1.0-draft | 2026-08-08 | First draft, R-SET-1 to R-SET-11. Split out of `turbo-collection-procedure.md`, which held setup and recurring work together. Former R-OP-7 to R-OP-10 land here as R-SET-1 to R-SET-7 and R-SET-11. |

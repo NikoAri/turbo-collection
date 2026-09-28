@@ -62,6 +62,7 @@ Section 15 records the pass; `R-CLI-4`, `R-CLI-5`, Section 8.4, Section 7.1 (ret
 replaced by **Mirror**), the `MirrorEngine` port, and Sections 12.1, 12.3 and 14 reworded.
 `meta-file-spec.md`: `R-MFILE-13`, `R-MFILE-15`, `R-MFILE-16` and commentary. The five procedures:
 `turbo-collection-backup-procedure.md` regains its title (the filename never changed), and operator
-prose across all five moves to _back up_. Requirement identifiers are not renumbered. Still owed: the
-worked example and fixtures still name a subordinate copy (`copyName: "backup1"`, `sample-backup-1`),
-which teach the retired noun and want neutral role-based names.
+prose across all five moves to _back up_. Requirement identifiers are not renumbered. The worked example and fixtures were renamed on
+2026-09-28 (`collectionName: "main"` and `"off-site"`, replacing the subordinate `backup1` and
+`sample-backup-1`); copy naming is settled in
+[the collection-naming decision](2026-09-28-collection-naming-decision.md).

@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0-draft",
+  "tcSpecVersion": "0.1.0-draft",
+  "runId": "20260814T180422Z-3f9a",
+  "collectionName": "main",
+  "date": "2026-08-14T18:04:22Z",
+  "fileCount": 1,
+  "contentDigest": "3a57e4aa29ef349611b1e7735666ef576b7861af0478ba4637204e91b161de27",
+  "layout": { "specId": "photo-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "icloud", "version": "0.1.0-draft" }
+}

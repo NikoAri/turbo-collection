@@ -60,10 +60,10 @@ The property you need before deleting is narrow and specific: *these exact items
 collection, and their bytes match*. Verifying the whole collection does not establish it, and neither
 does a successful-looking export.
 
-## 4. Mirror to at least one target, and verify there too (R-BAK-1 to R-BAK-3)
+## 4. Back up to at least one other copy, and verify there too (R-BAK-1 to R-BAK-3)
 
-A photo that exists only on the collection drive is one drive failure away from gone. Mirror, then
-verify the target against its own manifest (R-TGT-9 requires each target to carry one).
+A photo that exists only on the working copy is one drive failure away from gone. Back up, then
+verify that copy against its own manifest (R-TGT-9 requires each copy to carry one).
 
 Deleting from iCloud after step 3 but before step 4 leaves you with a single copy for however long
 that gap lasts. That gap is the riskiest state in this workflow.

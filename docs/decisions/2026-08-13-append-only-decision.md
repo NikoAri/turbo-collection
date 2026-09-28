@@ -13,7 +13,7 @@ them. Mirror-delete was the single exception, and it is gone.
 
 ## Why remove a feature that defaulted to off
 
-Mirror-delete bought one thing: a target that shrinks when the collection does. It risked the
+Mirror-delete bought one thing: a copy that shrinks when another does. It risked the
 classic backup catastrophe, in which a source appears empty (a failed mount, an expired token, a
 partial sync), the tool concludes everything was deleted, and the deletion propagates to the copy
 that was supposed to survive exactly that. A default is a promise the code makes to itself.
@@ -34,13 +34,12 @@ disconnected drive cannot be deleted from.
 
 ## What it cost, accepted knowingly
 
-- **A corrupt file at a target is never healed automatically.** `R-MIRROR-1` used to overwrite any
-  target file differing from the collection's copy, which treated the collection as authoritative and
-  contradicted `R-INT-7`, where neither side is. `R-INT-7` won. Repair is now an action a human
-  requests.
-- **A target becomes a superset of the collection**, so `R-COL-4` no longer claims structural
-  equivalence, and `R-INT-8` stops `extra` at a target being reported as an error. A tree that only
-  grows is what makes an accidental deletion in the collection recoverable.
+- **A corrupt file in a copy is never healed automatically.** `R-MIRROR-1` used to overwrite any
+  file differing from another copy's, which treated one copy as authoritative and contradicted
+  `R-INT-7`, where neither side is. `R-INT-7` won. Repair is now an action a human requests.
+- **Each copy becomes a superset of what has been imported**, so `R-COL-4` no longer claims
+  structural equivalence, and `R-INT-8` stops `extra` in a copy being reported as an error. A tree
+  that only grows is what makes an accidental deletion recoverable.
 - **Turbo-Collection cannot detect a deletion at a source of something never backed up.** `R-SRC-13`
   forbids computing the collection-to-source direction at all. The protection is ordering rather than
   detection: confirm coverage with an import dry-run (`R-SRC-14`), then delete.

@@ -32,7 +32,7 @@ Every prefix resolves to exactly one document.
 | `R-META-*` | `turbo-collection-spec.md` | document self-sufficiency and classification |
 | `R-COL-*` | `turbo-collection-spec.md` | collection invariants |
 | `R-SRC-*` | `turbo-collection-spec.md` | Source port |
-| `R-TGT-*` | `turbo-collection-spec.md` | Target port |
+| `R-TGT-*` | `turbo-collection-spec.md` | Storage port |
 | `R-MIRROR-*` | `turbo-collection-spec.md` | mirror semantics |
 | `R-INT-*` | `turbo-collection-spec.md` | integrity and fixity |
 | `R-NAME-*` | `turbo-collection-spec.md` | filename safety |
@@ -42,14 +42,14 @@ Every prefix resolves to exactly one document.
 | `R-VER-*` | `turbo-collection-spec.md` | artifact version stamps, format generations, migration |
 | `R-SET-*` | `procedures/turbo-collection-setup-procedure.md` | buying, labeling and filling drives, once |
 | `R-IMP-*` | `procedures/turbo-collection-import-procedure.md` | getting photos off a source into a collection |
-| `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing backup drives up to date |
+| `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing backup copies up to date |
 | `R-OFF-*` | `procedures/turbo-collection-offsite-procedure.md` | bringing the off-site copy up to date |
 | `R-REL-*` | `procedures/turbo-collection-release-procedure.md` | destroying a copy held outside a collection |
 | `R-LANG-*` | `language-requirement.md` | how a normative document is written |
 | `R-PUB-*` | `version-requirement.md` | how a normative document is versioned and published |
 | `R-ICLOUD-*` | `specs/import-sources/icloud/` | iCloud import source (planned, stub not yet filled) |
 | `R-ALBUM-*` | `specs/layout/` | album layout convention (planned) |
-| `R-PHOTO-*` | `specs/layout/` | photo layout convention (planned) |
+| `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout convention |
 
 ## Map of the core specification
 
@@ -61,7 +61,7 @@ Every prefix resolves to exactly one document.
 | 3 | Terminology, self-contained |
 | 4 | Collection invariants, which outrank everything else |
 | 5 | Source port |
-| 6 | Target port |
+| 6 | Storage port |
 | 7 | Mirroring, integrity, filename safety |
 | 8 | Configuration, logging, command line, and three distinct read-only inspections |
 | 9 | This specification's own version, artifact stamps, format generations and migration |

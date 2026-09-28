@@ -9,9 +9,9 @@ with a known set of drives plugged in:
 | Document | Prefix | The sitting |
 |---|---|---|
 | `turbo-collection-setup-procedure.md` | `R-SET-*` | Once. Buy drives, label, fill. |
-| `turbo-collection-import-procedure.md` | `R-IMP-*` | Collection drive in. Pull from a source. |
-| `turbo-collection-backup-procedure.md` | `R-BAK-*` | Collection drive plus a backup drive in. Mirror. |
-| `turbo-collection-offsite-procedure.md` | `R-OFF-*` | Fetch the off-site drive. Mirror. Take it back. |
+| `turbo-collection-import-procedure.md` | `R-IMP-*` | Working copy in. Import from a source. |
+| `turbo-collection-backup-procedure.md` | `R-BAK-*` | Working copy plus the home copy in. Back up. |
+| `turbo-collection-offsite-procedure.md` | `R-OFF-*` | Take the working copy to the off-site copy. Back up. |
 | `turbo-collection-release-procedure.md` | `R-REL-*` | Destroy a copy held outside the collection. |
 
 ## The three-layer split this settles
@@ -24,17 +24,17 @@ A procedure states an act and links to a decision record. It carries no rational
 
 ## Why one document per sitting
 
-Import, mirror and off-site rotation are three different physical activities with different drives
-attached, done at different frequencies. A person about to mirror should not scroll past instructions
+Import, backup and off-site rotation are three different physical activities with different drives
+attached, done at different frequencies. A person about to back up should not scroll past instructions
 for buying drives. Splitting by sitting also matches the architecture: import is the Source port,
-backup and off-site are the Target port.
+backup and off-site are the Storage port.
 
 Release is separate because it is the only act that can destroy a photograph, and because it happens
 at a different moment from any of the others.
 
 ## Most operator obligations turned out to be software obligations
 
-A first draft made counting, checksum verification and target verification operator MUSTs. They are
+A first draft made counting, checksum verification and copy verification operator MUSTs. They are
 work Turbo-Collection performs. What a person actually does is plug drives in, run something, read a
 report, and decide whether to release.
 

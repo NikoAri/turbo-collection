@@ -5,7 +5,7 @@
 
 A copy records where it physically sits as a **location receipt**, a third receipt type beside
 `arrival` and `error`, living in a `.turbo-collection/` subdirectory at the **copy root** (`R-MFILE-2`,
-`R-MFILE-26`). One connected drive can then recognize which attached volume is `backup1` and ask the
+`R-MFILE-26`). One connected drive can then recognize which attached volume is `off-site` and ask the
 operator fewer questions.
 
 A location receipt states a two-part locator: an **optional `volumeId`** and an **always-relative
@@ -17,7 +17,7 @@ trail (`R-REC-9`).
 Two guardrails, carried from the in-principle decision, hold it safe:
 
 - **A locator finds a candidate; configuration authorizes.** A resolved locator points at a candidate
-  only; Turbo-Collection reads that copy's `turbo-collection-config.json` and confirms `copyName`
+  only; Turbo-Collection reads that copy's `turbo-collection-config.json` and confirms `collectionName`
   before acting, and never infers identity from a matched volume (`R-REC-9`, `R-MFILE-19`).
 - **It is optional and non-load-bearing.** Turbo-Collection functions without it and falls back to
   asking when it is absent or no longer resolves. A cloud copy has no volume at all. Per the

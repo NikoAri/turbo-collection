@@ -6,8 +6,9 @@
 > **This document records why, not what.** What must be true lives in
 > [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which is the source of
 > truth that code cites. Here you will find goals, rejected options, architecture rationale, a
-> decades-scale migration analysis, and an operations runbook. Anything decided after 2026-08-01 is
-> recorded in [`decisions/`](decisions/) rather than woven back into this narrative.
+> decades-scale migration analysis, and an operations runbook. Decisions taken since live in
+> [`decisions/`](decisions/), which holds current decision records; where one changes what is stated
+> here, this narrative is corrected to match, and git preserves earlier wording.
 
 ---
 
@@ -116,11 +117,9 @@ Supporting principles:
   Settings that look load-bearing frequently are not, and a file that documents a boundary is not the
   same as a file that enforces one.
 - **AI-optional to operate, AI-assumed to recover.** Operating this system requires no AI: the stack
-  is simple enough to run and maintain by hand, and that has not changed. What changed on 2026-08-16
-  is the other half. This bullet used to end "AI is an accelerant, not a load-bearing part," which is
-  no longer true without qualification, because recovering data when Turbo-Collection is gone now
-  leans on the next principle. The boundary is worth keeping sharp: normal operation assumes nothing,
-  recovery assumes help.
+  is simple enough to run and maintain by hand. Recovering data when Turbo-Collection is gone is the
+  other half, and it leans on the next principle. The boundary is worth keeping sharp: normal
+  operation assumes nothing, recovery assumes help.
 - **A future reader has help.** A person who finds this data, at any point across the decades it is
   meant to survive, is assumed to have access to a capable AI assistant and to be able to ask it to
   act on what they find. So *readable without Turbo-Collection* means readable by a person holding
@@ -152,11 +151,11 @@ Supporting principles:
   companion manifest, on 2026-08-16.
 - **Future-translatability.** Even if a language disappears, a mainstream + idiomatic + small +
   dependency-light codebase can be translated (by a future human or AI) into the language of the day.
-- **Only ever add.** Turbo-Collection creates and reports; it never deletes. The one destructive
-  capability it used to have, mirror-delete, was withdrawn on 2026-07-29, and the reasoning is in
+- **Only ever add.** Turbo-Collection creates and reports; it never deletes; reasoning is in
   [the append-only decision](decisions/2026-08-13-append-only-decision.md). Worth stating here as
-  philosophy and not only as a requirement, because it explains an otherwise odd shape: a target
-  grows monotonically and is a superset of the collection rather than a copy of it.
+  philosophy and not only as a requirement, because it explains an otherwise odd shape: every copy
+  grows monotonically, so copies converge by each gaining what the others hold, never by one being
+  overwritten to match another.
 - **A record lives with the data it describes.** There is no central index of what is stored where.
   Every directory carries its own manifest and its own receipt; every drive carries its own recovery
   note and its own copy of the specification; nothing remembers a source's contents between runs.
@@ -168,7 +167,7 @@ Supporting principles:
   known failure is that losing it leaves you holding media you can no longer interpret, so it needs
   its own backup and its own recovery procedure. The cost accepted instead is repetition, which is
   the redundancy principle applied to metadata. Reasoning:
-  [the receipts decision](decisions/2026-08-16-receipts-decision.md).
+  [the receipts decision](decisions/2026-09-07-receipts-decision.md).
 - **A vendor may be an import source, never a custodian, and the same holds for hardware.** The rule
   began as a statement about services and tools, and it turns out to describe three layers of the same
   choice. A **service** may be how photographs come in (iCloud) but never where they live. A **tool**
@@ -180,7 +179,7 @@ Supporting principles:
   dependency** rather than none. Reasoning:
   [the drive and hardware decision](decisions/2026-08-15-drive-naming-and-hardware-decision.md).
 - **The computer is equipment, not infrastructure.** No machine is part of this system. Configuration
-  travels on the collection drive, logs are written to the drives, and nothing is installed or
+  travels on the working copy, logs are written to the drives, and nothing is installed or
   remembered on a host, so a backup can be performed on a borrowed computer in another building. This
   is what several separately-argued decisions were quietly buying.
 - **The code is not the trust anchor.** This principle is what makes the previous one hard. If the
@@ -203,7 +202,7 @@ Supporting principles:
 |---|---|
 | **Immich** (self-hosted Google Photos clone) | Excellent, but too heavy; stores metadata in a **PostgreSQL database** (violates "plain files"), felt overwhelming, and it's a *manager* not a *backup*. AGPL (fine for personal use, but not the direction). |
 | **PhotoPrism / LibrePhotos** | Same class as Immich: DB-backed photo managers, heavier than needed. |
-| **Managed cloud services as the *system of record*** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the import source for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup target (Section 10). What is rejected is depending on any of them for custody. |
+| **Managed cloud services as the *system of record*** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the import source for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup copy (Section 10). What is rejected is depending on any of them for custody. |
 | **Proprietary backup apps** (e.g., Bvckup 2) | The owner *liked* Bvckup's file-mirroring model, but it's **proprietary** → no full control. We want an open equivalent. |
 | **Full versioned/repo backup tools as the core** (restic/Borg/Kopia) | Great tools, but their **repo format** isn't plain browsable files; you need the tool to read it back. Fine as a *later, optional* versioned layer, not the core. |
 | **POSIX shell as the orchestration language** | Durable on Unix but **not truly OS-independent** (not native on Windows) and less approachable. A high-level language with a cross-platform runtime is more portable. |
@@ -258,7 +257,7 @@ graph TD
     E -.rclone today.-> RC[rclone]
     E -.rsync fallback.-> RS[rsync]
     I --> MAN[manifest.sha256]
-    C --> CFG[backup.config.json]
+    C --> CFG[turbo-collection-config.json]
     L --> LOG[logs/*.txt]
 
     RC --> DATA[(Plain file tree<br/>on external drive)]
@@ -271,7 +270,7 @@ graph TD
 |---|---|---|---|
 | Data | (none) | Plain file tree | The sacred core; only the engine touches it |
 | Source | `capabilities()` / `list()` / `fetch(item)` | none yet | Every vendor-specific fact lives in an adapter, never in the core |
-| Target | `capabilities()` / `push()` / `verify()` | local drive | A target declares what it can guarantee, rather than being merely a path |
+| Storage | `capabilities()` / `push()` / `verify()` | local drive | A copy's storage declares what it can guarantee, rather than being merely a path (port formerly **Target**; `R-TGT-*` IDs frozen) |
 | Mirror engine | `mirror(src, dst, excludes)` | rclone | Swap to rsync = change one adapter, no data change |
 | Integrity | `build()` / `verify()` | SHA-256 manifest | Verification is separate from copying |
 | Config | `load() -> Config` | JSON file (data) | Config is *data, not code*; survives a language rewrite |
@@ -307,7 +306,7 @@ graph TD
 | **Integrity** | **SHA-256 manifest** (standard `shasum` text format) | Detects silent bit-rot. For *integrity* (not security) even weaker hashes suffice; SHA-256 is solid for decades. Store algorithm in the manifest/filename so switching is explicit. |
 | **Scheduler** | **launchd** (macOS) → cron / Task Scheduler / systemd later | OS built-in; external to the core; ship snippets for all major OSes. |
 | **Version control** | **git** | A *binding* (see below). Distributed ⇒ every clone is complete. |
-| **Code hosting** | **GitHub** | A *binding*. Because git is distributed, leaving GitHub is one command (`git remote set-url`) to any host or a copy on the backup drive. Hosts the *system*, never the photos. |
+| **Code hosting** | **GitHub** | A *binding*. Because git is distributed, leaving GitHub is one command (`git remote set-url`) to any host or a copy kept on the drives. Hosts the *system*, never the photos. |
 | **Diagrams** | **Mermaid** (plain-text source) | A *binding*, same bucket as languages. Plain-text ⇒ diffable, translatable, AI-convertible to any future notation. Keep diagram **source** in the docs, not binary images. |
 | **License** | **MIT** | Maximum permissiveness/reuse/longevity. |
 
@@ -369,7 +368,7 @@ cut at port contracts. All of it became
 [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which states the real
 requirements and the real port contracts, and which has since moved past this sketch in several
 places: exit codes were deliberately left open rather than given a code per failure class, and the
-Source and Target ports did not exist here at all.
+Source and Storage ports did not exist here at all.
 
 The text is not reproduced, for two reasons. Superseded requirements sitting beside live ones invite
 a reader to follow the wrong set, and `language-requirement.md` R-LANG-17 keeps obligation keywords
@@ -446,26 +445,25 @@ The complete end-to-end human workflow, from one-time setup through rare events.
 ```mermaid
 flowchart TD
     A[Take photos - phone] -->|automatic| B[Phone storage]
-    B -->|monthly, you ~20 min:<br/>plug in / Wi-Fi transfer| C[Ingest to computer]
-    C -->|automatic: EXIF-sort into YYYY/MM| D[Photo library on main disk]
-    D -->|scheduled or on demand:<br/>rclone mirror + SHA-256| E[Primary backup drive]
-    E -->|monthly, you ~12 min:<br/>swap drive OR cloud upload| F[Off-site copy]
+    B -->|monthly, you ~20 min:<br/>plug in / Wi-Fi transfer| C[Ingest to internal disk]
+    C -->|automatic: EXIF-sort, copy into collection| D[Collection on working copy<br/>external disk]
+    D -->|scheduled or on demand:<br/>rclone mirror + SHA-256| E[Home copy]
+    E -->|monthly, you ~12 min:<br/>back up off-site| F[Off-site copy]
     D -->|automatic| G[AI-summarized log]
     G -->|monthly, you ~8 min: glance| H[Verified safe]
 ```
 
-**Corrected 2026-08-08.** This diagram previously showed the primary backup drive as always
-connected, with mirroring on a schedule. That is one deployment, never a requirement: `R-CLI-2`
-makes the tool one-shot with no daemon, and `R-CLI-6` requires it to be fully usable with no
-scheduler installed. Connecting a backup drive only when you use it trades automation for a
-stronger air gap, and pushes the whole burden of protecting new photos onto the backup procedure,
-which is why `R-REL-2` is written as a gate on release rather than as a nightly habit.
+Scheduling is optional. The mirror step above runs on a schedule or on demand: `R-CLI-2` makes the
+tool one-shot with no daemon, and `R-CLI-6` requires it to be fully usable with no scheduler
+installed. Connecting a backup copy only when you use it trades automation for a stronger air gap,
+and pushes the whole burden of protecting new photos onto the backup procedure, which is why
+`R-REL-2` is written as a gate on release rather than as a nightly habit.
 
 **Monthly checklist (~40 min):**
 
 1. **Ingest**: plug in phone, transfer new photos; auto-filing sorts them (~20 min).
 2. **Confirm backup**: check the run went green in the AI-summarized log (~8 min).
-3. **Off-site**: swap the rotation drive, or confirm the cloud upload (~12 min).
+3. **Off-site**: take the working copy to the off-site copy, or confirm the cloud upload (~12 min).
 4. **Quarterly add-on**: restore a random sample to prove backups are restorable (~25 min, 4×/yr).
 
 ### Hardware lifecycle (~2–3 year cadence, driven by drive *age*)
@@ -473,7 +471,7 @@ which is why `R-REL-2` is written as a gate on release rather than as a nightly 
 1. **Monitor** *(automatic)*: orchestrator flags any drive >80% full or past ~3-yr age in the log.
 2. **Buy online** *(you, ~30–60 min)*: order **one drive at a time**, of a different model from the
    drive it joins, and check that model against current published failure data before ordering.
-   Corrected 2026-08-08; see the buying cheat-sheet below.
+   See the buying cheat-sheet below.
 3. **Receive & prep** *(you, ~20–30 min)*: unbox, connect, format, physically label, drop a text file
    on the drive recording purchase date & role.
 4. **Burn-in & onboard** *(you ~15 min active, rest passive)*: add to config, run first full mirror +
@@ -485,7 +483,7 @@ which is why `R-REL-2` is written as a gate on release rather than as a nightly 
 
 | Decision | Guidance |
 |---|---|
-| Type | SSD for the collection drive, which is carried between machines; **HDD for both backups**, on price alone at roughly 30 against 60–80 USD/TB. Any medium is permitted in any role (`R-SET-2`) |
+| Type | SSD for the working copy, which is carried between machines; **HDD for both backup copies**, on price alone at roughly 30 against 60–80 USD/TB. Any medium is permitted in any role (`R-SET-2`) |
 | Avoid | SMR drives for backup (prefer **CMR**); avoid unknown/relabeled sellers (counterfeit risk) |
 | Capacity | Buy **≥ 2× the library** so *age*, not fullness, is the trigger. Headroom costs money and costs no verification time |
 | Quantity | **Three copies total, bought on separated dates** (`R-SET-13`, `R-SET-3`). Never two matching drives together |
@@ -493,23 +491,19 @@ which is why `R-REL-2` is written as a gate on release rather than as a nightly 
 | Filesystem | exFAT only where a drive must be written by both macOS and Windows; a journaled native filesystem everywhere else |
 | On arrival | First mirror + checksum verify = free DOA/burn-in check |
 
-**Two corrections, both made 2026-08-08.**
+**Why these choices.**
 
-*Matching drives.* This table previously advised buying two matching drives so they rotate in sync.
-Failures inside a manufacturing batch are correlated over multi-year periods, and measured failure
-rates differ between models by two orders of magnitude, so two identical drives bought together are
-one bet placed twice. A saving grace this architecture already has: mirrors are independent plain
-trees, so recovery is an ordinary file copy and never a RAID rebuild, which removes the mechanism
-that usually kills a second drive right after the first.
+*Different models, never matching drives.* Failures inside a manufacturing batch are correlated over
+multi-year periods, and measured failure rates differ between models by two orders of magnitude, so
+two identical drives bought together are one bet placed twice. A saving grace this architecture
+already has: mirrors are independent plain trees, so recovery is an ordinary file copy and never a
+RAID rebuild, which removes the mechanism that usually kills a second drive right after the first.
 
-*SSD off-site.* This table briefly forbade an SSD for the carried off-site drive, on the grounds that
-NAND holds charge that leaks. **That reasoning was withdrawn on 2026-08-10 and the prohibition is
-gone.** JEDEC JESD218's one-year client figure is measured on a drive stressed to its full rated
-terabytes written, and a photo collection leaves a drive at a small fraction of that, where
-retention is far longer. The medium is now chosen on price, and the property that actually
-establishes a copy is intact is reading it on a cadence, which is still undecided. Shock resistance
-remains a reason to put the SSD on the collection drive, since that is the one carried between
-machines. Full reasoning:
+*SSD permitted in any role.* An SSD is fine for the off-site copy. JEDEC JESD218's one-year
+client figure is measured on a drive stressed to its full rated terabytes written, and a photo
+collection leaves a drive at a small fraction of that, where retention is far longer. Medium is
+chosen on price, and the property that actually establishes a copy is intact is reading it on a
+cadence, still undecided. Shock resistance is a reason to put the SSD on the working copy, since that is the one carried between machines. Full reasoning:
 [storage hardware decision](decisions/2026-08-10-storage-hardware-decision.md).
 
 *What sets the cadence.* The immutable-backup literature supplies the idea worth borrowing:
@@ -524,7 +518,7 @@ is chosen yet.
 
 Append-only sharpens one edge of this. Never overwriting protects copies that already exist, and does
 nothing to stop bad bytes reaching new ones, so a collection file that corrupts silently would be
-faithfully copied to the next fresh target. `R-MIRROR-9` closes that by verifying immediately before
+faithfully copied to the next fresh copy. `R-MIRROR-9` closes that by verifying immediately before
 each copy, which is cheap because the file is being read anyway. It does not replace a cadence; it
 only stops corruption spreading at the one moment the tool is already looking.
 
@@ -660,7 +654,9 @@ SHA-256 *as a chosen mechanism*.
   GitHub); expected to be swapped over time.
 - **Fixity**: proof that data has not changed/corrupted, via checksums (here, SHA-256).
 - **Bit-rot**: silent data corruption on storage over time; detected by comparing checksums.
-- **Mirror**: an exact, browsable copy of a folder tree; only changed files are transferred on update.
+- **Backup**: the operation and its purpose, moving photographs into safety; carried out by the mirror mechanism across copies.
+- **Peer copy**: one of several byte-equal copies of a collection; no copy is privileged.
+- **Mirror**: the mechanism that brings copies into agreement, transferring only files a copy lacks; symmetric and add-only, never a one-way push and never a delete.
 - **Manifest**: a plain-text file listing each file's SHA-256 checksum (standard `shasum` format).
 - **Port / Adapter**: an interface (port) and its swappable implementation (adapter); the core depends
   on ports, not concrete tools.
@@ -676,7 +672,7 @@ SHA-256 *as a chosen mechanism*.
 ## 15. Next steps (superseded)
 
 **Superseded.** This section listed steps toward a specification that has since been written, at a
-different path under a different name, and a repository scaffold that predates the Source and Target
+different path under a different name, and a repository scaffold that predates the Source and Storage
 ports. Neither survives contact with what exists now.
 
 What is next lives outside this document by design, because a narrative that also tracks a work queue

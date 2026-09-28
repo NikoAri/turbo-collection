@@ -33,7 +33,7 @@ R-META-2 and R-META-3 already impose between code and specification.
   guarantees drift. A record holds instead what nothing else can: alternatives that lost.
 - **Relying on git history rather than keeping superseded records.** R-VER-2 already states that
   version control is best effort and that nothing load-bearing depends on it, which is why a
-  specification copy travels on every target drive. A diff shows that a line changed, never why an
+  specification copy travels on every drive. A diff shows that a line changed, never why an
   alternative was worse.
 - **Strict immutability for records.** Softened rather than rejected: mechanical maintenance keeps a
   record accurate about the world, and only decision substance and rejected alternatives are

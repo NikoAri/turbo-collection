@@ -16,12 +16,12 @@ directory where it recorded an error affecting that directory's content (`R-MFIL
 not one file but a set of immutable per-event files, each in that directory's `.turbo-collection/`
 subdirectory:
 
-- one **arrival** file per arrival, `receipt-<runId>-<copyName>.arrival.json` (`R-MFILE-14`);
+- one **arrival** file per arrival, `receipt-<runId>-<collectionName>.arrival.json` (`R-MFILE-14`);
 - one **error** file per run that recorded any error for the directory,
-  `receipt-<runId>-<copyName>.error.json` (`R-MFILE-16`).
+  `receipt-<runId>-<collectionName>.error.json` (`R-MFILE-16`).
 
 `<runId>` is a colon-free ISO 8601 basic-format UTC instant plus a suffix, so it is a legal filename
-on every platform and sorts by time. `<copyName>` names the copy an event **concerns**, never the
+on every platform and sorts by time. `<collectionName>` names the copy an event **concerns**, never the
 copy its file resides on: propagation places a copy's files onto other copies, and a mirror error
 names a destination that failed and often cannot hold its own error file, so that file is written on
 the copy mirrored **from** (`R-MFILE-13`).
@@ -102,7 +102,7 @@ Rewritten from the 2026-08-16 receipts model to the current per-event, peer-prop
 requirements: `R-MFILE-13` (per-event files, `.turbo-collection/` placement, `runId` form,
 destination-not-residence), `R-MFILE-14` (arrival fields, `tcSpecVersion`), `R-MFILE-15` (import
 versus mirror field sets, `{specId, version}`, `contentDigest`), `R-MFILE-16` (error file),
-`R-MFILE-19` (`copyName` charset and case-folded collision); `R-REC-5` (honest, possibly partial
+`R-MFILE-19` (`collectionName` charset and case-folded collision); `R-REC-5` (honest, possibly partial
 snapshot), `R-REC-6` (propagation union everywhere; a no-op writes no arrival), `R-REC-7` (never
 delete or alter a receipt file), `R-REC-8` (placement, not permanence; dated copy counts). The
 2026-08-16 IDs `R-REC-1` to `R-REC-4` and `R-INT-1` moved into the `R-MFILE-*` family on 2026-08-27.

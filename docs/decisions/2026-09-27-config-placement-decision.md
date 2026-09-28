@@ -23,7 +23,7 @@ out by name in an editor or a file manager, and the redundancy costs nothing.
 
 The 2026-08-16 design split meta files by audience: files a person or a stranger should find sat at
 the root with self-describing names, configuration among them, while machinery went into
-`.turbo-collection/`. Two premises then shifted. Configuration collapsed to `{version, copyName}`
+`.turbo-collection/`. Two premises then shifted. Configuration collapsed to `{version, collectionName}`
 once the [peer-model decision](2026-09-05-peer-model-decision.md) withdrew `role`, so it became
 tool-identity rather than a file a person reads for orientation. And the copy root gained its own
 `.turbo-collection/` for location receipts (`R-MFILE-26`), leaving configuration the lone copy-level
@@ -41,7 +41,7 @@ findable as `ls -a` makes it, and its self-description is untouched. Orientation
 
 - **Configuration at the copy root** (the prior decision). It left configuration the one copy-level
   meta file outside the `.turbo-collection/` the root already held, and rested a stranger's
-  orientation on a `{version, copyName}` file that never carried it. `README.md` does.
+  orientation on a `{version, collectionName}` file that never carried it. `README.md` does.
 - **The bare name `config.json` inside the directory**, matching `manifest.json` and the `receipt-`
   files. Consistent, and what git does with `.git/config`, but configuration is the one meta file a
   person looks for by name, so its full name earns its keep where a redundant prefix would not.

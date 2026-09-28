@@ -28,7 +28,7 @@ project cannot yet justify.
 
 ## Media is chosen by cost, not by charge decay
 
-Hard disks for both backups, solid-state for the collection drive, on price alone: external hard
+Hard disks for both backup copies, solid-state for the working copy, on price alone: external hard
 disk runs about 30 USD/TB against 60 to 80 USD/TB for portable solid-state. Solid-state media is
 **permitted in any role**. Nothing here forbids it.
 
@@ -75,7 +75,7 @@ time, which makes buying one size up the cheaper mistake, since a drive that fil
 unplanned migration instead of an age-driven replacement.
 
 Worked example, as of 2026-08-10. A photo library of roughly 1 TB puts the `R-SET-5` suggestion at
-2 TB. Three 4 TB drives came to roughly **490 US dollars** with a solid-state collection drive, and
+2 TB. Three 4 TB drives came to roughly **490 US dollars** with a solid-state working copy, and
 roughly **360 US dollars** all hard disk.
 
 Two cautions. Prices came from retail summaries rather than quotes, so they rank options rather than
@@ -109,7 +109,7 @@ detects.
 | Was | Now | Why |
 |---|---|---|
 | Order two matching drives so they rotate in sync | One drive at a time, different model, separated dates | Correlated batch failure |
-| Solid-state forbidden for a carried off-site drive | Any medium, chosen on cost | The retention argument above |
+| Solid-state forbidden for the off-site copy | Any medium, chosen on cost | The retention argument above |
 | Primary backup always connected, mirroring on a schedule | One deployment among others | `R-CLI-2` and `R-CLI-6` never required it, and it is not the owner's setup |
 
 The third correction has a design consequence worth stating: with no always-connected drive, nothing

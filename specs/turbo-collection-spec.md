@@ -718,14 +718,14 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 > **A receipt, by example.** A receipt is a set of per-event files in a directory's
 > `.turbo-collection/`; field names follow the manifest's where the two overlap. An import arrival
 > records the versioned specifications that placed the content, in
-> `receipt-20260814T180422Z-3f9a-laptop.arrival.json`:
+> `receipt-20260814T180422Z-3f9a-main.arrival.json`:
 >
 > ```json
 > {
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "copyName": "laptop",
+>   "collectionName": "main",
 >   "date": "2026-08-14T18:04:22Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c...",
@@ -734,9 +734,9 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 > }
 > ```
 >
-> A later mirror to `backup1` records the same content reaching another copy, in
-> `receipt-20260902T090500Z-b1d2-backup1.arrival.json`. It names no `importSource` or `layout`, because
-> it acquired nothing and the import arrival above travels to `backup1` alongside it; the matching
+> A later mirror to `off-site` records the same content reaching another copy, in
+> `receipt-20260902T090500Z-b1d2-off-site.arrival.json`. It names no `importSource` or `layout`, because
+> it acquired nothing and the import arrival above travels to `off-site` alongside it; the matching
 > `contentDigest` proves identical content arrived:
 >
 > ```json
@@ -744,7 +744,7 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260902T090500Z-b1d2",
->   "copyName": "backup1",
+>   "collectionName": "off-site",
 >   "date": "2026-09-02T09:05:00Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c..."
@@ -752,14 +752,14 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 > ```
 >
 > A run that failed on a file records it in an error file for the same run and copy,
-> `receipt-20260814T180422Z-3f9a-laptop.error.json`:
+> `receipt-20260814T180422Z-3f9a-main.error.json`:
 >
 > ```json
 > {
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "copyName": "laptop",
+>   "collectionName": "main",
 >   "errors": [
 >     {
 >       "message": "icloud offered IMG_0001.HEIC as a degraded copy; refused by policy (R-SRC-6)",
@@ -823,8 +823,8 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 > root, optionally a copy of the specification (R-VER-8), and a `.turbo-collection/` subdirectory
 > holding `turbo-collection-config.json` (R-MFILE-17) and the copy's location receipts (R-MFILE-26).
 > Every directory holding content carries its own `.turbo-collection/` subdirectory holding
-> `manifest.json` (R-MFILE-8) and per-event `receipt-<runId>-<copyName>.arrival.json` and
-> `receipt-<runId>-<copyName>.error.json` files (R-MFILE-13). A `.turbo-collection/` directory marks a
+> `manifest.json` (R-MFILE-8) and per-event `receipt-<runId>-<collectionName>.arrival.json` and
+> `receipt-<runId>-<collectionName>.error.json` files (R-MFILE-13). A `.turbo-collection/` directory marks a
 > drive as a Turbo-Collection copy and keeps the machine files out of the way of the content, while
 > `README.md` at the root orients a stranger who finds one drive and nothing else.
 
@@ -1258,3 +1258,4 @@ no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-09-10 | **The location receipt (behavior side).** A new `R-REC-9` governs the copy-discovery hint whose format is `R-MFILE-26` in `meta-file-spec.md`. Turbo-Collection MAY record a location receipt for the copy it operates on, and only when the observed location changed, so identical observations do not accumulate. The hint locates a candidate only: identity is still confirmed by reading the found copy's configuration (`R-MFILE-19`), never inferred from a matched `volumeId` or `relativePath`. It is optional and non-load-bearing, falls back to asking when absent or stale, and never stores an absolute path, deriving the mount point at run time from `volumeId` through the Storage port. Location receipts propagate to the union on a reconcile like every receipt file (`R-REC-6`, `R-REC-7`), and record where a copy was observed, not where it remains (`R-REC-8`). `R-TGT-5` and the Storage port contract gain a capability: whether an adapter can report a stable volume identifier for the copy it backs. A draft is archived by nothing (`version-requirement.md` R-PUB-3). |
 | 0.1.0-draft | 2026-09-24 | **A legibility citation follows its rule to `meta-file-spec.md`.** Two commentaries describing the manifest as legible, that it "lists one file per line" and "places one file per line," cited `R-MFILE-9`; that one-line-per-entry property is now stated once by `meta-file-spec.md` `R-MFILE-27`, consolidated there on this date, which the two commentaries now cite. Commentary only; no requirement here added, amended, or withdrawn. |
 | 0.1.0-draft | 2026-09-27 | **Backup names the operation; the mirror is the mechanism.** The naming half of the 2026-09-05 peer-model pass is reversed, its model kept: _Reconcile_ is retired, having no slot left once the operator layer and the mechanism layer are named separately. The operation an operator invokes becomes **backup** (`R-CLI-4`, `R-CLI-5`, and the Section 8.4 drift inspection). The mechanism becomes the **mirror** again: Section 7.1 retitled _Mirroring_, and the `R-MIRROR-*` requirements, the `R-INT-8` and `R-REC-6`/`R-REC-9` and receipt commentaries, the Section 1 architecture diagram and prose, and the in-scope list reworded from _reconcile_ to _mirror_. Glossary: the _Reconcile_ entry becomes **Mirror** (the mechanism), and a new **Backup** entry names the operation whose mechanism it is. Port contracts (Section 11): _ReconcileEngine_ renamed back to **MirrorEngine** and its operation `reconcile(...) -> ReconcileResult` to `mirror(...) -> MirrorResult`; the Section 12.1 bindings row and the Section 12.3 and 14 wording updated to match. The `R-MIRROR-*` family keeps its IDs, which re-align with the restored name. No obligation changes; the renamed command is a behavior change were any version published, but a draft changes freely and is archived by nothing (`version-requirement.md` R-PUB-3). |
+| 0.1.0-draft | 2026-09-28 | **The `collectionName` rename and the naming convention reach the example.** Tracks the rename in `meta-file-spec.md` of the configuration and receipt field `copyName` to `collectionName` (2026-09-28; R-MFILE-13, R-MFILE-14, R-MFILE-16, R-MFILE-18, R-MFILE-19, R-MFILE-26): the Section 7.4 receipt example and the on-disk-names commentary follow, so the field and the `<copyName>` filename component become `collectionName` and `<collectionName>`. The example copies are renamed from `laptop` and `backup1` to `main` and `off-site`, illustrating identity by permanent site rather than by a host that stores nothing internally (`laptop`) or a numbered subordinate (`backup1`); this is illustration only, since a copy names itself under R-MFILE-19. No requirement here changed. |

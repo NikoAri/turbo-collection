@@ -16,7 +16,7 @@ Three renames carry the reframing:
 - The operation over copies is **symmetric and add-only, never one-way** (`R-MIRROR-*`, IDs frozen),
   not a one-directional push from a privileged copy. Its naming (the **mirror** mechanism, the
   **backup** operation) is settled in [the backup-naming decision](2026-09-27-backup-naming-decision.md).
-- `role` is withdrawn from configuration. A copy still declares its own identity, now `copyName`
+- `role` is withdrawn from configuration. A copy still declares its own identity, now `collectionName`
   alone (`R-MFILE-18`).
 
 Directionality can go because the safety it seemed to buy was already bought by content. Which bytes
@@ -63,8 +63,8 @@ peer-symmetric.
   (`R-MIRROR-*`, IDs frozen), the storage rules (`R-TGT-*`, IDs frozen), and the Section 11 port
   contracts (the `MirrorEngine` port). The operation's naming is settled in
   [the backup-naming decision](2026-09-27-backup-naming-decision.md).
-- **`meta-file-spec.md`:** `R-MFILE-18` (a copy declares `copyName` only; `role` and any roster of
-  other copies withdrawn) and `R-MFILE-19` (a `copyName` collision refuses the whole run).
+- **`meta-file-spec.md`:** `R-MFILE-18` (a copy declares `collectionName` only; `role` and any roster of
+  other copies withdrawn) and `R-MFILE-19` (a `collectionName` collision refuses the whole run).
 
 The same 2026-09-05 pass also made each import source its own instance with its own specification;
 that is a separate topic and a separate record still owed.
