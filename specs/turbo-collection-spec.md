@@ -180,10 +180,10 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Turbo-Collection.** This system: the orchestrator, its ports, and its adapters.
 
-- **Collection.** The set of original photo and video files this project preserves. It is one
-  logical dataset, held as one or more **peer copies**, each a plain tree (R-COL-1). This is the data
-  Turbo-Collection exists to protect. (The word "library" is deliberately avoided, because it
-  collides with "code library".)
+- **Collection.** The set of original files this project preserves: photographs and videos, and any
+  other kind of file a layout specification claims (R-SRC-15). It is one logical dataset, held as one
+  or more **peer copies**, each a plain tree (R-COL-1). This is the data Turbo-Collection exists to
+  protect. (The word "library" is deliberately avoided, because it collides with "code library".)
 
 - **Plain tree.** A directory structure in which every original exists as **exactly one file**,
   **byte-identical** to the original, at a path derived from its path in the collection, and
@@ -198,8 +198,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   requires a convention to depend on nothing beyond those three.
 
 - **Layout specification.** A normative document that defines one layout convention and states which
-  items that convention claims (R-SRC-15). Layout specifications may coexist, one per kind of
-  content, so that this document binds no particular directory shape.
+  items that convention claims (R-SRC-15). Layout specifications may coexist, each claiming different
+  items, so that this document binds no particular directory shape.
 
 - **Import source.** One way of getting original bytes into the collection, such as iCloud or a
   camera card. An import source is an **instance**: a personal and a work iCloud account are two
@@ -235,17 +235,22 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 - **Derivative.** Anything Turbo-Collection produced from an original (for example, a JPEG rendered
   from a HEIC). Always additional, never a replacement (R-COL-5).
 
-- **Content file.** An original or a derivative. The photographs and videos a copy exists to hold,
-  as distinct from the records describing them. Several requirements are scoped to content files,
-  because a rule that protects a photograph from being altered would otherwise forbid
-  Turbo-Collection from writing down what it did.
+- **Content file.** An original or a derivative: any file a copy holds that is neither a meta file
+  nor an ignored file. Photographs and videos are one kind of content file; which kinds a collection
+  takes in is decided by layout specifications (R-SRC-15), not by this document. Several requirements
+  are scoped to content files, because a rule that protects a photograph from being altered would
+  otherwise forbid Turbo-Collection from writing down what it did.
 
 - **Meta file.** A file Turbo-Collection writes into a copy that describes that copy or what
   happened to it: the configuration file, the ignore file, a manifest, a receipt, the `README.md`,
   and any copy of a specification carried on a drive. What each one is called, where it sits, and
   what is inside it are stated by `meta-file-spec.md`. Content files are preserved untouched,
-  exactly as they arrived. Every file in a copy is either a content file or a meta file. A log is
-  neither, because a log is never written inside a copy (R-LOG-5).
+  exactly as they arrived. Every file in a copy is a content file, a meta file, or an ignored file. A
+  log is none of these, because a log is never written inside a copy (R-LOG-5).
+
+- **Ignored file.** A file in a copy that matches a pattern in that copy's ignore file, `.tcignore`
+  (`meta-file-spec.md` R-MFILE-20). Turbo-Collection records no ignored file in a manifest and mirrors
+  none to another copy (R-MFILE-21).
 
 - **Published (of a specification version).** Stamped into a meta file that has left the machine
   holding the collection (`version-requirement.md` R-PUB-3). A version whose stamp carries the
@@ -256,17 +261,26 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   2.x line). The **terminal text** of a line is its last published version at the moment the line
   is superseded by the next MAJOR.
 
-- **Migration.** The operation that converts a copy of the collection from an older MAJOR version
-  of `meta-file-spec.md` to the current one (R-MFILE-24, R-MFILE-25).
+- **Migration.** The conversion of a copy of the collection from an older MAJOR version of
+  `meta-file-spec.md` to the current one (R-MFILE-24, R-MFILE-25). It is not an operation of its own:
+  an operation that writes into such a copy performs it first (R-VER-22).
 
 - **Change ledger.** The per-version, per-requirement record of specification changes, kept in
   Section 15, as `version-requirement.md` R-PUB-6 requires.
 
 - **Import.** The act of a source supplying files into the collection.
 
+- **Init.** The operation that makes a directory a copy with no other copy present, which is how a
+  collection's first copy comes to exist (R-CLI-11).
+
+- **Adoption.** The import that the init operation performs of the files already in a directory as
+  it makes that directory a copy (R-CLI-12). An adopted file stays at the path it had.
+
 - **Backup.** The operation an operator runs to bring the collection's peer copies into agreement, so
   the collection survives the loss of any one copy (R-CLI-5). Its mechanism is a non-destructive,
-  symmetric mirror across those copies (Section 7.1); recovering data from a copy is _restore_.
+  symmetric mirror across those copies (Section 7.1); recovering data from a copy is _restore_. A
+  backup given an empty directory, or one that does not exist, creates a new copy there (R-CLI-13);
+  every copy after the first comes to exist this way.
 
 - **Procedure.** A normative document stating the steps a human operator performs to achieve a
   result this specification requires. It binds the operator, not the implementation (R-META-4).
@@ -366,7 +380,7 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 | **R-SRC-4**  | Multiple sources MUST be able to coexist and MUST be importable independently. The failure of one source MUST NOT prevent import from another, and MUST still be reported.                                                                                                                                                                                                     |
 | **R-SRC-5**  | A source adapter MUST supply the **original bytes** of each item. It MUST NOT transcode, recompress, or strip metadata in the course of importing.                                                                                                                                                                                                                             |
 | **R-SRC-6**  | **The honesty requirement.** If a source **cannot** supply original bytes, the adapter MUST declare this, and Turbo-Collection MUST report it. Turbo-Collection MUST NOT silently accept a degraded file as though it were an original. A degraded import MUST be either refused or explicitly recorded as degraded, per configuration, and **the default MUST be to refuse**. |
-| **R-SRC-7**  | Import MUST be read-only with respect to the origin. A source adapter MUST NOT delete, modify, or move anything at the source device or service.                                                                                                                                                                                                                               |
+| **R-SRC-7**  | Import MUST be read-only with respect to the origin, except in adoption (R-CLI-12), where the origin is the directory being made a copy: there, Turbo-Collection MAY write meta files into that directory, and MUST NOT delete, modify, or move an adopted file. A source adapter MUST NOT delete, modify, or move anything at the source device or service. |
 | **R-SRC-8**  | Import MUST be idempotent. Importing the same item twice MUST NOT produce a duplicate in the collection, and re-running an interrupted import MUST converge rather than accumulate.                                                                                                                                                                                            |
 | **R-SRC-9**  | An item consisting of multiple files that are semantically one thing (for example, a still image and its paired motion clip) MUST be imported atomically: either all of its parts arrive, or none do. An adapter MUST NOT split such an item silently.                                                                                                                         |
 | **R-SRC-10** | The collection path of an item MUST be a pure function of the item's own bytes, the metadata the import source supplies with it, and that import source, under the collection's layout convention.                                                                                                                                                                                 |
@@ -846,12 +860,50 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 | **R-CLI-2**  | **One-shot.** Turbo-Collection MUST perform one run and exit. It MUST NOT daemonize, poll, or schedule itself. _When_ it runs is the responsibility of whatever invokes it.                                                                                                                                                                                                                  |
 | **R-CLI-3**  | Turbo-Collection MUST be fully operable from a command line, with no graphical interface required. A graphical interface, if one is ever built, MUST be a consumer of this core and MUST NOT be a dependency of it.                                                                                                                                                                          |
 | **R-CLI-4**  | Turbo-Collection MUST NOT require network access to back up to a locally-attached copy.                                                                                                                                                                                                                                                                                                     |
-| **R-CLI-5**  | Every operation (**check**, **import**, **backup**, **verify**, **check-names**, **propagation**) MUST be independently invocable on demand, not only as part of a combined run. Dry-run MUST be a mode of **import** (R-SRC-14) and of **backup** (R-MIRROR-7), not a separate operation.                                                                                                   |
+| **R-CLI-5**  | Every operation (**init**, **check**, **import**, **backup**, **verify**, **check-names**, **propagation**) MUST be independently invocable on demand, not only as part of a combined run. Dry-run MUST be a mode of **init** (R-CLI-11), of **import** (R-SRC-14), and of **backup** (R-MIRROR-7), not a separate operation. |
 | **R-CLI-6**  | Turbo-Collection MUST be fully usable with **no scheduler installed or configured**. Scheduling is optional.                                                                                                                                                                                                                                                                                 |
 | **R-CLI-7**  | Effects MUST be identical whether Turbo-Collection is invoked by a human or by a scheduler. Output formatting MAY differ (for example, progress reporting on a terminal); effects MUST NOT.                                                                                                                                                                                                  |
 | **R-CLI-8**  | An operation MUST NOT require an interactive prompt to complete, because a scheduled run cannot answer one. Every option that changes what a run does MUST be settable in configuration or by a command-line flag.                                                                                                                                                                           |
 | **R-CLI-9**  | Turbo-Collection MUST provide a read-only **check** operation that transfers and modifies nothing, and that reports, for every source and copy a run would act on: whether it is reachable and authorized; what capabilities it **currently** declares (R-SRC-11, R-TGT-12); and whether the configuration would be refused (R-TGT-6).                                                             |
 | **R-CLI-10** | Turbo-Collection MUST provide a read-only **propagation** operation that reports, from receipts alone and with no other copy connected, which copies each directory's content has reached, the date of each arrival, and the content present that has reached no other copy. It MUST report every arrival's date (R-REC-8), and MUST NOT state or imply that a copy still exists or is still intact. |
+| **R-CLI-11** | Turbo-Collection MUST provide an **init** operation that makes the directory it is given a copy, by writing into that directory a configuration file (`meta-file-spec.md` R-MFILE-17), a `README.md` where none exists (R-MFILE-22), and, where no ignore file exists, an ignore file holding the starter patterns that `meta-file-spec.md` states (R-MFILE-20). Init MUST create a directory it is given that does not exist (R-CLI-14). Init MUST take the new copy's `collectionName` from a name given on the command line, and MUST use `main` where no name is given. Init MUST refuse to act on a directory that is inside a copy or that contains a copy. Given a directory that is already a copy, init MUST fail without changing anything, and MUST report that the directory is already a copy. |
+| **R-CLI-12** | Having made a directory a copy, init MUST adopt every file, other than a meta file or an ignored file, that is already in that directory or in a directory beneath it, by importing each such file through the Source port from an import source whose items are the files already there. Turbo-Collection MUST leave each adopted file at the path it had, and MUST NOT move, rename, modify, or delete an adopted file. Where the layout specification that claims an adopted item (R-SRC-15) would place that item at a different path, init MUST refuse to run. |
+| **R-CLI-13** | In a **backup**, Turbo-Collection MUST mirror every directory the backup is given that is a copy (Section 7.1). Before mirroring, Turbo-Collection MUST create a new copy in each directory the backup is given that does not exist, or that holds no file at any depth except files matching a pattern in the ignore file of the backup's existing copy. Turbo-Collection MUST refuse a backup that would create a new copy unless that backup is given exactly one existing copy. Turbo-Collection MUST refuse to create a new copy unless a name for the new copy is given on the command line; that name becomes the new copy's `collectionName`. To create a new copy, Turbo-Collection MUST write into its directory a configuration file (`meta-file-spec.md` R-MFILE-17), a `README.md` (R-MFILE-22), and, where the existing copy has an ignore file, a duplicate of that ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a backup that is not a copy and that holds any file not matching such a pattern, and MUST report every file that directory holds. |
+| **R-CLI-14** | Turbo-Collection MUST NOT create a copy in any operation other than **init** and **backup**, and in every other operation MUST refuse to act on a directory given as a copy that is not a copy. Where init or backup creates a directory, Turbo-Collection MUST create only the last segment of that directory's path, and MUST refuse a path whose parent directory does not exist. |
+
+> **Why a copy comes into being in two ways (R-CLI-11, R-CLI-13).** A collection's first copy has no
+> other copy to start from, so **init** creates it, and names it `main` unless told otherwise. Every
+> later copy is created by the backup that first fills it, because that is the moment an existing copy
+> is in hand to fill it from; working from exactly one existing copy settles whose ignore file the new
+> copy starts with. A later copy's name must be given, because a copy is named for the place it is
+> kept, which only the operator knows, and the name is written into every receipt the copy ever
+> collects, so a guessed default would be permanent. A name is never taken from a directory's name,
+> which usually describes the drive or the tool and would read the same on every drive. Once written,
+> a name is read from configuration on every later run (R-MFILE-19). A new copy may take any name,
+> including that of a copy which has died: that is how a failed drive is replaced, and the location
+> receipts record which volume stands behind the name over time (R-MFILE-26). Two connected copies
+> stating one name are still refused (R-MFILE-19).
+
+> **Why adoption leaves every file where it is (R-CLI-12).** A directory being made a copy often
+> already holds files an operator arranged, and moving them would undo that arrangement and gain
+> nothing. So init adopts them where they sit: each is recorded as an import, so a receipt shows how it
+> entered the collection, and none is moved, renamed, or rewritten. An ignore file found in the
+> directory is used as it stands. Where none exists, init writes a starter one before adopting
+> anything, because otherwise files an operating system scatters, such as a Finder `.DS_Store`, would
+> be adopted as permanent content, and one the operating system later rewrites would read as corrupt
+> on every verify.
+
+> **Why a backup refuses a directory that already holds files (R-CLI-13).** If a backup adopted files
+> already in a new copy's directory, mirroring, which runs in both directions, would bring them into
+> the existing copy in that same run, pulling unrelated files into the collection. Adopting is the init
+> operation's act, and a file wanted in the collection arrives by import. A backup therefore creates a
+> copy only where there is nothing to adopt.
+
+> **Why only the last directory is created (R-CLI-14).** A removable drive's path can exist only while
+> the drive is connected: macOS, for one, mounts a drive under `/Volumes` and removes that entry when
+> the drive is disconnected. Creating every missing directory in a path would then build a new copy on
+> the computer's own disk and fill it there. Creating only the last directory turns that mistake into
+> an error, at no cost when the path is right.
 
 ### 8.4 Five distinct read-only inspections
 
@@ -960,14 +1012,24 @@ objection, and it is answered in three moves.
 
 ### 9.4 Migration
 
-Migration between MAJOR versions of the meta file format is stated by `meta-file-spec.md`
-(R-MFILE-23, R-MFILE-24, R-MFILE-25), together with the support window that decides which versions
-Turbo-Collection reads. No requirement of this document governs it.
+What a correct migration between MAJOR versions of the meta file format produces is stated by
+`meta-file-spec.md` (R-MFILE-23, R-MFILE-24, R-MFILE-25), together with the support window that
+decides which versions Turbo-Collection reads. This document states only how a migration is invoked.
 
-> **Why migration is not specified here.** A migration converts meta files from one format to
-> another, so the document that defines those formats is the only one that can say what a correct
-> conversion produces. Splitting the rule across two documents would let a format change land without
-> its migration, which is the failure the separation exists to prevent.
+| ID           | Requirement |
+| ------------ | ----------- |
+| **R-VER-22** | Turbo-Collection MUST NOT require a separate operation to migrate a copy: an operation that writes into a copy of an older MAJOR version migrates that copy first (R-MFILE-23). A dry-run of such an operation MUST report every copy the operation would migrate. |
+
+> **Why what a migration produces is not specified here.** A migration converts meta files from one
+> format to another, so the document that defines those formats is the only one that can say what a
+> correct conversion produces. Splitting the rule across two documents would let a format change land
+> without its migration, which is the failure the separation exists to prevent.
+
+> **Why a migration is not an operation of its own (R-VER-22).** A backup that finds a copy of an
+> older format already has that copy in hand, and must convert it before writing anyway
+> (R-MFILE-23). A separate step would be one more thing to remember, and forgetting it would only
+> postpone the same conversion to the next backup. A dry-run says in advance which copies a run would
+> convert, so a conversion never arrives unannounced.
 
 ---
 
@@ -1259,3 +1321,4 @@ no obligations and receives no per-ID ledger entries.
 | 0.1.0-draft | 2026-09-24 | **A legibility citation follows its rule to `meta-file-spec.md`.** Two commentaries describing the manifest as legible, that it "lists one file per line" and "places one file per line," cited `R-MFILE-9`; that one-line-per-entry property is now stated once by `meta-file-spec.md` `R-MFILE-27`, consolidated there on this date, which the two commentaries now cite. Commentary only; no requirement here added, amended, or withdrawn. |
 | 0.1.0-draft | 2026-09-27 | **Backup names the operation; the mirror is the mechanism.** The naming half of the 2026-09-05 peer-model pass is reversed, its model kept: _Reconcile_ is retired, having no slot left once the operator layer and the mechanism layer are named separately. The operation an operator invokes becomes **backup** (`R-CLI-4`, `R-CLI-5`, and the Section 8.4 drift inspection). The mechanism becomes the **mirror** again: Section 7.1 retitled _Mirroring_, and the `R-MIRROR-*` requirements, the `R-INT-8` and `R-REC-6`/`R-REC-9` and receipt commentaries, the Section 1 architecture diagram and prose, and the in-scope list reworded from _reconcile_ to _mirror_. Glossary: the _Reconcile_ entry becomes **Mirror** (the mechanism), and a new **Backup** entry names the operation whose mechanism it is. Port contracts (Section 11): _ReconcileEngine_ renamed back to **MirrorEngine** and its operation `reconcile(...) -> ReconcileResult` to `mirror(...) -> MirrorResult`; the Section 12.1 bindings row and the Section 12.3 and 14 wording updated to match. The `R-MIRROR-*` family keeps its IDs, which re-align with the restored name. No obligation changes; the renamed command is a behavior change were any version published, but a draft changes freely and is archived by nothing (`version-requirement.md` R-PUB-3). |
 | 0.1.0-draft | 2026-09-28 | **The `collectionName` rename and the naming convention reach the example.** Tracks the rename in `meta-file-spec.md` of the configuration and receipt field `copyName` to `collectionName` (2026-09-28; R-MFILE-13, R-MFILE-14, R-MFILE-16, R-MFILE-18, R-MFILE-19, R-MFILE-26): the Section 7.4 receipt example and the on-disk-names commentary follow, so the field and the `<copyName>` filename component become `collectionName` and `<collectionName>`. The example copies are renamed from `laptop` and `backup1` to `main` and `off-site`, illustrating identity by permanent site rather than by a host that stores nothing internally (`laptop`) or a numbered subordinate (`backup1`); this is illustration only, since a copy names itself under R-MFILE-19. No requirement here changed. |
+| 0.1.0-draft | 2026-09-30 | **Copies come into being by init and by backup, and a collection holds more than photographs.** `R-CLI-5` gains the **init** operation, and dry-run becomes a mode of init as well as of import and backup. `R-CLI-11` added: init makes a directory a copy, creating it where it does not exist, by writing its configuration, a `README.md` where none exists, and a starter ignore file where none exists; the name comes from the command line and defaults to `main`, and is never taken from a directory's name; init refuses a directory inside a copy or containing one, and fails, changing nothing, on a directory that is already a copy, which protects the name that copy's receipts carry. `R-CLI-12` added: init adopts the files already in the directory where they sit, importing each without moving, renaming, modifying, or deleting it. `R-CLI-13` added: a backup mirrors the directories it is given that are copies, creates a new copy in a directory that does not exist or holds only ignored files, working from exactly one existing copy and under a name given on the command line, and refuses any other directory. `R-CLI-14` added: no other operation creates a copy, every other operation refuses a directory given as a copy that is not one, and only the last segment of a path is ever created. `R-SRC-7` amended: in adoption, where origin and copy are one directory, meta files may be written beside the adopted files, none of which is moved, modified, or deleted. `R-VER-22` added: a migration is performed by the operation that writes into an older copy, never by an operation of its own, and a dry-run reports it; Section 9.4 now states how a migration is invoked. Glossary: _Collection_ and _Content file_ are no longer limited to photographs and videos, the kinds a collection takes in being decided by layout specifications (`R-SRC-15`); _Ignored file_, _Init_, and _Adoption_ added; _Meta file_ names three kinds of file in a copy; _Migration_ is no longer an operation; _Backup_ notes that it creates every copy after the first; _Layout specification_ no longer one per kind of content. |
