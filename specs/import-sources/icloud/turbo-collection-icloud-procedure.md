@@ -47,7 +47,3 @@ as done.
 
 Placeholder. Which vendor version and host this procedure was last executed against, on what
 date, and when it should be re-checked.
-
-## 5. Change ledger
-
-Placeholder.

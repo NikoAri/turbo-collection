@@ -187,15 +187,3 @@ Required of every normative document by `version-requirement.md` R-PUB-1. This t
 > were these files placed under rules I am reading now. A change that moves no item cannot make that
 > answer wrong, and a change that moves one item makes it wrong for every directory written before
 > it. Claiming a new kind of item is additive, because no item already placed moves.
-
----
-
-## 8. Change ledger
-
-Required by `version-requirement.md` R-PUB-6. No version has been published yet (R-PUB-3), so the
-entry below is informal; a draft carries no obligations and receives no per-ID ledger entries.
-
-| Version     | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ----------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.0-draft | 2026-08-27 | First draft, carrying decisions taken between 2026-07-21 and 2026-08-16 and unblocked by `turbo-collection-spec.md` R-SRC-15. States the claim (R-PHOTO-1, R-PHOTO-2), the directory `<YYYY>/<YYYY>-<MM>/<import source>/` (R-PHOTO-3 to R-PHOTO-5), the governing timestamp and its ladder (R-PHOTO-6 to R-PHOTO-8), the filename boundary (R-PHOTO-9), and how a directory records this convention (R-PHOTO-10). Albums are absent deliberately: grouping is a non-goal, and the Source port cannot report one. |
-| 0.1.0-draft | 2026-09-05 | **Peer model.** Terminology reframed: _Collection_ is the dataset held as peer copies, _Copy_ one physical instance, _Import source_ an instance recorded in a leaf manifest; the _Configuration_ term is removed, because configuration no longer names import sources. `R-PHOTO-3` amended: the `<import source>` path segment is the import source's `specId` recorded in that directory's manifest (`meta-file-spec.md` R-MFILE-9), no longer "the name configuration gives". The path shape is unchanged. No requirement added or withdrawn. |

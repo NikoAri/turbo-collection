@@ -37,15 +37,3 @@ Required by `version-requirement.md` R-PUB-1.
 | **MAJOR** | An obligation here is withdrawn or narrowed, so an operator conforming before no longer conforms. |
 | **MINOR** | Additions only. |
 | **PATCH** | Prose that changes no obligation. |
-
-## Change ledger
-
-Required by `version-requirement.md` R-PUB-6. Nothing published yet (R-PUB-3), so this entry is
-informal.
-
-| Version | Date | Change |
-|---|---|---|
-| 0.1.0-draft | 2026-09-26 | **Peer-model pass.** R-REL-2 reworded from *verified in the collection, and verified on a target drive* to *verified on the working copy, and verified on at least one other copy*, keeping the requirement that content is confirmed on two distinct copies while dropping the retired *target* (`turbo-collection-spec.md` Section 3). R-REL-5 *offsite target drive* to *off-site copy*. The *propagation* report name (R-REL-6, `turbo-collection-spec.md` R-CLI-10) is unchanged and still owes a separate rename. No obligation changed. |
-| 0.1.0-draft | 2026-08-08 | First draft, R-REL-1 to R-REL-5. Split out of `turbo-collection-procedure.md`. Release is its own procedure because it is a distinct act at a distinct moment, and the only one that can destroy a photograph. |
-| 0.1.0-draft | 2026-08-10 | R-REL-5 reworded to use **off-site**, defined in `turbo-collection-setup-procedure.md` Section 1, rather than restating the definition as "in the same building as every other copy". No obligation changed. |
-| 0.1.0-draft | 2026-08-15 | R-REL-6 added: run the **propagation** report (`turbo-collection-spec.md` R-CLI-10) and read the date of each arrival, treating an arrival as evidence of where content was placed rather than that the copy still exists. This is what receipts were built for, and it is deliberately additive: R-REL-1 and R-REL-2 remain what establishes that copies exist and are intact, because a receipt describes storage that is not present and can be stale without anything local changing (`R-REC-8`). R-REL-2 and R-REL-5 reworded from "backup drive" and "off-site drive" to the role names set in `turbo-collection-setup-procedure.md`. No obligation was withdrawn or narrowed. |

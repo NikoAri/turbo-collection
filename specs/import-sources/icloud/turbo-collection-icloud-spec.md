@@ -57,13 +57,3 @@ suffix behavior, structure flattening, and pairing of stills with motion clips.
 
 Placeholder. What was verified, against which vendor version, on what date, and when each claim
 expires.
-
-## 6. Change ledger
-
-Placeholder. This document was created 2026-07-25 as a surface specification, covering every way
-into "the Apple photo surface" in one document because one party controls all of them. It was
-reframed 2026-08-16 when the surface level was dropped from the project's vocabulary in favor of a
-single category, the acquisition route. That category was renamed the **import source** on
-2026-08-22, and this document moved with it from `specs/acquisition-routes/` to
-`specs/import-sources/`. Nothing normative changed at any of those steps, because nothing normative
-had been written.
