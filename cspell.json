@@ -124,6 +124,7 @@
     ".git/**",
     "**/node_modules/**",
     "**/package-lock.json",
-    "cspell.json"
+    "cspell.json",
+    "**/*.tcignore"
   ]
 }
