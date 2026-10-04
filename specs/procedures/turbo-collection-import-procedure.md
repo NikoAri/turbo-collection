@@ -13,13 +13,15 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 ---
 
-| ID | Do this |
-|---|---|
-| **R-IMP-1** | Plug in the working copy. |
-| **R-IMP-2** | Run Turbo-Collection for the source you are importing from. |
-| **R-IMP-3** | Read the report. |
-| **R-IMP-4** | Leave the source copy in place until another copy holds these items. A source copy does not count toward the three copies `turbo-collection-release-procedure.md` R-REL-1 requires, because those three are on drives you hold. |
-| **R-IMP-5** | Import in batches small enough to count, until export completeness at scale has been measured. |
+**R-IMP-1.** Plug in the working copy.
+
+**R-IMP-2.** Run Turbo-Collection for the source you are importing from.
+
+**R-IMP-3.** Read the report.
+
+**R-IMP-4.** Leave the source copy in place until another copy holds these items. A source copy does not count toward the three copies `turbo-collection-release-procedure.md` R-REL-1 requires, because those three are on drives you hold.
+
+**R-IMP-5.** Import in batches small enough to count, until export completeness at scale has been measured.
 
 ---
 

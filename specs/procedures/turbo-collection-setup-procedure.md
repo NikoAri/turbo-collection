@@ -12,9 +12,7 @@ Do these once. Written under [`../language-requirement.md`](../language-requirem
 
 ## 1. What you need
 
-| ID | Do this |
-|---|---|
-| **R-SET-1** | You MUST have a laptop or desktop computer running **Windows** or **macOS**, with a port the drives connect to. |
+**R-SET-1.** You MUST have a laptop or desktop computer running **Windows** or **macOS**, with a port the drives connect to.
 
 You also need three drives, which Section 2 covers. The three copies are **peers**: none is a master,
 each carries its own manifest, and any one can restore any other (`turbo-collection-spec.md` Section 3).
@@ -41,10 +39,9 @@ better one you have not bought yet.
 
 ### 2.1 Required
 
-| ID | Do this |
-|---|---|
-| **R-SET-2** | You MUST have **two hard disk drives** and **one solid-state drive**. |
-| **R-SET-14** | Every drive MUST be **external and removable**, and its data MUST be readable after moving the drive to a different enclosure or dock. You MUST NOT keep the collection on storage built into a computer. |
+**R-SET-2.** You MUST have **two hard disk drives** and **one solid-state drive**.
+
+**R-SET-14.** Every drive MUST be **external and removable**, and its data MUST be readable after moving the drive to a different enclosure or dock. You MUST NOT keep the collection on storage built into a computer.
 
 > **Why R-SET-14 is a rule and not advice.** Storage built into a modern computer usually cannot be
 > removed from it. Laptop storage is commonly soldered, and on some machines it is also tied
@@ -61,23 +58,24 @@ better one you have not bought yet.
 These improve the odds that your three drives do not fail together. Skip any of them and you still
 have a working setup.
 
-| ID | Do this |
-|---|---|
-| **R-SET-3** | When buying, you SHOULD buy each drive on a **different date**, never all on one date. |
-| **R-SET-4** | You SHOULD use **different models**. |
-| **R-SET-5** | You SHOULD prefer capacity of at least **twice** your current photo total, and more where the price gap is small, so that age rather than fullness decides replacement. |
+**R-SET-3.** When buying, you SHOULD buy each drive on a **different date**, never all on one date.
+
+**R-SET-4.** You SHOULD use **different models**.
+
+**R-SET-5.** You SHOULD prefer capacity of at least **twice** your current photo total, and more where the price gap is small, so that age rather than fullness decides replacement.
 
 - Why hard disks for backups, what diversity is worth, capacity and prices:
   [storage hardware decision](../../docs/decisions/2026-08-10-storage-hardware-decision.md).
 
 ## 3. Prepare
 
-| ID | Do this |
-|---|---|
-| **R-SET-6** | Format all three drives as **exFAT**. |
-| **R-SET-7** | You SHOULD mark each drive on the outside so you can tell it from the others. A useful mark is which copy it is (**working**, **home**, or **off-site**) and its **purchase date**. |
-| **R-SET-8** | Put your collection on the **solid-state drive**, and treat it as your working copy. |
-| **R-SET-9** | Use the two hard disk drives as the **home copy** and the **off-site copy**. |
+**R-SET-6.** Format all three drives as **exFAT**.
+
+**R-SET-7.** You SHOULD mark each drive on the outside so you can tell it from the others. A useful mark is which copy it is (**working**, **home**, or **off-site**) and its **purchase date**.
+
+**R-SET-8.** Put your collection on the **solid-state drive**, and treat it as your working copy.
+
+**R-SET-9.** Use the two hard disk drives as the **home copy** and the **off-site copy**.
 
 > **Why exFAT.** It is the one format Windows and macOS both read and write with no extra software.
 > The alternatives each need paid kernel-level drivers on one of the two, which the project's
@@ -92,17 +90,15 @@ have a working setup.
 
 ## 4. Fill
 
-| ID | Do this |
-|---|---|
-| **R-SET-10** | Copy your collection to the home copy, then verify the home copy against its own manifests. |
-| **R-SET-11** | Copy your collection to the off-site copy, then verify it against its own manifests. |
-| **R-SET-12** | Take the off-site copy **off-site**, and leave it there. |
+**R-SET-10.** Copy your collection to the home copy, then verify the home copy against its own manifests.
+
+**R-SET-11.** Copy your collection to the off-site copy, then verify it against its own manifests.
+
+**R-SET-12.** Take the off-site copy **off-site**, and leave it there.
 
 ## 5. Done when
 
-| ID | Do this |
-|---|---|
-| **R-SET-13** | Confirm **three copies exist on three drives, one of them off-site**, before treating any source copy as releasable. |
+**R-SET-13.** Confirm **three copies exist on three drives, one of them off-site**, before treating any source copy as releasable.
 
 `turbo-collection-backup-procedure.md` takes over from here, and its release gate depends on
 R-SET-13 holding.

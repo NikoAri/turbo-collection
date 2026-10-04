@@ -15,11 +15,11 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 ---
 
-| ID | Do this |
-|---|---|
-| **R-BAK-1** | Plug in the working copy and the home copy. |
-| **R-BAK-2** | Run the Turbo-Collection backup. |
-| **R-BAK-3** | Read the report. |
+**R-BAK-1.** Plug in the working copy and the home copy.
+
+**R-BAK-2.** Run the Turbo-Collection backup.
+
+**R-BAK-3.** Read the report.
 
 The off-site copy has its own procedure: `turbo-collection-offsite-procedure.md`.
 

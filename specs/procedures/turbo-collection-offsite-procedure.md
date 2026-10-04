@@ -18,14 +18,17 @@ was withdrawn and its number is not reused.
 
 ---
 
-| ID | Do this |
-|---|---|
-| **R-OFF-7** | Before traveling, back up the working copy with the **home copy**, and confirm the run reported no error. |
-| **R-OFF-1** | Take the **working copy** to the building where the off-site copy is kept. Do not bring the off-site copy to the working copy. |
-| **R-OFF-2** | Run the Turbo-Collection backup there. Any computer will do, including one you do not own. |
-| **R-OFF-3** | Read the report. |
-| **R-OFF-4** | Leave the off-site copy **off-site**. Bring home only the working copy. |
-| **R-OFF-5** | Keep at least one copy off-site at all times. |
+**R-OFF-7.** Before traveling, back up the working copy with the **home copy**, and confirm the run reported no error.
+
+**R-OFF-1.** Take the **working copy** to the building where the off-site copy is kept. Do not bring the off-site copy to the working copy.
+
+**R-OFF-2.** Run the Turbo-Collection backup there. Any computer will do, including one you do not own.
+
+**R-OFF-3.** Read the report.
+
+**R-OFF-4.** Leave the off-site copy **off-site**. Bring home only the working copy.
+
+**R-OFF-5.** Keep at least one copy off-site at all times.
 
 ---
 

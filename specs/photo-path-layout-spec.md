@@ -79,10 +79,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 2. What this convention claims
 
-| ID            | Requirement                                                                                                                                                                                                                                           |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-PHOTO-1** | This convention claims an item whose primary file is a still image or a motion picture. Turbo-Collection MUST decide whether a file is a still image or a motion picture from that file's own bytes, and MUST NOT decide it from a filename extension. |
-| **R-PHOTO-2** | Turbo-Collection MUST take as an item's primary file: that item's only content file, where that item holds one; otherwise that item's still image; otherwise that item's motion picture of longest duration. Where two motion pictures are equally long, Turbo-Collection MUST take the one whose SHA-256 checksum is lowest. |
+**R-PHOTO-1.** This convention claims an item whose primary file is a still image or a motion picture. Turbo-Collection MUST decide whether a file is a still image or a motion picture from that file's own bytes, and MUST NOT decide it from a filename extension.
+
+**R-PHOTO-2.** Turbo-Collection MUST take as an item's primary file: that item's only content file, where that item holds one; otherwise that item's still image; otherwise that item's motion picture of longest duration. Where two motion pictures are equally long, Turbo-Collection MUST take the one whose SHA-256 checksum is lowest.
 
 > **Why a claim is decided from bytes.** `turbo-collection-spec.md` R-SRC-15 requires a claim to be
 > a condition on an item's own bytes, the metadata its import source supplied, and that import
@@ -99,11 +98,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 3. The directory
 
-| ID            | Requirement                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-PHOTO-3** | Turbo-Collection MUST store every content file of a claimed item in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the import source's identifier, recorded as `importSource.specId` in that directory's manifest (`meta-file-spec.md` R-MFILE-9). |
-| **R-PHOTO-4** | Turbo-Collection MUST write `<YYYY>` as four digits and `<MM>` as two digits, zero-padded, in the proleptic Gregorian calendar, following ISO 8601 basic format.                                                                                                                                                                                                                                             |
-| **R-PHOTO-5** | Turbo-Collection MUST place every content file of one item in one directory, under one governing timestamp.                                                                                                                                                                                                                                                                                                  |
+**R-PHOTO-3.** Turbo-Collection MUST store every content file of a claimed item in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the import source's identifier, recorded as `importSource.specId` in that directory's manifest (`meta-file-spec.md` R-MFILE-9).
+
+**R-PHOTO-4.** Turbo-Collection MUST write `<YYYY>` as four digits and `<MM>` as two digits, zero-padded, in the proleptic Gregorian calendar, following ISO 8601 basic format.
+
+**R-PHOTO-5.** Turbo-Collection MUST place every content file of one item in one directory, under one governing timestamp.
 
 > **Why a month leaf repeats its year.** A leaf named `2026-07` states its own month once it is
 > separated from its parent, and `07` alone does not. Directories travel: one gets copied to a
@@ -124,11 +123,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 4. The governing timestamp
 
-| ID            | Requirement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-PHOTO-6** | Turbo-Collection MUST determine an item's governing timestamp from its primary file, taking the first of these that is available: a capture timestamp stating local wall-clock time; a capture timestamp stating an instant together with the offset in force at capture, converted to local wall-clock time; a capture timestamp stating an instant with no stated offset, read as local wall-clock time; a date stated in the source filename; that file's modification time at its import source. |
-| **R-PHOTO-7** | Turbo-Collection MUST NOT convert a governing timestamp to UTC, and MUST NOT shift it to the time zone of a machine performing a run. A day begins at 00:00:00 local wall-clock time and ends at 23:59:59.999 local wall-clock time.                                                                                                                                                                                                                                                              |
-| **R-PHOTO-8** | Turbo-Collection MUST mark an item as having an **uncertain date** when that item's governing timestamp came from a capture timestamp with no stated offset, from a date stated in a source filename, or from a file modification time. Turbo-Collection MUST report every item with an uncertain date, and MUST place that item under its governing timestamp regardless. |
+**R-PHOTO-6.** Turbo-Collection MUST determine an item's governing timestamp from its primary file, taking the first of these that is available: a capture timestamp stating local wall-clock time; a capture timestamp stating an instant together with the offset in force at capture, converted to local wall-clock time; a capture timestamp stating an instant with no stated offset, read as local wall-clock time; a date stated in the source filename; that file's modification time at its import source.
+
+**R-PHOTO-7.** Turbo-Collection MUST NOT convert a governing timestamp to UTC, and MUST NOT shift it to the time zone of a machine performing a run. A day begins at 00:00:00 local wall-clock time and ends at 23:59:59.999 local wall-clock time.
+
+**R-PHOTO-8.** Turbo-Collection MUST mark an item as having an **uncertain date** when that item's governing timestamp came from a capture timestamp with no stated offset, from a date stated in a source filename, or from a file modification time. Turbo-Collection MUST report every item with an uncertain date, and MUST place that item under its governing timestamp regardless.
 
 > **Why local, and never UTC.** A photograph's date is the date a person remembers taking it. A
 > photograph taken at 21:00 in Helsinki is a July evening to whoever took it, and converting that to
@@ -152,9 +151,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 5. Filenames
 
-| ID            | Requirement                                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **R-PHOTO-9** | This convention MUST NOT alter a collection filename. A collection filename is governed by the `R-NAME-*` family in [`turbo-collection-spec.md`](turbo-collection-spec.md). |
+**R-PHOTO-9.** This convention MUST NOT alter a collection filename. A collection filename is governed by the `R-NAME-*` family in [`turbo-collection-spec.md`](turbo-collection-spec.md).
 
 > **Why naming is not layout's business.** A filename is a label for a human reader, and identity is
 > a SHA-256 checksum. Those rules hold for every kind of content, so a second layout convention would
@@ -162,9 +159,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 6. Recording this convention
 
-| ID             | Requirement                                                                                                                                                                                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-PHOTO-10** | Turbo-Collection MUST record the convention identifier `photo-path-layout`, together with this document's version, for every directory it fills under this convention. Which file carries that record, and under which field name, is stated by the requirements that define that file. |
+**R-PHOTO-10.** Turbo-Collection MUST record the convention identifier `photo-path-layout`, together with this document's version, for every directory it fills under this convention. Which file carries that record, and under which field name, is stated by the requirements that define that file.
 
 > **Why a directory records this.** A directory separated from its tree must still say which rules
 > placed its content, or a reader cannot tell an intentional layout from a mistake. Recording an
