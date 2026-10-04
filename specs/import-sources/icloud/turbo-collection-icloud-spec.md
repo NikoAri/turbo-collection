@@ -27,7 +27,7 @@ must not defer any definition to another document.
 
 ## 2. Ways in, and whether they are one import source or several
 
-Four ways of getting bytes out of iCloud are known: Mac Photos `Export Unmodified Original`, iCloud
+Several ways of getting bytes out of iCloud are known: Mac Photos `Export Unmodified Original`, iCloud
 for Windows, iCloud web, and iPhone direct over USB.
 
 **Whether they are one import source or several is undecided, and filling this document decides

@@ -152,7 +152,7 @@ Self-contained, per R-LANG-5.
 > and enforcing it absolutely would cost more than it protects. Apply it to load-bearing words
 > first: a word like "copy" (noun and verb, both frequent here) deserves care.
 
-### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`, `R-LANG-18`, `R-LANG-19`)
+### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`, `R-LANG-18`, `R-LANG-19`, `R-LANG-22`)
 
 **R-LANG-8.** A normative statement MUST make clear which actor it binds. A sentence SHOULD state one obligation, and SHOULD use the active voice.
 
@@ -163,6 +163,8 @@ Self-contained, per R-LANG-5.
 **R-LANG-18.** In normative text, a definite article MUST mark only a noun that has exactly one identifiable referent in context. A statement about any member of a class MUST use a bare noun or a plural noun instead.
 
 **R-LANG-19.** Prose SHOULD omit a definite article whose removal changes no meaning.
+
+**R-LANG-22.** Prose SHOULD NOT state how many members a set has when these documents define that set and may change it. Prose SHOULD instead name the set and let an enumeration beside it carry the members. A number that is itself a requirement or a fixed external fact, such as a required count of copies or the digit width of a date field, is not a count of this kind and MAY appear.
 
 > **Why definiteness is precision, not style (R-LANG-18).** "The" promises a reader that exactly one
 > referent is meant and that the reader can identify it. Most statements in a specification are
@@ -183,6 +185,14 @@ Self-contained, per R-LANG-5.
 > that only a reader who shares the writer's time and culture can decode: "the engine should
 > fail fast", "targets are cattle, not pets". Such phrases may appear in commentary, where a
 > plain restatement exists in the normative text beside them.
+
+> **Why a bare count rots (R-LANG-22).** A sentence that says "the three verify inspections" is
+> correct only until an inspection is added, and then it is wrong in a place far from the edit that
+> made it wrong. This is the failure R-LANG-11 names for time references, applied to counts: a tally
+> anchored to a set's present membership rots the same way "the current best tool" does. The test is
+> subtraction. If deleting the number leaves the requirement or the fact intact, the number was only
+> counting a list, and SHOULD go. "Three copies on three drives" fails that test, because deleting
+> "three" deletes the requirement, so the count stays.
 
 ### 3.4 Time, dates, and units (`R-LANG-11`)
 
@@ -227,7 +237,7 @@ text; existing non-normative text is not retroactively rewritten.
 
 > **Why R-LANG-20 is stated once rather than in each document.** Prefix uniqueness is the one rule
 > here that no single document can satisfy alone, since it is a claim about every other document.
-> Stating it separately in each would be three copies of a rule that has to agree with itself, so
+> Stating it separately in each would be multiple copies of a rule that has to agree with itself, so
 > it lives here and the others cite it. This is unlike the RFC 2119 conventions block, which is
 > genuinely required in every normative document by R-LANG-5 and by `version-requirement.md`
 > R-PUB-4.
