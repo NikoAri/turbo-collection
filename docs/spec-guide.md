@@ -14,6 +14,7 @@ in [`decisions/`](decisions/), never here.
 | `specs/import-sources/<import-source>/*-procedure.md` | Steps a human operator follows to import from that source. | operator | no |
 | [`specs/language-requirement.md`](../specs/language-requirement.md) | How a normative document is written, so its English stays interpretable across decades. | document authors | no |
 | [`specs/version-requirement.md`](../specs/version-requirement.md) | How a normative document is numbered, published, archived, and corrected. | document authors | no |
+| [`specs/traceability-requirement.md`](../specs/traceability-requirement.md) | How documents, requirements, and code cite and trace to one another: which document binds what, that the set is sufficient, and that code cites only it. | document authors | no |
 | `docs/` | Explanation, rationale, and navigation. | nothing | no |
 
 A **normative document** is any document stating requirements with stable IDs, so it is broader than
@@ -29,7 +30,7 @@ Every prefix resolves to exactly one document.
 
 | Prefix | Document | Covers |
 |---|---|---|
-| `R-META-*` | `turbo-collection-spec.md` | document self-sufficiency and classification |
+| `R-META-*` | `traceability-requirement.md` | how documents, requirements, and code trace to one another |
 | `R-COL-*` | `turbo-collection-spec.md` | collection invariants |
 | `R-SRC-*` | `turbo-collection-spec.md` | Source port |
 | `R-TGT-*` | `turbo-collection-spec.md` | Storage port |
@@ -55,7 +56,7 @@ Every prefix resolves to exactly one document.
 
 | Section | Covers |
 |---|---|
-| 0 | How to use the document, and its conventions |
+| 0 | Conventions |
 | 1 | Scope, non-goals, and why invocation is external |
 | 2 | Guiding principles the requirements derive from |
 | 3 | Terminology, self-contained |

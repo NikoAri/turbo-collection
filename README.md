@@ -34,6 +34,9 @@ Each document has one job:
 - [`specs/version-requirement.md`](specs/version-requirement.md): an authoring standard, **how a
   normative document is numbered, published, archived, and corrected**, so that a version stamp
   resolves to exactly one text forever. No project prefix, for the same reason.
+- [`specs/traceability-requirement.md`](specs/traceability-requirement.md): an authoring standard,
+  **how documents, requirements, and code trace to one another**, so every behavior maps to a
+  requirement and every requirement to one document. No project prefix, for the same reason.
 - [`docs/design-record.md`](docs/design-record.md): the design record, **why**. Goals, what was
   rejected and why, architecture, technology choices, a decades-scale migration analysis, and an
   operations runbook.

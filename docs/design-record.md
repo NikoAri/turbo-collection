@@ -648,6 +648,7 @@ These fold into the spec: off-site becomes *geographic*; library defaults to *po
 | Mermaid remains a common diagram format | format status |
 | An AI as capable as today's exists to assist; if not, a local model can stand in | AI availability |
 | macOS uses NFD filename normalization (portability concern) | OS behavior |
+| Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) remain readable by current tooling | format status |
 
 **Durable (assert with confidence, unlikely to change):** plain files & folder trees; checksums/fixity;
 the 3-2-1 rule; off-site copies; separation of data from tools; the requirements/intent;

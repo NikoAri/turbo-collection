@@ -20,7 +20,7 @@ documents. It does not bind the implementation.
 
 **R-LANG-1.** Every normative document in this project MUST conform to this document, including this document itself.
 
-**R-LANG-2.** Code and tests MUST NOT cite `R-LANG-*` requirement IDs. These IDs bind documents, not the implementation. (This is the counterpart of `spec.md` R-META-2: code cites specification documents only.)
+**R-LANG-2.** Code and tests MUST NOT cite `R-LANG-*` requirement IDs. These IDs bind documents, not the implementation. (This is the counterpart of `traceability-requirement.md` R-META-2: code cites specification documents only.)
 
 > **Why R-LANG-1 includes this document.** A writing standard that violates its own rules invites
 > the reader to ignore it. Self-application is also the cheapest ongoing test: if a rule here is
@@ -95,7 +95,7 @@ Self-contained, per R-LANG-5.
   `specs/import-sources/`, the procedures paired with them, `specs/version-requirement.md`, and this
   document. A normative document is not necessarily a specification: a procedure binds an
   operator, and an authoring standard binds a document author. Only a document whose filename
-  ends in `-spec.md` may be cited by code (`turbo-collection-spec.md` R-META-4).
+  ends in `-spec.md` may be cited by code (`traceability-requirement.md` R-META-4).
 
 - **Normative text.** The passages of a normative document that state requirements: each
   requirement statement, introduced by its bold ID, and any sentence using an RFC 2119 keyword.
@@ -124,7 +124,7 @@ Self-contained, per R-LANG-5.
 > **Why R-LANG-17 exists.** R-LANG-3 makes RFC 2119 keywords the only way an obligation is stated
 > anywhere in this project, so a reader who meets one is entitled to conclude that the sentence
 > binds someone and that code may cite it. A non-normative document written in the same voice
-> defeats that. `turbo-collection-spec.md` R-META-4 already solves half of this, by putting the kind
+> defeats that. `traceability-requirement.md` R-META-4 already solves half of this, by putting the kind
 > in a filename so that a binding document announces itself; R-LANG-17 solves the other half, by
 > keeping a document that binds nobody from sounding as though it binds someone.
 

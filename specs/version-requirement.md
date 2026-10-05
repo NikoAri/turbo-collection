@@ -29,7 +29,7 @@ documents. It does not bind the implementation.
 > the reader to treat it as timeless, which nothing written by people is. Self-application is also
 > the cheapest ongoing test: a rule too burdensome to follow here is too burdensome.
 
-> **Code cites nothing in this document.** `turbo-collection-spec.md` R-META-4 restricts code and
+> **Code cites nothing in this document.** `traceability-requirement.md` R-META-4 restricts code and
 > tests to documents whose filename ends in `-spec.md`. This filename does not, so the exclusion is
 > already mechanical and needs no separate prohibition here.
 
