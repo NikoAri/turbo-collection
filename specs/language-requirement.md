@@ -207,13 +207,15 @@ Self-contained, per R-LANG-5.
 
 **R-LANG-12.** Commentary MAY use vivid or informal language, and MUST be visually distinct from normative text (in this project: block quotes and plain prose, never labeled with a requirement ID).
 
-**R-LANG-13.** A requirement whose misinterpretation could cause data loss MUST be accompanied by commentary stating its rationale, a concrete example, or both.
+**R-LANG-13.** A requirement whose misinterpretation could cause data loss SHOULD be accompanied by a concrete example illustrating the reading intended. The design rationale for a requirement, and the consequences of implementing it incorrectly, are explanatory rather than normative, and MAY be placed in explanatory documentation rather than stated inline.
 
-> **Why looseness is permitted at all.** Commentary is the second, redundant channel for
-> meaning. A future reader triangulates: if the normative sentence has become ambiguous under
-> drifted English, the rationale and example pin down which reading was meant, and the reverse
-> also holds. Two imperfect channels beat one polished one. This is the same redundancy
-> principle the rest of the project applies to data.
+> **Why an example, and why rationale may leave the document.** A concrete example is a second,
+> redundant channel for meaning: if the normative sentence has become ambiguous under drifted
+> English, the example fixes which reading was meant. Two imperfect channels beat one polished one,
+> which is the same redundancy principle the rest of the project applies to data. Design rationale
+> triangulates less and justifies more, so it may live in explanatory documentation instead, where it
+> stays available to a reader with help without weighing down the normative text that travels on
+> every copy.
 
 ### 3.6 Review gate (`R-LANG-14`)
 

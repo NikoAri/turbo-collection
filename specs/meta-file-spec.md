@@ -18,6 +18,8 @@ else to break.
 
 Requirement ID prefix: **`R-MFILE-*`**.
 
+> **Rationale.** Why meta files are shaped this way, and the alternatives weighed: [the manifest-format decision](../docs/decisions/2026-08-16-manifest-format-decision.md), [the receipts decision](../docs/decisions/2026-09-07-receipts-decision.md), [the location-receipt decision](../docs/decisions/2026-09-10-location-receipt-decision.md), [the config-placement decision](../docs/decisions/2026-09-27-config-placement-decision.md), [the collection-naming decision](../docs/decisions/2026-09-28-collection-naming-decision.md), and [design-record](../docs/design-record.md).
+
 ---
 
 ## 0. Role and scope
@@ -82,30 +84,6 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-MFILE-2.** Turbo-Collection MUST use these names and places, relative to a copy's root: `.tcignore` and `README.md` at the root; a `.turbo-collection/` subdirectory of the root holding the configuration file named `turbo-collection-config.json` and per-event location receipt files named `receipt-<runId>-<collectionName>.location.json` (R-MFILE-26); and, for each directory holding content, a `.turbo-collection/` subdirectory of that directory holding a manifest named `manifest.json` and per-event receipt files named `receipt-<runId>-<collectionName>.arrival.json` and `receipt-<runId>-<collectionName>.error.json`. A carried copy of a specification MUST be named for the document and the full version of the text it holds.
 
-> **Why an extension carries the format, and what that buys.** A reader must know how to parse a file
-> before it can find anything inside it, so nothing inside can carry that fact. A name can, and a name
-> is readable by a person, a file manager, and an operating system that has never heard of this
-> project. This is also what keeps R-MFILE-4 honest: a version field inside a JSON object can promise
-> stability only for as long as meta files are JSON, and a later format is a different extension,
-> which identifies itself without being parsed.
-
-> **Why Turbo-Collection's own files sit in a `.turbo-collection/` subdirectory.** Everything
-> Turbo-Collection maintains for itself lives in a `.turbo-collection/` directory: one at the copy
-> root, holding the configuration file and that copy's location receipts, and one in each content
-> directory, holding that directory's manifest and receipt files. One entry beside the content gathers
-> all of a directory's machinery, however many receipt files accumulate, so it stays out of the way of
-> photographs a person browses, and a directory boundary rather than a name prefix separates meta from
-> content. The `.turbo-collection/` directory is itself what marks a drive as a Turbo-Collection copy,
-> the way a `.git` directory marks a repository; it is a grouping convention, not a promise of hiding,
-> since not every platform hides a name by its leading dot. What stays at the root is what a person
-> reads or edits directly: `README.md`, which orients a stranger and points into `.turbo-collection/`
-> (R-MFILE-22); any carried specification; and `.tcignore`, a short dotfile edited by hand rather than
-> found by accident. Because the directory carries the identity, the files inside are named plainly,
-> `manifest.json` and the `receipt-` files needing no prefix to say whose they are. Configuration is
-> the one exception: it keeps its full `turbo-collection-config.json` name so a person can still find
-> it by name in an editor or a file manager, a redundancy that costs nothing for a file worth seeking
-> out.
-
 ## 3. Rules for every JSON meta file
 
 **R-MFILE-3.** A JSON meta file MUST be a JSON document as defined by RFC 8259, encoded in UTF-8.
@@ -114,41 +92,15 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-MFILE-5.** Turbo-Collection MUST ignore a field it does not recognize, and MUST preserve every such field verbatim when it rewrites a meta file.
 
+> **Example.** Rewriting a manifest, Turbo-Collection keeps fields it does not recognize, so a newer writer's data is not silently dropped.
+
 **R-MFILE-6.** **Self-evidence.** A meta file MUST be intelligible by inspection alone, without the document version that produced it. A version is a disambiguator, and MUST NOT be the only key to decoding a meta file.
+
+> **Example.** A binary or opaque-header format is forbidden: a stranger must be able to figure a meta file out by looking at it.
 
 **R-MFILE-7.** Turbo-Collection MUST NOT reinterpret a meta file whose stated version it does not recognize. An unrecognized version MUST be an explicit failure, never a guess.
 
 **R-MFILE-27.** A JSON meta file MUST be written across multiple lines rather than minified, placing each field and each array element on its own line, so a person can read it by inspection (R-MFILE-6). No other aspect of layout is constrained: indentation, spacing, and a trailing newline are the writer's choice.
-
-> **R-MFILE-6 is a design constraint with teeth.** It forbids any meta file format that can only be
-> understood by consulting its specification, which rules out binary encodings, opaque headers, and
-> compact-but-cryptic schemes **forever**. Every format this project ever adopts must pass one test:
-> could a stranger figure this out by looking at it?
-
-> **Why `version` is bare while other version fields are qualified.** A file named `manifest.json`
-> has already said what it is and how it parses, so its own top-level `version` can only mean which
-> version of that format it holds. A version that points outward is set apart from the file's own:
-> namespaced inside the block it qualifies (`layout.version` and `importSource.version`, in a manifest
-> and in an import arrival), or given a qualified name (`tcSpecVersion`, the core specification's
-> version, in a receipt), so it is never confused with the file's own. Bare for self, qualified for
-> everything else.
-
-> **Why unknown fields are ignored rather than rejected, and why that needs no minor number.** An
-> addition that older software can ignore safely is not a break, so the format version does not move
-> for it at all. Preserving unknown fields verbatim matters wherever Turbo-Collection rewrites a meta
-> file rather than creating a new one: a manifest is regenerated when its directory's content changes,
-> and a rewrite that dropped fields it did not understand would quietly destroy what a newer writer
-> recorded. Receipt files are never rewritten (R-MFILE-13), so the concern does not arise for
-> them; mirroring copies such a file between copies byte for byte. A field that changes how an existing field must be read is not an addition
-> at all, and is MAJOR under Section 10.
-
-> **Why a single legibility rule, and why only legibility (R-MFILE-27).** Four rules each said one
-> meta file placed a field or an entry per line; this states it once for every JSON meta file. It is
-> intentionally the only layout rule. Nothing digests a meta file (R-MFILE-15), two intact copies hold
-> different meta files by design, and a receipt travels by being copied byte for byte rather than
-> re-serialized (R-MFILE-13), so pinning exact bytes would deliver a reproducibility no reader depends
-> on. What legibility does serve is R-MFILE-6: a stranger can read a multi-line file by looking at it,
-> which a single minified line defeats.
 
 ## 4. The manifest
 
@@ -171,78 +123,6 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 **R-MFILE-11.** An entry MAY also state a `date`, a time the import source associates with that file. The import source sets the value and defines its meaning, and Turbo-Collection MUST NOT interpret it. A `date` MUST be an ISO 8601 calendar date and time (`YYYY-MM-DDThh:mm:ss`), carrying a UTC offset when the import source supplies the zone and omitting it, as a bare local date and time, when it does not. An import source MUST NOT set a `date` from a filesystem timestamp. Turbo-Collection MUST omit the field where the import source associates no time with the file.
 
 **R-MFILE-12.** The entries in `files` MUST be ordered by their `file` name using a case-insensitive comparison: compare names with ASCII letters `A` through `Z` folded to lowercase and ordered by Unicode code point, and where two names are equal under that folding, order them by the unfolded name by Unicode code point. This ordering MUST NOT depend on a locale, so that any implementation writes the same manifest.
-
-> **Why configuration, the ignore file, and the README are covered by no manifest.** A root holds no
-> content file, so it gets no manifest, and `README.md` and `.tcignore` at the root, together with
-> `turbo-collection-config.json` in the root's `.turbo-collection/`, are therefore checksummed
-> nowhere. This is a decision rather than an oversight. Fixity protects what cannot be
-> recreated: a photograph is irreplaceable, while a configuration file can be retyped, an ignore file
-> re-pasted from the public lists it came from, and a `README.md` regenerated. Covering them would
-> also mean recording checksums for three files that exist to be edited by hand, so every ordinary
-> edit would report a mismatch until someone rebuilt the record, and a fixity report that fires
-> during normal use teaches a person to ignore fixity reports. What protects those files instead is
-> R-CFG-3 and R-CFG-4 in `turbo-collection-spec.md`, which validate configuration before any
-> filesystem mutation and fail rather than guess; R-MFILE-19, which refuses to run when two connected
-> copies claim one name; and R-MFILE-21's per-pattern match counts, which make a mutated ignore
-> pattern visible on the next run.
-
-> **Why a manifest vouches rather than inventories.** A manifest states that the files it lists are
-> intact. It does not assert that its directory holds nothing else, because ignored files exist and
-> the patterns that define them live at a copy root, which a separated directory does not carry.
-> Detecting an unexpected file is a run's job, where configuration is in hand, and a run reports one
-> (R-MFILE-21). What a separated directory can still do alone is prove its own photographs are
-> intact, which is the job it has.
-
-> **Why a date is optional, and why its absence says something.** A `date` is present when the import
-> source associates a time with the file, and absent when it does not. Absence is therefore a record
-> rather than a gap: it says this file reached the collection with no time the import source could
-> state. Recording the value rather than a flag also lets a tree be audited, or rebuilt, from
-> manifests alone rather than by re-reading embedded metadata across a whole collection.
-
-> **Why a filesystem timestamp is never that date.** A creation or modification time describes a
-> copy, not a photograph. Mirroring to a new drive rewrites it, restoring from a backup rewrites it,
-> and exFAT and NTFS disagree about which zone it is in. A photograph taken in 2003, sitting on a
-> drive formatted last year, has a modification time from last year, and none of that is a fact about
-> the photograph.
-
-> **Why an entry states a size the checksum already implies.** A size never contradicts a checksum:
-> anything a size mismatch catches, a checksum mismatch catches too. Its value is that it is a check
-> a person can afford to run. Verifying by checksum reads every byte, which is hours for a
-> multi-terabyte copy, while comparing sizes reads none and takes seconds. That gives a cheap screen
-> between full verification passes, and it catches the class of damage this system's own operations
-> can cause: a truncated file from an interrupted copy, a full destination, a disconnected drive, a
-> photograph that is now zero bytes. A matching size is not fixity, because bit rot does not change
-> a file's length; only a checksum establishes that a file is unchanged.
-
-> **Why an entry states a name rather than a path.** A manifest covers one directory, so a name
-> identifies an entry without ambiguity. A path in every entry would repeat one prefix a hundred
-> times and, worse, would become a hundred false statements the moment that directory is copied
-> elsewhere, which is the case per-directory manifests exist to serve. Where a separated directory
-> belongs stays recoverable without being restated: its month follows from the `date` fields its
-> entries carry, and the import source is the directory's own name.
-
-> **Why every directory restates its layout convention.** It duplicates one fact thousands of times,
-> and that is the point. Duplication is cheap, drift between directories is detectable, and a directory
-> that gets moved, mailed, or restored on its own reconstructs the convention that placed it. The
-> version of `turbo-collection-spec.md` a run wrote under is not restated here: it is uniform across a
-> run rather than varying per directory the way a layout convention can
-> (`turbo-collection-spec.md` R-SRC-15), so it is recorded once per run in the receipt (R-MFILE-14).
-
-> **Why the manifest carries `layout` and `importSource` versions, and what those versions mean.**
-> Both name a specification a directory was placed under, and both belong here rather than in the
-> receipt because they describe what the directory structurally **is**, a per-directory fact, not
-> what one run did. Each block is a `specId` and a `version`, the shape of a pinned dependency, so a
-> manifest reads as declaring which versioned specifications govern the directory. Where a layout
-> names a directory's path segment for its import source, as the photo layout does
-> (`photo-path-layout-spec.md` R-PHOTO-3), `importSource.specId` is that segment, kept in the
-> manifest as well so a directory that disagrees with the segment it sits under is a cheap
-> misplacement signal. The `version` in each
-> block is a **current claim**: the latest specification version that took ownership of the directory
-> as compatible, re-stamped on a compatible reuse and forked to a new import-source `specId` on an
-> incompatible one (`turbo-collection-spec.md` R-SRC-16). The
-> authoritative per-run version trail lives in the receipts (R-MFILE-14); the manifest holds only the
-> claim in force now. An import source's specification is one document per import source, and such
-> specifications may reference one another.
 
 ## 5. The receipt
 
@@ -274,6 +154,55 @@ A `date` MUST be a full ISO 8601 calendar date and time (`YYYY-MM-DDThh:mm:ss`) 
 
 An error file holds at least one error across the two arrays (R-MFILE-13 writes one only when a run recorded an error), and MAY omit an array that holds none. Every error object, of either kind, MUST state a human-readable description of what went wrong (`message`), in plain language and intelligible without the importer or adapter that produced it (R-MFILE-6); the `message` is best-effort and MAY be incomplete. An error object MAY carry further fields the piece producing it defines; what each kind records beyond `message` is specified later, as real errors show what is needed.
 
+> **Example.** Three per-event files in one directory's `.turbo-collection/`. An import arrival, in `receipt-20260814T180422Z-3f9a-main.arrival.json`, records the specifications that placed the content:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260814T180422Z-3f9a",
+>   "collectionName": "main",
+>   "date": "2026-08-14T18:04:22Z",
+>   "fileCount": 412,
+>   "contentDigest": "9f2a1c...",
+>   "layout": { "specId": "photo-path-layout", "version": "0.1.0" },
+>   "importSource": { "specId": "icloud", "version": "0.1.0" }
+> }
+> ```
+>
+> A later mirror arrival of the same content to another copy, in `receipt-20260902T090500Z-b1d2-off-site.arrival.json`, names no `layout` or `importSource`; the matching `contentDigest` proves identical content arrived:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260902T090500Z-b1d2",
+>   "collectionName": "off-site",
+>   "date": "2026-09-02T09:05:00Z",
+>   "fileCount": 412,
+>   "contentDigest": "9f2a1c..."
+> }
+> ```
+>
+> An error file, `receipt-20260814T180422Z-3f9a-main.error.json`, holds the run's errors for the directory:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "tcSpecVersion": "0.1.0-draft",
+>   "runId": "20260814T180422Z-3f9a",
+>   "collectionName": "main",
+>   "importErrors": [
+>     {
+>       "message": "icloud offered IMG_0001.HEIC as a degraded copy; refused by policy (turbo-collection-spec.md R-SRC-6)",
+>       "file": "IMG_0001.HEIC",
+>       "importSource": { "specId": "icloud", "version": "0.1.0" },
+>       "details": { "kind": "degraded" }
+>     }
+>   ]
+> }
+> ```
+
 **R-MFILE-26.** A location receipt records where a copy is, as a hint for finding it, and states that copy's own location, never another's. Turbo-Collection MUST store it in the `.turbo-collection/` subdirectory of the copy root (R-MFILE-2), one file per observation named `receipt-<runId>-<collectionName>.location.json`, and MUST NOT modify or delete it once written, as with every receipt file (R-MFILE-13). Its fields MUST be:
 
 - `version` (R-MFILE-4)
@@ -285,121 +214,6 @@ An error file holds at least one error across the two arrays (R-MFILE-13 writes 
 - `relativePath`, a path to the copy that MUST be relative and MUST NOT be absolute
 
 When `volumeId` is present, `relativePath` is relative to that volume's root; when it is absent, `relativePath` is relative to the location receipt file's own directory. `relativePath` MUST be written separator-neutral, joining segments with `/` rather than any one filesystem's separator. Turbo-Collection MUST treat `volumeId` as opaque, comparing it only for equality and never parsing or validating its form, because the identifier's shape is whatever the storage adapter reports (`turbo-collection-spec.md` R-REC-9, R-TGT-5).
-
-> **Why a receipt is a set of per-event files, while the manifest is one file.** A manifest states
-> what a directory holds now, so recomputing and rewriting it whole is the operation that fits it. A
-> receipt instead accumulates events that never restate the past. Making each event its own immutable
-> file means a run only ever creates files, never reopens or rewrites one, so writing a new event can
-> neither lose nor corrupt what came before, and a copy on removable media needs only an atomic create.
-> It also makes a receipt trivial to bring between copies: because every file is immutable and its name
-> identifies the run and the copy that authored it, catching one copy up to another is a union of
-> files, never a merge. One arrival is one file; a run's errors for a directory are one file, since a
-> run can fail on several files at once.
-
-> **Why a run's specification version lives here, not in the manifest.** The version of
-> `turbo-collection-spec.md` a run conformed to, `tcSpecVersion`, is a fact about the run, uniform
-> across every directory the run touched, so recording it on each event records it where it belongs
-> rather than stamping it on every directory's manifest. A manifest instead records what varies per
-> directory, the layout convention and import source that placed the content. A meta file otherwise
-> carries only the version needed to parse itself, the format `version` (R-MFILE-4). An event file
-> travels with its directory, sitting beside the manifest in the same `.turbo-collection/`
-> subdirectory, so a directory carried on its own still states which version wrote each of its arrivals
-> and errors.
-
-> **Why an import arrival and a mirror arrival differ, and why a partial arrival is honest.** An
-> import brings bytes from outside that the content cannot describe itself, so an import arrival records
-> the `importSource` and `layout` that placed them, the durable trail of which versioned specifications
-> governed the placement. The manifest's matching blocks are a current claim that a later compatible
-> run re-stamps (`turbo-collection-spec.md` R-SRC-16), so the receipt is the only place the originating
-> version survives. A mirror copies bytes already vouched for by another copy, acquiring nothing and
-> applying no layout, so its arrival records neither; the import arrival that first placed the content
-> travels to the copy alongside (R-REC-6), carrying that provenance with it. Either arrival records a
-> `fileCount` and a `contentDigest` over the content present at that moment, which may be less than the
-> whole directory when a run lands some files and fails on others. A partial arrival is not a half-truth
-> but an honest snapshot, because every file it counts is completely written
-> (`turbo-collection-spec.md` R-REC-5). Whether a copy is complete is then read not from any single
-> field but from its newest event: a run that left no error file for the directory placed everything it
-> attempted. What a following run must still correct is derived by comparing the copy's manifest with
-> what it should hold, never by reading the error list as a queue of outstanding work.
-
-> **Why an import source may add detail, and why nothing may read it.** Import sources differ in
-> what they can say about an arrival, and a format that tried to anticipate all of it would either
-> constrain sources it has never met or grow a field per vendor. `importSourceDetails` is the one
-> place a source may record what only it knows, and its shape is stated where that knowledge lives,
-> in that source's own specification. It is bounded by two rules that keep it from becoming a junk
-> drawer: it is an object rather than a blob, so it stays readable by inspection (R-MFILE-6), and
-> nothing may depend on its contents, so no reader ever needs to understand a source it has never
-> heard of in order to interpret a receipt.
-
-> **Why a content digest excludes meta files.** A receipt answers whether the photographs a directory
-> held at one moment reached a copy. Manifests and receipts differ between copies by design, so
-> including them would make two intact copies disagree about content that is in fact identical.
-
-> **Why an error carries a human message and opaque detail (R-MFILE-16).** Error space is unbounded:
-> every operating system, filesystem, and import source has its own failures, and a format that tried
-> to enumerate them would either constrain sources it has never met or grow a field per vendor. So an
-> error names one thing the core understands, a plain-language `message`, and delegates everything
-> specific to `details`, an object the piece that raised the error fills and nothing else reads. The
-> `message` keeps an error intelligible by inspection (R-MFILE-6) once the importer or adapter that
-> wrote it is long gone; `details` is for a reader that still has that piece's specification. The two
-> rules that bound `importSourceDetails` bound `details` too: it is an object rather than a blob, and
-> nothing depends on its contents. What the core does guarantee is the meaning of the array itself: an
-> entry in `errors` records content a run handled that did not reach a copy, which is the fact a
-> person needs before deleting the source it came from (`turbo-collection-spec.md` R-LOG-5). An import
-> error is anchored by its `importSource`; a mirror error carries no `importSource`, the copy it
-> failed to reach being the error file's own `collectionName`.
-
-> **Where a mirror error file is written (R-MFILE-13).** An arrival file lands on the copy it names,
-> which by definition just received content and so is writable. A mirror error is the opposite case:
-> it names the destination copy that failed, which may be unmounted, unwritable, or not yet holding the
-> directory, so its own file cannot live there. Turbo-Collection writes it on the copy it was
-> mirroring from, beside the content the failed transfer was driving from, which that copy holds and
-> can read by construction; the file reaches the copy it names later, by the same propagation that
-> carries every receipt file (`turbo-collection-spec.md` R-REC-6). This is one case of a general fact:
-> `collectionName` names the copy an event concerns, never the copy the file happens to sit on. In the
-> degenerate run where no copy it touched is writable, no receipt can be written at all and the log is
-> the only record (`turbo-collection-spec.md` R-LOG-1); R-LOG-5 is not thereby breached, because a
-> mirror error concerns how many copies hold content that is held elsewhere, not whether an import
-> source may be deleted.
-
-> **Why receipt files travel between copies, and its one limit.** Mirroring copies into each copy the
-> event files the other holds that it lacks, never overwriting one (`turbo-collection-spec.md`
-> R-REC-6), so a single drive inspected alone carries not only its own history but what it has heard of
-> every other copy's. From one connected copy a person can read, per directory, which copies held the
-> content and when, and whether each was complete, without connecting those drives. The limit is honest
-> and unavoidable: a copy knows another's state only as of the last time their histories touched, which
-> is why an arrival always carries its `date` and a copy count is never stated without it
-> (`turbo-collection-spec.md` R-REC-8). This travel is also what guards a receipt's own integrity. A
-> receipt is covered by no manifest, since meta files sit outside the content a manifest describes, so a
-> hand-edited receipt that stays valid JSON is caught by no checksum. What catches it instead is
-> immutability plus this travel: the same event file, named for its run and copy, exists on several
-> copies, and one that has been altered simply disagrees with its unaltered twins. A lone copy never
-> compared to another cannot detect the edit, but a system whose whole thesis is more than one copy
-> answers that by keeping more than one.
-
-> **Why a copy records its own location, and why as a receipt (R-MFILE-26).** Where a copy sits is a
-> fact about the whole copy, not about any one directory in it, so it belongs in neither a manifest nor
-> a directory receipt. It gets a record at the copy root instead, in a `.turbo-collection/` of the
-> root's own, which hides copy-level machinery by the same convention that keeps a directory's manifest
-> and receipts out of the way of its photographs. It is a receipt rather than a snapshot because a
-> copy's location changes over time, when a drive is reformatted or replaced, and each observation is
-> worth keeping: an immutable, time-ordered series records which volumes have stood behind a `collectionName`.
-> A copy records only its own location; the records of other copies arrive by the propagation that
-> carries every receipt file (`turbo-collection-spec.md` R-REC-6, R-REC-9), so a single connected drive
-> can suggest where its peers were last seen without any copy ever writing down another's whereabouts.
-
-> **Why the locator is an optional identifier and an always-relative path (R-MFILE-26).** A path that
-> names a drive letter or a mount point is a fact about one machine at one moment, false on the next
-> machine and on most copies it propagates to, so the location receipt never stores one. It stores
-> instead the two things that are true anywhere: a `volumeId`, an identifier a volume carries with it
-> across machines and operating systems, and a `relativePath` that is always relative to an anchor.
-> Across a drive boundary the anchor is the volume's own root, and the absolute path is recomputed each
-> run from wherever that volume is mounted (`turbo-collection-spec.md` R-REC-9). Within one filesystem,
-> where the copies share a tree, no `volumeId` is needed and `relativePath` is relative to the location
-> receipt file's own directory, a literal path that resolves by inspection alone and survives an unusual
-> mount arrangement. Either way the stored path is relative, never absolute, which is a machine-specific
-> path forbidden by its shape: the one thing that must not be written into a record that is immutable
-> and travels is a fact true on only one machine.
 
 ## 6. Configuration and the ignore file
 
@@ -413,48 +227,7 @@ When `volumeId` is present, `relativePath` is relative to that volume's root; wh
 
 **R-MFILE-21.** Turbo-Collection MUST exclude an ignored file from every manifest and MUST NOT copy one to another copy. A file that matches a copy's ignore patterns MUST NOT enter that copy by import or by adoption. Every run MUST report, per pattern, how many files that pattern matched. Turbo-Collection MUST report a pattern it cannot evaluate and MUST NOT apply it.
 
-> **Why a description beside `README.md`, and why it stays out of receipts (R-MFILE-18).** `README.md`
-> (R-MFILE-22) is prose a person reads to orient themselves, and nothing parses it;
-> `collectionDescription` is a short field Turbo-Collection can surface from a copy's own
-> configuration beside the terse `collectionName`, so a person recognizes a copy in words without
-> opening a file. It is optional because `collectionName` alone fully identifies a copy; a
-> description only makes that identity legible. It never enters a receipt: a receipt records what
-> reached a copy, keyed on `collectionName`, and a description is neither identity nor content, so a
-> report reading receipts (R-CLI-10) names other copies by `collectionName` alone, while a copy's own
-> description is read wherever its configuration is present. It describes this copy rather than the
-> collection as a whole and MAY differ between copies, because configuration is per-copy and never
-> synchronized.
-
-> **Why patterns may hide a file from a manifest but never from a report (R-MFILE-21).** An ignore
-> file is the only setting in this system that can remove data from Turbo-Collection's own
-> accounting, so it is bounded by making every exclusion visible. A mistyped `*.mov` announces itself
-> as thousands of files matched rather than as silently empty video backups. Ignoring changes whether
-> a file is checksummed and copied; it never changes whether a file is counted. A pattern that cannot
-> be evaluated is reported and skipped rather than guessed at, so a file it would have matched is
-> reported as unrecognized instead of vanishing.
-
-> **Why one ignore file at a copy root, and why `gitignore(5)`.** Per-directory ignore files would
-> have to be kept in sync across thousands of directories, which is a maintenance burden nobody would
-> survive. One file per copy travels with that copy and is edited in one place. The syntax is
-> gitignore's because operating systems produce new stray files every year, and lists of them are
-> maintained publicly and can be pasted in unmodified, so keeping current is a text edit rather than a
-> change to this document. That format is defined by git's documentation rather than by a standards
-> body, which is a deliberate exception to this project's usual preference, made because gitignore is
-> more widely implemented than most standards and has been reimplemented independently many times.
-
-> **Why a copy names itself (R-MFILE-19).** A receipt records the copy an arrival reached, and a
-> receipt is permanent, so that name must still resolve decades later after every drive behind it has
-> been replaced. Once set, a name is read off the copy and never re-derived from its surroundings, and
-> three tempting sources show why. A volume label is mutable by anyone in seconds and leaves no trace
-> when changed. A mount path is a drive letter on one operating system and a `/Volumes` entry on
-> another, and it changes between sessions. A command-line argument re-supplied on every run would put
-> a permanent record at the mercy of a typo. Reading a name off the copy fails none of these, and it
-> buys a safety property the others cannot: plugging in the wrong drive becomes detectable rather than
-> silent. It also makes Turbo-Collection indifferent to where a drive is mounted, which is what lets a
-> backup run on a borrowed computer that assigns whatever letter it likes. A name still has to be set
-> once, when init or backup creates a copy, from `--name` or init's default; a typo at that moment is
-> the operator's to own, since Turbo-Collection cannot read intent and a stored name stays true to
-> whatever was entered.
+> **Example.** A mistyped `*.mov` shows up as thousands of files matched, not as silently empty video backups.
 
 ## 7. `README.md`
 
@@ -466,23 +239,9 @@ When `volumeId` is present, `relativePath` is relative to that volume's root; wh
 
 **R-MFILE-24.** A release that introduces a new MAJOR version of this document MUST include a migration from the previous MAJOR version. A migration MUST be atomic per copy: at every moment a copy is wholly of the old version or wholly of the new, never in between. It MUST verify a copy against its manifests under the old rules before converting, and MUST re-verify under the new rules after converting; both verifications MUST cover every file rather than a sample. It MUST leave every content file byte-identical. It MUST remain available for at least one full off-site rotation cycle after the release.
 
+> **Example.** Both verifications cover every file, so a migration cannot relabel already-corrupt bytes as converted.
+
 **R-MFILE-25.** A release MAY also provide a direct migration from a named older MAJOR version. Such a migration MUST check a copy's stated version against its declared source version and MUST refuse any other; MUST meet every obligation of R-MFILE-24; and MUST produce an end state identical to crossing each intervening version in turn. It is an addition to the previous-version migration, never a replacement for it.
-
-> **Why read and write are governed by one window, and why the window is narrow.** A previous
-> wording let Turbo-Collection read an old format while forbidding it to act, which reads as a
-> capability rule and is really a scope rule. Migration already requires full read capability for the
-> old version, so "can read but must not" was the confusing part. One rule replaces it: read within
-> the window, write current only, and any write forces migration first.
->
-> N-1 is the floor rather than a compromise. LTO, the most archival-serious storage industry there
-> is, spent twenty years narrowing its own compatibility window: two generations back through LTO-7,
-> one for LTO-8 and LTO-9, and none at all by LTO-10. An industry with far more at stake concluded
-> that a wide window costs more than it returns, which argues against buying a wider one here.
-
-> **Why a migration verifies twice (R-MFILE-24).** Verifying before converting establishes that what
-> is about to be rewritten was intact, so a migration cannot launder pre-existing corruption into a
-> new format and call it converted. Verifying after establishes that conversion itself broke nothing.
-> Either check alone leaves a hole large enough to lose a photograph through.
 
 ## 9. This document's bump test
 
@@ -495,9 +254,3 @@ Required of every normative document by `version-requirement.md` R-PUB-1. This t
 | **MINOR** | Additions only. Every meta file written under the previous version keeps its exact meaning, and every field it carries is still read the same way.                                                                                                                                                    |
 | **PATCH** | Prose improvement that changes no obligation and changes no meta file.                                                                                                                                                                                                                                |
 
-> **Why this document exists, and why its MAJOR is the format break.** The specification governing
-> Turbo-Collection's behavior bumps MAJOR for several reasons, and most of them touch no file on any
-> drive. Using that number to tell a reader whether a manifest still parses would make it a proxy,
-> and a proxy fires when the thing it stands for did not happen. A document that contains nothing but
-> the format has no such gap: its MAJOR is a format break by construction, because there is nothing
-> else in it to break.

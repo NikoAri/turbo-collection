@@ -15,18 +15,16 @@ implementation of a protocol.
 
 ### 0.1 What this document is
 
-**R-META-1.** Normative documents that bind the implementation (R-META-4) MUST, taken together, be sufficient to implement and test Turbo-Collection, with no document outside that set in hand. This specification MUST state how Turbo-Collection behaves, wherever that does not depend on a particular import source. `meta-file-spec.md` states what every meta file contains; a layout specification states where content files go; an import source specification states only what its own source adds. If an implementer needs a fact none of them states, that is a defect, and the fix is to add that fact to whichever one owns its subject.
+**R-META-1.** Normative documents that bind the implementation (R-META-4) MUST, taken together, be sufficient to implement and test Turbo-Collection, with no document outside that set in hand. 
+* This specification MUST state how Turbo-Collection behaves, wherever that does not depend on a particular import source. `meta-file-spec.md` states what every meta file contains; 
+* a layout specification states where content files go; 
+* an import source specification states only what its own source adds. 
+If an implementer needs a fact none of them states, that is a defect, and the fix is to add that fact to whichever one owns its subject.
 
 **R-META-4.** A normative document that binds the implementation MUST have a filename ending in `-spec.md`. A normative document that binds the human operator MUST have a filename ending in `-procedure.md`. Code and tests MUST cite documents whose filename ends in `-spec.md` only.
 
 This document carries its **own** glossary (Section 3) and its **own** assumptions list (Section 12),
 and does not defer them elsewhere.
-
-> **Why the filename carries the kind (R-META-4).** A directory can say what a document is only
-> while the document stays in it. Files get copied to drives, attached to messages, and opened
-> without their path in view, and the classification has to survive all of that. Putting the kind
-> in the name also makes R-META-2 mechanical: a check that code cites nothing outside `-spec.md`
-> needs no list of documents to maintain.
 
 Which other documents exist, and what each one governs, is mapped in `docs/spec-guide.md`. That
 guide is navigation and binds nothing, so no obligation here depends on it.
@@ -335,29 +333,13 @@ that conflicts with them is wrong and must be changed.
 
 **R-COL-4.** **Every** copy MUST be a plain tree, laid out under the same layout conventions, so that a content file's path is derived the same way in every copy. A copy MAY hold a content file that another copy does not.
 
+> **Example.** One copy may hold photos another lacks; that is intended, and not a discrepancy to be fixed by deleting.
+
 **R-COL-5.** A derivative in an open format (for example, a JPEG rendered from a HEIC, or a DNG from a proprietary RAW) MAY be stored **in addition to** the original. It MUST be identifiable as derived, and it MUST NEVER replace an original. Deleting every derivative MUST leave the collection complete.
 
-> **Why R-COL-4 says "every" and grants no exceptions.** It would be tempting to require only that
-> _at least one_ copy be a plain tree, leaving room for a future versioned repository alongside it.
-> That would be a permission carved out for a feature that does not exist and is not wanted yet, and
-> it would weaken today's guarantee to serve a hypothetical. As written, the guarantee is the
-> strongest available: **every copy in existence is browsable with no tool at all.** The path to
-> versioning is documented in Section 10, and it costs one amended requirement. The door stays open
-> without being left ajar.
+> **Example.** The HEIC stays; a JPEG rendered from it sits beside it as a hedge, flagged as derived.
 
-> **Why R-COL-4 no longer says "structurally equivalent".** It did, and that phrasing stopped being
-> true once Turbo-Collection lost the ability to delete (R-MIRROR-3). A copy keeps every file it has
-> ever received, so if a photograph is removed from one copy by hand, another copy still holds it and
-> the two trees are no longer equivalent. **A copy may be a superset of another, and copies are not
-> required to be byte-for-byte the same tree**, and that is the intended behavior rather than drift:
-> it is what makes an accidental hand-deletion in one copy recoverable from another. What R-COL-4
-> still guarantees is the part that matters to a finder with no software: layout is the same, so a
-> file's location is predictable from the shared conventions alone, in whichever copy is in hand.
-
-> **Why R-COL-5 is not specific to HEIC.** The risk is proprietary formats generally. Camera RAW
-> formats (CR3, NEF, ARW) are undocumented and single-vendor; HEIC and HEVC are patent-encumbered.
-> The rule is the same for all of them, and for whatever replaces them: keep the original bytes, and
-> optionally hedge with an open-format copy beside it. Preserve first, hedge second.
+> **Rationale.** The plain-files thesis and add-only shape behind these invariants, and why proprietary formats are hedged: [design-record §2 and §3](../docs/design-record.md); the withdrawal that lets one copy hold files another lacks: [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md).
 
 ---
 
@@ -382,6 +364,8 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 
 **R-SRC-6.** **The honesty requirement.** If a source **cannot** supply original bytes, the importer MUST declare this, and Turbo-Collection MUST report it. Turbo-Collection MUST NOT silently accept a degraded file as though it were an original. A degraded import MUST be either refused or explicitly recorded as degraded, per configuration, and **the default MUST be to refuse**.
 
+> **Example.** A cloud source that returns a slightly recompressed file and reports success is refused by default, not imported as an original.
+
 **R-SRC-7.** Import MUST be read-only with respect to the origin, except in adoption (R-CLI-12), where the origin is the directory being made a copy: there, Turbo-Collection MAY write meta files into that directory, and MUST NOT delete, modify, or move an adopted file. An importer MUST NOT delete, modify, or move anything at the source device or service.
 
 **R-SRC-8.** Import MUST be idempotent. Importing the same item twice MUST NOT produce a duplicate in the collection, and re-running an interrupted import MUST converge rather than accumulate.
@@ -389,6 +373,8 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 **R-SRC-9.** An item consisting of multiple files that are semantically one thing (for example, a still image and its paired motion clip) MUST be imported atomically: either all of its parts arrive, or none do. An importer MUST NOT split such an item silently.
 
 **R-SRC-10.** The collection path of an item MUST be a pure function of the item's own bytes, the metadata the import source supplies with it, and that import source, under the collection's layout convention.
+
+> **Example.** No `-2` suffix to disambiguate import order, and no directory named for a label a person adds after import.
 
 **R-SRC-11.** A source's capabilities MUST be re-evaluated on every run and MUST NOT be cached from a previous run. A source that _begins_ degrading files MUST be caught at the next import, and MUST NOT be assumed to still be honest merely because it was honest before.
 
@@ -398,7 +384,11 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 
 **R-SRC-14.** Turbo-Collection MUST support a dry-run mode for import that reports every item a real import would add to the collection, and mutates nothing.
 
+> **Example.** Before freeing space at a source, an import dry-run that reports zero pending items shows everything there has already reached the collection.
+
 **R-SRC-15.** A layout specification MUST state which items it claims, as a condition on an item's own bytes, the metadata its import source supplies with it, and that import source. Turbo-Collection MUST determine an item's collection path under the layout specification that claims that item. Turbo-Collection MUST NOT import an item that no layout specification claims, and MUST report every such item. If more than one layout specification claims an item, Turbo-Collection MUST refuse to run.
+
+> **Example.** An item no layout claims is reported and skipped; an item two layouts claim stops the run, because its path would be ambiguous.
 
 **R-SRC-16.** On importing into an existing import-source directory, Turbo-Collection MUST compare the running import source's version against the `importSource.version` that directory's manifest records (`meta-file-spec.md` R-MFILE-9). If they share the same MAJOR line (`version-requirement.md` R-PUB-1), Turbo-Collection MAY reuse the directory, and where it writes to it MUST re-stamp `importSource.version` to the running version. If the running version begins a new MAJOR line, Turbo-Collection MUST NOT reuse the directory, and MUST place the imported content under a different import-source `specId`. What compatibility an import source guarantees within a MAJOR line is stated by that import source's own specification; the core does not adjudicate it.
 
@@ -408,76 +398,7 @@ matters. How adapters are loaded is a binding (Section 12), not a requirement.
 
 **R-SRC-19.** An importer MUST be able to detect degradation of an item, by verifying delivered bytes against something the source exposes about the original, such as its size, codec, or a hash. Where an importer cannot detect whether a source degrades, it MUST refuse that source rather than import from it.
 
-> **Why detectability is its own requirement.** R-SRC-6 forbids silently accepting a degraded file as an original, and R-SRC-11 requires catching a source that begins to degrade; both assume the degradation can be seen. A source that recompresses invisibly, at identical dimensions and metadata, defeats that assumption: an importer would store degraded bytes believing them original and report nothing. So detectability is the precondition those two requirements rest on, and a source whose degradation cannot be detected is refused rather than trusted.
-
-> **What R-SRC-10 still forbids, now that the import source is admitted.** This requirement once said
-> the collection layout MUST NOT depend on which source supplied a file, so that two identical photos
-> arriving by different import sources landed in the same place. That guarantee is withdrawn
-> deliberately. The import source is a path segment because it is the one thing about an arrival that
-> a file cannot state about itself, and a photo arriving by two import sources is therefore two files;
-> R-SRC-8 sends that case to the duplicate report rather than to an import-time gate. What survives is
-> the harder half. A path may depend on the item and on how it arrived, never on **when** it arrived
-> or on **what a person later decided about it**. Import order is a property of a run rather than of
-> an item, so an ordinal disambiguating suffix is still forbidden. A label assigned after import is
-> supplied by no import source, so a directory named for one is still forbidden, which also keeps the
-> level from becoming a junk drawer for multi-valued groupings.
-
-> **Why a claim lives in a layout specification, and what each failure means.** R-SRC-10 makes a
-> collection path a pure function of three inputs, and that guarantee would be void if choosing among
-> several conventions were not a function of the same three. So a claim is stated in those terms and
-> in no others: an operator cannot direct an item to one convention rather than another, for the same
-> reason an operator cannot name a directory after a label assigned later. Stating a claim inside a
-> layout specification is also what keeps this document free of any particular kind of content.
-> Supporting a new kind is one new document, and no requirement here changes. A claim is
-> evaluated per item rather than per file, so a multi-file item (R-SRC-9) cannot be split
-> across two conventions.
-
-> **The two failures in R-SRC-15 differ in kind.** **No claim is ordinary.** A source holds files a
-> collection was never meant to preserve, and passing over one is correct behavior rather than an
-> error, which is why R-SRC-15 reports such an item instead of stopping the run. **Two claims is a
-> defect in the documents**, not in the data: two conventions claiming one item make its path
-> ambiguous, and an ambiguous path is not reproducible. Turbo-Collection stops, because guessing
-> would write a photograph where a later run could not find it.
-
-> **R-SRC-6 is the requirement that earns its keep.** The realistic failure mode of a cloud photo
-> source is not that it breaks loudly. It is that it hands you a slightly worse file and says
-> nothing. A system whose entire purpose is preservation must treat a silently degraded original as a
-> hard error, not as a successful import.
-
-> **R-SRC-11 is R-SRC-6 extended across time.** Over the decades this system is meant to last, the
-> likeliest way the honesty guarantee fails is not that an importer lies, but that the service beneath
-> it changes: a sync client begins transcoding HEIC in some future year, having not done so before.
-> Trusting a capability because it was true once is exactly the mistake this system exists to avoid.
-
-> **Why R-SRC-13 forbids a report that sounds useful.** Two comparisons sound alike and are not.
-> _Forward_, source to collection, asks what the source holds that the collection lacks: that is the
-> import work list, and it is required. _Reverse_, collection to source, asks what the collection
-> holds that the source no longer has. Turbo-Collection never asks the second question. Two
-> independent reasons. First, a cloud photo source presents a local view that is a cache, so an
-> absent item is at least as likely to be a sync failure as a deletion, and such a report would be
-> mostly false positives. Second, every true positive is an item already safely in the collection,
-> which is the outcome this system exists to produce. R-SRC-13 also generalizes R-SRC-11: the tool
-> keeps no memory of a source between runs at all.
-
-> **What R-SRC-12 and R-SRC-13 cost, stated plainly.** Turbo-Collection can never tell an operator
-> "you deleted something at the source that was never backed up." Nothing detects that, and nothing
-> is meant to. The protection is ordering, not detection: confirm coverage first, delete afterwards.
-> R-SRC-14 is what makes that confirmation possible, because an import dry-run reporting zero pending
-> items is exactly the evidence that everything at the source has already reached the collection.
-
-> **Why R-SRC-16 leans on the version scheme rather than inventing a compatibility test.** "Compatible"
-> already has a definition: within one MAJOR line, everything that conformed still conforms, and a new
-> MAJOR line is exactly where that breaks (`version-requirement.md` R-PUB-1). So the re-stamp needs no
-> new contract; it reads the MAJOR component of a version already on disk. An import source's own bump
-> test (R-PUB-1 requires each specification to state one) is what decides which of its changes are
-> MAJOR, so the domain judgment stays where the domain knowledge is. The manifest's `importSource.version`
-> is therefore a **current claim**, "the latest version that took ownership of this directory as
-> compatible", not a full history; the receipt files hold the authoritative version trail
-> (`meta-file-spec.md` R-MFILE-14). A mis-declared compatibility can never lose or relocate data, because
-> add-only (R-SRC-12) and the pure-function path (R-SRC-10) bind regardless; at worst it leaves an
-> inaccurate claim in one field, recoverable from the receipts. Layout needs no companion rule: a
-> structural layout change alters the path (R-SRC-10) and so lands in a new, differently structured
-> directory, which makes any one directory layout-homogeneous by construction.
+> **Rationale.** Why the honesty and detectability rules, the import-source path segment, and the version re-stamp are shaped this way: [the import-source decision](../docs/decisions/2026-08-22-import-source-decision.md), [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md), and [design-record §2](../docs/design-record.md).
 
 ---
 
@@ -510,21 +431,11 @@ concept is reframed, the numbers are not.)
 
 **R-TGT-11.** Every copy MUST be restorable by ordinary file copy, using no Turbo-Collection software.
 
+> **Example.** With Turbo-Collection gone, a finder restores a copy by copying its files off the drive with any file manager.
+
 **R-TGT-12.** A copy's storage capabilities MUST be re-evaluated on every run and MUST NOT be cached from a previous run (symmetric to R-SRC-11). A copy that has ceased to be a plain tree MUST be caught **before** it is written to, not after.
 
-> **R-TGT-6 is what makes the architecture honest.** R-COL-4 demands that every copy be a plain
-> tree. Without a capability declaration, that demand is merely a hope. With one, Turbo-Collection
-> can check it before doing any work and refuse to act on a copy that would leave data locked behind
-> a tool.
-
-> **What a copy carries, and why.** All of it plain text, all of it negligible
-> against terabytes of photos: the **files** themselves, a **manifest** of their checksums (R-TGT-9),
-> a **`README.md`** (R-MFILE-22), and optionally a copy of the **specification** the copy was written
-> under (R-VER-8). They serve a single scenario, in escalating order of need: _someone finds this
-> drive in forty years, and Turbo-Collection no longer exists._ They read the note to learn what the
-> drive is; they verify the files against the manifest, which states its own algorithm and lists one
-> file per line (R-MFILE-27); and they consult the specification only if they need the full rules. The photos are recoverable at every
-> step, including the step where the finder reads nothing at all and simply copies the files off.
+> **Rationale.** Why a copy is a declared plain tree rather than a bare path, and what a copy carries for a future finder: [design-record §4 and §5](../docs/design-record.md), [the peer-model decision](../docs/decisions/2026-09-05-peer-model-decision.md), and [the storage-hardware decision](../docs/decisions/2026-08-10-storage-hardware-decision.md).
 
 ---
 
@@ -536,6 +447,8 @@ The semantics of the mirror mechanism, as distinct from the storage contract in 
 is symmetric between peer copies, and is what the **backup** operation (R-CLI-5) performs.
 
 **R-MIRROR-1.** When mirroring two copies, Turbo-Collection MUST copy to each copy every content file the other holds that is absent at it. If a **content file** is present in both copies with differing content, Turbo-Collection MUST NOT overwrite either copy, and MUST report the difference (R-INT-7). A meta file MAY be replaced, under the conditions its own requirements state (R-REC-7 for a receipt, R-INT-10 for a manifest).
+
+> **Example.** Two copies hold different bytes at the same path: neither is overwritten, and the difference is reported.
 
 **R-MIRROR-2.** Mirroring MUST be read-only with respect to every **content file** already present in a copy. It MUST NOT modify, rename, move, or delete one. Mirroring MUST record each arrival it makes in that directory's receipt, and beyond the content files it adds and the meta files R-MIRROR-1 permits, MUST write no other file into a copy (R-REC-5).
 
@@ -551,30 +464,13 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 
 **R-MIRROR-8.** **The carve-out for incomplete work.** Turbo-Collection MAY remove a temporary file (Section 3) that Turbo-Collection itself created. Turbo-Collection MUST NOT remove anything else. A temporary file MUST be identifiable as a temporary file by its name or its location, so that a human can audit every such removal without Turbo-Collection.
 
+> **Example.** A half-written `photo.jpg.part` from an interrupted run may be removed; `photo.jpg` may not.
+
 **R-MIRROR-9.** Turbo-Collection MUST verify a content file against its copy's manifest immediately before copying that file to another copy. Turbo-Collection MUST NOT copy a file whose checksum does not match, and MUST report the mismatch.
 
-> **Why R-MIRROR-1 no longer overwrites, and what that costs.** An earlier text copied every file
-> that "differs from the collection's copy", which treated one copy as authoritative. R-INT-7
-> says the opposite: on a mismatch neither side is authoritative, and choosing the surviving copy is
-> a human decision. Those were two MUSTs in conflict, and R-INT-7 wins. The cost is real and accepted:
-> a corrupt file in one copy is never healed automatically, and repair becomes an action a human
-> requests, consistent with R-INT-6. What is bought is larger. A file that corrupts silently in one
-> copy can no longer overwrite the good copy in every other copy on the next run.
+> **Example.** A file that corrupted silently in one copy is caught before it reaches a fresh copy.
 
-> **Why R-MIRROR-8 is worded so narrowly.** A carve-out from "never deletes" is the one place this
-> specification can reopen the hole it just closed, so it is bounded on three sides at once: only a
-> file Turbo-Collection created, only a file that never became complete at its final path, and only a
-> file a human can recognize as temporary by looking at it. Deleting one's own incomplete work product
-> is not deleting data. R-MIRROR-6 requires that an interrupted run leave no partial file that a later
-> run mistakes for a complete one, and write-to-temporary-then-rename is the ordinary way to satisfy
-> it, so without this carve-out R-MIRROR-6 would be unimplementable.
-
-> **Why R-MIRROR-9 exists, and what append-only does not protect.** Never deleting protects copies
-> that already exist. It does nothing to stop bad bytes reaching new ones. If a content file
-> corrupts silently in one copy and is then copied to a **fresh** copy before anyone notices, the
-> corrupt version is the only version that fresh copy will ever hold, because R-MIRROR-1 will not
-> overwrite it later. Verifying immediately before the copy closes that gap at almost no cost, since
-> the file is being read anyway.
+> **Rationale.** Why mirroring is add-only and symmetric, and what that costs and buys: [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md) and [design-record §2](../docs/design-record.md).
 
 ### 7.2 Integrity (`R-INT-*`)
 
@@ -586,73 +482,21 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 
 **R-INT-6.** Verification MUST NOT repair, overwrite, or delete anything as a side effect. It reports. Any repair MUST be a separate, explicitly requested action.
 
+> **Example.** Verification only reports; a verifier that "repaired" could overwrite a good copy with a bad one.
+
 **R-INT-7.** On a mismatch between two copies' **content files** at the same path, Turbo-Collection MUST report **which copies differ** and MUST NOT treat any copy as authoritative. Choosing the surviving copy is a human decision. This requirement MUST NOT be applied to meta files, which are per-copy records and are expected to differ between copies.
 
 **R-INT-8.** Turbo-Collection MUST report a **content file** that is **extra** (present on disk, absent from its directory's manifest) as a finding, in whichever copy it appears. This outcome alone MUST NOT cause a non-zero exit status, because a copy may legitimately hold a content file that its manifest, written before that file was mirrored in, does not list. Turbo-Collection MUST NOT report a manifest as **extra** in any copy, since R-MFILE-8 excludes it by design.
 
 **R-INT-10.** Turbo-Collection MUST NOT replace a file's recorded checksum with a newly computed one unless Turbo-Collection wrote that file's current content itself. Rebuilding a manifest from a copy's present contents MUST be an action a human explicitly requests, and MUST report every difference against the existing manifest rather than overwriting it silently. Adding an entry for a file not yet covered is not a replacement and is unrestricted.
 
-> **Why R-INT-8 does not make an extra fatal.** Mirroring is add-only and converges copies upward:
-> a content file one copy holds and another lacks is copied to the copy that lacks it (R-MIRROR-1),
-> so between runs a copy can legitimately hold a file that its own manifest, written before that file
-> arrived, does not yet list. Treating that as an error would make the healthiest copy, midway through
-> mirroring, report the longest list of problems, and an operator learns to ignore verification output, which is
-> the failure that costs the most here. So an extra is always **reported**, because a genuinely stray
-> hand-dropped file should surface, but the outcome alone never fails the run. No copy is privileged,
-> so the rule reads the same in every copy.
-
-> **A recurring hazard, named so it is recognized next time.** A healthy state of this design reads
-> as a finding to a naive report. This is the second instance: the first is that a grouping holding
-> real copies makes every member a byte-identical duplicate of its canonical original, which a
-> duplicate report would flag as waste. Whenever a report is added, ask which of its findings are
-> designed behavior, and say so in the report rather than in a footnote.
+> **Example.** A silent rebuild would hash a corrupted file and record its bad checksum as correct.
 
 > **The manifest.** Its name, placement, fields, and format are stated by
-> [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-8 through R-MFILE-12), which is the only document
-> code may cite for them. Field names are spelled out there rather than abbreviated, because R-MFILE-6
-> asks whether a stranger can figure the meta file out by looking at it.
+> [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-8 through R-MFILE-12), the only document code may
+> cite for them.
 
-> **Why the manifest is JSON, and why a second copy is not.** The earlier text required the manifest
-> to be in "a standard checksum format, such that a standard checksum utility can verify it". That
-> overstated what exists. `sha256sum` is a GNU program, not a standard: POSIX specifies `cksum`, BSD
-> ships a different tool with different output, macOS ships a Perl one, and one Windows machine can
-> carry two implementations that disagree. The format itself is awkward to parse correctly, with
-> binary-mode markers, backslash escaping of unusual filenames, no declared character encoding, and
-> comment handling that no implementation documents. JSON is an actual frozen standard, states its own
-> encoding, escapes strings unambiguously, and can carry the algorithm and version stamp as ordinary
-> fields instead of as a comment convention nobody promises to honor.
-
-> **Why there is no second copy in checksum-utility format.** A **companion manifest** was required
-> beside every manifest between 2026-08-13 and 2026-08-16, in the line-oriented form `sha256sum -c`
-> reads, so that a copy could be verified by one command and no Turbo-Collection software. It was
-> withdrawn. The argument for it assumed a reader who has a checksum utility but cannot obtain a
-> format conversion, and that reader is now judged not to exist: anyone able to obtain the conversion
-> is equally able to obtain the verification directly, and skips the intermediate file. The
-> assumption doing that work is stated in Section 12.3 and reasoned in `docs/design-record.md`
-> Section 2 as _a future reader has help_. Note what it does **not** license: the manifest still
-> names its own algorithm, carries its own version stamp, and places one file per line (R-MFILE-27),
-> because an assistant can act only on data that says what it is. The convenience was removed; the
-> self-description was not.
-
-> **The smallest possible exclusion (R-MFILE-8).** The requirement used to say "every file in the
-> collection", which no implementation can satisfy: a manifest is a file in the collection, so it
-> would have to contain its own checksum. The exclusion is deliberately kept to manifests alone rather
-> than widened to meta files generally, because a `README.md`, a configuration file and a carried copy
-> of this specification are all static files worth verifying, and excluding them would buy nothing.
-> Nothing verifies a manifest itself, and nothing needs to: R-TGT-9 puts an independent manifest on
-> every copy, so three copies mean three manifests, and a corrupt one is found by comparison. That is
-> the same answer this project gives everywhere, which is redundancy rather than cleverness.
-
-> **Why R-INT-10 exists, and it is not obvious.** A manifest looks disposable, because it can always
-> be rebuilt from the collection. But rebuilding it hashes whatever the collection holds **at that
-> moment**, corrupted files included, and writes down those hashes as though they were correct. A
-> silent regeneration therefore destroys the only evidence that corruption happened, and it does so
-> most eagerly in exactly the situation where the evidence matters. Verify first, then rebuild, and
-> never rebuild as a side effect of something else.
-
-> **Why R-INT-6 and R-INT-7 exist.** A verifier that "helpfully" repairs can propagate corruption from
-> a bad copy over a good one, destroying the very data it was invoked to protect. Detection and repair
-> are therefore separated on purpose. Turbo-Collection's job is to tell the truth about what it found.
+> **Rationale.** Why detection and repair are kept separate, why a manifest rebuild is never silent, and why JSON with nothing beside it: [the manifest-format decision](../docs/decisions/2026-08-16-manifest-format-decision.md) and [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md).
 
 ### 7.3 Filename safety (`R-NAME-*`)
 
@@ -666,6 +510,8 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 
 **R-REC-5.** Turbo-Collection MUST write an arrival file only **after** the content that arrival covers has been completely written to the copy the arrival names. The content an arrival covers is the content present in the directory at that moment, which MAY be less than the whole directory; every file it covers MUST be completely written, so that a partial arrival is still an honest snapshot.
 
+> **Example.** A run that dies mid-transfer leaves no arrival claiming the content arrived.
+
 **R-REC-6.** On a mirror, Turbo-Collection MUST record an arrival as a receipt file (R-MFILE-13, R-MFILE-14) for each directory into which it placed content, and MUST bring both copies' receipt files to the union of the two for every directory the mirror covers, not only those into which it placed content, copying into a copy every receipt file the other holds that it lacks and never overwriting one, since receipt files are immutable (R-MFILE-13). A directory in which the mirror placed nothing gets no new arrival, because an arrival records a placement and not a verification (R-REC-8), yet its receipt files still converge, so one connected copy reports every copy's state for every directory rather than only for those a given run changed. Every receipt write is the core's responsibility; a storage adapter MUST NOT write a receipt (R-TGT-7).
 
 **R-REC-7.** Turbo-Collection MUST NOT delete or alter a receipt file (R-MFILE-13). An error therefore outlives the problem it describes: when the content an error names later reaches the copy, the arrival is a new file and the earlier error file remains, so the receipt states both events.
@@ -674,176 +520,15 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 
 **R-REC-9.** Turbo-Collection MAY record a location receipt (R-MFILE-26) for the copy it is operating on, stating that copy's `volumeId` and `relativePath` so a later run can find the copy with fewer questions. It MUST write one only when the copy's observed location differs from the most recent location receipt already on record for that copy, so that an unchanged location does not accumulate files. A location receipt locates a **candidate** only: Turbo-Collection MUST confirm a copy's identity by reading its configuration (R-MFILE-19) before treating a found copy as that copy or writing to it, and MUST NOT infer identity from a matched `volumeId` or `relativePath`. The hint MUST be optional and non-load-bearing: Turbo-Collection MUST function without it, MUST fall back to asking when it is absent or no longer resolves, and MUST NOT store an absolute path, deriving the mount point at run time from `volumeId` through the Storage port (R-TGT-5) instead. Location receipts propagate as every receipt file does: on a mirror, Turbo-Collection MUST bring both copies' copy-root location receipts to the union of the two, copying into each copy every one the other holds that it lacks and never overwriting one (R-REC-6, R-REC-7). A location receipt records where a copy was **observed**, not where it **remains** (R-REC-8).
 
-> **Why receipts exist at all, and why they are not logs.** A manifest is a **state** record: delete it
-> and it can be rebuilt by rescanning the tree. A receipt is an **event** record, and can be rebuilt
-> from nothing. Without one, an empty directory nobody ever imported into and an empty directory whose
-> photographs were deleted are indistinguishable, because absence of data and absence of import look
-> identical to any checksum. This also rules out placing receipts under R-LOG-2, which makes logs
-> observability only: a receipt is load-bearing before an irreversible act, so it is a preservation
-> meta file and lives in this section. A run log and a receipt are two independent records of one
-> event, which the redundancy principle authorizes rather than merely tolerates.
+> **Example.** A matched `volumeId` says only "look here"; the copy's identity is confirmed from its own configuration (R-MFILE-19), never from the matched id, so a reformatted or swapped drive simply fails to resolve.
 
-> **Why arrivals and errors, and why not verification (R-MFILE-13).** A receipt exists so that a human
-> can decide whether it is safe to delete the source material a directory came from. Two kinds of event
-> bear on that. An **arrival** says a copy now holds the content. An **error** says content a run
-> handled did not reach a copy it was meant to: an item an import source offered that landed in no copy
-> at all, the strongest possible reason not to delete, because that item exists nowhere else; or a
-> content file that failed to reach a copy it was being mirrored into, a copy fewer than intended. The first is the one fact
-> about an import that no manifest and no checksum can ever recover, since an item that never landed
-> leaves no trace to find. A **verification** is excluded, for two reasons an error meets and it does
-> not. An error changes whether, or in how many copies, content is held; a verification changes
-> neither, and it is the highest-volume event a collection generates, so admitting it would turn a
-> short file into hundreds of lines over twenty years and destroy the property the record exists for,
-> which is that a person can read it at a glance. Errors are rarer than arrivals and far rarer than
-> verifications. Where verification results belong is R-LOG-1.
-
-> **Why an import error can create a directory that holds no photograph (R-MFILE-13).** An item an
-> import source offered but that never landed has no directory to be recorded in, yet its path is
-> known: R-SRC-10 makes a collection path a function of the item's bytes, the metadata its import
-> source supplies, and that import source, all of which are in hand at the moment the error is
-> recorded. Writing the receipt where the item _would_ have gone puts the record exactly where somebody
-> looking for that photograph will look. A directory holding a receipt and no content is a strange
-> object, and it is precisely the signal worth finding: it says something was offered here and is not
-> here.
-
-> **Why an error outlives the problem it describes (R-REC-7).** Deleting the error once the content
-> reaches the copy would be tidier and would destroy the audit trail. _Failed 2026-08-14, arrived
-> 2026-09-02_ tells you the gap existed and closed; the arrival alone tells you nothing about the
-> three weeks when a photograph you believed was safe was in one copy fewer than you thought.
-
-> **Why the digest, when a manifest sits in the same directory (R-MFILE-15).** The manifest states what is
-> present **now**; an arrival states what was covered **then**. The difference between them is the
-> content that has not yet reached that copy, which is the honest measure of exposure and can be
-> computed with no other drive connected. It also makes a receipt falsifiable rather than merely
-> asserted: the most recent arrival's digest can be recomputed from the directory at any time.
-
-> **Why the ordering in R-REC-5 is not free to choose.** Recording an arrival before the transfer
-> completes would leave a failed run claiming content reached a copy it never reached. That is
-> over-reporting, and a receipt that over-reports can talk an operator into deleting the only other
-> copy. Under-reporting is safe and self-correcting; over-reporting is neither.
-
-> **Why receipt files need no merge (R-REC-6).** Two parties appending to one shared receipt would
-> leave records grown separately, and mirroring them would need a merge operation R-MIRROR-1 does not
-> describe and nothing else here needs. Per-event files avoid it: each is immutable and named for the
-> run and the copy that authored it (R-MFILE-13), so no file is ever appended to by two parties, and a
-> copy's history is simply the union of the files present in its `.turbo-collection/`. Bringing one copy
-> up to another is therefore a copy of the files it lacks, add-only and conflict-free, and no copy is
-> privileged. This is what lets one connected drive report where content has reached, and whether each
-> copy was complete, without those other drives present. The exact shape and naming of the files is a
-> receipt-format matter, stated by `meta-file-spec.md`.
-
-> **Why a no-op mirror writes no arrival, yet still propagates (R-REC-6).** Two operations hide in a
-> mirror: authoring a new arrival, which records that content was placed, and propagating receipt
-> files, which carries what each copy already recorded to the copies that lack it. Only placement
-> authors an arrival, so a directory already in agreement gains none; that a copy is still intact as of
-> today is a verification, which the log records (R-LOG-1) and a receipt deliberately does not (R-REC-8).
-> Propagation is unconditional, so the same run still brings that directory's existing receipt files to
-> their union. Complete as of a date therefore means last placed, never last checked, which is why one
-> copy's report of another is only ever as recent as the last time their histories touched.
-
-> **What one copy's receipt can and cannot tell you.** A copy's receipts are complete only for what has
-> been recorded there; anything more recent, or recorded only elsewhere, may not yet appear. So a
-> receipt read on one copy under-reports and never over-reports: it can show fewer copies holding
-> content than exist, never more. Answering how many copies hold given content means reading the
-> receipts of the copies in hand (R-CLI-10). For a record consulted before an irreversible deletion,
-> that is the correct direction to be wrong.
-
-> **Why R-REC-7 exists.** Everything else in a copy can be rebuilt: content from another copy, a
-> manifest by rescanning. Arrival history can be rebuilt from nothing, which makes a receipt file the
-> one file whose loss or alteration is unrecoverable. So a receipt file is written once and never
-> touched again, the receipt's counterpart to R-INT-10 and stronger: there is no rewrite to get wrong,
-> because the destructive act, writing something that contains less than what was there, is simply never
-> performed.
-
-> **Why R-REC-8 is stated as a prohibition.** A receipt is the only record in this design that
-> describes bytes that are not present, so it is the only one that can become false without anything
-> local changing. A drive that dies in November does not edit the claim recorded in August. R-SRC-13
-> forbids remembering a source's contents between runs for exactly this reason; receipts are permitted
-> the same shape pointed at other copies only because an arrival is a fact Turbo-Collection performed
-> itself rather than an inference about someone else's storage. Dates are what keep a stale claim legible as
-> stale, and the release procedure, not this record, remains what authorizes a deletion.
-
-> **A receipt is not covered by its directory's manifest.** Receipts live in the `.turbo-collection/`
-> subdirectory, which a manifest does not cover (`meta-file-spec.md` R-MFILE-8), and each receipt file
-> is written once and never rewritten (R-MFILE-13). Appending history is therefore creating a
-> new file rather than editing a checksummed one, so no manifest checksum goes stale.
-
-> **A receipt, by example.** A receipt is a set of per-event files in a directory's
-> `.turbo-collection/`; field names follow the manifest's where the two overlap. An import arrival
-> records the versioned specifications that placed the content, in
-> `receipt-20260814T180422Z-3f9a-main.arrival.json`:
->
-> ```json
-> {
->   "version": "0.1.0-draft",
->   "tcSpecVersion": "0.1.0-draft",
->   "runId": "20260814T180422Z-3f9a",
->   "collectionName": "main",
->   "date": "2026-08-14T18:04:22Z",
->   "fileCount": 412,
->   "contentDigest": "9f2a1c...",
->   "layout": { "specId": "photo-path-layout", "version": "0.1.0" },
->   "importSource": { "specId": "icloud", "version": "0.1.0" }
-> }
-> ```
->
-> A later mirror to `off-site` records the same content reaching another copy, in
-> `receipt-20260902T090500Z-b1d2-off-site.arrival.json`. It names no `importSource` or `layout`, because
-> it acquired nothing and the import arrival above travels to `off-site` alongside it; the matching
-> `contentDigest` proves identical content arrived:
->
-> ```json
-> {
->   "version": "0.1.0-draft",
->   "tcSpecVersion": "0.1.0-draft",
->   "runId": "20260902T090500Z-b1d2",
->   "collectionName": "off-site",
->   "date": "2026-09-02T09:05:00Z",
->   "fileCount": 412,
->   "contentDigest": "9f2a1c..."
-> }
-> ```
->
-> A run that failed on a file records it in an error file for the same run and copy,
-> `receipt-20260814T180422Z-3f9a-main.error.json`:
->
-> ```json
-> {
->   "version": "0.1.0-draft",
->   "tcSpecVersion": "0.1.0-draft",
->   "runId": "20260814T180422Z-3f9a",
->   "collectionName": "main",
->   "errors": [
->     {
->       "message": "icloud offered IMG_0001.HEIC as a degraded copy; refused by policy (R-SRC-6)",
->       "file": "IMG_0001.HEIC",
->       "importSource": { "specId": "icloud", "version": "0.1.0" },
->       "details": { "kind": "degraded" }
->     }
->   ]
-> }
-> ```
->
-> A copy is named by the string that copy declares for itself in its own configuration (R-MFILE-19), never
-> by a volume label or a mount path. Both are mutable by anyone in seconds, and a receipt is permanent,
-> so a name written here in 2026 must still resolve in 2046 after every drive behind it has been
-> replaced.
-
-> **Why the location hint only ever accelerates, and never decides (R-REC-9).** Finding the right drive
-> faster is a convenience, and a convenience in this system is never allowed to become an authority. A
-> matched `volumeId` says only *look here*; whether the drive found is the copy it claims to be is
-> settled by reading that copy's own configuration (R-MFILE-19), the same self-declared name that governs
-> everywhere else, so a reused or colliding identifier misleads no one. Because the hint is only a hint,
-> its staleness is harmless: a reformatted drive, a replaced disk, or a copy moved within its volume
-> simply fails to resolve, and Turbo-Collection asks rather than guesses. This is why the receipt stores
-> an identifier and a relative path but never a mount path: the machine-specific answer is recomputed
-> each run and discarded, so nothing false is written into a record that is permanent and travels. It is
-> also why the receipt is optional. A copy on storage that reports no stable volume identifier still
-> works in every other respect; it only asks one more question at run time.
+> **Rationale.** Why receipts exist and are not logs, record arrivals and errors but never verifications, stay immutable, and why a location hint never settles identity: [the receipts decision](../docs/decisions/2026-09-07-receipts-decision.md) and [the location-receipt decision](../docs/decisions/2026-09-10-location-receipt-decision.md). The receipt file format, with a worked example, lives in [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-13).
 
 ---
 
 ## 8. Operation: configuration, logging, and the command line
+
+> **Rationale.** Why configuration travels with the collection, why a copy names itself, why init and backup are the only operations that create a copy, and why the read-only inspections are kept distinct: [the config-placement decision](../docs/decisions/2026-09-27-config-placement-decision.md), [the collection-naming decision](../docs/decisions/2026-09-28-collection-naming-decision.md), [the backup-naming decision](../docs/decisions/2026-09-27-backup-naming-decision.md), and [design-record §10](../docs/design-record.md).
 
 ### 8.1 Configuration (`R-CFG-*`)
 
@@ -854,33 +539,6 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 **R-CFG-4.** Turbo-Collection MUST fail rather than guess. A missing, ambiguous, or unparseable setting MUST NOT be silently defaulted into a behavior that loses data or accepts a worse file. In particular, it MUST NOT default into accepting a degraded import (R-SRC-6).
 
 **R-CFG-5.** Turbo-Collection MUST be fully operable with configuration supplied from the collection's own storage or on the command line, and MUST NOT require configuration held on the host computer. A host-specific location MAY be searched as a convenience; it MUST NOT be the only place configuration can live.
-
-> **Why R-CFG-5 exists.** A backup is performed wherever the drives are, on whatever computer is
-> available, including one the operator does not own and has never used. Storing configuration in a
-> per-user location on the host is the ordinary way to build a command-line tool and satisfies every
-> other word of R-CFG-1, while making that run impossible. State belonging to a collection travels
-> with the collection, which is the same rule that puts a manifest and a receipt beside the data they
-> describe.
-
-> **Why a copy names itself (R-MFILE-19).** A receipt records the copy an arrival reached, and a receipt
-> is permanent, so that name must still resolve decades later after every drive behind it has been
-> replaced. Three tempting sources for it all fail. A **volume label** is mutable by anyone in seconds
-> and leaves no trace when changed. A **mount path** is a drive letter on one operating system and a
-> `/Volumes` entry on another, and it changes between sessions. A **command-line argument** puts the
-> permanent record at the mercy of a typo. Reading the name off the copy itself fails none of these,
-> and it buys a safety property the others cannot: plugging in the wrong drive becomes detectable
-> rather than silent, which is the same reasoning that already makes R-TGT-6 require a copy to
-> declare that it is a plain tree. It also makes the tool indifferent to where a drive is mounted,
-> which is what lets a backup run on a borrowed computer that assigns whatever letter it likes.
-
-> **The meta files, and their names on disk.** Every copy carries `README.md` (R-MFILE-22) at its
-> root, optionally a copy of the specification (R-VER-8), and a `.turbo-collection/` subdirectory
-> holding `turbo-collection-config.json` (R-MFILE-17) and the copy's location receipts (R-MFILE-26).
-> Every directory holding content carries its own `.turbo-collection/` subdirectory holding
-> `manifest.json` (R-MFILE-8) and per-event `receipt-<runId>-<collectionName>.arrival.json` and
-> `receipt-<runId>-<collectionName>.error.json` files (R-MFILE-13). A `.turbo-collection/` directory marks a
-> drive as a Turbo-Collection copy and keeps the machine files out of the way of the content, while
-> `README.md` at the root orients a stranger who finds one drive and nothing else.
 
 ### 8.2 Logging (`R-LOG-*`)
 
@@ -920,43 +578,15 @@ is symmetric between peer copies, and is what the **backup** operation (R-CLI-5)
 
 **R-CLI-12.** Having made a directory a copy, init MUST adopt every file, other than a meta file or an ignored file, that is already in that directory or in a directory beneath it, by importing each such file through the Source port from an import source whose items are the files already there. Turbo-Collection MUST leave each adopted file at the path it had, and MUST NOT move, rename, modify, or delete an adopted file. Where the layout specification that claims an adopted item (R-SRC-15) would place that item at a different path, init MUST refuse to run.
 
+> **Example.** A starter ignore file is written before adoption, so a `.DS_Store` the OS scatters is not adopted as permanent content.
+
 **R-CLI-13.** In a **backup**, Turbo-Collection MUST mirror every directory the backup is given that is a copy (Section 7.1). Before mirroring, Turbo-Collection MUST create a new copy in each directory the backup is given that does not exist, or that holds no file at any depth except files matching a pattern in the ignore file of the backup's existing copy. Turbo-Collection MUST refuse a backup that would create a new copy unless that backup is given exactly one existing copy. Turbo-Collection MUST refuse to create a new copy unless a name for the new copy is given on the command line; that name becomes the new copy's `collectionName`. To create a new copy, Turbo-Collection MUST write into its directory a configuration file (`meta-file-spec.md` R-MFILE-17), a `README.md` (R-MFILE-22), and, where the existing copy has an ignore file, a duplicate of that ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a backup that is not a copy and that holds any file not matching such a pattern, and MUST report every file that directory holds.
+
+> **Example.** A backup creates a copy only in an empty directory, so files already there are not pulled into the collection by the two-way mirror.
 
 **R-CLI-14.** Turbo-Collection MUST NOT create a copy in any operation other than **init** and **backup**, and in every other operation MUST refuse to act on a directory given as a copy that is not a copy. Where init or backup creates a directory, Turbo-Collection MUST create only the last segment of that directory's path, and MUST refuse a path whose parent directory does not exist.
 
-> **Why a copy comes into being in two ways (R-CLI-11, R-CLI-13).** A collection's first copy has no
-> other copy to start from, so **init** creates it, and names it `main` unless told otherwise. Every
-> later copy is created by the backup that first fills it, because that is the moment an existing copy
-> is in hand to fill it from; working from exactly one existing copy settles whose ignore file the new
-> copy starts with. A later copy's name must be given, because a copy is named for the place it is
-> kept, which only the operator knows, and the name is written into every receipt the copy ever
-> collects, so a guessed default would be permanent. A name is never taken from a directory's name,
-> which usually describes the drive or the tool and would read the same on every drive. Once written,
-> a name is read from configuration on every later run (R-MFILE-19). A new copy may take any name,
-> including that of a copy which has died: that is how a failed drive is replaced, and the location
-> receipts record which volume stands behind the name over time (R-MFILE-26). Two connected copies
-> stating one name are still refused (R-MFILE-19).
-
-> **Why adoption leaves every file where it is (R-CLI-12).** A directory being made a copy often
-> already holds files an operator arranged, and moving them would undo that arrangement and gain
-> nothing. So init adopts them where they sit: each is recorded as an import, so a receipt shows how it
-> entered the collection, and none is moved, renamed, or rewritten. An ignore file found in the
-> directory is used as it stands. Where none exists, init writes a starter one before adopting
-> anything, because otherwise files an operating system scatters, such as a Finder `.DS_Store`, would
-> be adopted as permanent content, and one the operating system later rewrites would read as corrupt
-> on every verify.
-
-> **Why a backup refuses a directory that already holds files (R-CLI-13).** If a backup adopted files
-> already in a new copy's directory, mirroring, which runs in both directions, would bring them into
-> the existing copy in that same run, pulling unrelated files into the collection. Adopting is the init
-> operation's act, and a file wanted in the collection arrives by import. A backup therefore creates a
-> copy only where there is nothing to adopt.
-
-> **Why only the last directory is created (R-CLI-14).** A removable drive's path can exist only while
-> the drive is connected: macOS, for one, mounts a drive under `/Volumes` and removes that entry when
-> the drive is disconnected. Creating every missing directory in a path would then build a new copy on
-> the computer's own disk and fill it there. Creating only the last directory turns that mistake into
-> an error, at no cost when the path is right.
+> **Example.** Only the final path segment is created, so a disconnected removable drive fails rather than building a copy on the local disk.
 
 ### 8.4 Distinct read-only inspections
 
@@ -972,28 +602,7 @@ answerable (R-CLI-5), because they fail in different ways and at different times
 | What does this source still hold that the collection lacks? (source coverage)            | **import**, dry-run mode | R-SRC-14    |
 | How many copies hold this content, and when did each receive it? (propagation)           | **status**               | R-CLI-10    |
 
-> **Why `verify access` is a distinct inspection.** Fixity answers "is what I stored still intact." It
-> cannot answer "is my off-site drive even plugged in," "has my cloud token expired," or "did this
-> source start degrading files since last year." Those are questions about the **adapters**, not about
-> the data, and a preservation system that only ever notices such problems mid-run notices them too
-> late.
-
-> **Source coverage is the one an operator acts on.** The other inspections describe a system's
-> health. Source coverage answers "is it safe for me to free up space at the source", which is the
-> question that gets asked before an irreversible act by a human. R-SRC-14 answers it in the only form
-> that is trustworthy: not "I believe these were imported", but "here is what a real import would
-> still bring in", with an empty answer meaning the source holds nothing the collection lacks.
-
-> **Why `status` is separate, and why it needs no drive.** Verify's inspections probe live
-> reality and report any discrepancy they find; status reads Turbo-Collection's own records and reports
-> what they say. That is why status is its own operation and not a verify inspection: it checks
-> nothing against the bytes on a drive. Source coverage establishes that content
-> reached the collection. That is one copy, and deleting the source at that point leaves fewer copies
-> than before. Status answers the other half, which is whether the content then reached anywhere
-> else, and it is answerable from receipts alone with no other copy connected (R-MFILE-13). It is the only
-> inspection that reports on storage that is not present, so R-REC-8 governs how it may speak: it
-> states where content was placed and when, never that a copy still exists. An operator combines it
-> with a real verification before releasing anything, which is what the release procedure requires.
+> **Example.** `status` reads receipts, not bytes, so it reports which copies received content and when with no other drive connected; it never claims a copy still exists or is intact today (R-REC-8).
 
 ### 8.5 Exit status
 
@@ -1049,14 +658,6 @@ objection, and it is answered in three moves.
 
 **R-VER-1.** The bump of this specification's semantic version MUST be decided by the effect on **behavior**. **MAJOR**: previously conforming behavior becomes forbidden; or a port contract changes so that an existing adapter stops conforming; or the document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). **MINOR**: additions only; everything conforming under the previous version still conforms. **PATCH**: prose improvement with no behavioral consequence. A change of meta file format is measured by `meta-file-spec.md`, and a change of layout by the layout specification it belongs to, under each of their own bump tests.
 
-> **Why this document's bump test stopped being meta file-driven.** It measured breakage on meta
-> files, because meta files are regenerable from nothing while code is regenerable from this
-> document. That reasoning was right and it now belongs elsewhere: `meta-file-spec.md` owns the
-> formats, so its MAJOR is a format break by construction rather than by proxy. What is left here is
-> behavior, and a behavior document's own breakage is what its number should track. A release that
-> changes no obligation but rewrites a manifest field now bumps that document and not this one,
-> which is the whole point of separating them.
-
 ### 9.3 Stamps and self-evidence
 
 **R-VER-8.** Every copy MUST record which specification version and which layout convention governed the writing of its content. Every copy SHOULD additionally carry the text of those documents, so that the rules governing the data survive alongside the data; where carried, each MUST be named for the document and the full version of the text it holds, as `turbo-collection-spec-<version>.md`.
@@ -1073,16 +674,7 @@ decides which versions Turbo-Collection reads. This document states only how a m
 
 **R-VER-22.** Turbo-Collection MUST NOT require a separate operation to migrate a copy: an operation that writes into a copy of an older MAJOR version migrates that copy first (R-MFILE-23). A dry-run of such an operation MUST report every copy the operation would migrate.
 
-> **Why what a migration produces is not specified here.** A migration converts meta files from one
-> format to another, so the document that defines those formats is the only one that can say what a
-> correct conversion produces. Splitting the rule across two documents would let a format change land
-> without its migration, which is the failure the separation exists to prevent.
-
-> **Why a migration is not an operation of its own (R-VER-22).** A backup that finds a copy of an
-> older format already has that copy in hand, and must convert it before writing anyway
-> (R-MFILE-23). A separate step would be one more thing to remember, and forgetting it would only
-> postpone the same conversion to the next backup. A dry-run says in advance which copies a run would
-> convert, so a conversion never arrives unannounced.
+> **Rationale.** Why document-lifecycle rules moved to `version-requirement.md`, why this document's number tracks behavior, and why migration folds into the operation that needs it: [the version-requirement split decision](../docs/decisions/2026-08-01-version-requirement-split-decision.md) and [the future-reader decision](../docs/decisions/2026-08-16-future-reader-decision.md).
 
 ---
 

@@ -104,7 +104,11 @@ Supporting principles:
   (format-agnostic: JPEG, HEIC, RAW, video, copied byte-for-byte with no conversion). No database, no
   proprietary container. Files as a concept have survived ~75 years across every OS.
 - **Format & tool independence.** Picasa died; the `.jpg` files didn't. The backup must never lock
-  data behind an app or a company.
+  data behind an app or a company. Proprietary formats are the long-term readability risk, not any one
+  codec: camera RAW (CR3, NEF, ARW) is undocumented and single-vendor, HEIC and HEVC are
+  patent-encumbered. The rule is the same for all of them and whatever replaces them: keep the
+  original bytes, and optionally hedge with an open-format copy beside the original, never in place of
+  it (R-COL-5).
 - **Durable invariants vs. dated bindings.** Some things are near-permanent (files, checksums,
   the 3-2-1 rule, the *intent*). Others are today's expression of them (rclone, TypeScript, Mermaid,
   GitHub) and are expected to be swapped. Isolate the volatile parts so churn never touches the data.
@@ -155,7 +159,11 @@ Supporting principles:
   [the append-only decision](decisions/2026-08-13-append-only-decision.md). Worth stating here as
   philosophy and not only as a requirement, because it explains an otherwise odd shape: every copy
   grows monotonically, so copies converge by each gaining what the others hold, never by one being
-  overwritten to match another.
+  overwritten to match another. The single carve-out, removing a run's own incomplete work
+  (R-MIRROR-8), is bounded so it cannot reopen the guarantee: only a file Turbo-Collection created,
+  only one that never became complete at its final path, and only one a human can recognize as
+  temporary. Without it the crash-safe write-to-temporary-then-rename that R-MIRROR-6 needs could not
+  be implemented.
 - **A record lives with the data it describes.** There is no central index of what is stored where.
   Every directory carries its own manifest and its own receipt; every drive carries its own recovery
   note and its own copy of the specification; nothing remembers a source's contents between runs.
