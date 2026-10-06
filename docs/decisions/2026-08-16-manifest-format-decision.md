@@ -42,7 +42,7 @@ the verification directly and skip the intermediate file, and the project now st
 standing assumption: see [a future reader has help](2026-08-16-future-reader-decision.md).
 
 Note what the assumption does not license. The manifest still names its algorithm, carries its
-version stamp, states its layout convention, and places one file per line, because an assistant can
+version stamp, states its layout, and places one file per line, because an assistant can
 act only on data that says what it is. The convenience was removed; the self-description was not.
 
 ## Rejected

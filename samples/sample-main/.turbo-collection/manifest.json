@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "in-place", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "inventory.txt",
+      "size": 32,
+      "checksum": "475a2b646428f9da016bb0e9401f2aab207da67a969c721d4dff306648677ba3"
+    }
+  ]
+}

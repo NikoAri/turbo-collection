@@ -4,7 +4,7 @@
 and from the phone to reclaim that storage.
 
 This is one of the reasons the project exists. See `design-record.md` §1, hard goal *Safe release of
-what an import source holds*. Turbo-Collection never deletes anything at an import source; R-SRC-7
+what an import source holds*. Turbo-Collection never deletes a file of yours at an import source; R-SRC-7
 forbids it. Every deletion below is yours, taken against evidence.
 
 **Performable today, by hand, with no Turbo-Collection code.** The steps use Photos.app and a
@@ -37,7 +37,7 @@ and losing one silently is exactly what step 3 exists to catch.
 
 ## 2. Move the export into the collection
 
-Place files under the collection's layout convention. Do not delete the export folder yet; it is
+Place files where the photo layout puts them. Do not delete the export folder yet; it is
 your second copy until step 4 finishes (R-IMP-4).
 
 ## 3. Verify, and count (R-IMP-5, R-REL-2)

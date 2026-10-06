@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0-draft",
+  "tcSpecVersion": "0.1.0-draft",
+  "runId": "20260920T164009Z-8e2f",
+  "collectionName": "main",
+  "date": "2026-09-20T16:40:09Z",
+  "fileCount": 2,
+  "contentDigest": "3f0c57eca4d3fbcbcbcaf099d3549b8c205f51221b41225114778ef18a0b9956",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "in-place", "version": "0.1.0-draft" }
+}

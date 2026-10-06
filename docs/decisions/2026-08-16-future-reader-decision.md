@@ -26,7 +26,7 @@ verification directly and skip the intermediate file. This is what withdrew `R-I
 
 **Not licensed: anything about self-description.** An assistant can act only on data that states what
 it is. Every artifact still carries its format version, names its algorithm, and states the layout
-convention that placed it. This principle makes those fields *more* important, not less. It moves work
+that placed it. This principle makes those fields *more* important, not less. It moves work
 to the reader's assistant; it must never move work to the reader's guesswork.
 
 ## Why adopting it is safe

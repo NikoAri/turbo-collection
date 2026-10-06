@@ -7,9 +7,9 @@ Turbo-Collection never deletes a photograph, anywhere, and carries no setting th
 Every operation creates something or reports something. Deletion is an act a human performs with
 ordinary tools, on evidence Turbo-Collection supplies.
 
-This was already the specification's behavior in seven separate places (`R-COL-2`, `R-COL-5`,
-`R-SRC-7`, `R-MIRROR-2`, `R-INT-6`, `R-INT-7`, `R-NAME-2`), none of which named the rule behind
-them. Mirror-delete was the single exception, and it is gone.
+This was already the specification's behavior in seven separate places (`R-COL-2`, `R-SRC-7`,
+`R-MIRROR-2`, `R-INT-6`, `R-INT-7`, `R-NAME-2`, and an `R-COL-5` since removed), none of which named
+the rule behind them. Mirror-delete was the single exception, and it is gone.
 
 ## Why remove a feature that defaulted to off
 
@@ -59,7 +59,7 @@ disconnected drive cannot be deleted from.
   requires software, against `R-COL-1` and `R-COL-3`.
 - **Hardlink snapshots** (Time Machine, `rsync --link-dest`). Rejected earlier on exFAT and
   elevation grounds, and this decision does not revive them.
-- **In-place migration when a layout convention changes.** A migration interrupted halfway leaves a
+- **In-place migration when a layout changes.** A migration interrupted halfway leaves a
   half-moved tree, the worst available state. Writing a new generation beside the old one leaves the
   old tree intact at every instant, and mirrors what `R-PUB-5` already does to superseded document
   texts. Not yet drafted as a requirement.

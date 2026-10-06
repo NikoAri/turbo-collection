@@ -11,7 +11,7 @@ in [`decisions/`](decisions/), never here.
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
 | [`specs/meta-file-spec.md`](../specs/meta-file-spec.md) | What is written: every meta file's name, place, and contents. Its version is the meta file format version. | implementation | yes |
 | [`specs/photo-path-layout-spec.md`](../specs/photo-path-layout-spec.md) | Where a photograph or a video goes inside a copy. | implementation | yes |
-| [`specs/as-found-path-layout-spec.md`](../specs/as-found-path-layout-spec.md) | Where a file goes when it is kept at the path its import source supplied: adoption in place, and the floor beneath every other layout. | implementation | yes |
+| [`specs/as-found-path-layout-spec.md`](../specs/as-found-path-layout-spec.md) | Where a file goes when it is kept at the path its import source supplied: files taken in where they already sit, and the floor beneath every other layout. | implementation | yes |
 | `specs/import-sources/<import-source>/*-spec.md` | What may be assumed about getting original bytes out of one import source, and which layout governs its items. | implementation | yes |
 | `specs/import-sources/<import-source>/*-procedure.md` | Steps a human operator follows to import from that import source. | operator | no |
 | [`specs/procedures/*-procedure.md`](../specs/procedures/) | What a person does, one document per sitting: setup, import, backup, off-site, release. Steps only; reasoning lives in [`decisions/`](decisions/). | operator | no |
@@ -47,8 +47,9 @@ Every prefix resolves to exactly one document.
 | `R-CLI-*` | `turbo-collection-spec.md` | command line and operations |
 | `R-VER-*` | `turbo-collection-spec.md` | this specification's version, and version stamps |
 | `R-MFILE-*` | `meta-file-spec.md` | every meta file's name, place, and contents |
-| `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout convention |
-| `R-FOUND-*` | `as-found-path-layout-spec.md` | as-found layout convention |
+| `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout |
+| `R-FOUND-*` | `as-found-path-layout-spec.md` | as-found layout |
+| `R-INPLACE-*` | `import-sources/in-place/in-place-import-source-spec.md` | files already inside a copy, taken in where they sit |
 | `R-SET-*` | `procedures/turbo-collection-setup-procedure.md` | buying, labeling and filling drives, once |
 | `R-IMP-*` | `procedures/turbo-collection-import-procedure.md` | getting photos off an import source into a collection |
 | `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing the home copy up to date |
@@ -59,8 +60,8 @@ Every prefix resolves to exactly one document.
 | `R-META-*` | `traceability-requirement.md` | how documents, requirements, and code trace to one another |
 | `R-DUR-*` | `durability-requirement.md` | durability axioms every specification and design must satisfy |
 
-Not yet assigned: the import source specifications under `specs/import-sources/` are stubs, and each
-states that its prefix is unassigned. No album layout specification exists yet.
+Not yet assigned: the iCloud and local-folder import source specifications under
+`specs/import-sources/` are stubs, and each states that its prefix is unassigned. No album layout specification exists yet.
 
 ## Map of the core specification
 

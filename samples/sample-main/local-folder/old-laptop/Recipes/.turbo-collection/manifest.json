@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "local-folder", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "sourdough.txt",
+      "size": 32,
+      "checksum": "adf711108df1b3140f0b4938bb9aed2d2eaf82830d799401042550d949b6b7f2"
+    }
+  ]
+}

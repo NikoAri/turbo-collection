@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-03
 
-**An item's layout is decided by its import source, not by its bytes.** Adoption is the proof: the
+**An item's layout is decided by its import source, not by its bytes.** An in-place import is the proof: the
 same photograph is filed by date when imported from iCloud, and stays exactly where it sits when
 taken in from a directory that init makes a copy. Nothing about the bytes differs, so the bytes
 cannot be what chooses.
@@ -37,8 +37,9 @@ one floor. An item claimed by none, which was reported and passed over, is now r
 ## Rejected
 
 - **Each layout claims items by a condition on their bytes, and the core arbitrates** (the rule
-  until this date). It could not express adoption: the photo layout claimed every photograph from
-  anywhere, so an adopted photograph was claimed twice and the run refused.
+  until this date). It could not express taking a file in where it sits: the photo layout claimed
+  every photograph from anywhere, so a photograph found in a copy was claimed twice and the run
+  refused.
 - **Narrowing the photo layout's claim to exclude items that arrive with a path to keep.** It seats
   the choice inside a layout as a per-item test, when the import source and the layout are already
   recorded together for every directory. The selector is the import source.
@@ -58,7 +59,7 @@ one floor. An item claimed by none, which was reported and passed over, is now r
 `turbo-collection-spec.md`: `R-SRC-15` recast from arbitration between claims to a named primary
 layout; `R-SRC-20` (the floor) and `R-SRC-21` (a supplied path) added; `R-SRC-10` and `R-CLI-12`
 reworded to match; the glossary gains _Primary layout_ and _As-found layout_.
-`photo-path-layout-spec.md`: `R-PHOTO-1` restated from what the convention claims to what it is able
+`photo-path-layout-spec.md`: `R-PHOTO-1` restated from what the layout claims to what it is able
 to place. `as-found-path-layout-spec.md` created (`R-FOUND-*`). Each import source specification
 names its primary layout. [The import-source decision](2026-08-22-import-source-decision.md) still
 describes the photo layout's path, where an import source is a path segment.

@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "local-folder", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "return-2024.pdf",
+      "size": 37,
+      "checksum": "9b357e351f855394fab64629a108cd3b584fd1b67991b02cb3de9aae3a78e5f9"
+    },
+    {
+      "file": "w2-2024.pdf",
+      "size": 33,
+      "checksum": "04fe527da5724782282ed0396eb957b2aea9ea114bec7197c5bd7dc1978b8051"
+    }
+  ]
+}

@@ -74,8 +74,8 @@ rather than wishing it away.
 - **Minimal, transparent stack**: the owner wants to *see the full stack*; no hidden magic.
 - **CLI-first**: a GUI may be layered on later, but must not be a core dependency.
 - **Low human effort**: target **≤ 4 hours/month** of maintenance as a **hard limit** (see Section 11).
-- **Safe release of what an import source holds**: Turbo-Collection never deletes anything from iCloud or from a
-  phone, and R-SRC-7 forbids it from trying. What this project delivers is deletion *by you*, made
+- **Safe release of what an import source holds**: Turbo-Collection never deletes anything of yours from iCloud or
+  from a phone, and R-SRC-7 forbids it from trying. What this project delivers is deletion *by you*, made
   safe: once photos are in the collection and verified, you can free that storage yourself and stop
   paying for it. A primary motivator rather than a pleasant side effect, and what turns "I have a
   backup" into "I own my photos". It also sets an obligation, since safe deletion by hand needs the
@@ -109,8 +109,9 @@ as requirements, in [`specs/durability-requirement.md`](../specs/durability-requ
   data behind an app or a company. Proprietary formats are the long-term readability risk, not any one
   codec: camera RAW (CR3, NEF, ARW) is undocumented and single-vendor, HEIC and HEVC are
   patent-encumbered. The rule is the same for all of them and whatever replaces them: keep the
-  original bytes, and optionally hedge with an open-format copy beside the original, never in place of
-  it (R-COL-5).
+  original bytes (R-COL-2). Hedging with an open-format file rendered from an original, stored beside
+  it and never in place of it, is a deferred goal (core specification Section 10); nothing renders
+  one today.
 - **Durable invariants vs. dated bindings.** Some things are near-permanent (files, checksums,
   the 3-2-1 rule, the *intent*). Others are today's expression of them (rclone, TypeScript, Mermaid,
   GitHub) and are expected to be swapped. Isolate the volatile parts so churn never touches the data.
@@ -319,7 +320,9 @@ goes, and writes every meta file. An importer never sees a copy (`R-SRC-17`).
   an archive), so streaming bytes through the core would buy almost nothing and cost a second code
   path. Because a separate executable hands over files, no framing protocol over a byte stream is
   ever needed. This transport is a binding, as the way importers are loaded is: the specification
-  states the boundary and leaves the hand-off mechanism free.
+  states the boundary and leaves the hand-off mechanism free. The in-place importer is the one that
+  hands over nothing: its files are already inside the copy, so the core records them where they sit
+  ([the in-place importer decision](decisions/2026-10-06-in-place-importer-decision.md)).
 - **The core is the sole writer.** It reads each handed-over file, checksums it, computes its path
   (`R-SRC-10`), writes it under a temporary name, verifies it, and renames it into place
   (`R-MIRROR-6`, `R-MIRROR-9`), then writes the manifest and the receipt. A re-run converges instead
@@ -332,9 +335,9 @@ goes, and writes every meta file. An importer never sees a copy (`R-SRC-17`).
   core compares that count with what it received and reports a mismatch (`R-SRC-18`). The check is
   honest about its reach, which is small: it catches a loss only when an importer knows a count that
   is independent of what it produced.
-- **Fidelity.** A file handed over bare is a claim that it is an original. An import source that
-  degrades has to say so (`R-SRC-6`), and one whose degradation cannot be detected is refused
-  outright (`R-SRC-19`).
+- **Fidelity.** An importer makes a best effort to hand over each file unaltered (`R-SRC-5`), and
+  the core guarantees nothing about what an import source delivers
+  ([the importer best-effort decision](decisions/2026-10-06-importer-best-effort-decision.md)).
 
 What lost:
 

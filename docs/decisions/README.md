@@ -77,7 +77,7 @@ there is more than one area to group.
 | Date | Decision | Status |
 |---|---|---|
 | 2026-08-01 | [Document-lifecycle rules move out of the core specification](2026-08-01-version-requirement-split-decision.md) | Accepted |
-| 2026-08-01 | [One document per layout convention](2026-08-01-layout-conventions-decision.md) | Accepted |
+| 2026-08-01 | [One document per layout](2026-08-01-layout-conventions-decision.md) | Accepted |
 | 2026-08-01 | [Specifications carry precision, `docs/` carries explanation](2026-08-01-docs-and-specs-separation-decision.md) | Accepted |
 | 2026-08-01 | [Obligation keywords appear only in normative documents](2026-08-01-obligation-keywords-decision.md) | Accepted |
 | 2026-08-01 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-08-01-language-standard-additions-decision.md) | Accepted |
@@ -101,3 +101,5 @@ there is more than one area to group.
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
 | 2026-10-05 | [The specification names concrete things, and has no ports](2026-10-05-spec-vocabulary-decision.md) | Accepted |
 | 2026-10-05 | [Traceability and durability are standards of their own, beside the core specification](2026-10-05-requirement-family-decision.md) | Accepted |
+| 2026-10-06 | [Files already inside a copy are taken in by an in-place importer](2026-10-06-in-place-importer-decision.md) | Accepted |
+| 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md) | Accepted |

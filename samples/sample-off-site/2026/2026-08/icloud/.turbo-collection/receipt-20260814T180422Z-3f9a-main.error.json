@@ -5,10 +5,10 @@
   "collectionName": "main",
   "importErrors": [
     {
-      "message": "icloud offered IMG_4109.HEIC as a degraded copy; refused by policy (R-SRC-6)",
+      "message": "icloud delivered IMG_4109.HEIC only inside a container that could not be unpacked; refused (R-SRC-5)",
       "file": "IMG_4109.HEIC",
       "importSource": { "specId": "icloud", "version": "0.1.0-draft" },
-      "details": { "kind": "degraded" }
+      "details": { "kind": "container" }
     }
   ]
 }

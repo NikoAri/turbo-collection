@@ -10,11 +10,10 @@ language, in the way an RFC outlives any single implementation of a protocol.
 
 This document carries its **own** glossary (Section 3), and does not defer it
 elsewhere. Which document binds what, that the documents binding the
-implementation are jointly
-sufficient, and how code cites and traces to them, are governed by
-`traceability-requirement.md` (`R-META-*`). Which other documents exist, and
-what each one governs, is mapped in `docs/spec-guide.md`, which is navigation and
-binds nothing, so no obligation here depends on it.
+implementation are jointly sufficient, and how code cites and traces to them,
+are governed by `traceability-requirement.md` (`R-META-*`). Which other
+documents exist, and what each one governs, is mapped in `docs/spec-guide.md`,
+which is navigation and binds nothing, so no obligation here depends on it.
 
 ---
 
@@ -23,13 +22,15 @@ binds nothing, so no obligation here depends on it.
 **Requirement keywords** (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY) are used as
 defined in **RFC 2119**.
 
-**Requirement IDs** in this document are domain-prefixed: `R-COL-1`, `R-SRC-6`,
+**Requirement IDs** in this document are domain-prefixed: `R-COL-1`, `R-SRC-7`,
 `R-TGT-12`. Their stability, and uniqueness of a prefix across documents, are
 governed by `language-requirement.md` R-LANG-20. A prefix belongs to exactly one
 document, so an ID cited here without a document name is still unambiguous.
 Prefixes cited by this document and defined elsewhere: `R-META-*` in
 `traceability-requirement.md`, `R-DUR-*` in `durability-requirement.md`,
 `R-MFILE-*` in `meta-file-spec.md`, `R-PHOTO-*` in `photo-path-layout-spec.md`,
+`R-FOUND-*` in `as-found-path-layout-spec.md`, `R-INPLACE-*` in
+`in-place-import-source-spec.md`,
 `R-PUB-*` in `version-requirement.md`, and `R-LANG-*` in
 `language-requirement.md`.
 
@@ -50,8 +51,8 @@ document in this project.
 The diagram below _is_ Turbo Collection scope statement. It draws the line
 between what this document owns, what the import source specifications own, and
 what sits outside Turbo-Collection entirely. Note the two boundaries: one where
-content enters by import, one where a copy is read and written on its
-medium, and nothing vendor-specific between them.
+content enters by import, one where a copy is read and written on its medium,
+and nothing vendor-specific between them.
 
 ```mermaid
 flowchart LR
@@ -74,15 +75,15 @@ location, is what establishes that data is intact.
 
 ### 1.1 In scope
 
-The durable core: Import contract, Storage layout contract, Mirror
-semantics, integrity, filename safety, meta file versioning, configuration,
-logging, and the command-line contract.
+The durable core: Import contract, Storage layout contract, Mirror semantics,
+integrity, filename safety, meta file versioning, configuration, logging, and
+the command-line contract.
 
 ### 1.2 Out of scope
 
 | Concern                                                                        | Where it lives                                                                    |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Concrete importers (iPhone, iCloud, OneDrive, SD card) and their format quirks | Import source specifications under `specs/import-sources/`, one per import source |
+| Concrete Importers (iPhone, iCloud, OneDrive, SD card) and their format quirks | Import source specifications under `specs/import-sources/`, one per import source |
 | _When_ a run happens (scheduling)                                              | Outside Turbo-Collection entirely. See Section 1.4.                               |
 
 ### 1.3 Non-goals (normative)
@@ -91,15 +92,16 @@ Turbo-Collection does **not** do the following, and MUST NOT grow them by
 accident. Each has a documented path to becoming a goal later, in Section 10, so
 that deferring them costs no architectural flexibility.
 
-| Non-goal                                     | Path to enabling it |
-| -------------------------------------------- | ------------------- |
-| Albums and tags                              | Section 10          |
-| Captions, ratings, face recognition          | Section 10          |
-| AI search                                    | Section 10          |
-| A browsing graphical interface               | Section 10          |
-| Versioning and snapshots _of the collection_ | Section 10          |
-| Deduplication                                | Section 10          |
-| Modifying a file in place: restore, repair, manifest rebuild | Section 10 |
+| Non-goal                                                     | Path to enabling it |
+| ------------------------------------------------------------ | ------------------- |
+| Albums and tags                                              | Section 10          |
+| Captions, ratings, face recognition                          | Section 10          |
+| Converting a Content file to an open format                  | Section 10          |
+| AI search                                                    | Section 10          |
+| A browsing graphical interface                               | Section 10          |
+| Versioning and snapshots _of the collection_                 | Section 10          |
+| Deduplication                                                | Section 10          |
+| Modifying a file in place: restore, repair, manifest rebuild | Section 10          |
 
 > These are non-goals, not rejections. The distinction matters: a rejection
 > means the idea is wrong, and a non-goal means it is simply not being built
@@ -126,11 +128,12 @@ explicit guarantees, recoverability, and never destroying preserved data) now
 live as requirements in `durability-requirement.md` (`R-DUR-*`). The two
 principles below are specific to Turbo-Collection's own architecture.
 
-- **The Core is indifferent to Import Sources.** The core knows nothing about how a
-  file arrived or what medium a copy is stored on. It knows only the collection:
-  plain trees and their manifests. Every fact about where a file came from lives
-  in the importer that brought it in; every fact about the medium a copy sits on
-  lives in that copy's storage (Section 6); none lives in the core.
+- **The Core is indifferent to Import Sources.** The core knows nothing about
+  how a file arrived or what medium a copy is stored on. It knows only the
+  collection: plain trees and their manifests. Every fact about where a file
+  came from lives in the importer that brought it in; every fact about the
+  medium a copy sits on lives in that copy's storage (Section 6); none lives in
+  the core.
 
 - **A Record lives with the data it describes, never in a separate index.**
   There is no central database of what is stored where. A directory carries its
@@ -152,83 +155,77 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 - **Turbo-Collection.** This system: the orchestrator, its importers, its
   copies' storage, and its mirror engine.
 
-- **Collection.** The set of original files this project preserves: photographs
-  and videos, and any other file an import brings in (R-SRC-20). It is one
-  logical dataset, held as one or more **peer copies**,
-  each a plain tree (R-COL-1). This is the data Turbo-Collection exists to
-  protect. (The word "library" is deliberately avoided, because it collides with
-  "code library".)
+- **Collection.** The set of files this project preserves: photographs and
+  videos, and any other file an import brings in (R-SRC-20). It is one logical
+  dataset, held as one or more **peer copies**, each a plain tree (R-COL-1).
+  This is the data Turbo-Collection exists to protect. (The word "library" is
+  deliberately avoided, because it collides with "code library".)
 
-- **Plain tree.** A directory structure in which every original exists as
-  **exactly one file**, **byte-identical** to the original, at a path derived
-  from its path in the collection, and **retrievable without any
+- **Plain tree.** A directory structure that holds every Content file as
+  **exactly one file**, **byte-identical** to what an Importer supplied, at a
+  path derived from its path in the Collection, and **retrievable without any
   Turbo-Collection software**. A cloud bucket holding one object per file
   qualifies. A chunked, deduplicated, or encrypted repository does not. This
   definition is load-bearing: R-COL-4 and R-TGT-6 both test against it, so it
   must be decidable by inspection rather than by judgment.
 
-- **Layout convention.** A rule that determines where in the collection a
-  content file is stored, given that file's own bytes, the metadata its import
-  source supplied with it, and that import source. R-COL-4 requires every copy
-  to follow the collection's layout conventions, and R-SRC-10 requires a
-  convention to depend on nothing beyond those three.
+- **Layout.** A rule that determines where in the collection a content file is
+  stored, given that file's own bytes, the metadata its import source supplied
+  with it, and that import source. R-COL-4 requires every copy to follow the
+  same layouts, and R-SRC-10 requires a layout to depend on nothing beyond those
+  three. Each layout is defined by its own specification, which states which
+  items that layout is able to place (R-SRC-15) and carries the identifier and
+  version a manifest records for it (`meta-file-spec.md` R-MFILE-9). Layouts
+  coexist: each import source specification names one as its primary layout, and
+  the as-found layout takes every item a primary layout is not able to place
+  (R-SRC-20), so that this document binds no particular directory shape.
 
-- **Layout specification.** A normative document that defines one layout
-  convention and states which items that convention is able to place
-  (R-SRC-15). Layout specifications coexist: each import source specification
-  names one as its primary layout, and the as-found layout takes every item a
-  primary layout is not able to place (R-SRC-20), so that this document binds no
-  particular directory shape.
+- **Primary Layout.** The one layout that an import source specification names
+  to govern that import source's items (R-SRC-15).
 
-- **Primary layout.** The one layout specification that an import source
-  specification names to govern that import source's items (R-SRC-15).
+- **As-found Layout.** The layout that stores a file at the path its import
+  source supplied for it, defined by `as-found-path-layout-spec.md`. It is the
+  Primary Layout of the in-place Import Source (R-CLI-12), and the floor that
+  takes every item a primary layout is not able to place (R-SRC-20).
 
-- **As-found layout.** The layout convention that stores a file at the path its
-  import source supplied for it, defined by `as-found-path-layout-spec.md`. It
-  is the layout of an adoption (R-CLI-12), and the floor that takes every item a
-  primary layout is not able to place (R-SRC-20).
-
-- **Import Source.** One way of getting original bytes into the collection, such
-  as iCloud or a camera card. An import source is an **instance**: a personal
-  and a work iCloud account are two import sources, each named by the operator
-  (`icloud-personal`, `icloud-work`). An importer imports from exactly one import
-  source; the leaf manifest records which import source placed a directory (its
-  `importSource` block's `specId`, `meta-file-spec.md` R-MFILE-9), and R-SRC-10
-  admits that identifier into a collection path. What may be assumed about one
-  import source is stated in its own specification under
-  `specs/import-sources/`, one specification per import source, which also names
-  that import source's primary layout (R-SRC-15); such specifications may
+- **Import Source.** One way of getting files into the Collection, such as
+  iCloud or a camera card. An import source is an **instance**: a personal and a
+  work iCloud account are two import sources, each named by the operator
+  (`icloud-personal`, `icloud-work`). An importer imports from exactly one
+  import source; the leaf manifest records which import source placed a
+  directory (its `importSource` block's `specId`, `meta-file-spec.md`
+  R-MFILE-9), and R-SRC-10 admits that identifier into a collection path. What
+  may be assumed about one import source is stated in its own specification
+  under `specs/import-sources/`, one specification per import source, which also
+  names that import source's primary layout (R-SRC-15); such specifications may
   reference one another.
 
+- **Importer.** The component that brings files into the Collection from one
+  **Import Source**. An importer is internal to Turbo-Collection and reaches
+  exactly one import source; an import source is the outside origin files are
+  imported from.
+
+- **Import.** Bringing files into the collection from an import source,
+  performed by an importer.
+
 - **Copy.** One physical instance of the collection, held on one storage medium.
-  Copies are **peers**: no copy is
-  privileged, each carries its own manifest and is verifiable against it
-  independently (R-TGT-9), and mirroring is symmetric among them.
+  Copies are **peers**: no copy is privileged, each carries its own manifest and
+  is verifiable against it independently (R-TGT-9), and mirroring is symmetric
+  among them.
 
-- **Importer.** The component that brings original files into the collection
-  from one **import source**. An importer is internal to Turbo-Collection and
-  reaches exactly one import source; an import source is the outside origin
-  files are imported from.
-
-- **Medium.** Where a copy is stored: a local drive, a removable drive, or a
-  cloud bucket. A copy is read and written as plain files on its medium, by
+- **Medium.** Where a Copy is stored: a local drive, a removable drive, or a
+  cloud bucket. A Copy is read and written as plain files on its medium, by
   import, mirror, and verify alike. Each copy declares what its medium can and
   cannot guarantee (R-TGT-5).
 
-- **Original.** A file exactly as it arrived, byte-for-byte.
+- **Content File.** Any file a copy holds that is neither a meta file nor an
+  ignored file. Photographs and videos are one kind of content file; where each
+  kind is placed is decided by layout specifications (R-SRC-15), not by this
+  document. Several requirements are scoped to content files, because a rule
+  that protects a photograph from being altered would otherwise forbid
+  Turbo-Collection from writing down what it did.
 
-- **Derivative.** Anything Turbo-Collection produced from an original (for
-  example, a JPEG rendered from a HEIC). Always additional, never a replacement
-  (R-COL-5).
-
-- **Content file.** An original or a derivative: any file a copy holds that is
-  neither a meta file nor an ignored file. Photographs and videos are one kind
-  of content file; where each kind is placed is decided by layout
-  specifications (R-SRC-15), not by this document. Several requirements are
-  scoped to content files, because a rule that protects a photograph from being
-  altered would otherwise forbid Turbo-Collection from writing down what it did.
-
-- **Meta file.** A file Turbo-Collection writes into a copy that describes that
+- **Meta File.** A file Turbo-Collection writes into a copy that describes that
   copy or what happened to it: the configuration file, the ignore file, a
   manifest, a receipt, the `README.md`, and any copy of a specification carried
   on a drive. What each one is called, where it sits, and what is inside it are
@@ -237,29 +234,22 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   ignored file. A log is none of these, because a log is never written inside a
   copy (R-LOG-5).
 
-- **Ignored file.** A file in a copy that matches a pattern in that copy's
+- **Ignored File.** A file in a copy that matches a pattern in that copy's
   ignore file, `.tcignore` (`meta-file-spec.md` R-MFILE-20). Turbo-Collection
   records no ignored file in a manifest and mirrors none to another copy
   (R-MFILE-21).
 
-- **Published File with Specification Version).** Stamped into a meta file that
-  has left the machine holding the collection (`version-requirement.md`
-  R-PUB-3). A version whose stamp carries the `-draft` suffix is not published;
-  it changes freely.
-
 - **MAJOR Version.** All versions of this specification that share a MAJOR
-  number (for example, the 2.x line). The **terminal text** of a line is its
-  last published version at the moment the line is superseded by the next MAJOR.
-
-- **Import.** Bringing files into the collection from an import source, performed by an importer.
+  number (for example, the 2.x line).
 
 - **Init.** The operation that creates a directory for new copy with no other
   copy present, which is how a collection's first copy comes to exist
   (R-CLI-11).
 
-- **Adoption.** The import that the init operation performs of the files already
-  in a directory as it makes that directory a copy (R-CLI-12). An adopted file
-  stays at the path it had.
+- **In-place Import.** An Import of files already inside a Copy, from that
+  Copy's in-place Import Source (`in-place-import-source-spec.md`). It records
+  each file at the path it has and moves none (R-SRC-7). Init performs one as it
+  makes a directory a Copy (R-CLI-12), and an operator starts any later one.
 
 - **Backup.** The operation an operator runs to bring the collection's peer
   copies into agreement, so the collection survives the loss of any one copy
@@ -268,7 +258,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   an empty directory, or one that does not exist, creates a new copy there
   (R-CLI-13); every copy after the first comes to exist this way.
 
-- **Procedure.** A normative document stating the steps a human operator
+- **Procedure.** A normative document stating the steps a Human operator
   performs to achieve a result this specification requires. It binds the
   operator, not the implementation (R-META-4).
 
@@ -282,32 +272,32 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   an incomplete mirror. The mirror is the mechanism the **backup** operation
   performs.
 
-- **Receipt.** A per-directory record of the arrivals of that directory's
+- **Manifest File.** A JSON file recording a checksum for each file in a copy,
+  together with the hash algorithm and the specification version that produced
+  it (R-MFILE-9).
+
+- **Receipt File.** A per-directory record of the arrivals of that directory's
   content: where it came from, and the dated arrival of that content at each
   copy (R-MFILE-13). A manifest states what is present now and can be rebuilt by
   rescanning; a receipt states what happened and can be rebuilt from nothing.
 
-- **Arrival.** One event in which content reaches a copy: an import bringing
-  external bytes into a copy, or a mirror bringing to a copy content another
-  copy already holds. Arrivals are what change the number of copies holding a
+- **Arrival.** One event in which content reaches a Copy: an importer bringing
+  external bytes into a Copy, or a Mirror bringing to a Copy content another
+  Copy already holds. Arrivals are what change the number of copies holding a
   file, and are therefore the only events a receipt records (R-MFILE-13).
 
 - **Dry-run.** A mode in which Turbo-Collection reports what an operation would
   do and mutates nothing (R-SRC-14, R-MIRROR-7).
 
-- **Temporary file.** A file Turbo-Collection creates while writing another
-  file, and which never becomes a complete file at its final path. Removing one
-  is the single carve-out from R-MIRROR-3 (R-MIRROR-8).
-
-- **Manifest.** A JSON file recording a checksum for each file in a copy,
-  together with the hash algorithm and the specification version that produced
-  it (R-MFILE-9).
+- **Temporary file.** A file Turbo-Collection creates in a copy while writing
+  another file, and which never becomes a complete file at its final path.
+  Removing one is the single carve-out from R-MIRROR-3 (R-MIRROR-8).
 
 - **Fixity.** Evidence that data has not changed or corrupted, established by
   comparing checksums.
 
-- **Capability.** A statement, by an importer or by a copy's storage, about what
-  it can and cannot guarantee (R-SRC-6, R-TGT-5). Re-evaluated every run.
+- **Capability.** A statement by a Copy's storage about what it can and cannot
+  guarantee (R-TGT-5). Re-evaluated every Run.
 
 - **Run.** A single invocation of Turbo-Collection, which performs its work once
   and exits.
@@ -324,91 +314,83 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 These constrain the collection itself. They outrank everything else in this
 document: any requirement that conflicts with them is wrong and must be changed.
 
-**R-COL-1.** The collection MUST be a plain directory tree of ordinary files.
+**R-COL-1.** The Collection MUST be a plain directory tree of ordinary files.
 Turbo-Collection MUST NOT introduce a database, archive, container, or any other
 format that requires software to read the files back.
 
-**R-COL-2.** Turbo-Collection MUST preserve originals byte-for-byte. It MUST NOT
-transcode, recompress, resize, or strip metadata from an original, under any
-circumstance, including at import.
+**R-COL-2.** Turbo-Collection MUST preserve every Content file byte-for-byte,
+exactly as an Importer supplied it. It MUST NOT transcode, recompress, resize,
+or strip metadata from a Content file, under any circumstance.
 
-**R-COL-3.** The collection MUST remain fully usable without Turbo-Collection.
+**R-COL-3.** The Collection MUST remain fully usable without Turbo-Collection.
 Any ordinary file manager or file-copy tool MUST be sufficient to browse it and
 recover its contents.
 
-**R-COL-4.** **Every** copy MUST be a plain tree, laid out under the same layout
-conventions, so that a content file's path is derived the same way in every
-copy. A copy MAY hold a content file that another copy does not.
+**R-COL-4.** **Every** Copy MUST be a plain tree, laid out under the same
+layouts, so that a Content file's path is derived the same way in every Copy. A
+Copy MAY lack a Content file that another Copy holds: a file imported into one
+Copy and not yet mirrored, or a file a person removed from one Copy.
+Turbo-Collection resolves such a difference only by adding the file where it is
+absent (R-MIRROR-1), never by deleting it where it is present (R-MIRROR-3).
 
-> **Example.** One copy may hold photos another lacks; that is intended, and not
-> a discrepancy to be fixed by deleting.
-
-**R-COL-5.** A derivative in an open format (for example, a JPEG rendered from a
-HEIC, or a DNG from a proprietary RAW) MAY be stored **in addition to** the
-original. It MUST be identifiable as derived, and it MUST NEVER replace an
-original. Deleting every derivative MUST leave the collection complete.
-
-> **Example.** The HEIC stays; a JPEG rendered from it sits beside it as a
-> hedge, flagged as derived.
+> **Example.** A photo deleted by hand from one Copy is still in the others, and
+> the next backup copies it back.
 
 > **Rationale.** The plain-files thesis and add-only shape behind these
-> invariants, and why proprietary formats are hedged:
-> [design-record §2 and §3](../docs/design-record.md); the withdrawal that lets
-> one copy hold files another lacks:
+> invariants: [design-record §2 and §3](../docs/design-record.md); the
+> withdrawal that lets one copy hold files another lacks:
 > [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md).
 
 ---
 
 ## 5. Import (`R-SRC-*`)
 
-The core must be indifferent to whether a photo arrived by cable, from iCloud,
+The Core must be indifferent to whether a photo arrived by cable, from iCloud,
 through a OneDrive sync folder, or from something not yet invented.
 
 This contract is specified completely enough (R-META-1) that **anyone can write
-an importer from this document alone, without modifying Turbo-Collection's
+an Importer from this document alone, without modifying Turbo-Collection's
 core.** That is the extensibility that matters. How importers are loaded is a
 binding (Section 12), not a requirement.
 
-**R-SRC-1.** Files MUST enter the collection only by import. The
-core MUST contain no logic specific to any individual import source, device,
-vendor, or service.
+**R-SRC-1.** Files MUST enter the collection only by Import. The Core MUST
+contain no logic specific to any individual import source, device, vendor, or
+service.
 
-**R-SRC-2.** Adding support for a new import source MUST require writing only a new
-importer. It MUST NOT require changing the core, this specification's
+**R-SRC-2.** Adding support for a new Import Source MUST require writing only a
+new Importer. It MUST NOT require changing the Core, this specification's
 requirements, or any existing importer.
 
 **R-SRC-3.** Which import sources a run draws from, and their settings, MUST be
 supplied to Turbo-Collection as data rather than hardcoded in code. An import
 source MUST be able to be added or removed without a code change.
 
-**R-SRC-4.** Multiple import sources MUST be able to coexist and MUST be importable
-independently. The failure of one import source MUST NOT prevent import from another,
-and MUST still be reported.
+**R-SRC-4.** Multiple import sources MUST be able to coexist and MUST be
+importable independently. The failure of one import source MUST NOT prevent
+import from another, and MUST still be reported.
 
-**R-SRC-5.** An importer MUST supply the **original bytes** of each item, as
-plain files. It MUST NOT transcode, recompress, or strip metadata in the course
-of importing. A vendor tool MAY be required to perform an import. A vendor tool
-MUST NOT be required to read a stored file. Where an import source delivers content only
-inside a proprietary container, the importer MUST unpack it to plain original
-files within the import, and MUST refuse where it cannot.
+**R-SRC-5.** An Importer MUST supply each item as plain files. An Importer
+SHOULD supply every file unaltered, without transcoding, recompressing, or
+stripping metadata, and where an Import Source offers a file in more than one
+version SHOULD take the unaltered one. This is a best effort: Turbo-Collection
+guarantees nothing about what an Import Source delivers, and preserves exactly
+what an Importer supplies (R-COL-2). A vendor tool MAY be required to perform an
+Import. A vendor tool MUST NOT be required to read a stored file. Where an
+Import Source delivers content only inside a proprietary container, the Importer
+MUST unpack it to plain files within the Import, and MUST refuse where it
+cannot.
 
-**R-SRC-6.** **The honesty requirement.** If an import source **cannot** supply original
-bytes, the importer MUST declare this, and Turbo-Collection MUST report it.
-Turbo-Collection MUST NOT silently accept a degraded file as though it were an
-original. A degraded import MUST be either refused or explicitly recorded as
-degraded, per configuration, and **the default MUST be to refuse**.
+**R-SRC-7.** In an Import, Turbo-Collection MUST NOT delete, modify, move, or
+rename a file at an Import Source that Turbo-Collection did not itself create.
+An Importer MAY create files and directories of its own at an Import Source, and
+MAY remove what it created.
 
-> **Example.** A cloud import source that returns a slightly recompressed file and
-> reports success is refused by default, not imported as an original.
-
-**R-SRC-7.** Import MUST be read-only with respect to the origin, except in
-adoption (R-CLI-12), where the origin is the directory being made a copy: there,
-Turbo-Collection MAY write meta files into that directory, and MUST NOT delete,
-modify, or move an adopted file. An importer MUST NOT delete, modify, or move
-anything at the import source.
+> **Example.** An Importer may create an export folder and remove it afterward.
+> It may not rename a folder a camera wrote, because that moves every file in
+> it.
 
 **R-SRC-8.** Import MUST be idempotent. Importing the same item twice MUST NOT
-produce a duplicate in the collection, and re-running an interrupted import MUST
+produce a duplicate in the Collection, and re-running an interrupted import MUST
 converge rather than accumulate.
 
 **R-SRC-9.** An item consisting of multiple files that are semantically one
@@ -416,48 +398,43 @@ thing (for example, a still image and its paired motion clip) MUST be imported
 atomically: either all of its parts arrive, or none do. An importer MUST NOT
 split such an item silently.
 
-**R-SRC-10.** The collection path of an item MUST be a pure function of the
+**R-SRC-10.** The Collection path of an item MUST be a pure function of the
 item's own bytes, the metadata the import source supplies with it, and that
-import source, under the layout convention that governs that item (R-SRC-15,
-R-SRC-20).
+import source, under the layout that governs that item (R-SRC-15, R-SRC-20).
 
 > **Example.** No `-2` suffix to disambiguate import order, and no directory
 > named for a label a person adds after import.
-
-**R-SRC-11.** An import source's capabilities MUST be re-evaluated on every run and MUST
-NOT be cached from a previous run. An import source that _begins_ degrading files MUST
-be caught at the next import, and MUST NOT be assumed to still be honest merely
-because it was honest before.
 
 **R-SRC-12.** **Import is additive.** Import MUST add files to the collection,
 and MUST NOT delete, move, rename, or modify a file already in the collection.
 If an import source no longer holds an item the collection already holds,
 Turbo-Collection MUST take no action and MUST NOT report a discrepancy.
 
-**R-SRC-13.** Turbo-Collection MUST NOT compute, record, or report which items an
-import source no longer supplies. Turbo-Collection MUST hold no record of an
-import source's contents between runs, and MUST establish that an item is already
-imported by inspecting the collection rather than by comparing against a previous
-state of the import source.
+**R-SRC-13.** Turbo-Collection MUST NOT compute, record, or report which items
+an import source no longer supplies. Turbo-Collection MUST hold no record of an
+import source's contents between runs, and MUST establish that an item is
+already imported by inspecting the collection rather than by comparing against a
+previous state of the import source.
 
-**R-SRC-14.** Turbo-Collection MUST support a dry-run mode for import that
+**R-SRC-14.** Turbo-Collection MUST support a Dry-Run Mode for import that
 reports every item a real import would add to the collection, and mutates
 nothing.
 
-> **Example.** Before freeing space at an import source, an import dry-run that reports
-> zero pending items shows everything there has already reached the collection.
+> **Example.** Before freeing space at an import source, an import dry-run that
+> reports zero pending items shows everything there has already reached the
+> collection.
 
-**R-SRC-15.** Every import source specification MUST name exactly one layout
-specification as the primary layout of that import source. A layout
-specification MUST state which items its convention is able to place, as a
-condition on an item's own bytes and the metadata its import source supplies
-with it. Turbo-Collection MUST determine an item's collection path under the
-primary layout of that item's import source, wherever that layout is able to
-place the item. R-SRC-20 governs an item that layout is not able to place.
+**R-SRC-15.** Every import source specification MUST name exactly one Layout as
+the primary layout of that import source. A layout specification MUST state
+which items its layout is able to place, as a condition on an item's own bytes
+and the metadata its import source supplies with it. Turbo-Collection MUST
+determine an item's collection path under the primary layout of that item's
+import source, wherever that layout is able to place the item. R-SRC-20 governs
+an item that layout is not able to place.
 
 > **Example.** Identical photo bytes are filed by date when imported from an
 > import source whose primary layout is the photo layout, and stay where they
-> sit when adopted in place (R-CLI-12), where the layout is as-found. Bytes
+> sit in an In-place Import (R-CLI-12), where the layout is as-found. Bytes
 > decide where an item goes within a layout, never which layout.
 
 **R-SRC-16.** On importing into an existing import-source directory,
@@ -482,12 +459,6 @@ in a run. Where it does, Turbo-Collection MUST compare that count against the
 number of items it actually received from the importer, and MUST report any
 mismatch.
 
-**R-SRC-19.** An importer MUST be able to detect degradation of an item, by
-verifying delivered bytes against something the import source exposes about the
-original, such as its size, codec, or a hash. Where an importer cannot detect
-whether an import source degrades, it MUST refuse that import source rather than import from
-it.
-
 **R-SRC-20.** **The floor.** Where the primary layout of an item's import source
 is not able to place that item, Turbo-Collection MUST place the item under the
 as-found layout (`as-found-path-layout-spec.md`), and MUST report every item
@@ -506,8 +477,9 @@ specification states. This path is metadata the import source supplies
 > **Example.** A supplied path is what lets the as-found layout place any item,
 > so no item is ever without a place to go.
 
-> **Rationale.** Why the honesty and detectability rules, the import-source path
-> segment, and the version re-stamp are shaped this way:
+> **Rationale.** Why an Importer's fidelity is a best effort, and why the
+> import-source path segment and the version re-stamp are shaped this way:
+> [the importer best-effort decision](../docs/decisions/2026-10-06-importer-best-effort-decision.md),
 > [the import-source decision](../docs/decisions/2026-08-22-import-source-decision.md),
 > [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md),
 > and [design-record §2](../docs/design-record.md). Why an import source names
@@ -520,13 +492,12 @@ specification states. This path is metadata the import source supplies
 
 ## 6. Storage (`R-TGT-*`)
 
-What must hold of the storage a copy sits on, held to the same discipline as an
-importer. A copy is **not merely a path**: its storage declares what it can and
-cannot guarantee. (The `R-TGT-*` prefix dates from when a copy was called a
-target. A requirement ID is never renamed, per `language-requirement.md`
-R-LANG-20.)
+What must hold of the Storage a copy sits on. A copy is **not merely a path**:
+its storage declares what it can and cannot guarantee. (The `R-TGT-*` prefix
+dates from when a copy was called a target. A requirement ID is never renamed,
+per `language-requirement.md` R-LANG-20.)
 
-**R-TGT-1.** Turbo-Collection MUST read and write a copy as plain files on that
+**R-TGT-1.** Turbo-Collection MUST read and write a Copy as plain files on that
 copy's medium. The core MUST contain no logic specific to any individual storage
 medium, vendor, or service.
 
@@ -573,9 +544,8 @@ Turbo-Collection software.
 > its files off the drive with any file manager.
 
 **R-TGT-12.** A copy's storage capabilities MUST be re-evaluated on every run
-and MUST NOT be cached from a previous run (symmetric to R-SRC-11). A copy that
-has ceased to be a plain tree MUST be caught **before** it is written to, not
-after.
+and MUST NOT be cached from a previous run. A copy that has ceased to be a plain
+tree MUST be caught **before** it is written to, not after.
 
 > **Rationale.** Why a copy is a declared plain tree rather than a bare path,
 > and what a copy carries for a future finder:
@@ -769,8 +739,8 @@ MUST NOT infer identity from a matched `volumeId` or `relativePath`. The hint
 MUST be optional and non-load-bearing: Turbo-Collection MUST function without
 it, MUST fall back to asking when it is absent or no longer resolves, and MUST
 NOT store an absolute path, deriving the mount point at run time from `volumeId`
-through that copy's storage (R-TGT-5) instead. Location receipts propagate as every
-receipt file does: on a mirror, Turbo-Collection MUST bring both copies'
+through that copy's storage (R-TGT-5) instead. Location receipts propagate as
+every receipt file does: on a mirror, Turbo-Collection MUST bring both copies'
 copy-root location receipts to the union of the two, copying into each copy
 every one the other holds that it lacks and never overwriting one (R-REC-6,
 R-REC-7). A location receipt records where a copy was **observed**, not where it
@@ -817,8 +787,7 @@ immediately, with no partial effect.
 
 **R-CFG-4.** Turbo-Collection MUST fail rather than guess. A missing, ambiguous,
 or unparseable setting MUST NOT be silently defaulted into a behavior that loses
-data or accepts a worse file. In particular, it MUST NOT default into accepting
-a degraded import (R-SRC-6).
+data.
 
 **R-CFG-5.** Turbo-Collection MUST be fully operable with configuration supplied
 from the collection's own storage or on the command line, and MUST NOT require
@@ -828,8 +797,8 @@ searched as a convenience; it MUST NOT be the only place configuration can live.
 ### 8.2 Logging (`R-LOG-*`)
 
 **R-LOG-1.** Every run MUST write a plain-text log recording at minimum: start
-time; end time; the configuration used; per import source, the count of items imported
-and any degraded or refused items; per copy, the count and byte total of files
+time; end time; the configuration used; per import source, the count of items
+imported and any refused items; per copy, the count and byte total of files
 transferred; every error encountered; and the final outcome.
 
 **R-LOG-2.** Logs MUST be observability only. The correctness of any copy of the
@@ -843,9 +812,9 @@ reconstructed.
 non-zero. A crash MUST NOT be the only evidence that something went wrong.
 
 **R-LOG-5.** A log MUST NOT be the only record of an event that changes whether
-material at an import source can safely be deleted. Such events are recorded in receipts
-(R-MFILE-13); a log MAY additionally record them and MUST NOT be relied on to.
-Turbo-Collection MUST NOT write a log inside a copy. A log MAY be written
+material at an import source can safely be deleted. Such events are recorded in
+receipts (R-MFILE-13); a log MAY additionally record them and MUST NOT be relied
+on to. Turbo-Collection MUST NOT write a log inside a copy. A log MAY be written
 elsewhere on a drive that holds a copy, and MAY be ephemeral and local to the
 computer performing the run.
 
@@ -893,9 +862,9 @@ does MUST be settable in configuration or by a command-line flag.
 
 **R-CLI-9.** Turbo-Collection MUST provide a read-only **verify access**
 inspection that transfers and modifies nothing, and that reports, for every
-import source and copy a run would act on: whether it is reachable and authorized; what
-capabilities it **currently** declares (R-SRC-11, R-TGT-12); and whether the
-configuration would be refused (R-TGT-6).
+import source and copy a run would act on: whether it is reachable and
+authorized; for a Copy, what capabilities its storage **currently** declares
+(R-TGT-12); and whether the configuration would be refused (R-TGT-6).
 
 **R-CLI-10.** Turbo-Collection MUST provide a read-only **status** operation
 that reports, from receipts alone and with no other copy connected, which copies
@@ -916,16 +885,13 @@ is inside a copy or that contains a copy. Given a directory that is already a
 copy, init MUST fail without changing anything, and MUST report that the
 directory is already a copy.
 
-**R-CLI-12.** Having made a directory a copy, init MUST adopt every file, other
-than a meta file or an ignored file, that is already in that directory or in a
-directory beneath it, by importing each such file from
-an import source whose items are the files already there, and whose primary
-layout (R-SRC-15) is the as-found layout. Turbo-Collection MUST leave each
-adopted file at the path it had, and MUST NOT move, rename, modify, or delete an
-adopted file.
+**R-CLI-12.** Having made a directory a Copy, Init MUST perform an In-place
+Import of that Copy (`in-place-import-source-spec.md` R-INPLACE-3). It is an
+Import like any other: R-SRC-7 keeps each file where it is, and the As-found
+Layout records it at the path it has (`as-found-path-layout-spec.md` R-FOUND-2).
 
-> **Example.** A starter ignore file is written before adoption, so a
-> `.DS_Store` the OS scatters is not adopted as permanent content.
+> **Example.** A starter ignore file is written before the In-place Import, so a
+> `.DS_Store` the OS scatters is not taken in as permanent content.
 
 **R-CLI-13.** In a **backup**, Turbo-Collection MUST mirror every directory the
 backup is given that is a copy (Section 7.1). Before mirroring, Turbo-Collection
@@ -960,14 +926,14 @@ directory's path, and MUST refuse a path whose parent directory does not exist.
 separately answerable (R-CLI-5), because they fail in different ways and at
 different times.
 
-| Question                                                                                | Operation                | Requirement |
-| --------------------------------------------------------------------------------------- | ------------------------ | ----------- |
+| Question                                                                                       | Operation                | Requirement |
+| ---------------------------------------------------------------------------------------------- | ------------------------ | ----------- |
 | Are my import sources and copies reachable, authorized, and still honoring what they promised? | **verify access**        | R-CLI-9     |
-| Do the bytes on this copy still match the manifest? (fixity)                            | **verify fixity**        | R-INT-2     |
-| Would any filename fail to survive a move to another filesystem? (name hazards)         | **verify names**         | R-NAME-1    |
-| How far apart are two copies? What _would_ a run transfer? (drift)                      | **backup**, dry-run mode | R-MIRROR-7  |
-| What does this import source still hold that the collection lacks? (import-source coverage)           | **import**, dry-run mode | R-SRC-14    |
-| How many copies hold this content, and when did each receive it? (propagation)          | **status**               | R-CLI-10    |
+| Do the bytes on this copy still match the manifest? (fixity)                                   | **verify fixity**        | R-INT-2     |
+| Would any filename fail to survive a move to another filesystem? (name hazards)                | **verify names**         | R-NAME-1    |
+| How far apart are two copies? What _would_ a run transfer? (drift)                             | **backup**, dry-run mode | R-MIRROR-7  |
+| What does this import source still hold that the collection lacks? (import-source coverage)    | **import**, dry-run mode | R-SRC-14    |
+| How many copies hold this content, and when did each receive it? (propagation)                 | **status**               | R-CLI-10    |
 
 > **Example.** `status` reads receipts, not bytes, so it reports which copies
 > received content and when with no other drive connected; it never claims a
@@ -980,8 +946,8 @@ That is all this specification commits to at this version.
 
 The taxonomy of failure classes, and their specific exit codes, is deliberately
 left open until the failure modes have been worked through properly. Fixing an
-exit-code table before knowing what can actually go wrong would
-be inventing a contract that cannot yet be justified.
+exit-code table before knowing what can actually go wrong would be inventing a
+contract that cannot yet be justified.
 
 ---
 
@@ -1007,10 +973,10 @@ answered in three moves.
 
 1. **The specification is a meta file, and it travels with the data.** Every
    copy carries the version it was written under (R-VER-8). It is a few tens of
-   kilobytes against terabytes; redundancy (`R-DUR-2`) authorizes
-   this without argument. The specification cannot float away into abstraction,
-   and it cannot die with a code-hosting service: it survives as long as any
-   copy of the collection survives.
+   kilobytes against terabytes; redundancy (`R-DUR-2`) authorizes this without
+   argument. The specification cannot float away into abstraction, and it cannot
+   die with a code-hosting service: it survives as long as any copy of the
+   collection survives.
 
 2. **Meta files are self-_evident_, not merely self-_described_** (R-MFILE-6). A
    version stamp tells a reader _which rules applied_; it MUST NOT be the _key
@@ -1031,26 +997,26 @@ answered in three moves.
    stops because of what the meta files are made of, not because versioning was
    avoided.
 
-### 9.2 The version of this specification
+### 9.2 Version of this specification
 
 **R-VER-1.** The bump of this specification's semantic version MUST be decided
 by the effect on **behavior**. **MAJOR**: previously conforming behavior becomes
 forbidden; or a contract (Section 11) changes so that an existing importer, or
 existing storage support for a medium, stops conforming; or the document
-language or obligation vocabulary changes
-(`version-requirement.md` R-PUB-9). **MINOR**: additions only; everything
-conforming under the previous version still conforms. **PATCH**: prose
-improvement with no behavioral consequence. A change of meta file format is
-measured by `meta-file-spec.md`, and a change of layout by the layout
-specification it belongs to, under each of their own bump tests.
+language or obligation vocabulary changes (`version-requirement.md` R-PUB-9).
+**MINOR**: additions only; everything conforming under the previous version
+still conforms. **PATCH**: prose improvement with no behavioral consequence. A
+change of meta file format is measured by `meta-file-spec.md`, and a change of
+layout by the layout specification it belongs to, under each of their own bump
+tests.
 
 ### 9.3 Stamps and self-evidence
 
 **R-VER-8.** Every copy MUST record which specification version and which layout
-convention governed the writing of its content. Every copy SHOULD additionally
-carry the text of those documents, so that the rules governing the data survive
-alongside the data; where carried, each MUST be named for the document and the
-full version of the text it holds, as `turbo-collection-spec-<version>.md`.
+governed the writing of its content. Every copy SHOULD additionally carry the
+text of those documents, so that the rules governing the data survive alongside
+the data; where carried, each MUST be named for the document and the full
+version of the text it holds, as `turbo-collection-spec-<version>.md`.
 
 **R-VER-9.** Code MUST declare which specification version it conforms to, and
 every run MUST record that version in its log (R-LOG-3).
@@ -1078,17 +1044,17 @@ The last column is the real deliverable. A claim that an architecture is
 flexible is worth nothing; a demonstration of what a change would cost is worth
 something.
 
-| Deferred goal                                          | Path to enabling it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Already provided by                                    | Core changes needed                                                                                                                  |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Albums and tags** (groupings)                        | A grouping is a plain-text list of members. **R-COL-2 already pre-decides the hard part**: membership can never live inside a photo's own metadata, because originals are immutable, so it must be an external plain file. The manifest format (R-MFILE-9) is already exactly the shape of a membership list, so a grouping is a _subset of a manifest_: there is no new format to invent, and a JSON manifest has room for the fields a grouping needs beyond membership, such as curated order. R-MFILE-8's per-file SHA-256 supplies a stable identity that survives renames and reorganization. Grouping files are ordinary files in the collection, so they are mirrored, checksummed, and verified by machinery that already exists. | R-COL-2, R-MFILE-8, R-MFILE-9, R-MIRROR-1              | **None in the core.** One extension to the import contract (Section 11), so importers can report groupings. R-SRC-2 already anticipates exactly this. |
-| **Captions, ratings, faces**                           | The same shape: per-photo metadata in sidecar files beside the original, never inside it (R-COL-2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | R-COL-2, R-COL-5                                       | None. Sidecars are ordinary files.                                                                                                   |
-| **Open-format derivatives, and format-risk reporting** | Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) are a genuine long-term readability risk. A derivation step writes an open-format copy beside each at-risk original, and a read-only report lists which formats in the collection are proprietary or single-vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | R-COL-5 (derivatives are already permitted), R-MFILE-8 | None. Derivatives are ordinary files; the report only reads data that already exists.                                                |
-| **Versioning and snapshots of the collection**         | A copy using a repository format (restic, Borg, Kopia). **This is the one deferred goal that requires amending a requirement rather than merely adding storage support for a medium:** R-COL-4 would change from "every copy MUST be a plain tree" to "at least one copy MUST be", and R-TGT-6's check would relax from _all_ to _at least one_. The capability machinery (R-TGT-5) already exists to express it; such a copy's storage simply declares that it is not a plain tree.                                                                                                                                                                                                                                                                               | R-TGT-1, R-TGT-2, R-TGT-5, R-TGT-6                     | **One requirement amended (R-COL-4), one check relaxed (R-TGT-6), storage support for one medium added.** No structural change.                         |
-| **Cloud off-site**                                     | A copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | R-TGT-1, R-TGT-5                                       | None. Storage support for one more medium.                                                                                                         |
-| **Deduplication**                                      | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | R-MFILE-8                                              | None.                                                                                                                                |
-| **Restore, repair, and manifest rebuild** | Each would modify or replace a file already in a copy, which no operation does today (R-MIRROR-2, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix the shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10). | R-INT-6, R-INT-7, R-INT-10, R-TGT-11 | None to the plain tree. One operation added; whether it may overwrite a content file is the decision deferred with it. |
-| **Third-party importers and storage support loaded as plugins** | The import and storage contracts are already specified completely enough for anyone to implement either (R-META-1). Making them _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                          | R-SRC-2, R-TGT-2, R-META-1                             | **None. This specification never says how an importer or storage support is loaded**, so this is a change to Section 12 and nothing more.                 |
-| **Browsing GUI, AI search, face recognition**          | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | R-COL-1, R-COL-3, R-CLI-3                              | **None, ever.** This is the entire payoff of plain files.                                                                            |
+| Deferred goal                                                   | Path to enabling it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Already provided by                       | Core changes needed                                                                                                                                                                                                  |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Albums and tags** (groupings)                                 | A grouping is a plain-text list of members. **R-COL-2 already pre-decides the hard part**: membership can never live inside a photo's own metadata, because Content files are immutable, so it must be an external plain file. The manifest format (R-MFILE-9) is already exactly the shape of a membership list, so a grouping is a _subset of a manifest_: there is no new format to invent, and a JSON manifest has room for the fields a grouping needs beyond membership, such as curated order. R-MFILE-8's per-file SHA-256 supplies a stable identity that survives renames and reorganization. Grouping files are ordinary files in the collection, so they are mirrored, checksummed, and verified by machinery that already exists. | R-COL-2, R-MFILE-8, R-MFILE-9, R-MIRROR-1 | **None in the core.** One extension to the import contract (Section 11), so importers can report groupings. R-SRC-2 already anticipates exactly this.                                                                |
+| **Captions, ratings, faces**                                    | The same shape: per-photo metadata in sidecar files beside the photo, never inside it (R-COL-2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | R-COL-2                                   | None. Sidecars are ordinary files.                                                                                                                                                                                   |
+| **Open-format conversions, and format-risk reporting**          | Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) are a genuine long-term readability risk. A conversion step would write an open-format file rendered from each at-risk Content file, stored in addition to that file and never in place of it (R-COL-2), and a read-only report lists which formats in the collection are proprietary or single-vendor.                                                                                                                                                                                                                                                                                                                                                                                        | R-COL-2, R-MFILE-8                        | **One design, not yet made:** where a rendered file is stored, how it is identified as rendered, and whether it is mirrored or regenerated. The report needs no core change; it only reads data that already exists. |
+| **Versioning and snapshots of the collection**                  | A copy using a repository format (restic, Borg, Kopia). **This is the one deferred goal that requires amending a requirement rather than merely adding storage support for a medium:** R-COL-4 would change from "every copy MUST be a plain tree" to "at least one copy MUST be", and R-TGT-6's check would relax from _all_ to _at least one_. The capability machinery (R-TGT-5) already exists to express it; such a copy's storage simply declares that it is not a plain tree.                                                                                                                                                                                                                                                           | R-TGT-1, R-TGT-2, R-TGT-5, R-TGT-6        | **One requirement amended (R-COL-4), one check relaxed (R-TGT-6), storage support for one medium added.** No structural change.                                                                                      |
+| **Cloud off-site**                                              | A copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | R-TGT-1, R-TGT-5                          | None. Storage support for one more medium.                                                                                                                                                                           |
+| **Deduplication**                                               | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | R-MFILE-8                                 | None.                                                                                                                                                                                                                |
+| **Restore, repair, and manifest rebuild**                       | Each would modify or replace a file already in a copy, which no operation does today (R-MIRROR-2, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix the shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10).                                                                                                                                                                                                                                                      | R-INT-6, R-INT-7, R-INT-10, R-TGT-11      | None to the plain tree. One operation added; whether it may overwrite a content file is the decision deferred with it.                                                                                               |
+| **Third-party importers and storage support loaded as plugins** | The import and storage contracts are already specified completely enough for anyone to implement either (R-META-1). Making them _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                                      | R-SRC-2, R-TGT-2, R-META-1                | **None. This specification never says how an importer or storage support is loaded**, so this is a change to Section 12 and nothing more.                                                                            |
+| **Browsing GUI, AI search, face recognition**                   | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | R-COL-1, R-COL-3, R-CLI-3                 | **None, ever.** This is the entire payoff of plain files.                                                                                                                                                            |
 
 ---
 
@@ -1100,26 +1066,25 @@ deferred (Section 8.5).
 
 ### Importer
 
-| Aspect        | Contract                                                                                                                                                                                                                                                                                                                           |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `capabilities() -> Capabilities`; `list() -> Item[]`; `fetch(item) -> Bytes`                                                                                                                                                                                                                                                       |
-| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with its original metadata and the path each file has at its import source (R-SRC-21)                                                                                                                                                                                                                                    |
-| Capabilities  | Declares whether the importer can supply original bytes, and what, if anything, it degrades (R-SRC-6). Re-evaluated every run (R-SRC-11); never cached                                                                                                                                                                             |
-| Precondition  | The import source is reachable and authorized                                                                                                                                                                                                                                                                                             |
-| Postcondition | Every returned item is byte-identical to the origin's original (R-SRC-5), or is explicitly flagged as degraded                                                                                                                                                                                                                     |
-| MUST NOT      | Delete or modify anything at the origin (R-SRC-7); transcode or strip metadata (R-SRC-5); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the import source no longer supplies (R-SRC-13) |
-| Errors        | Import source unreachable or unauthorized; an import source cannot supply originals and degradation is not permitted (R-SRC-6)                                                                                                                                                                                                                      |
+| Aspect        | Contract                                                                                                                                                                                                                                                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `list() -> Item[]`; `fetch(item) -> Bytes`                                                                                                                                                                                                                                                                                                   |
+| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with the metadata its import source supplies and the path each file has there (R-SRC-21)                                                                                                                                                                                |
+| Precondition  | The import source is reachable and authorized                                                                                                                                                                                                                                                                                                |
+| Postcondition | Every returned item is supplied as plain files, unaltered as far as the Importer is able (R-SRC-5)                                                                                                                                                                                                                                           |
+| MUST NOT      | Delete, modify, move, or rename a file at an Import Source that it did not create (R-SRC-7); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the import source no longer supplies (R-SRC-13) |
+| Errors        | Import source unreachable or unauthorized; content delivered only inside a proprietary container that the Importer cannot unpack (R-SRC-5)                                                                                                                                                                                                   |
 
 ### Storage
 
-| Aspect        | Contract                                                                                                                                                                                                                                                                                                 |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `capabilities() -> Capabilities`; `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                  |
-| Capabilities  | Declares whether the copy is a plain tree, whether it can be verified in place, whether it is remote, and whether it can report a stable volume identifier for the copy (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                       |
-| Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                         |
-| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY hold a content file another copy does not (R-COL-4) |
-| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data in a non-plain layout (R-COL-4)                                                               |
-| Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                                                  |
+| Aspect        | Contract                                                                                                                                                                                                                                                                                              |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `capabilities() -> Capabilities`; `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                               |
+| Capabilities  | Declares whether the copy is a plain tree, whether it can be verified in place, whether it is remote, and whether it can report a stable volume identifier for the copy (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                    |
+| Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                      |
+| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY lack a content file another copy holds (R-COL-4) |
+| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data other than as a plain tree (R-COL-4)                                                       |
+| Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                                               |
 
 ### Mirror engine
 
@@ -1176,16 +1141,16 @@ intact, while storage (Section 6) covers _what_ a copy is.
 
 Bindings as of 2026-07-12:
 
-| Concern              | Today's binding                                                                 |
-| -------------------- | ------------------------------------------------------------------------------- |
-| Mirror engine        | rclone (MIT licensed), with rsync as the named fallback                         |
-| Integrity            | SHA-256; JSON manifest (R-MFILE-9)                                              |
-| Config               | JSON, parsed by the runtime's standard library, with no third-party dependency  |
-| Logger               | Plain-text files, one per run, written outside every copy (R-LOG-5)             |
-| Pattern matching     | `ignore` (MIT), vendored, for gitignore pattern semantics                       |
-| Language and runtime | TypeScript on Node.js, standard library first, minimal third-party dependencies |
-| Scheduler (external) | launchd on macOS; cron, systemd timers, or Task Scheduler elsewhere             |
-| Importers            | **None yet.** Which import sources supply original bytes is established by evidence, one import source specification at a time (R-SRC-19) |
+| Concern              | Today's binding                                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Mirror engine        | rclone (MIT licensed), with rsync as the named fallback                                                               |
+| Integrity            | SHA-256; JSON manifest (R-MFILE-9)                                                                                    |
+| Config               | JSON, parsed by the runtime's standard library, with no third-party dependency                                        |
+| Logger               | Plain-text files, one per run, written outside every copy (R-LOG-5)                                                   |
+| Pattern matching     | `ignore` (MIT), vendored, for gitignore pattern semantics                                                             |
+| Language and runtime | TypeScript on Node.js, standard library first, minimal third-party dependencies                                       |
+| Scheduler (external) | launchd on macOS; cron, systemd timers, or Task Scheduler elsewhere                                                   |
+| Importers            | **None yet.** What an import source delivers is stated with dated evidence, one import source specification at a time |
 
 **Minimal third-party dependencies, and the test one must pass.** This binding
 said _zero_ until 2026-08-27, which stated a ban where the reasoning supports a
@@ -1237,8 +1202,8 @@ either a specification gap or unauthorized behavior.
 bindings in Section 12, and the dated assumptions behind them in the assumptions
 register of `docs/design-record.md`. Is the mirror engine still maintained and
 permissively licensed? Has a better one appeared? Is SHA-256 still adequate?
-Have filesystem or hardware norms shifted? And, most importantly for R-SRC-11:
-**has an import source's behavior changed underneath us?**
+Have filesystem or hardware norms shifted? And, most importantly: **has an
+import source's behavior changed underneath us?**
 
 **Traceability.** Every requirement ID MUST be traceable to code that implements
 it and to at least one test that exercises it. Code cites the ID it satisfies,
