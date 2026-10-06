@@ -15,6 +15,7 @@ in [`decisions/`](decisions/), never here.
 | [`specs/language-requirement.md`](../specs/language-requirement.md) | How a normative document is written, so its English stays interpretable across decades. | document authors | no |
 | [`specs/version-requirement.md`](../specs/version-requirement.md) | How a normative document is numbered, published, archived, and corrected. | document authors | no |
 | [`specs/traceability-requirement.md`](../specs/traceability-requirement.md) | How documents, requirements, and code cite and trace to one another: which document binds what, that the set is sufficient, and that code cites only it. | document authors | no |
+| [`specs/durability-requirement.md`](../specs/durability-requirement.md) | The durability axioms every specification and design must satisfy: plain data, redundancy, re-verification, declared guarantees, recoverability, no destruction. | document authors | no |
 | `docs/` | Explanation, rationale, and navigation. | nothing | no |
 
 A **normative document** is any document stating requirements with stable IDs, so it is broader than
@@ -48,6 +49,7 @@ Every prefix resolves to exactly one document.
 | `R-REL-*` | `procedures/turbo-collection-release-procedure.md` | destroying a copy held outside a collection |
 | `R-LANG-*` | `language-requirement.md` | how a normative document is written |
 | `R-PUB-*` | `version-requirement.md` | how a normative document is versioned and published |
+| `R-DUR-*` | `durability-requirement.md` | durability axioms every specification and design must satisfy |
 | `R-ICLOUD-*` | `specs/import-sources/icloud/` | iCloud import source (planned, stub not yet filled) |
 | `R-ALBUM-*` | `specs/layout/` | album layout convention (planned) |
 | `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout convention |
@@ -58,7 +60,7 @@ Every prefix resolves to exactly one document.
 |---|---|
 | 0 | Conventions |
 | 1 | Scope, non-goals, and why invocation is external |
-| 2 | Guiding principles the requirements derive from |
+| 2 | Two Turbo-Collection-specific principles (the project-wide axioms are now `R-DUR`) |
 | 3 | Terminology, self-contained |
 | 4 | Collection invariants, which outrank everything else |
 | 5 | Source port |
@@ -71,7 +73,6 @@ Every prefix resolves to exactly one document.
 | 12 | Current bindings and dated assumptions. Volatile by design |
 | 13 | Conformance, in both directions, and traceability |
 | 14 | Open questions |
-| 15 | Change ledger |
 
 Section 12 is the only section expected to change as tools change. Nothing above it depends on any
 entry in it.

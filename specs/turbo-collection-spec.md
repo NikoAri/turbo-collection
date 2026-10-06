@@ -28,9 +28,10 @@ defined in **RFC 2119**.
 governed by `language-requirement.md` R-LANG-20. A prefix belongs to exactly one
 document, so an ID cited here without a document name is still unambiguous.
 Prefixes cited by this document and defined elsewhere: `R-META-*` in
-`traceability-requirement.md`, `R-MFILE-*` in `meta-file-spec.md`, `R-PHOTO-*`
-in `photo-path-layout-spec.md`, `R-PUB-*` in `version-requirement.md`, and
-`R-LANG-*` in `language-requirement.md`.
+`traceability-requirement.md`, `R-DUR-*` in `durability-requirement.md`,
+`R-MFILE-*` in `meta-file-spec.md`, `R-PHOTO-*` in `photo-path-layout-spec.md`,
+`R-PUB-*` in `version-requirement.md`, and `R-LANG-*` in
+`language-requirement.md`.
 
 **Document language.** This document is written in **American English**
 (`language-requirement.md` R-LANG-21). Stating it here rather than only by
@@ -119,45 +120,16 @@ These are the principles the requirements are derived from. Where a requirement
 seems to conflict with a principle, the conflict is a defect, and one of the two
 must change.
 
-- **Plain data over clever mechanism.** No database, no container, no archive
-  format. The data must be so plain that any tool can read it, so that when a
-  tool dies the data does not. The same holds at the point a file arrives: a
-  vendor may be an import source, never a custodian of what it supplies, so a
-  vendor tool can be needed to perform an import but never to read a stored file
-  (R-SRC-5).
-
-- **Turbo-Collection only ever adds.** Every operation creates something or
-  reports something. Turbo-Collection never deletes a photograph, at an import
-  source or in any copy of the collection, and no configuration setting exists
-  that would let it. Deleting is a human act, performed with ordinary tools, on
-  evidence Turbo-Collection supplies. This principle names a rule seven
-  requirements already followed separately (R-COL-2, R-COL-5, R-SRC-7,
-  R-MIRROR-2, R-INT-6, R-INT-7, R-NAME-2), each forbidding one destruction. It
-  has exactly one carve-out, R-MIRROR-8: a run may remove its own incomplete
-  work product, which is not data.
-
-- **Redundancy over cleverness.** Storage is cheap; reliability is not. Given a
-  choice between a space-saving mechanism (symlinks, hardlinks, in-place
-  transformation, deduplication) and simply storing another copy, choose the
-  copy. Duplication that increases the number of independent, self-sufficient
-  copies is a feature, not waste. This principle authorizes R-COL-5 (keep the
-  original _and_ the derivative) and R-TGT-9 (every copy carries its own
-  manifest), and it is why symlink-based schemes are rejected in advance.
+The project-wide durability axioms (plain data, redundancy, re-verification,
+explicit guarantees, recoverability, and never destroying preserved data) now
+live as requirements in `durability-requirement.md` (`R-DUR-*`). The two
+principles below are specific to Turbo-Collection's own architecture.
 
 - **The Core is indifferent to Import Sources.** The core knows nothing about how a
   file arrived or what medium a copy is stored on. It knows only the collection:
   plain trees and their manifests. Every fact about where a file came from lives
   in Importer that brought it in; every fact about the medium a copy sits on
   lives at the Storage port; none lives in the core.
-
-- **Declare, do not assume.** The importer and the store each state what they
-  can guarantee, and Turbo-Collection refuses to proceed on a silent guarantee
-  failure (R-SRC-6 on input, R-TGT-6 on output).
-
-- **Re-check, do not trust yesterday.** A guarantee that held last year may not
-  hold today. Declared capabilities are re-evaluated on every run and never
-  cached (R-SRC-11, R-TGT-12), because the failure this system most needs to
-  survive is a vendor quietly changing its behavior.
 
 - **A Record lives with the data it describes, never in a separate index.**
   There is no central database of what is stored where. A directory carries its
@@ -167,15 +139,8 @@ must change.
   memory of an import source is kept between runs (R-SRC-13). A separated
   directory therefore stays interpretable, and there is no index whose loss
   makes surviving media unreadable. The cost is accepted deliberately: records
-  are repeated across copies rather than centralized, which is the redundancy
-  principle applied to metadata.
-
-- **Data outlives code, and the specification travels with the data.** The
-  orchestrator is small and regenerable from this document, so it is disposable.
-  This document is not, because it is what makes regeneration possible. So a
-  copy of it lives on every copy of the collection, beside the photos it
-  describes, and meta files are written so they can be read even if it is lost
-  anyway (Section 9).
+  are repeated across copies rather than centralized, which is redundancy
+  (`R-DUR-2`) applied to metadata.
 
 ---
 
@@ -1002,7 +967,7 @@ answered in three moves.
 
 1. **The specification is a meta file, and it travels with the data.** Every
    copy carries the version it was written under (R-VER-8). It is a few tens of
-   kilobytes against terabytes; the redundancy principle (Section 2) authorizes
+   kilobytes against terabytes; redundancy (`R-DUR-2`) authorizes
    this without argument. The specification cannot float away into abstraction,
    and it cannot die with a code-hosting service: it survives as long as any
    copy of the collection survives.
@@ -1092,7 +1057,7 @@ something.
 | **Open-format derivatives, and format-risk reporting** | Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) are a genuine long-term readability risk. A derivation step writes an open-format copy beside each at-risk original, and a read-only report lists which formats in the collection are proprietary or single-vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | R-COL-5 (derivatives are already permitted), R-MFILE-8 | None. Derivatives are ordinary files; the report only reads data that already exists.                                                |
 | **Versioning and snapshots of the collection**         | A copy using a repository format (restic, Borg, Kopia). **This is the one deferred goal that requires amending a requirement rather than merely adding an adapter:** R-COL-4 would change from "every copy MUST be a plain tree" to "at least one copy MUST be", and R-TGT-6's check would relax from _all_ to _at least one_. The capability machinery (R-TGT-5) already exists to express it; the new adapter simply declares that it is not a plain tree.                                                                                                                                                                                                                                                                               | R-TGT-1, R-TGT-2, R-TGT-5, R-TGT-6                     | **One requirement amended (R-COL-4), one check relaxed (R-TGT-6), one adapter added.** No structural change.                         |
 | **Cloud off-site**                                     | A copy whose store happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | R-TGT-1, R-TGT-5                                       | None. A new Storage adapter.                                                                                                         |
-| **Deduplication**                                      | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: the redundancy principle (Section 2) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | R-MFILE-8                                              | None.                                                                                                                                |
+| **Deduplication**                                      | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | R-MFILE-8                                              | None.                                                                                                                                |
 | **Third-party adapters loaded as plugins**             | The Source and Storage contracts are already specified completely enough for anyone to implement an adapter (R-META-1). Making adapters _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                          | R-SRC-2, R-TGT-2, R-META-1                             | **None. This specification never says how adapters are loaded**, so this is a change to Section 12 and nothing more.                 |
 | **Browsing GUI, AI search, face recognition**          | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | R-COL-1, R-COL-3, R-CLI-3                              | **None, ever.** This is the entire payoff of plain files.                                                                            |
 

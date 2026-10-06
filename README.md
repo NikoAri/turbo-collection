@@ -37,6 +37,9 @@ Each document has one job:
 - [`specs/traceability-requirement.md`](specs/traceability-requirement.md): an authoring standard,
   **how documents, requirements, and code trace to one another**, so every behavior maps to a
   requirement and every requirement to one document. No project prefix, for the same reason.
+- [`specs/durability-requirement.md`](specs/durability-requirement.md): a design standard,
+  **the durability axioms every specification and design must satisfy**, so a choice that is clever
+  today cannot quietly cost recoverability tomorrow. No project prefix, like the standards above.
 - [`docs/design-record.md`](docs/design-record.md): the design record, **why**. Goals, what was
   rejected and why, architecture, technology choices, a decades-scale migration analysis, and an
   operations runbook.
