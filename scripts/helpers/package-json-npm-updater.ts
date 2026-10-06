@@ -123,6 +123,9 @@ const realDependencies: UpdateDependencies = {
   warn: (message) => console.warn(message),
 };
 
+// TODO:
+// @types/node version shouldn't exceed the one specified in engines/node
+
 export function updateNpmPackageVersions(
   options: NpmUpdaterCliArgs,
   deps: UpdateDependencies = realDependencies,
