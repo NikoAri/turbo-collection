@@ -37,7 +37,7 @@ Safety lives in the mechanism, not the word.
 - **Operator layer, `backup`:** the operation list and dry-run mode (`R-CLI-5`), the no-network rule
   (`R-CLI-4`), the drift inspection (Section 8.4), and the operator's own steps in the procedures.
 - **Mechanism layer, `mirror`:** Section 7.1 (retitled _Mirroring_), the `R-MIRROR-*` requirements
-  and their commentary, the glossary, and the `MirrorEngine` port. In `meta-file-spec.md`, an arrival
+  and their commentary, the glossary, and the mirror engine contract. In `meta-file-spec.md`, an arrival
   or error the mechanism produces is a **mirror arrival** or **mirror error**, against an **import
   arrival** or **import error**.
 

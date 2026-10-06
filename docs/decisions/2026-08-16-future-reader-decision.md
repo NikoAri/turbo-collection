@@ -55,5 +55,5 @@ report it.
 
 `design-record.md` Section 2 gained *a future reader has help*, and the neighboring principle changed
 from "AI is an accelerant, not a load-bearing part" to *AI-optional to operate, AI-assumed to recover*,
-which it flatly contradicted. `turbo-collection-spec.md` Section 12.3 gained the assumption as a dated
-entry. `R-INT-9` withdrawn as the first application.
+which it flatly contradicted. The assumption is also a dated entry in the assumptions register,
+`design-record.md` Section 13. `R-INT-9` withdrawn as the first application.

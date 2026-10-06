@@ -13,7 +13,7 @@ that repeats.
 off-site. **Off-site** means in a different building from every other copy.
 
 A working collection counts as one of three, because a collection lives on a dedicated portable
-drive rather than on internal storage. That closes a question core specification §14 still lists as
+drive rather than on internal storage. That closes a question the core specification once listed as
 open. Two arguments carry it: internal capacity sits below collection size and falls further behind
 each year, and an internal collection has to be migrated at every host refresh.
 

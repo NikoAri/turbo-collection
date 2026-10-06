@@ -8,9 +8,9 @@ This document is normative over **meta files**: files a copy holds that describe
 to it, rather than content it preserves. It states what each one is called, where it sits, and what is
 inside it.
 
-It governs meta files entirely and content files not at all. Location where a photograph or a video goes is
-stated by a path layout specification, such as
-[`photo-path-layout-spec.md`](photo-path-layout-spec.md).
+It governs meta files entirely and content files not at all. Where a content file goes is stated by
+a layout specification, such as [`photo-path-layout-spec.md`](photo-path-layout-spec.md) or
+[`as-found-path-layout-spec.md`](as-found-path-layout-spec.md).
 
 **This document's version is the format version.** Every meta file states it, and a MAJOR version of
 this document is a change of meta file format by construction, because this document contains nothing
@@ -41,7 +41,8 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Copy.** One physical instance of the collection, held on one storage medium. Copies are peers;
   none is privileged.
 
-- **Content file.** Any file a copy holds that is neither a meta file, preserved untouched.
+- **Content file.** Any file a copy holds that is neither a meta file nor an ignored file, preserved
+  untouched.
 
 - **Meta file.** A file that describes a copy or what happened to it: a manifest, a receipt, a
   configuration file, an ignore file, a `README.md`, and any copy of a specification carried on a
@@ -74,9 +75,6 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Ignored file.** A file in a copy that matches a pattern in that copy's ignore file (R-MFILE-20).
 
 - **Run.** A single invocation of Turbo-Collection, which performs its work once and exits.
-
-- **Migration.** Converting a copy written under an older MAJOR version of this document to the
-  current one (R-MFILE-24).
 
 ## 2. Naming and placement
 
@@ -126,7 +124,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 5. The receipt
 
-**R-MFILE-13.** Turbo-Collection MUST maintain a receipt in every directory into which it writes a content file, and in every directory in which it recorded an error affecting that directory's content. A receipt is a set of per-event files, each stored in that directory's `.turbo-collection/` subdirectory: one file per arrival, named `receipt-<runId>-<collectionName>.arrival.json`, and, per run that recorded any error for the directory, one file named `receipt-<runId>-<collectionName>.error.json`. `<runId>` identifies the run and MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`) followed by `-` and a short disambiguating suffix, so it contains no character illegal in a filename and orders files by the time the run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses the same basic format). `<collectionName>` names the copy the run wrote to, or attempted to write to, for that event (R-MFILE-19), and appears in the filename so that files two copies author in one run cannot collide; R-MFILE-19 constrains `collectionName` to a portable filename character set for this reason. The copy an event names is not always the copy its file resides on: propagation places a copy's receipt files on other copies (`turbo-collection-spec.md` R-REC-6), and a mirror error names a destination copy that failed, which often cannot hold the file, so Turbo-Collection MUST write a mirror error file on the copy it is mirroring from, beside the content the failed transfer was driving from. A receipt MUST record every arrival of that directory's content at a copy and every error. Turbo-Collection MUST NOT modify or delete a receipt file after writing it.
+**R-MFILE-13.** Turbo-Collection MUST maintain a receipt in every directory into which it writes a content file, and in every directory in which it recorded an error affecting that directory's content. A receipt is a set of per-event files, each stored in that directory's `.turbo-collection/` subdirectory: one file per arrival, named `receipt-<runId>-<collectionName>.arrival.json`, and, per run that recorded any error for the directory, one file named `receipt-<runId>-<collectionName>.error.json`. `<runId>` identifies the run and MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`) followed by `-` and a short disambiguating suffix, so it contains no character illegal in a filename and orders files by the time the run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses the same basic format). `<collectionName>` names the copy the run wrote to, or attempted to write to, for that event (R-MFILE-19), and appears in the filename so that files two copies author in one run cannot collide; R-MFILE-19 constrains `collectionName` to a portable filename character set for this reason. The copy an event names is not always the copy its file resides on: propagation places a copy's receipt files on other copies (`turbo-collection-spec.md` R-REC-6), and a mirror error names a destination copy that failed, which often cannot hold the file, so Turbo-Collection MUST record a mirror error in an error file on the copy it is mirroring from, beside the content the failed transfer was driving from. A receipt MUST record every arrival of that directory's content at a copy and every error. Turbo-Collection MUST NOT modify or delete a receipt file after writing it.
 
 **R-MFILE-14.** An arrival file MUST contain one arrival. Its fields MUST be:
 
@@ -152,7 +150,7 @@ A `date` MUST be a full ISO 8601 calendar date and time (`YYYY-MM-DDThh:mm:ss`) 
 - `importErrors`, an array holding one object per import error: content the run could not place in the collection
 - `mirrorErrors`, an array holding one object per mirror error: content already in the collection that the run could not propagate to another copy
 
-An error file holds at least one error across the two arrays (R-MFILE-13 writes one only when a run recorded an error), and MAY omit an array that holds none. Every error object, of either kind, MUST state a human-readable description of what went wrong (`message`), in plain language and intelligible without the importer or adapter that produced it (R-MFILE-6); the `message` is best-effort and MAY be incomplete. An error object MAY carry further fields the piece producing it defines; what each kind records beyond `message` is specified later, as real errors show what is needed.
+An error file holds at least one error across the two arrays (R-MFILE-13 writes one only when a run recorded an error), and MAY omit an array that holds none. Every error object, of either kind, MUST state a human-readable description of what went wrong (`message`), in plain language and intelligible without the software that produced it (R-MFILE-6); the `message` is best-effort and MAY be incomplete. An error object MAY carry further fields the piece producing it defines; what each kind records beyond `message` is specified later, as real errors show what is needed.
 
 > **Example.** Three per-event files in one directory's `.turbo-collection/`. An import arrival, in `receipt-20260814T180422Z-3f9a-main.arrival.json`, records the specifications that placed the content:
 >
@@ -213,7 +211,7 @@ An error file holds at least one error across the two arrays (R-MFILE-13 writes 
 - an optional `volumeId`, an identifier the volume the copy is stored on carries across machines, where a `null` value is equivalent to an absent one and both mean the copy is located by `relativePath` alone
 - `relativePath`, a path to the copy that MUST be relative and MUST NOT be absolute
 
-When `volumeId` is present, `relativePath` is relative to that volume's root; when it is absent, `relativePath` is relative to the location receipt file's own directory. `relativePath` MUST be written separator-neutral, joining segments with `/` rather than any one filesystem's separator. Turbo-Collection MUST treat `volumeId` as opaque, comparing it only for equality and never parsing or validating its form, because the identifier's shape is whatever the storage adapter reports (`turbo-collection-spec.md` R-REC-9, R-TGT-5).
+When `volumeId` is present, `relativePath` is relative to that volume's root; when it is absent, `relativePath` is relative to the location receipt file's own directory. `relativePath` MUST be written separator-neutral, joining segments with `/` rather than any one filesystem's separator. Turbo-Collection MUST treat `volumeId` as opaque, comparing it only for equality and never parsing or validating its form, because the identifier's shape is whatever that copy's storage reports (`turbo-collection-spec.md` R-REC-9, R-TGT-5).
 
 ## 6. Configuration and the ignore file
 
@@ -233,17 +231,7 @@ When `volumeId` is present, `relativePath` is relative to that volume's root; wh
 
 **R-MFILE-22.** Every copy MUST carry, at its root, a file named `README.md` stating what the data is, how it is organized, and how to verify it. Turbo-Collection MUST write this file where none exists, and MUST NOT overwrite one that does. Nothing MUST depend on it: it is orientation only, and the correctness of a copy MUST NOT depend on it existing or being readable.
 
-## 8. Reading, writing, and migration
-
-**R-MFILE-23.** Turbo-Collection MUST read a meta file written under the current MAJOR version of this document or under the one before it. It MUST write meta files of the current MAJOR version only. Writing into a copy of an older MAJOR version MUST migrate that copy first.
-
-**R-MFILE-24.** A release that introduces a new MAJOR version of this document MUST include a migration from the previous MAJOR version. A migration MUST be atomic per copy: at every moment a copy is wholly of the old version or wholly of the new, never in between. It MUST verify a copy against its manifests under the old rules before converting, and MUST re-verify under the new rules after converting; both verifications MUST cover every file rather than a sample. It MUST leave every content file byte-identical. It MUST remain available for at least one full off-site rotation cycle after the release.
-
-> **Example.** Both verifications cover every file, so a migration cannot relabel already-corrupt bytes as converted.
-
-**R-MFILE-25.** A release MAY also provide a direct migration from a named older MAJOR version. Such a migration MUST check a copy's stated version against its declared source version and MUST refuse any other; MUST meet every obligation of R-MFILE-24; and MUST produce an end state identical to crossing each intervening version in turn. It is an addition to the previous-version migration, never a replacement for it.
-
-## 9. This document's bump test
+## 8. This document's bump test
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This test is measured on
 **meta files**, which is what this document puts into a copy.

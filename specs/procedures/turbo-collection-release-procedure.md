@@ -21,7 +21,7 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 **R-REL-2.** Run Turbo-Collection and confirm a report states that **these specific items** were counted, verified on the working copy, and verified on at least one other copy.
 
-**R-REL-6.** Run the **propagation** report (`turbo-collection-spec.md` R-CLI-10) and read the date of each arrival it lists. Treat an arrival as evidence of where content was placed, never as evidence that the copy still exists; R-REL-1 and R-REL-2 are what establish that, and this report only tells you where to look.
+**R-REL-6.** Run the **status** report (`turbo-collection-spec.md` R-CLI-10) and read the date of each arrival it lists. Treat an arrival as evidence of where content was placed, never as evidence that the copy still exists; R-REL-1 and R-REL-2 are what establish that, and this report only tells you where to look.
 
 **R-REL-3.** Stop on any discrepancy. Import again rather than accepting a shortfall.
 

@@ -9,7 +9,7 @@ with a known set of drives plugged in:
 | Document | Prefix | The sitting |
 |---|---|---|
 | `turbo-collection-setup-procedure.md` | `R-SET-*` | Once. Buy drives, label, fill. |
-| `turbo-collection-import-procedure.md` | `R-IMP-*` | Working copy in. Import from a source. |
+| `turbo-collection-import-procedure.md` | `R-IMP-*` | Working copy in. Import from an import source. |
 | `turbo-collection-backup-procedure.md` | `R-BAK-*` | Working copy plus the home copy in. Back up. |
 | `turbo-collection-offsite-procedure.md` | `R-OFF-*` | Take the working copy to the off-site copy. Back up. |
 | `turbo-collection-release-procedure.md` | `R-REL-*` | Destroy a copy held outside the collection. |
@@ -26,8 +26,8 @@ A procedure states an act and links to a decision record. It carries no rational
 
 Import, backup and off-site rotation are three different physical activities with different drives
 attached, done at different frequencies. A person about to back up should not scroll past instructions
-for buying drives. Splitting by sitting also matches the architecture: import is the Source port,
-backup and off-site are the Storage port.
+for buying drives. Splitting by sitting also matches the architecture: import is one contract,
+and backup and off-site work through storage and mirroring.
 
 Release is separate because it is the only act that can destroy a photograph, and because it happens
 at a different moment from any of the others.

@@ -5,8 +5,8 @@
 > **Status:** Draft. No implementation exists yet.
 
 This document is normative over one **layout convention**: where a photograph or a video is stored
-inside a copy. It states which items that convention claims
-([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the directory each claimed
+inside a copy. It states which items that convention is able to place
+([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the directory each such
 item receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, a configuration file, or
@@ -14,7 +14,7 @@ a `README.md` sits is stated by the requirements that define each of those, neve
 
 Requirement ID prefix: **`R-PHOTO-*`**.
 
-> **Rationale.** Why items are placed by local-time month and by import source, and the alternatives weighed: [the import-source decision](../docs/decisions/2026-08-22-import-source-decision.md), [the layout-conventions decision](../docs/decisions/2026-08-01-layout-conventions-decision.md), and [design-record](../docs/design-record.md).
+> **Rationale.** Why items are placed by local-time month and by import source, and the alternatives weighed: [the import-source decision](../docs/decisions/2026-08-22-import-source-decision.md), [the layout-conventions decision](../docs/decisions/2026-08-01-layout-conventions-decision.md), and [design-record](../docs/design-record.md). Why an import source, not this document, selects which items come here: [the layout-selection decision](../docs/decisions/2026-10-03-layout-selection-decision.md).
 
 ---
 
@@ -25,8 +25,11 @@ item, which directory does it go in.
 
 It does not decide what a collection holds, which is scope
 ([`turbo-collection-spec.md`](turbo-collection-spec.md) Section 1), and it does not decide what a
-file inside a directory is called, which the `R-NAME-*` family owns. A second layout convention, for
-a kind of content this one does not claim, is a second document and changes nothing here.
+file inside a directory is called, which the `R-NAME-*` family owns. It also does not decide which
+items are sent to it: an import source specification names its primary layout
+(`turbo-collection-spec.md` R-SRC-15), and this document states only what this convention is able to
+place once an item arrives. A second layout convention, for a kind of content this one does not
+place, is a second document and changes nothing here.
 
 ## 1. Terminology
 
@@ -36,8 +39,13 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Copy.** One physical instance of the collection, held on one storage medium; copies are peers.
 
-- **Content file.** A photograph or a video held in a copy, as distinct from files that describe a
-  copy.
+- **Content file.** Any file a copy holds that is neither a meta file nor an ignored file. This
+  convention places photographs and videos (R-PHOTO-1).
+
+- **Meta file.** A file that describes a copy or what happened to it, such as a manifest or a
+  receipt.
+
+- **Ignored file.** A file in a copy that matches a pattern in that copy's ignore file.
 
 - **Still image.** A content file encoding one photographic image.
 
@@ -79,17 +87,17 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Collection filename.** The name a content file carries inside a copy.
 
-## 2. What this convention claims
+## 2. What this convention places
 
-**R-PHOTO-1.** This convention claims an item whose primary file is a still image or a motion picture. Turbo-Collection MUST decide whether a file is a still image or a motion picture from that file's own bytes, and MUST NOT decide it from a filename extension.
+**R-PHOTO-1.** This convention is able to place an item whose primary file is a still image or a motion picture, and no other item. Turbo-Collection MUST decide whether a file is a still image or a motion picture from that file's own bytes, and MUST NOT decide it from a filename extension.
 
-> **Example.** A file renamed `.txt` is still placed as the still image its bytes show it to be.
+> **Example.** A file renamed `.txt` is still placed as the still image its bytes show it to be. An item this convention is not able to place is not skipped: it goes to the as-found layout (`turbo-collection-spec.md` R-SRC-20).
 
 **R-PHOTO-2.** Turbo-Collection MUST take as an item's primary file: that item's only content file, where that item holds one; otherwise that item's still image; otherwise that item's motion picture of longest duration. Where two motion pictures are equally long, Turbo-Collection MUST take the one whose SHA-256 checksum is lowest.
 
 ## 3. The directory
 
-**R-PHOTO-3.** Turbo-Collection MUST store every content file of a claimed item in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the import source's identifier, recorded as `importSource.specId` in that directory's manifest (`meta-file-spec.md` R-MFILE-9).
+**R-PHOTO-3.** Turbo-Collection MUST store every content file of an item this convention places in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's root, where `<YYYY>` and `<MM>` state the year and month of that item's governing timestamp, and `<import source>` is the import source's identifier, recorded as `importSource.specId` in that directory's manifest (`meta-file-spec.md` R-MFILE-9).
 
 **R-PHOTO-4.** Turbo-Collection MUST write `<YYYY>` as four digits and `<MM>` as two digits, zero-padded, in the proleptic Gregorian calendar, following ISO 8601 basic format.
 
@@ -122,7 +130,7 @@ Required of every normative document by `version-requirement.md` R-PUB-1. This t
 
 | Level     | Test                                                                                                                                                                                                                                                                                                              |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **MAJOR** | An item this convention claims would receive a different directory than it received under the previous version; or this convention stops claiming an item it claimed; or an obligation is withdrawn or narrowed; or the document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). |
-| **MINOR** | Additions only. Every item claimed under the previous version keeps its directory, and every item already placed stays validly placed.                                                                                                                                                                            |
+| **MAJOR** | An item this convention places would receive a different directory than it received under the previous version; or this convention stops placing an item it placed; or an obligation is withdrawn or narrowed; or the document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). |
+| **MINOR** | Additions only. Every item placed under the previous version keeps its directory, and every item already placed stays validly placed.                                                                                                                                                                            |
 | **PATCH** | Prose improvement that changes no obligation and moves no item.                                                                                                                                                                                                                                                   |
 

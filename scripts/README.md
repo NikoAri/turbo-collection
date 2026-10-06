@@ -25,7 +25,7 @@ brew install node
 
 The floor is Node 24.20.0. Two things need a recent Node 24: stripping TypeScript types as each file
 loads, enabled by default only from Node 22.18 and 24.0 onward, and the `import.meta.main` run-guard
-in [`package-json-npm-updater.ts`](package-json-npm-updater.ts), added in Node 24.2.0. 24.20.0 clears
+in [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), added in Node 24.2.0. 24.20.0 clears
 both. [`package.json`](package.json) records the floor in `engines`, and [`.npmrc`](.npmrc) sets
 `engine-strict=true`, so `npm install` fails on an older Node rather than only warning.
 
@@ -91,8 +91,9 @@ or a conversation.
 **Behavior with no requirement behind it is a defect.** `R-META-3` gives exactly two remedies: add
 the requirement, or remove the code. There is no third option, and "it seemed useful" is not one.
 
-**Zero runtime dependencies.** Section 12.1 binds this to TypeScript on Node with the standard
-library alone. `typescript` and `@types/node` are development-time only: Node strips types as it
+**Zero installed runtime dependencies.** Section 12 binds this to TypeScript on Node, standard
+library first, and admits a third-party package only when it is vendored into the repository, so
+nothing is resolved from a registry at run time. `typescript` and `@types/node` are development-time only: Node strips types as it
 loads each file, so TypeScript is a checker here and never a compiler, and neither package is
 present when the tool runs.
 
@@ -100,7 +101,7 @@ present when the tool runs.
 parameter properties and `import =` all type check and then fail to run, so `erasableSyntaxOnly`
 in [`tsconfig.json`](tsconfig.json) rejects them at check time instead.
 
-**Never delete.** `R-MIRROR-3` and `R-TGT-8` prohibit deleting a file at a target, with one
+**Never delete.** `R-MIRROR-3` and `R-TGT-8` prohibit deleting a file in a copy, with one
 carve-out for Turbo-Collection's own temporary files (`R-MIRROR-8`). Section 13 requires a test
 asserting no code path deletes. That test cannot be written until there is code to assert about;
 write it with the first operation that touches a filesystem, not after.
@@ -110,11 +111,11 @@ each test exercises, so the traceability audit Section 13 describes can be run m
 
 ## Before this writes to anything real
 
-**No manifest may be written until the photo layout specification exists.** `R-INT-4` requires every
-manifest to state a `layoutConvention`, and no document defines one yet. A manifest written now would
-name a convention nothing describes, and `R-INT-10` makes a recorded checksum expensive to correct
-afterward.
+**No manifest written now is durable.** `R-MFILE-9` requires every manifest to name the layout
+specification that placed its directory, with that specification's version, and every specification
+is still a draft. A manifest written now would name a text that is free to change, and `R-INT-10`
+makes a recorded checksum expensive to correct afterward.
 
 The specification version is a draft, so `version-requirement.md` `R-PUB-3` leaves the text behind
-the number free to change, and `R-VER-5` lets a later build refuse any artifact this one writes.
+the number free to change, and `R-MFILE-7` lets a later build refuse any meta file this one writes.
 Scratch data only.

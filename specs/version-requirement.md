@@ -6,7 +6,7 @@
 > **Applies to:** every normative document in this project, including this one.
 
 This document defines how a normative document in this project is numbered, published, preserved,
-and corrected. Its goal is that a version stamp, once written into an artifact or recorded in a log,
+and corrected. Its goal is that a version stamp, once written into a meta file or recorded in a log,
 resolves to exactly one text forever, and that the rules governing any copy of the data survive
 alongside the data.
 
@@ -47,8 +47,8 @@ in this project uses. Their stability is governed by `language-requirement.md` R
 
 A version stamp is a promise that a named text can be recovered. The promise is worth nothing if the
 text behind the number can change, and it is worth nothing if the number cannot be resolved at all.
-Both failures are silent: an artifact stamped with a version that has since been quietly revised
-looks exactly like an artifact stamped with a version that has not.
+Both failures are silent: a meta file stamped with a version that has since been quietly revised
+looks exactly like a meta file stamped with a version that has not.
 
 The rules here exist to make that promise keepable at low cost. They are drawn from the discipline
 of the RFC series, which has kept forty years of protocol texts resolvable: each document is
@@ -71,9 +71,12 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   own obligations, declared in the depending document's header (R-PUB-13). A citation that only
   directs a reader to related or explanatory material is informative, not a normative dependency.
 
-- **Published.** Issued under a version number carrying no `-draft` suffix, and stamped into
-  something that has left the machine on which it was written (R-PUB-3). A published text is
-  thereafter immutable in identity (R-PUB-2).
+- **Meta file.** A file Turbo-Collection writes into a copy of a collection that describes that copy
+  or what happened to it, including any copy of a normative document carried there.
+
+- **Published.** Issued under a version number carrying no `-draft` suffix, and stamped into a meta
+  file that has left the machine holding the collection (R-PUB-3). A published text is thereafter
+  immutable in identity (R-PUB-2).
 
 - **Draft.** A version whose number carries the `-draft` suffix. A draft states no obligations that
   survive it, changes freely, and is never archived.
@@ -104,7 +107,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 **R-PUB-2.** **Version identity MUST be immutable.** A published version number refers to exactly one text, forever: the number MUST NOT be reused for different text, and a published text MUST NOT be edited. A correction is a new version. Retention is deliberately weaker than identity: a published stamp MUST resolve, at minimum, to the archived terminal text of its MAJOR line (R-PUB-5); retaining every intermediate text as a separate file is not required.
 
-**R-PUB-3.** A version is **published** at the first moment its stamp is written into something that leaves the machine on which the document was written. A stamp carrying the `-draft` suffix MUST NOT be written into such a thing. A draft MAY change freely and is never archived.
+**R-PUB-3.** A version is **published** at the first moment its stamp is written into a meta file that leaves the machine holding the collection. A stamp carrying the `-draft` suffix MUST NOT be written into such a meta file. A draft MAY change freely and is never archived.
 
 **R-PUB-8.** If a published version is later found to be misclassified under its own bump test (for example, labeled MINOR when it withdrew an obligation), the correction MUST be published as a new version. The published text MUST NOT be edited and its stamp MUST NOT be silently reinterpreted.
 
@@ -113,11 +116,16 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 **R-PUB-11.** Each version of a normative document MUST have exactly one authentic text, in exactly one document language. A translation of any version MAY be published beside it and MUST be marked as informative. Only the authentic text resolves a version stamp (R-PUB-2).
 
 > **Why each document states its own bump test (R-PUB-1).** The rule above sets a floor that every
-> document shares, but the surface a bump is measured against differs. `turbo-collection-spec.md`
-> measures the effect on artifacts, because artifacts are regenerable from nothing while code is
-> regenerable from the document. An import source specification writes no artifacts at all, so it
+> document shares, but the surface a bump is measured against differs. `meta-file-spec.md` measures
+> the effect on meta files, because a meta file already written cannot be regenerated, while code is
+> regenerable from the document. An import source specification writes no meta files at all, so it
 > measures whether a previously conforming import source has become non-conforming. Forcing one
 > surface onto both would make one of the two tests meaningless.
+
+> **Why "published" is not "public" (R-PUB-3).** A draft pushed to a public repository has left its
+> author's machine and is still a draft. Publication is the moment a stamp escapes into data someone
+> will later have to interpret, because that is what immutability of identity (R-PUB-2) protects.
+> Until a collection carries a stamp, nothing is frozen, so a document can be drafted in the open.
 
 > **Why identity and retention are split (R-PUB-2).** Immutability is two promises, and only one of
 > them must be absolute. _Identity_ is the RFC discipline: "written under version 1.2" is worthless
@@ -130,7 +138,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 > publication passes through the checklist in Section 5 and why a misclassification is corrected by a
 > new version rather than a silent edit (R-PUB-8).
 
-> **Why a document-language change is MAJOR (R-PUB-9).** By an effect-on-artifacts test alone, a
+> **Why a document-language change is MAJOR (R-PUB-9).** By an effect-on-meta-files test alone, a
 > faithful translation would be a PATCH: nothing written under the document changes meaning. It is
 > forced up to MAJOR by R-PUB-2's resolution rule: intermediate versions are derivable from a
 > terminal text only within one language, because translation is not a mechanical derivation. A
@@ -143,7 +151,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 > **Why exactly one authentic text (R-PUB-11).** The alternative, several equally authentic language
 > versions, works only with a standing arbiter to resolve divergences between them: a court can
 > compare all versions and rule; this project cannot. The changes-from section of a language-switch
-> MAJOR is deliberately this project's own Rosetta Stone: the one artifact that carries both
+> MAJOR is deliberately this project's own Rosetta Stone: the one text that carries both
 > languages side by side, term by term and keyword by keyword.
 
 ---
@@ -185,7 +193,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 > **Why a normative dependency is declared, and why against a MAJOR line (R-PUB-13).** A document is
 > self-contained for its own subject (R-PUB-4), never for a subject another document owns, so shared
 > mechanics may live in one document that others depend on: an import source specification, for
-> example, can factor common mechanics into a base specification and depend on it. `turbo-collection-spec.md`
+> example, can factor common mechanics into a base specification and depend on it. `traceability-requirement.md`
 > R-META-1 makes the set of documents that bind the implementation jointly sufficient, but sufficiency
 > is worth little if a reader cannot tell which documents are in the set, so the dependency is declared
 > where a reader will find it. A dependency names a MAJOR line, not an exact version, because a
@@ -193,7 +201,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 > when a dependency only adds to it (R-PUB-1). Whether a dependency's own MAJOR change forces a MAJOR
 > here is left to this document's bump test, the test every change passes; a depending document that
 > has not yet caught up still resolves, because a superseded line is archived whole (R-PUB-5), and it
-> may stay behind with no time limit. The artifact-side counterpart is different in kind: a meta file
+> may stay behind with no time limit. The counterpart on the data side is different in kind: a meta file
 > pins an exact `{specId, version}` naming what governed specific bytes (`meta-file-spec.md` R-MFILE-9),
 > a dated claim about the past where present-tense tracking would be wrong.
 
@@ -210,18 +218,16 @@ Self-contained, per `language-requirement.md` R-LANG-5.
    (U+2013) only inside numeric ranges (R-LANG-15); plain text, with diagrams as plain-text source
    (R-LANG-16).
 4. **If the version starts a new MAJOR line:** archive the outgoing line's terminal text into
-   `superseded/` (R-PUB-5), and write the changes-from section (R-PUB-7). For
-   `turbo-collection-spec.md`, if the new line also begins a new format generation, confirm that the
-   R-MFILE-24 migration exists and passes its boundary verification, before anything is stamped.
+   `superseded/` (R-PUB-5), and write the changes-from section (R-PUB-7).
 5. **Stamp** the document: the new version number with its date, in the form required by
    `turbo-collection-spec.md` R-VER-18, with no `-draft` suffix (R-PUB-3).
-6. **Publish:** the first thing written with the new stamp that leaves the machine publishes the
-   version (R-PUB-3). From that moment, the text is immutable in identity (R-PUB-2).
+6. **Publish:** the first meta file written with the new stamp that leaves the machine holding the
+   collection publishes the version (R-PUB-3). From that moment, the text is immutable in identity
+   (R-PUB-2).
 
-> **The checklist is deliberately short, and two steps carry the whole scheme.** Step 1, because the
-> archive pruning of R-PUB-2 is exactly as sound as the classification it rests on; and step 4,
-> because the migration promise of R-MFILE-24 is exactly as sound as its boundary verification.
-> Everything else is mechanical.
+> **The checklist is deliberately short, and step 1 carries the whole scheme**, because the archive
+> pruning of R-PUB-2 is exactly as sound as the classification it rests on. Everything else is
+> mechanical.
 
 ---
 

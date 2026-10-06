@@ -11,7 +11,7 @@ rotted. If any piece dies, the plain file tree survives and the tool gets swappe
 
 The point of that is not only survival. Once photos are in the collection and verified, **you** can
 delete them from iCloud or from your phone and stop paying for that storage. Turbo-Collection never
-deletes anything, anywhere: not at a source, not in the collection, not at a backup target. Every
+deletes anything, anywhere: not at an import source, and not in any copy of the collection. Every
 deletion is your decision, taken against evidence the tool gives you.
 
 **Status:** design record and core specification (draft) written; implementation not started yet.
@@ -22,11 +22,20 @@ Each document has one job:
   specification, **what** must be true. The language-neutral source of truth from which the tests
   and the implementation are generated, and regenerated, in the way an RFC outlives any single
   implementation of a protocol.
+- [`specs/meta-file-spec.md`](specs/meta-file-spec.md): **what is written**. Every meta file's name,
+  place, and contents: manifest, receipt, configuration, ignore file, `README.md`. Its version is
+  the meta file format version.
+- [`specs/photo-path-layout-spec.md`](specs/photo-path-layout-spec.md) and
+  [`specs/as-found-path-layout-spec.md`](specs/as-found-path-layout-spec.md): **where content
+  goes**. One layout specification per way of placing files: photographs and videos by date, and
+  any file kept at the path it was found at.
 - [`specs/import-sources/`](specs/import-sources/): one specification per **import source** a photo
   can come in by, each paired with the procedures a human follows to import from it. The core spec is
   normative over things this project controls; an import source specification is normative over
   things a vendor controls, so it carries dated evidence and expiry dates rather than stable
   promises.
+- [`specs/procedures/`](specs/procedures/): **what a person does**, one procedure per sitting:
+  setup, import, backup, off-site, release. They bind the operator, and no code cites them.
 - [`specs/language-requirement.md`](specs/language-requirement.md): an authoring standard, **how a
   normative document is written**, so its English stays interpretable across decades of language
   drift. It is about documents rather than about turbo-collection, which is why it carries no
@@ -54,6 +63,7 @@ Each document has one job:
 | ------------------- | ------------------ | ----------- | ------------------- |
 | `*-spec.md`         | the implementation | machine     | yes, and only these |
 | `*-procedure.md`    | the operator       | human       | no                  |
+| `*-requirement.md`  | document authors   | human       | no                  |
 | anything in `docs/` | nothing            | n/a         | no                  |
 
 Directories group by topic; the name carries the classification. A top-level `superseded/`

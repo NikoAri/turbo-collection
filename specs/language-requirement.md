@@ -91,9 +91,9 @@ in-document) are language-neutral, even though its examples and keyword definiti
 Self-contained, per R-LANG-5.
 
 - **Normative document.** A document in this project that states requirements with stable IDs.
-  As of 2026-08-22: `specs/turbo-collection-spec.md`, the import source specifications under
-  `specs/import-sources/`, the procedures paired with them, `specs/version-requirement.md`, and this
-  document. A normative document is not necessarily a specification: a procedure binds an
+  Its filename states its kind: a specification ends in `-spec.md`, a procedure in `-procedure.md`,
+  and an authoring or design standard, such as this document, in `-requirement.md`. All of them live
+  under `specs/`. A normative document is not necessarily a specification: a procedure binds an
   operator, and an authoring standard binds a document author. Only a document whose filename
   ends in `-spec.md` may be cited by code (`traceability-requirement.md` R-META-4).
 
@@ -103,7 +103,7 @@ Self-contained, per R-LANG-5.
 - **Commentary.** Explanatory passages in a normative document: rationale blocks, examples,
   section introductions. Commentary has no binding force.
 
-- **Domain term.** A name for a project-specific concept, such as _collection_, _target_, or
+- **Domain term.** A name for a project-specific concept, such as _collection_, _copy_, or
   _manifest_, defined in a document's terminology section.
 
 - **Published.** Issued under a version number without a `-draft` suffix, and thereafter
@@ -141,11 +141,11 @@ Self-contained, per R-LANG-5.
 
 **R-LANG-7.** Within one document, an ordinary word SHOULD keep one meaning and one part of speech throughout.
 
-> **R-LANG-6 in practice.** `spec.md` already lives by this rule: it says "collection" and never
-> "library", "target" and never "destination", and its terminology section records _why_ the
-> rejected synonyms are rejected. The failure this prevents: a future reader who meets both
-> "target" and "destination" must guess whether they are two things or one, and the guess is
-> where misinterpretation starts.
+> **R-LANG-6 in practice.** `turbo-collection-spec.md` already lives by this rule: it says
+> "collection" and never "library", "import source" and never a bare "source", and its terminology
+> section records _why_ a rejected synonym is rejected. The failure this prevents: a future reader
+> who meets both "import source" and "origin" must guess whether they are two things or one, and the
+> guess is where misinterpretation starts.
 
 > **R-LANG-7 is the core STE rule.** In ASD-STE100, "close" is only a verb; a writer may not
 > also use it to mean "near". The rule is SHOULD rather than MUST because English resists it,
@@ -168,8 +168,8 @@ Self-contained, per R-LANG-5.
 
 > **Why definiteness is precision, not style (R-LANG-18).** "The" promises a reader that exactly one
 > referent is meant and that the reader can identify it. Most statements in a specification are
-> general, so that promise is usually false. "The target MUST carry a manifest" invites the question
-> _which_ target; "Every target MUST carry a manifest" does not. This is the failure R-LANG-10
+> general, so that promise is usually false. "The copy MUST carry a manifest" invites the question
+> _which_ copy; "Every copy MUST carry a manifest" does not. This is the failure R-LANG-10
 > addresses for pronouns, caught one step earlier in the sentence.
 
 > **Where this parts company with ASD-STE100.** Section 1 names STE as an inspiration, and STE
@@ -181,9 +181,9 @@ Self-contained, per R-LANG-5.
 > more than it protects.
 
 > **What R-LANG-9 does and does not forbid.** It does not forbid naming a concrete tool where
-> the tool itself is the subject, as the bindings section of `spec.md` does. It forbids meaning
-> that only a reader who shares the writer's time and culture can decode: "the engine should
-> fail fast", "targets are cattle, not pets". Such phrases may appear in commentary, where a
+> the tool itself is the subject, as the bindings section of `turbo-collection-spec.md` does. It
+> forbids meaning that only a reader who shares the writer's time and culture can decode: "the engine
+> should fail fast", "hosts are cattle, not pets". Such phrases may appear in commentary, where a
 > plain restatement exists in the normative text beside them.
 
 > **Why a bare count rots (R-LANG-22).** A sentence that says "the three verify inspections" is
@@ -198,10 +198,11 @@ Self-contained, per R-LANG-5.
 
 **R-LANG-11.** In normative text, a calendar date MUST be absolute and in ISO 8601 form (YYYY-MM-DD), a quantity MUST carry an explicit unit, and a time reference anchored to the moment of writing ("currently", "recently", "modern", "new") MUST NOT appear.
 
-> **The distinction that matters.** "Every _current_ collection file" in `spec.md` is anchored
-> to the moment a run executes, and stays correct forever. "The _current_ best tool is rclone"
-> is anchored to the moment of writing, and rots silently. The first is fine; the second
-> belongs in a dated bindings or assumptions section, which is exactly where `spec.md` puts it.
+> **The distinction that matters.** "What capabilities it _currently_ declares" in
+> `turbo-collection-spec.md` is anchored to the moment a run executes, and stays correct forever.
+> "The _current_ best tool is rclone" is anchored to the moment of writing, and rots silently. The
+> first is fine; the second belongs in a dated bindings section, which is exactly where
+> `turbo-collection-spec.md` puts it.
 
 ### 3.5 Commentary and redundant encoding (`R-LANG-12`, `R-LANG-13`)
 
@@ -221,7 +222,7 @@ Self-contained, per R-LANG-5.
 
 **R-LANG-14.** Before a normative document is published at a new version, every added or changed passage MUST be reviewed against this document.
 
-> The review fits the project's existing conformance pattern (`spec.md` §13): AI-assisted,
+> The review fits the project's existing conformance pattern (`turbo-collection-spec.md` Section 13): AI-assisted,
 > checklist-driven, and cheap, because these rules are few and mechanical.
 
 ---

@@ -74,7 +74,7 @@ rather than wishing it away.
 - **Minimal, transparent stack**: the owner wants to *see the full stack*; no hidden magic.
 - **CLI-first**: a GUI may be layered on later, but must not be a core dependency.
 - **Low human effort**: target **≤ 4 hours/month** of maintenance as a **hard limit** (see Section 11).
-- **Safe release of a source copy**: Turbo-Collection never deletes anything from iCloud or from a
+- **Safe release of what an import source holds**: Turbo-Collection never deletes anything from iCloud or from a
   phone, and R-SRC-7 forbids it from trying. What this project delivers is deletion *by you*, made
   safe: once photos are in the collection and verified, you can free that storage yourself and stop
   paying for it. A primary motivator rather than a pleasant side effect, and what turns "I have a
@@ -98,7 +98,9 @@ The core principle that everything else follows from:
 > **Separate your data from your tools.** Data should be so plain that *any* tool can read it.
 > Tools should be so ubiquitous and simple that if one dies, you swap it without touching the data.
 
-Supporting principles:
+Supporting principles. Those every specification and design decision has to satisfy are also stated
+as requirements, in [`specs/durability-requirement.md`](../specs/durability-requirement.md)
+(`R-DUR-*`); this section keeps the reasoning behind them.
 
 - **Plain files, plain folder tree.** The foundation is a directory of original files
   (format-agnostic: JPEG, HEIC, RAW, video, copied byte-for-byte with no conversion). No database, no
@@ -132,9 +134,9 @@ Supporting principles:
   manifest in some tool's format earns nothing, because anyone who can obtain that conversion can
   obtain the verification directly and skip the intermediate file. It licenses nothing whatever about
   **self-description**, because an assistant can act only on data that states what it is. Every
-  artifact still carries its format version, names its algorithm, and travels beside the
-  specification governing it, so this principle makes R-VER-8 and the `specVersion` field more
-  important rather than less. It moves work from the writer to the reader's assistant; it must never
+  meta file still carries its format version, names its algorithm, and travels beside the
+  specification governing it, so this principle makes R-VER-8 and the `version` field (R-MFILE-4)
+  more important rather than less. It moves work from the writer to the reader's assistant; it must never
   move work to the reader's guesswork. **Conventional tooling is the safety net, not the main mode of
   operation.** Standard utilities, format parsers, GNU coreutils and ordinary programming skill remain
   a complete fallback should assistance ever be unavailable, and no decision may close that path off.
@@ -165,8 +167,9 @@ Supporting principles:
   temporary. Without it the crash-safe write-to-temporary-then-rename that R-MIRROR-6 needs could not
   be implemented.
 - **A record lives with the data it describes.** There is no central index of what is stored where.
-  Every directory carries its own manifest and its own receipt; every drive carries its own recovery
-  note and its own copy of the specification; nothing remembers a source's contents between runs.
+  Every directory carries its own manifest and its own receipt; every copy carries its own
+  `README.md`, its own configuration, and optionally its own copy of the specification; nothing
+  remembers an import source's contents between runs.
   Picasa is the worked example here as well as for plain files: it first stored album definitions in
   `.pal` files under a user profile directory, away from the photographs, and version 3.9 moved album
   data into a `.picasa.ini` **inside each photo folder**. Google reached this conclusion themselves,
@@ -174,7 +177,7 @@ Supporting principles:
   **catalog**: in backup software, the central database of what was backed up onto which media, whose
   known failure is that losing it leaves you holding media you can no longer interpret, so it needs
   its own backup and its own recovery procedure. The cost accepted instead is repetition, which is
-  the redundancy principle applied to metadata. Reasoning:
+  redundancy (`R-DUR-2`) applied to metadata. Reasoning:
   [the receipts decision](decisions/2026-09-07-receipts-decision.md).
 - **A vendor may be an import source, never a custodian, and the same holds for hardware.** The rule
   began as a statement about services and tools, and it turns out to describe three layers of the same
@@ -252,6 +255,13 @@ The design is **hexagonal (ports & adapters)**: a thin orchestrator core talks t
 only through **ports** (interfaces); each port has a swappable **adapter**. The core never knows
 whether the engine is rclone or rsync, the config JSON or TOML, the scheduler launchd or cron.
 
+**A note on words.** _Port_ and _adapter_ are this section's architecture vocabulary and appear
+nowhere in the specification, which names concrete things instead: an **importer** reads an **import
+source**, a copy sits on a **medium** and its **storage** declares what that medium can guarantee,
+and the tool that brings copies into agreement is the **mirror engine**. Read "Source" below as the
+import contract and "Storage" as the storage contract. Reasoning:
+[the vocabulary decision](decisions/2026-10-05-spec-vocabulary-decision.md).
+
 ```mermaid
 graph TD
     SCHED[OS Scheduler<br/>launchd / cron / Task Scheduler] -->|invokes| CLI[CLI Entrypoint]
@@ -264,7 +274,7 @@ graph TD
 
     E -.rclone today.-> RC[rclone]
     E -.rsync fallback.-> RS[rsync]
-    I --> MAN[manifest.sha256]
+    I --> MAN[manifest.json]
     C --> CFG[turbo-collection-config.json]
     L --> LOG[logs/*.txt]
 
@@ -298,6 +308,45 @@ graph TD
 6. **Durable WHAT vs. volatile HOW**: requirements describe *what* must be true (naming no tool);
    a separate "current bindings" section records *how* it's done today. Migrations touch only HOW.
 
+### The core / importer seam
+
+An importer produces content and nothing else. The core owns every copy, decides where each file
+goes, and writes every meta file. An importer never sees a copy (`R-SRC-17`).
+
+- **One transport.** Every importer, whether a function inside the program or a separate executable,
+  writes what it fetched into a hand-off directory outside every copy, and the core takes files in
+  from there. Every real import source already delivers files (a camera card, an export directory,
+  an archive), so streaming bytes through the core would buy almost nothing and cost a second code
+  path. Because a separate executable hands over files, no framing protocol over a byte stream is
+  ever needed. This transport is a binding, as the way importers are loaded is: the specification
+  states the boundary and leaves the hand-off mechanism free.
+- **The core is the sole writer.** It reads each handed-over file, checksums it, computes its path
+  (`R-SRC-10`), writes it under a temporary name, verifies it, and renames it into place
+  (`R-MIRROR-6`, `R-MIRROR-9`), then writes the manifest and the receipt. A re-run converges instead
+  of duplicating (`R-SRC-8`), because a file's path follows from the file and what its import source
+  supplied with it.
+- **Where the guarantee stops.** The core guarantees that what reached the hand-off directory reaches
+  the collection faithfully and verified. Whether everything at an import source reached the
+  hand-off directory is outside that guarantee, and belongs to the importer and the operator. One
+  check is rescued from that gap: an importer may state how many items it expects to supply, and the
+  core compares that count with what it received and reports a mismatch (`R-SRC-18`). The check is
+  honest about its reach, which is small: it catches a loss only when an importer knows a count that
+  is independent of what it produced.
+- **Fidelity.** A file handed over bare is a claim that it is an original. An import source that
+  degrades has to say so (`R-SRC-6`), and one whose degradation cannot be detected is refused
+  outright (`R-SRC-19`).
+
+What lost:
+
+- **An importer writes into a path the core provides.** A file's final path cannot be known before
+  its bytes are read (`R-SRC-10`), so providing a destination up front contradicts itself. Add-only
+  and integrity checks would also live in two places, and the core would have to read every file
+  back to build a manifest it could have built while writing.
+- **Streaming bytes through the core for an importer inside the program.** A second transport, for a
+  saving no real import source offers.
+- **A callback or event interface.** The seam is a contract about data, not about control flow: fix
+  what an importer hands over, and let the transport vary.
+
 ---
 
 ## 6. Technology decisions (the bindings)
@@ -309,9 +358,9 @@ graph TD
 |---|---|---|
 | **Mirror engine** | **rclone** (MIT); **rsync** as fallback | MIT license; single self-contained Go binary; runs on every OS incl. Windows; local + 70 cloud backends with same syntax. rsync is the ultra-durable fallback and swap is trivial (plain mirror ⇒ no data migration). |
 | **Orchestration language** | **TypeScript on Node.js** (direct TS execution, no transpile step) | Owner values **strong static types**. Node runs TS directly (type-stripping) → no build/transpile. Mainstream + idiomatic + small ⇒ future-AI-translatable. Runs on any OS. |
-| **Dependencies** | **Standard library only** (zero third-party) | Dependencies are the hardest thing to maintain/translate. Node built-ins (`node:child_process`, `node:crypto`, `node:fs`, `node:path`) cover everything. |
+| **Dependencies** | **Standard library first** (minimal third-party) | Dependencies are the hardest thing to maintain/translate. Node built-ins (`node:child_process`, `node:crypto`, `node:fs`, `node:path`) cover nearly everything. A package is admitted only when it implements a documented format the specification cites, has no dependencies of its own, and is vendored into the repository (core specification Section 12). |
 | **Config format** | **JSON** | Node parses JSON **natively** (zero dependency). (TOML was the earlier default *for a Python build*, since Python 3.11+ has built-in `tomllib`; Node has no built-in TOML parser, so JSON keeps deps at zero.) Config is pure data, trivially convertible later. |
-| **Integrity** | **SHA-256 manifest** (standard `shasum` text format) | Detects silent bit-rot. For *integrity* (not security) even weaker hashes suffice; SHA-256 is solid for decades. Store algorithm in the manifest/filename so switching is explicit. |
+| **Integrity** | **SHA-256 manifest** (JSON, one per directory) | Detects silent bit-rot. For *integrity* (not security) even weaker hashes suffice; SHA-256 is solid for decades. A manifest names its algorithm, so switching is explicit. Why JSON and not the `shasum` text format: [the manifest-format decision](decisions/2026-08-16-manifest-format-decision.md). |
 | **Scheduler** | **launchd** (macOS) → cron / Task Scheduler / systemd later | OS built-in; external to the core; ship snippets for all major OSes. |
 | **Version control** | **git** | A *binding* (see below). Distributed ⇒ every clone is complete. |
 | **Code hosting** | **GitHub** | A *binding*. Because git is distributed, leaving GitHub is one command (`git remote set-url`) to any host or a copy kept on the drives. Hosts the *system*, never the photos. |
@@ -346,6 +395,10 @@ implementations for 40+ years.
   decades of language drift (obligations only via RFC 2119 keywords, one term one meaning, no
   idiom in normative text; inspired by ASD-STE100 "Simplified Technical English") are codified
   in `specs/language-requirement.md`, which binds every normative document in the project.
+- **No performance numbers in the core specification.** Throughput and duration depend on hardware
+  and on a vendor's service, and both change. A number written into the core would be wrong within a
+  hardware generation, and would read as a promise in the meantime. Measurements live only in import
+  source specifications, each with its date and the conditions it was taken under.
 
 **Conformance checking has two directions** (both AI-assisted, both periodic):
 
@@ -374,9 +427,9 @@ On a language migration, the English spec regenerates **both** the tests and the
 **Superseded.** Ten draft requirements were sketched here, numbered R-1 to R-10, alongside a first
 cut at port contracts. All of it became
 [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which states the real
-requirements and the real port contracts, and which has since moved past this sketch in several
+requirements and the real contracts, and which has since moved past this sketch in several
 places: exit codes were deliberately left open rather than given a code per failure class, and the
-Source and Storage ports did not exist here at all.
+import and storage contracts did not exist here at all.
 
 The text is not reproduced, for two reasons. Superseded requirements sitting beside live ones invite
 a reader to follow the wrong set, and `language-requirement.md` R-LANG-17 keeps obligation keywords
@@ -398,7 +451,7 @@ are trivial.)
 | **Filesystem** (APFS↔NTFS↔ReFS↔ext4) | new drive/OS | OS-level file copy | Low (time only) | Medium | use no FS-specific features; real risk = filenames (see below) |
 | **Engine** (rclone) | project dies / better tool | swap one adapter (~40 lines); no data change | Low | Low–Med | MIT (forkable); rsync fallback; plain mirror ⇒ zero destination migration |
 | **Orchestrator** (TypeScript) | language/runtime churn | regenerate ~200 lines from spec (AI) | Low–Med | Medium | stdlib-only; language-neutral spec; thin glue |
-| **Integrity** (SHA-256) | hash deprecated | recompute manifest | Low (CPU) | Low | standard shasum format; algo recorded; even "broken" hash detects bit-rot |
+| **Integrity** (SHA-256) | hash deprecated | recompute manifest | Low (CPU) | Low | plain JSON manifest; algo recorded; even "broken" hash detects bit-rot |
 | **Config** (JSON) | format churn | data transform (JSON↔TOML/YAML) | Trivial | Very Low | config is data; native parse = zero dep |
 | **Scheduler** (launchd) | OS change | replace external schedule file | Low | Medium | one-shot core; ship snippets for all OSes |
 | **OS** (macOS) | leave Apple | reinstall Node+rclone, copy repo, edit paths | Low–Med | Medium | every component already cross-platform; paths in config |
@@ -406,8 +459,9 @@ are trivial.)
 
 **The filename gotcha (the real filesystem-migration risk):** a plain copy across ReFS↔NTFS↔APFS is
 lossless *except* filenames: reserved characters, case-sensitivity collisions, and macOS's NFD vs.
-everyone else's NFC Unicode normalization. Mitigation: the **portability check (R-6)** flags risky
-names before copying, and the **SHA-256 manifest** verifies every file arrived intact after any move.
+everyone else's NFC Unicode normalization. Mitigation: the **name-hazard check (`R-NAME-1`)** flags
+risky names before copying, and the **SHA-256 manifest** verifies every file arrived intact after any
+move.
 
 ### Substrate layer (the environment beneath the stack)
 
@@ -521,8 +575,9 @@ before anyone finds out. That reframes cadence as a **safety parameter rather th
 one**, and raises its priority accordingly: it is now the only thing standing where the withdrawn
 media rule used to stand. The cost is measured and awkward, roughly 3 hours per terabyte, disk-bound
 rather than hash-bound, so a full pass over 4 TB is a twelve-hour operation and cannot be the answer
-every time. Sampled-plus-periodic-full is the shape core specification §14 already permits. No number
-is chosen yet.
+every time. Sampled-plus-periodic-full is a shape the core specification's requirements already
+permit, and per-directory manifests (`R-MFILE-8`) make a partial pass a natural unit. No number is
+chosen yet.
 
 Append-only sharpens one edge of this. Never overwriting protects copies that already exist, and does
 nothing to stop bad bytes reaching new ones, so a collection file that corrupts silently would be
@@ -666,9 +721,10 @@ SHA-256 *as a chosen mechanism*.
 - **Backup**: the operation and its purpose, moving photographs into safety; carried out by the mirror mechanism across copies.
 - **Peer copy**: one of several byte-equal copies of a collection; no copy is privileged.
 - **Mirror**: the mechanism that brings copies into agreement, transferring only files a copy lacks; symmetric and add-only, never a one-way push and never a delete.
-- **Manifest**: a plain-text file listing each file's SHA-256 checksum (standard `shasum` format).
+- **Manifest**: a JSON file, one per directory, recording each file's SHA-256 checksum.
 - **Port / Adapter**: an interface (port) and its swappable implementation (adapter); the core depends
-  on ports, not concrete tools.
+  on ports, not concrete tools. Architecture vocabulary for this document only; the specification
+  names concrete things instead (Section 5).
 - **Orchestrator / glue**: the thin program (TypeScript) that coordinates engine + integrity + logging.
 - **Ingest**: transferring new photos from phone/camera into the library.
 - **Cold spare**: a still-working retired drive kept as a bonus extra copy.
@@ -681,10 +737,10 @@ SHA-256 *as a chosen mechanism*.
 ## 15. Next steps (superseded)
 
 **Superseded.** This section listed steps toward a specification that has since been written, at a
-different path under a different name, and a repository scaffold that predates the Source and Storage
-ports. Neither survives contact with what exists now.
+different path under a different name, and a repository scaffold that predates the import and storage
+contracts. Neither survives contact with what exists now.
 
 What is next lives outside this document by design, because a narrative that also tracks a work queue
 goes stale the moment either changes. Current obligations are in
-[`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md); decisions taken since
-2026-08-01 are in [`decisions/`](decisions/); open questions are in that specification's Section 14.
+[`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) and the specifications beside
+it; decisions taken since 2026-08-01 are in [`decisions/`](decisions/).

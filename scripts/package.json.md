@@ -27,7 +27,7 @@ because Node exposes coverage no other way; it only reports and sets no threshol
 run, and plain `test` stays without it.
 
 **`update` is the exception: the one verb that runs a helper of this repository's own**, not a
-third-party tool. It invokes [`package-json-npm-updater.ts`](package-json-npm-updater.ts), which
+third-party tool. It invokes [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), which
 resolves every dependency to its newest allowed release, rewrites both `package.json` and
 `package-lock.json`, and reports what moved. It carries no flags because what to hold back is data,
 not a command-line argument: [`helpers/npm-version-exceptions.json`](helpers/npm-version-exceptions.json)
@@ -134,7 +134,7 @@ the tool), and yields to `--force`.
 This **reverses the 2026-08-22 decision** to leave the floor unenforced, which reasoned that nobody
 would run an older Node so the scenario was not worth covering. What changed: the floor rose to
 24.20.0 to cover the `import.meta.main` run-guard in
-[`package-json-npm-updater.ts`](package-json-npm-updater.ts), above what a stock recent install
+[`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), above what a stock recent install
 necessarily carries, so a wrong-Node install became a real possibility. The flag earns its keep by
 converting a later, more confusing failure (`ERR_UNKNOWN_FILE_EXTENSION` on a `.ts` file, which names
 neither Node nor its version) into an accurate one at install time. It sits in the project `.npmrc` so
@@ -166,6 +166,6 @@ requirement, or remove the code, and there is no third option. When the tool is 
 ## Dependencies
 
 Runtime dependencies are **zero and must stay zero**, which is what `turbo-collection-spec.md`
-Section 12.1 binds. The four development dependencies never ship and never run against a collection:
+Section 12 binds: a third-party package it admits is vendored into the repository, never installed. The four development dependencies never ship and never run against a collection:
 `typescript` and `@types/node` type check source that Node already understands, and `prettier` and
 `cspell` check formatting and spelling.

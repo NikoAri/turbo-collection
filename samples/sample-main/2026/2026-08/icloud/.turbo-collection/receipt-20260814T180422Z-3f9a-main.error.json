@@ -3,7 +3,7 @@
   "tcSpecVersion": "0.1.0-draft",
   "runId": "20260814T180422Z-3f9a",
   "collectionName": "main",
-  "errors": [
+  "importErrors": [
     {
       "message": "icloud offered IMG_4109.HEIC as a degraded copy; refused by policy (R-SRC-6)",
       "file": "IMG_4109.HEIC",

@@ -9,9 +9,13 @@ recorded below, under Rejected, because the reasoning that produced the discarde
 repeating.
 
 A photo's place in the collection is `YYYY/YYYY-MM/<import-source>/<original filename>`. An **import
-source** is one way of getting original bytes in, such as iCloud or a camera card. One Source adapter
+source** is one way of getting original bytes in, such as iCloud or a camera card. One importer
 reaches exactly one import source, and configuration names it (`R-SRC-3`), so the directory name is a
 declared value rather than a derived one.
+
+This is the path the **photo layout** gives an item. Which layout an item gets is decided by its
+import source, and an item taken in where it already sits keeps its own path:
+[the layout-selection decision](2026-10-03-layout-selection-decision.md).
 
 This replaced `R-SRC-10`, which had said the layout MUST NOT depend on which source supplied a file
 and that two identical photos arriving by different ways in MUST land in the same place. **That
@@ -73,7 +77,8 @@ carries.
 
 `R-SRC-10` replaced (2026-08-16), then amended for the term (2026-08-22). `R-META-1`, `R-CFG-1`,
 `R-REC-4` and `R-REC-9` amended for the term; `R-REC-4` and `R-REC-9` rename the receipt field `route`
-to `importSource`, which is an artifact change. Section 3 carries *Import source*, and *Source* gained
+to `importSource`, which is a change to a meta file. (Those two are the 2026-08-22 IDs; receipt
+fields are now stated by `R-MFILE-14` to `R-MFILE-16`.) Section 3 carries *Import source*, and *Source* gained
 a clause separating the port from the way in that one adapter reaches. The Source port contract
 updated. `specs/sources/` became `specs/acquisition-routes/` on 2026-08-16 and
 `specs/import-sources/` on 2026-08-22; references updated across `README.md`, `docs/spec-guide.md`,

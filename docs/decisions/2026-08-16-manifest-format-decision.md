@@ -6,14 +6,14 @@
 in checksum-utility format. That copy is withdrawn. The reversal is recorded below, because the
 reasoning error is worth not repeating.
 
-The manifest is a JSON document (RFC 8259, UTF-8) stating `specVersion`, `layoutConvention` and
-`algorithm` as its first fields, then one entry per file with `filePath` and `checksum` (`R-INT-4`).
-It is named `manifest.json`, covers its own directory alone, and is the only file it does not cover.
-Nothing is written beside it.
+The manifest is a JSON document (RFC 8259, UTF-8) stating its `version`, the `layout` and
+`importSource` that placed its directory, and its `checksumAlgorithm`, then one entry per file with
+`file`, `size` and `checksum` (`R-MFILE-9`, `R-MFILE-10`). It is named `manifest.json` and covers the
+content files of its own directory alone (`R-MFILE-8`). Nothing is written beside it.
 
 ## Why JSON rather than a checksum-utility format
 
-`R-INT-4` once required "a standard, widely-readable checksum format, such that a standard checksum
+The requirement once read "a standard, widely-readable checksum format, such that a standard checksum
 utility can verify it without Turbo-Collection". That claimed more standardization than exists, and
 all of this still holds:
 
@@ -28,8 +28,8 @@ all of this still holds:
   tested, though all three honor it.
 
 JSON is a frozen standard, declares its encoding, escapes strings unambiguously, and holds the
-algorithm and the stamp as ordinary fields. `R-INT-4` also requires one entry per line, so the file
-stays processable without a JSON parser.
+algorithm and the stamp as ordinary fields. `R-MFILE-27` also requires each field and each array
+element on its own line, so the file stays processable without a JSON parser.
 
 ## Why the companion copy was withdrawn
 
@@ -64,8 +64,11 @@ act only on data that says what it is. The convenience was removed; the self-des
 
 `R-INT-9` withdrawn, its ID retired. `R-INT-1`, `R-INT-4` and `R-INT-8` lost their companion clauses;
 `R-INT-4` gained `layoutConvention` and `R-INT-1` gained the `manifest.json` name. Section 3 lost the
-*companion manifest* term and its mention in *Artifact*. The IntegrityStore port contract and the
-Section 12.1 bindings row updated.
+*companion manifest* term and its mention in *Artifact*. The integrity contract and the bindings row
+updated.
+
+These are the 2026-08-16 IDs. The meta file requirements moved to `meta-file-spec.md` on 2026-08-27:
+`R-INT-1` is now `R-MFILE-8`, and `R-INT-4` is now `R-MFILE-3`, `R-MFILE-9` and `R-MFILE-10`.
 
 `R-INT-10` is unchanged and predates this record: rebuilding a manifest hashes whatever is present at
 that moment, corrupted files included, so a recorded checksum may only be replaced by a newly computed

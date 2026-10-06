@@ -35,7 +35,7 @@ lie, and the tool falls back to asking. This is why it stays a locator and never
 still exists, the same limit `R-REC-8` places on an arrival.
 
 Two anchors keep the relative path relative in both real and test settings. With `volumeId` present,
-`relativePath` is relative to that volume's root, resolved through the Storage port at run time. With
+`relativePath` is relative to that volume's root, resolved through that copy's storage at run time. With
 `volumeId` absent (a `null` value means the same), it is relative to the receipt file's own directory,
 so a co-located set of copies held in git resolves with no real drives.
 
@@ -44,9 +44,9 @@ so a co-located set of copies held in git resolves with no real drives.
 Turbo-Collection treats `volumeId` as opaque, comparing it only for equality and never parsing its
 form (`R-MFILE-26`). No universal format exists: exFAT, the project's portable filesystem, exposes only
 a short volume serial, while other filesystems expose longer identifiers. The core never interprets the
-value; it compares it and hands it to the Storage adapter to resolve to a current mount point
+value; it compares it and hands it to that copy's storage to resolve to a current mount point
 (`R-REC-9`, `R-TGT-5`). This is the same opaque-token treatment `importSourceDetails` and an error's
-`details` already carry. Pinning a format would either disqualify exFAT or force an adapter to
+`details` already carry. Pinning a format would either disqualify exFAT or force a copy's storage to
 fabricate an identifier, and it would invite a concrete bug: validation against the exFAT shape would
 reject a valid identifier from another filesystem. A serial collision is safe regardless, because
 configuration-confirm turns it into a question, never a wrong action.
@@ -86,5 +86,5 @@ Added: `R-MFILE-26` (the location receipt: copy-root placement, field order, opt
 immutability) and `R-REC-9` (the behavior: on-change cadence, candidate-then-confirm, optional and
 non-load-bearing, absolute path derived at run time, copy-root propagation union, observed and not
 remaining). Amended: `R-MFILE-2` (a `.turbo-collection/` at the copy root, distinct from the
-per-directory one) and `R-TGT-5` with the Storage port contract (report a stable volume identifier, and
+per-directory one) and `R-TGT-5` with the storage contract (report a stable volume identifier, and
 resolve it to a mount point).

@@ -4,8 +4,8 @@
 and from the phone to reclaim that storage.
 
 This is one of the reasons the project exists. See `design-record.md` §1, hard goal *Safe release of
-a source copy*. Turbo-Collection never deletes anything at a source; R-SRC-7 forbids it. Every
-deletion below is yours, taken against evidence.
+what an import source holds*. Turbo-Collection never deletes anything at an import source; R-SRC-7
+forbids it. Every deletion below is yours, taken against evidence.
 
 **Performable today, by hand, with no Turbo-Collection code.** The steps use Photos.app and a
 standard checksum tool.
@@ -78,8 +78,8 @@ In Photos, delete the batch you verified. Deleting on any signed-in device remov
 and it lands in Recently Deleted for 30 days.
 
 Nothing propagates back. The collection keeps what you deleted, because Turbo-Collection never
-computes the collection-to-source direction and so can never act on it. That rule is decided and
-still unwritten as of 2026-08-01; it is item 1 of the drafting queue.
+computes which items an import source no longer holds, and so can never act on it (R-SRC-12,
+R-SRC-13).
 
 ## 6. Let the Recently Deleted window pass before reusing the space
 
@@ -90,7 +90,8 @@ Thirty days of free undo costs nothing. Treat reclaimed space as available only 
 ## What is owed before this workflow is trustworthy
 
 1. **A safe-to-delete query.** Steps 3 and 4 ask whether a *specific set of items* is stored and
-   intact. R-INT-2 verifies a whole tree and R-CLI-9 checks adapter health; neither answers it. That
+   intact. R-INT-2 verifies a whole tree and R-CLI-9 checks that import sources and copies are
+   reachable; neither answers it. That
    gap is tracked as part of the append-only drafting.
 2. **Export completeness at scale**, still unmeasured. Until it is, batch sizes stay countable.
 
