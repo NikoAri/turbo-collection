@@ -11,7 +11,7 @@ makes a Copy, and the files a person later adds to a Copy with an ordinary file 
 
 Requirement ID prefix: **`R-INPLACE-*`**.
 
-> **Rationale.** Why files already inside a Copy are taken in where they sit, why an operator starts that and a Backup never does, and why a directory has one provenance: [the in-place importer decision](../../../docs/decisions/2026-10-06-in-place-importer-decision.md), [the copy-creation decision](../../../docs/decisions/2026-09-30-copy-creation-decision.md), and [the layout-selection decision](../../../docs/decisions/2026-10-03-layout-selection-decision.md).
+> **Rationale.** Why files already inside a Copy are taken in where they sit, why an operator starts that and a Backup never does, and why a directory has one provenance: [the in-place importer decision](../../../docs/decisions/2026-10-06-in-place-importer-decision.md), [the copy-creation decision](../../../docs/decisions/2026-09-30-copy-creation-decision.md), and [the layout-selection decision](../../../docs/decisions/2026-10-03-layout-selection-decision.md). Why every file is an Item of its own: [the one-file-one-item decision](../../../docs/decisions/2026-10-06-one-file-one-item-decision.md).
 
 ---
 
@@ -85,13 +85,15 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-INPLACE-3.** In an In-place Import of a Copy, Turbo-Collection MUST take as an Item every file inside that Copy, at any depth, that no Manifest of that Copy lists, other than a Meta file, an Ignored file (`meta-file-spec.md` R-MFILE-21), and a file that R-INPLACE-4 excludes.
 
-> **Example.** A spreadsheet a person copied into `Taxes/2025/` with a file manager is an Item at the next In-place Import. A `.DS_Store` that matches the Copy's ignore file is not.
+> **Example.** A manual a person copied into `Manuals/appliances/` with a file manager is an Item at the next In-place Import. A `.DS_Store` that matches the Copy's ignore file is not.
 
 **R-INPLACE-4.** **One directory, one provenance.** Turbo-Collection MUST take a file as an Item only where that file's directory has no Manifest, or has a Manifest that names the In-place Import Source. Where a file's directory has a Manifest that names another Import Source, Turbo-Collection MUST NOT take that file as an Item, MUST leave that file as it is, and MUST report that file.
 
 > **Example.** A file dropped by hand into `2025/2025-06/icloud-personal/`, a directory the photo Layout filled, is reported and left alone. That directory's Manifest names the photo Layout and `icloud-personal` for every file it lists (`meta-file-spec.md` R-MFILE-9), so listing this file there would state something false.
 
-> **Open.** Whether files that are semantically one thing, such as a still image beside its paired motion clip, form one Item here (`turbo-collection-spec.md` R-SRC-9), and how a pairing is recognized without a vendor to state it. Until that is settled, every file is its own Item.
+**R-INPLACE-9.** **One file, one Item.** In an In-place Import, Turbo-Collection MUST take each file that R-INPLACE-3 names as an Item of its own, and MUST NOT take two or more files as one Item.
+
+> **Example.** `IMG_0412.HEIC` and `IMG_0412.MOV` in one directory are two Items. Each is recorded at the path it has (R-INPLACE-7), so the two stay side by side, and `turbo-collection-spec.md` R-SRC-9 has no Item of several files to keep whole.
 
 ## 4. Placement and recording
 
@@ -101,7 +103,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-INPLACE-7.** In an In-place Import, Turbo-Collection MUST NOT write, move, rename, modify, or delete a Content file. Turbo-Collection MUST record each Item in the Manifest of that Item's directory, and in an Arrival for that directory (`meta-file-spec.md` R-MFILE-8, R-MFILE-13).
 
-> **Example.** `Taxes/2024/return.pdf` stays at `Taxes/2024/return.pdf` (`as-found-path-layout-spec.md` R-FOUND-2). The only files written are Meta files.
+> **Example.** `Manuals/appliances/oven.pdf` stays at `Manuals/appliances/oven.pdf` (`as-found-path-layout-spec.md` R-FOUND-2). The only files written are Meta files.
 
 ## 5. When an In-place Import runs
 

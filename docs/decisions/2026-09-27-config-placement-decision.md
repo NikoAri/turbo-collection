@@ -12,7 +12,7 @@ Turbo-Collection writes for itself now lives in a `.turbo-collection/` directory
 root, holding configuration and location receipts, and one in each content directory, holding that
 directory's manifest and receipts. That directory is itself the mark of a Turbo-Collection copy, the
 way a `.git` directory marks a repository. What stays at the root is what a person reads or edits
-directly: `README.md`, any carried specification, and `.tcignore`.
+directly: any carried specification, and `.tcignore`.
 
 Configuration keeps its full `turbo-collection-config.json` name rather than the bare names its
 neighbors carry (`manifest.json`, the `receipt-` files). The directory carrying the identity is why
@@ -31,17 +31,18 @@ meta file outside it.
 
 git settles it. git splits by the same audience axis but places a config-like file inside the
 dot-directory: `.gitignore` lives in the working tree, `.git/config` inside `.git/`. Configuration
-maps to `.git/config`; `.tcignore` and `README.md` map to the working-tree files. The objection that
+maps to `.git/config`; `.tcignore` maps to the working-tree file. The objection that
 a hidden directory fails a stranger is the convenience the
 [future-reader assumption](2026-08-16-future-reader-decision.md) declines to buy: the file stays as
-findable as `ls -a` makes it, and its self-description is untouched. Orientation for a person is
-`README.md`'s job, and `README.md` stays at the root and points into `.turbo-collection/`.
+findable as `ls -a` makes it, and its self-description is untouched. A copy carries no
+orientation file of its own ([the no-README decision](2026-10-06-no-copy-readme-decision.md)); the
+`.turbo-collection/` directory is the mark a person finds.
 
 ## Rejected
 
 - **Configuration at the copy root** (the prior decision). It left configuration the one copy-level
   meta file outside the `.turbo-collection/` the root already held, and rested a stranger's
-  orientation on a `{version, collectionName}` file that never carried it. `README.md` does.
+  orientation on a `{version, collectionName}` file that never carried it.
 - **The bare name `config.json` inside the directory**, matching `manifest.json` and the `receipt-`
   files. Consistent, and what git does with `.git/config`, but configuration is the one meta file a
   person looks for by name, so its full name earns its keep where a redundant prefix would not.

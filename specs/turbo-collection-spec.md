@@ -30,7 +30,8 @@ Prefixes cited by this document and defined elsewhere: `R-META-*` in
 `traceability-requirement.md`, `R-DUR-*` in `durability-requirement.md`,
 `R-MFILE-*` in `meta-file-spec.md`, `R-PHOTO-*` in `photo-path-layout-spec.md`,
 `R-FOUND-*` in `as-found-path-layout-spec.md`, `R-INPLACE-*` in
-`in-place-import-source-spec.md`,
+`in-place-import-source-spec.md`, `R-LOCALFOLDER-*` in
+`local-folder-import-source-spec.md`,
 `R-PUB-*` in `version-requirement.md`, and `R-LANG-*` in
 `language-requirement.md`.
 
@@ -102,6 +103,7 @@ that deferring them costs no architectural flexibility.
 | Versioning and snapshots _of the collection_                 | Section 10          |
 | Deduplication                                                | Section 10          |
 | Modifying a file in place: restore, repair, manifest rebuild | Section 10          |
+| Symbolic links and other entries that are not regular files  | Section 10          |
 
 > These are non-goals, not rejections. The distinction matters: a rejection
 > means the idea is wrong, and a non-goal means it is simply not being built
@@ -138,8 +140,8 @@ principles below are specific to Turbo-Collection's own architecture.
 - **A Record lives with the data it describes, never in a separate index.**
   There is no central database of what is stored where. A directory carries its
   own manifest (R-MFILE-8) and its own receipt (R-MFILE-13); every copy carries
-  its own `README.md` (R-MFILE-22), its own configuration stating what it is
-  (R-MFILE-19), and optionally its own copy of this document (R-VER-8); no
+  its own configuration stating what it is (R-MFILE-19), and optionally its own
+  copy of this document (R-VER-8); no
   memory of an import source is kept between runs (R-SRC-13). A separated
   directory therefore stays interpretable, and there is no index whose loss
   makes surviving media unreadable. The cost is accepted deliberately: records
@@ -227,12 +229,12 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Meta File.** A file Turbo-Collection writes into a copy that describes that
   copy or what happened to it: the configuration file, the ignore file, a
-  manifest, a receipt, the `README.md`, and any copy of a specification carried
-  on a drive. What each one is called, where it sits, and what is inside it are
-  stated by `meta-file-spec.md`. Content files are preserved untouched, exactly
-  as they arrived. Every file in a copy is a content file, a meta file, or an
-  ignored file. A log is none of these, because a log is never written inside a
-  copy (R-LOG-5).
+  manifest, a receipt, and any copy of a specification carried on a drive. What
+  each one is called, where it sits, and what is inside it are stated by
+  `meta-file-spec.md`. Content files are preserved untouched, exactly as they
+  arrived. Every file in a copy is a content file, a meta file, or an ignored
+  file. A log is none of these, because a log is never written inside a copy
+  (R-LOG-5).
 
 - **Ignored File.** A file in a copy that matches a pattern in that copy's
   ignore file, `.tcignore` (`meta-file-spec.md` R-MFILE-20). Turbo-Collection
@@ -477,6 +479,48 @@ specification states. This path is metadata the import source supplies
 > **Example.** A supplied path is what lets the as-found layout place any item,
 > so no item is ever without a place to go.
 
+**R-SRC-22.** **Regular files only.** Where an Import would read a directory
+entry that is neither a regular file nor a directory, such as a symbolic link, a
+junction, a device, a socket, or a named pipe, Turbo-Collection MUST fail that
+Import, MUST add no file to the Collection in that Import, and MUST report every
+such entry. Turbo-Collection MUST NOT follow such an entry. Turbo-Collection
+MUST pass over an entry that matches a pattern in the ignore file of the Copy
+being imported into (`meta-file-spec.md` R-MFILE-21), and MUST NOT fail an
+Import on account of such an entry.
+
+> **Example.** A folder holds a symbolic link named `latest` that points at
+> another folder. An Import of that folder fails, names `latest`, and adds
+> nothing. Once a pattern matching `latest` is in the Copy's ignore file, the
+> next Import passes over it and takes in everything else.
+
+**R-SRC-23.** **Import never overwrites.** Where an Import would store a file at
+a path at which the Copy being imported into already holds a Content File with
+differing content, Turbo-Collection MUST NOT overwrite that Content File
+(R-SRC-12), MUST leave the arriving file out of the Collection, and MUST report
+every such file. Turbo-Collection MUST still import every other file of that
+Import. A Run in which an Import reports such a file MUST exit with a non-zero
+status.
+
+> **Example.** A folder is imported, a document in it is then edited, and the
+> folder is imported again. The Collection keeps the first version at that path,
+> the edited file is reported and stays out, and every new file in the folder is
+> still taken in. No second name is invented for the edited file (R-SRC-10).
+
+**R-SRC-24.** **One directory, one provenance.** Where an Import would add a
+file to a directory whose manifest names another Import Source or another Layout
+(`meta-file-spec.md` R-MFILE-9), Turbo-Collection MUST NOT add that file to that
+directory, MUST NOT change what that manifest names, MUST leave that file out of
+the Collection, and MUST report every such file. Turbo-Collection MUST still
+import every other file of that Import. A Run in which an Import reports such a
+file MUST exit with a non-zero status.
+
+> **Example.** A folder put into a Copy by hand at `local-folder/old-laptop/`,
+> and recorded there by an In-place Import, has a manifest naming `in-place`. A
+> later Import of a directory named `old-laptop` finds one file that folder
+> lacks. That file is reported and stays out, because
+> the manifest would otherwise name `in-place` for a file another Import Source
+> brought.
+
 > **Rationale.** Why an Importer's fidelity is a best effort, and why the
 > import-source path segment and the version re-stamp are shaped this way:
 > [the importer best-effort decision](../docs/decisions/2026-10-06-importer-best-effort-decision.md),
@@ -486,7 +530,13 @@ specification states. This path is metadata the import source supplies
 > its layout and nothing is skipped:
 > [the layout-selection decision](../docs/decisions/2026-10-03-layout-selection-decision.md).
 > Why an importer never writes into a copy:
-> [design-record §5](../docs/design-record.md).
+> [design-record §5](../docs/design-record.md). Why an Import that meets a
+> symbolic link fails:
+> [the non-regular-files decision](../docs/decisions/2026-10-06-non-regular-files-decision.md).
+> Why an Import leaves a differing file out, and neither fails nor renames it:
+> [the import-conflict decision](../docs/decisions/2026-10-06-import-conflict-decision.md).
+> Why a directory has one provenance:
+> [the in-place importer decision](../docs/decisions/2026-10-06-in-place-importer-decision.md).
 
 ---
 
@@ -651,11 +701,13 @@ are expected to differ between copies.
 
 **R-INT-8.** Turbo-Collection MUST report a **content file** that is **extra**
 (present on disk, absent from its directory's manifest) as a finding, in
-whichever copy it appears. This outcome alone MUST NOT cause a non-zero exit
-status, because a copy may legitimately hold a content file that its manifest,
-written before that file was mirrored in, does not list. Turbo-Collection MUST
-NOT report a manifest as **extra** in any copy, since R-MFILE-8 excludes it by
-design.
+whichever copy it appears. A Run that reports one MUST exit with a non-zero
+status (R-CLI-1). Turbo-Collection MUST NOT report a manifest as **extra** in
+any copy, since R-MFILE-8 excludes it by design.
+
+> **Example.** A file a person put into a Copy with a file manager is extra
+> until an In-place Import records it (R-CLI-12). Until then no Backup carries
+> it to another Copy, so a verify that finds it does not exit 0.
 
 **R-INT-10.** Turbo-Collection MUST NOT replace a file's recorded checksum with
 a newly computed one unless Turbo-Collection wrote that file's current content
@@ -820,9 +872,12 @@ computer performing the run.
 
 ### 8.3 Command line (`R-CLI-*`)
 
-**R-CLI-1.** Turbo-Collection MUST exit **0** on success and non-zero on
-failure. (The taxonomy of failure classes is deliberately deferred; see Section
-8.5.)
+**R-CLI-1.** Turbo-Collection MUST exit a Run with status **0** only where every
+operation of that Run completed everything it was asked to do and found nothing
+wrong, and MUST otherwise exit with a non-zero status. A report of what an
+operation did, as distinct from a report of something an operation could not do,
+refused to do, or found wrong, MUST NOT by itself cause a non-zero exit status
+(Section 8.5).
 
 **R-CLI-2.** **One-shot.** Turbo-Collection MUST perform one run and exit. It
 MUST NOT daemonize, poll, or schedule itself. _When_ it runs is the
@@ -871,14 +926,14 @@ that reports, from receipts alone and with no other copy connected, which copies
 each directory's content has reached, the date of each arrival, and the content
 present that has reached no other copy. It MUST report every arrival's date
 (R-REC-8), and MUST NOT state or imply that a copy still exists or is still
-intact.
+intact. What a status reports MUST NOT by itself cause a non-zero exit status.
 
 **R-CLI-11.** Turbo-Collection MUST provide an **init** operation that makes the
 directory it is given a copy, by writing into that directory a configuration
-file (`meta-file-spec.md` R-MFILE-17), a `README.md` where none exists
-(R-MFILE-22), and, where no ignore file exists, an ignore file holding the
-starter patterns that `meta-file-spec.md` describes (R-MFILE-20). Init MUST
-create a directory it is given that does not exist (R-CLI-14). Init MUST take
+file (`meta-file-spec.md` R-MFILE-17) and, where no ignore file exists, an
+ignore file holding the starter patterns that `meta-file-spec.md` describes
+(R-MFILE-20). Init MUST create a directory it is given that does not exist
+(R-CLI-14). Init MUST take
 the new copy's `collectionName` from a name given on the command line, and MUST
 use `main` where no name is given. Init MUST refuse to act on a directory that
 is inside a copy or that contains a copy. Given a directory that is already a
@@ -902,11 +957,11 @@ that would create a new copy unless that backup is given exactly one existing
 copy. Turbo-Collection MUST refuse to create a new copy unless a name for the
 new copy is given on the command line; that name becomes the new copy's
 `collectionName`. To create a new copy, Turbo-Collection MUST write into its
-directory a configuration file (`meta-file-spec.md` R-MFILE-17), a `README.md`
-(R-MFILE-22), and, where the existing copy has an ignore file, a duplicate of
-that ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a
-directory given to a backup that is not a copy and that holds any file not
-matching such a pattern, and MUST report every file that directory holds.
+directory a configuration file (`meta-file-spec.md` R-MFILE-17) and, where the
+existing copy has an ignore file, a duplicate of that ignore file (R-MFILE-20).
+Turbo-Collection MUST refuse to act on a directory given to a backup that is not
+a copy and that holds any file not matching such a pattern, and MUST report
+every file that directory holds.
 
 > **Example.** A backup creates a copy only in an empty directory, so files
 > already there are not pulled into the collection by the two-way mirror.
@@ -941,13 +996,17 @@ different times.
 
 ### 8.5 Exit status
 
-Turbo-Collection MUST exit **0** on Success and non-zero on failure (R-CLI-1).
-That is all this specification commits to at this version.
+A Run exits with status **0** only where it was fully successful, and with a
+non-zero status otherwise (R-CLI-1). This specification distinguishes no failure
+by exit status: a non-zero status says only that a Run was not fully successful,
+and the report and the log say what happened (R-LOG-4).
 
-The taxonomy of failure classes, and their specific exit codes, is deliberately
-left open until the failure modes have been worked through properly. Fixing an
-exit-code table before knowing what can actually go wrong would be inventing a
-contract that cannot yet be justified.
+> **Example.** An Import that leaves one differing file out and takes in every
+> other file exits non-zero (R-SRC-23), as does a verify that finds one extra
+> file (R-INT-8). A verify run while the off-site Copy is away exits 0
+> (R-CLI-5), and so does an Import that places a file under the floor and
+> reports it (R-SRC-20): each did everything it was asked to do and found
+> nothing wrong.
 
 ---
 
@@ -1053,6 +1112,7 @@ something.
 | **Cloud off-site**                                              | A copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all. It declares itself remote via R-TGT-5.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | R-TGT-1, R-TGT-5                          | None. Storage support for one more medium.                                                                                                                                                                           |
 | **Deduplication**                                               | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | R-MFILE-8                                 | None.                                                                                                                                                                                                                |
 | **Restore, repair, and manifest rebuild**                       | Each would modify or replace a file already in a copy, which no operation does today (R-MIRROR-2, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix the shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10).                                                                                                                                                                                                                                                      | R-INT-6, R-INT-7, R-INT-10, R-TGT-11      | None to the plain tree. One operation added; whether it may overwrite a content file is the decision deferred with it.                                                                                               |
+| **Symbolic links and other non-regular files**                  | A symbolic link holds no content of its own: what it points at lives elsewhere, possibly outside the directory being imported. Taking one in means first deciding what is preserved, the bytes it points at or a plain record of where it pointed, and neither is needed to preserve a regular file. Until that is decided an Import that meets one fails, adds nothing, and names it (R-SRC-22); a pattern in the ignore file passes over an entry an operator does not want taken in (R-MFILE-21).                                                                                                                                                                                                                                           | R-SRC-22, R-MFILE-21                      | **One design, not yet made:** whether a link is followed or recorded. One requirement amended (R-SRC-22).                                                                                                            |
 | **Third-party importers and storage support loaded as plugins** | The import and storage contracts are already specified completely enough for anyone to implement either (R-META-1). Making them _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                                      | R-SRC-2, R-TGT-2, R-META-1                | **None. This specification never says how an importer or storage support is loaded**, so this is a change to Section 12 and nothing more.                                                                            |
 | **Browsing GUI, AI search, face recognition**                   | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | R-COL-1, R-COL-3, R-CLI-3                 | **None, ever.** This is the entire payoff of plain files.                                                                                                                                                            |
 
@@ -1061,8 +1121,8 @@ something.
 ## 11. Contracts
 
 The core depends on these contracts, never on the tools or vendors behind them.
-Error conditions are **named, not numbered**, because the exit-code taxonomy is
-deferred (Section 8.5).
+Error conditions are **named, not numbered**, because this specification
+distinguishes no failure by exit status (Section 8.5).
 
 ### Importer
 
@@ -1073,7 +1133,7 @@ deferred (Section 8.5).
 | Precondition  | The import source is reachable and authorized                                                                                                                                                                                                                                                                                                |
 | Postcondition | Every returned item is supplied as plain files, unaltered as far as the Importer is able (R-SRC-5)                                                                                                                                                                                                                                           |
 | MUST NOT      | Delete, modify, move, or rename a file at an Import Source that it did not create (R-SRC-7); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the import source no longer supplies (R-SRC-13) |
-| Errors        | Import source unreachable or unauthorized; content delivered only inside a proprietary container that the Importer cannot unpack (R-SRC-5)                                                                                                                                                                                                   |
+| Errors        | Import source unreachable or unauthorized; content delivered only inside a proprietary container that the Importer cannot unpack (R-SRC-5); a directory entry that is neither a regular file nor a directory (R-SRC-22)                                                                                                                      |
 
 ### Storage
 
@@ -1082,7 +1142,7 @@ deferred (Section 8.5).
 | Operations    | `capabilities() -> Capabilities`; `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                               |
 | Capabilities  | Declares whether the copy is a plain tree, whether it can be verified in place, whether it is remote, and whether it can report a stable volume identifier for the copy (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                                                    |
 | Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                                                      |
-| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), a receipt in each directory holding content **or recording an error** (R-MFILE-13), and a `README.md` (R-MFILE-22). It MAY lack a content file another copy holds (R-COL-4) |
+| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4)                             |
 | MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data other than as a plain tree (R-COL-4)                                                       |
 | Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                                               |
 

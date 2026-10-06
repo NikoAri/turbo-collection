@@ -4,8 +4,8 @@
   "runId": "20260920T164009Z-8e2f",
   "collectionName": "main",
   "date": "2026-09-20T16:40:09Z",
-  "fileCount": 1,
-  "contentDigest": "8117574b7137a1879689b801754b8c30c8c41cfd7af72a40b9a8ed068b653027",
+  "fileCount": 2,
+  "contentDigest": "8c788efc9a371dbc8bcebaca3ec7a8a020115e29b6c4b7486931c0b5d018a50b",
   "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
   "importSource": { "specId": "in-place", "version": "0.1.0-draft" }
 }

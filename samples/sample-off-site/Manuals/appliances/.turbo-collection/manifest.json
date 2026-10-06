@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "in-place", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "dishwasher.pdf",
+      "size": 36,
+      "checksum": "faef3f0a0aba13e02e169830cdfbbd0a6e911eebcea2865b1f1e52ab1d045e44"
+    },
+    {
+      "file": "oven.pdf",
+      "size": 30,
+      "checksum": "b351647ae0297e0755c002c65e26e11ed3b0c32a9931ed35a8c56796205a4743"
+    }
+  ]
+}

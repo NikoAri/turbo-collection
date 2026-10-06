@@ -45,8 +45,7 @@ Turbo-Collection treats `volumeId` as opaque, comparing it only for equality and
 form (`R-MFILE-26`). No universal format exists: exFAT, the project's portable filesystem, exposes only
 a short volume serial, while other filesystems expose longer identifiers. The core never interprets the
 value; it compares it and hands it to that copy's storage to resolve to a current mount point
-(`R-REC-9`, `R-TGT-5`). This is the same opaque-token treatment `importSourceDetails` and an error's
-`details` already carry. Pinning a format would either disqualify exFAT or force a copy's storage to
+(`R-REC-9`, `R-TGT-5`). This is the same opaque-token treatment `importSourceDetails` already carries. Pinning a format would either disqualify exFAT or force a copy's storage to
 fabricate an identifier, and it would invite a concrete bug: validation against the exFAT shape would
 reject a valid identifier from another filesystem. A serial collision is safe regardless, because
 configuration-confirm turns it into a question, never a wrong action.

@@ -9,8 +9,8 @@ inside a copy. It states which items that Layout is able to place
 ([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the directory each such
 item receives.
 
-It governs **content files** and nothing else. Where a manifest, a receipt, a configuration file, or
-a `README.md` sits is stated by the requirements that define each of those, never here.
+It governs **content files** and nothing else. Where a manifest, a receipt, or a configuration file sits
+is stated by the requirements that define each of those, never here.
 
 Requirement ID prefix: **`R-PHOTO-*`**.
 

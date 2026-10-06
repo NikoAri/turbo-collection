@@ -169,7 +169,7 @@ as requirements, in [`specs/durability-requirement.md`](../specs/durability-requ
   be implemented.
 - **A record lives with the data it describes.** There is no central index of what is stored where.
   Every directory carries its own manifest and its own receipt; every copy carries its own
-  `README.md`, its own configuration, and optionally its own copy of the specification; nothing
+  configuration, and optionally its own copy of the specification; nothing
   remembers an import source's contents between runs.
   Picasa is the worked example here as well as for plain files: it first stored album definitions in
   `.pal` files under a user profile directory, away from the photographs, and version 3.9 moved album
@@ -322,7 +322,13 @@ goes, and writes every meta file. An importer never sees a copy (`R-SRC-17`).
   ever needed. This transport is a binding, as the way importers are loaded is: the specification
   states the boundary and leaves the hand-off mechanism free. The in-place importer is the one that
   hands over nothing: its files are already inside the copy, so the core records them where they sit
-  ([the in-place importer decision](decisions/2026-10-06-in-place-importer-decision.md)).
+  ([the in-place importer decision](decisions/2026-10-06-in-place-importer-decision.md)). The
+  local-folder importer copies nothing first: a folder of files already is a hand-off directory, so
+  the importer lists its files where they sit and the core reads them from there. A copy made
+  beforehand would move every byte twice and add a hop the core does not verify, where reading the
+  folder directly puts the whole trip under the core's checksum and verification. What a hand-off
+  directory needs when an importer fills one (a sign that it is complete, and what becomes of it
+  after a failure) is left until an importer does.
 - **The core is the sole writer.** It reads each handed-over file, checksums it, computes its path
   (`R-SRC-10`), writes it under a temporary name, verifies it, and renames it into place
   (`R-MIRROR-6`, `R-MIRROR-9`), then writes the manifest and the receipt. A re-run converges instead
@@ -431,7 +437,8 @@ On a language migration, the English spec regenerates **both** the tests and the
 cut at port contracts. All of it became
 [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md), which states the real
 requirements and the real contracts, and which has since moved past this sketch in several
-places: exit codes were deliberately left open rather than given a code per failure class, and the
+places: an exit status says only whether a run was fully successful, with no code per failure class
+([the exit-status decision](decisions/2026-10-06-exit-status-decision.md)), and the
 import and storage contracts did not exist here at all.
 
 The text is not reproduced, for two reasons. Superseded requirements sitting beside live ones invite

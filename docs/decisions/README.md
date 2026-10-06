@@ -103,3 +103,9 @@ there is more than one area to group.
 | 2026-10-05 | [Traceability and durability are standards of their own, beside the core specification](2026-10-05-requirement-family-decision.md) | Accepted |
 | 2026-10-06 | [Files already inside a copy are taken in by an in-place importer](2026-10-06-in-place-importer-decision.md) | Accepted |
 | 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md) | Accepted |
+| 2026-10-06 | [A file read from a directory is one item, and nothing pairs files by name](2026-10-06-one-file-one-item-decision.md) | Accepted |
+| 2026-10-06 | [A symbolic link is not content, and an import that meets one fails](2026-10-06-non-regular-files-decision.md) | Accepted |
+| 2026-10-06 | [A local folder is stored under its own name, and a clash is reported, not prevented](2026-10-06-local-folder-path-decision.md) | Accepted |
+| 2026-10-06 | [An import never overwrites: a differing file stays out, and the rest comes in](2026-10-06-import-conflict-decision.md) | Accepted |
+| 2026-10-06 | [A run exits 0 only when it was fully successful, and the exit status says nothing more](2026-10-06-exit-status-decision.md) | Accepted |
+| 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |

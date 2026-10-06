@@ -45,8 +45,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   untouched.
 
 - **Meta file.** A file that describes a copy or what happened to it: a manifest, a receipt, a
-  configuration file, an ignore file, a `README.md`, and any copy of a specification carried on a
-  drive.
+  configuration file, an ignore file, and any copy of a specification carried on a drive.
 
 - **Item.** One logical thing supplied by an import source, which may comprise several content files.
 
@@ -84,7 +83,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-MFILE-1.** A meta file's format MUST be determinable from that file's name alone, without reading its content. Turbo-Collection MUST NOT read a meta file whose name it does not recognize, and MUST report such a file instead.
 
-**R-MFILE-2.** Turbo-Collection MUST use these names and places, relative to a copy's root: `.tcignore` and `README.md` at the root; a `.turbo-collection/` subdirectory of the root holding the configuration file named `turbo-collection-config.json` and per-event location receipt files named `receipt-<runId>-<collectionName>.location.json` (R-MFILE-26); and, for each directory holding content, a `.turbo-collection/` subdirectory of that directory holding a manifest named `manifest.json` and per-event receipt files named `receipt-<runId>-<collectionName>.arrival.json` and `receipt-<runId>-<collectionName>.error.json`. A carried copy of a specification MUST be named for the document and the full version of the text it holds.
+**R-MFILE-2.** Turbo-Collection MUST use these names and places, relative to a copy's root: `.tcignore` at the root; a `.turbo-collection/` subdirectory of the root holding the configuration file named `turbo-collection-config.json` and per-event location receipt files named `receipt-<runId>-<collectionName>.location.json` (R-MFILE-26); and, for each directory holding content, a `.turbo-collection/` subdirectory of that directory holding a manifest named `manifest.json` and per-event receipt files named `receipt-<runId>-<collectionName>.arrival.json` and `receipt-<runId>-<collectionName>.error.json`. A carried copy of a specification MUST be named for the document and the full version of the text it holds.
 
 ## 3. Rules for every JSON meta file
 
@@ -196,10 +195,7 @@ An error file holds at least one error across the two arrays (R-MFILE-13 writes 
 >   "collectionName": "main",
 >   "importErrors": [
 >     {
->       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-spec.md R-SRC-5)",
->       "file": "IMG_0001.HEIC",
->       "importSource": { "specId": "icloud", "version": "0.1.0" },
->       "details": { "kind": "container" }
+>       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-spec.md R-SRC-5)"
 >     }
 >   ]
 > }
@@ -231,11 +227,7 @@ When `volumeId` is present, `relativePath` is relative to that volume's root; wh
 
 > **Example.** A mistyped `*.mov` shows up as thousands of files matched, not as silently empty video backups.
 
-## 7. `README.md`
-
-**R-MFILE-22.** Every copy MUST carry, at its root, a file named `README.md` stating what the data is, how it is organized, and how to verify it. Turbo-Collection MUST write this file where none exists, and MUST NOT overwrite one that does. Nothing MUST depend on it: it is orientation only, and the correctness of a copy MUST NOT depend on it existing or being readable.
-
-## 8. This document's bump test
+## 7. This document's bump test
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This test is measured on
 **meta files**, which is what this document puts into a copy.

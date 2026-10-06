@@ -23,7 +23,7 @@ Each document has one job:
   and the implementation are generated, and regenerated, in the way an RFC outlives any single
   implementation of a protocol.
 - [`specs/meta-file-spec.md`](specs/meta-file-spec.md): **what is written**. Every meta file's name,
-  place, and contents: manifest, receipt, configuration, ignore file, `README.md`. Its version is
+  place, and contents: manifest, receipt, configuration, ignore file. Its version is
   the meta file format version.
 - [`specs/photo-path-layout-spec.md`](specs/photo-path-layout-spec.md) and
   [`specs/as-found-path-layout-spec.md`](specs/as-found-path-layout-spec.md): **where content

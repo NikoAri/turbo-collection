@@ -23,7 +23,9 @@ Three rules bound it.
 - **One directory, one provenance.** A manifest names one layout and one import source for its
   directory (`R-MFILE-9`), so an in-place import takes a file only where its directory has no
   manifest yet, or has one naming `in-place`. A file dropped into a directory another import source
-  filled is reported and left alone.
+  filled is reported and left alone. It holds the other way round as well: an outside import adds
+  nothing to a directory an in-place import recorded, reports each file it would have put there,
+  brings in everything else, and the run exits non-zero (`R-SRC-24`).
 - **It adds, and does nothing else.** An edited file reads as a mismatch, a renamed file as a new
   one beside the old, and a file deleted from one copy is copied back by the next backup
   (`R-COL-4`). Deliberate cleanup stays out of scope.
@@ -46,5 +48,5 @@ Three rules bound it.
 `as-found-path-layout-spec.md`: `R-FOUND-2` and `R-FOUND-3` select by import source, and the
 _Adoption_ term is removed. `turbo-collection-spec.md`: `R-SRC-7` reworded with no adoption clause;
 `R-CLI-12` has init perform an in-place import; `R-COL-4` states that a difference between copies is
-closed only by adding; the glossary's _Adoption_ becomes _In-place Import_. `meta-file-spec.md`:
-`R-MFILE-21`.
+closed only by adding; the glossary's _Adoption_ becomes _In-place Import_; `R-SRC-24` states one
+directory, one provenance for every import. `meta-file-spec.md`: `R-MFILE-21`.

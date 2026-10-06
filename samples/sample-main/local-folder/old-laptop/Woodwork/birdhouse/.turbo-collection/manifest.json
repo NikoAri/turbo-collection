@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0-draft",
+  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "importSource": { "specId": "local-folder", "version": "0.1.0-draft" },
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "file": "cut-list.pdf",
+      "size": 34,
+      "checksum": "75194b7d40819c080cce1f8fa77c6679a24a7facda165ab29ce1907f57850cbf"
+    },
+    {
+      "file": "drawing.pdf",
+      "size": 33,
+      "checksum": "e43f72d280c3c88e4354783dce0be149ac76d2176dcdf010840cf571cd096f78"
+    }
+  ]
+}

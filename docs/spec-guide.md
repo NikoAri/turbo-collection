@@ -50,6 +50,7 @@ Every prefix resolves to exactly one document.
 | `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout |
 | `R-FOUND-*` | `as-found-path-layout-spec.md` | as-found layout |
 | `R-INPLACE-*` | `import-sources/in-place/in-place-import-source-spec.md` | files already inside a copy, taken in where they sit |
+| `R-LOCALFOLDER-*` | `import-sources/local-folder/local-folder-import-source-spec.md` | a directory of files outside a copy, stored under its own name |
 | `R-SET-*` | `procedures/turbo-collection-setup-procedure.md` | buying, labeling and filling drives, once |
 | `R-IMP-*` | `procedures/turbo-collection-import-procedure.md` | getting photos off an import source into a collection |
 | `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing the home copy up to date |
@@ -60,8 +61,8 @@ Every prefix resolves to exactly one document.
 | `R-META-*` | `traceability-requirement.md` | how documents, requirements, and code trace to one another |
 | `R-DUR-*` | `durability-requirement.md` | durability axioms every specification and design must satisfy |
 
-Not yet assigned: the iCloud and local-folder import source specifications under
-`specs/import-sources/` are stubs, and each states that its prefix is unassigned. No album layout specification exists yet.
+Not yet assigned: the iCloud import source specification under `specs/import-sources/` is a stub,
+and states that its prefix is unassigned. No album layout specification exists yet.
 
 ## Map of the core specification
 

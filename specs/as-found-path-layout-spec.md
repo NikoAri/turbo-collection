@@ -9,8 +9,8 @@ import source supplied for it, so a tree of files enters a copy shaped as it was
 which items that Layout is able to place
 ([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the path each file receives.
 
-It governs **content files** and nothing else. Where a manifest, a receipt, a configuration file, or
-a `README.md` sits is stated by the requirements that define each of those, never here.
+It governs **content files** and nothing else. Where a manifest, a receipt, or a configuration file sits
+is stated by the requirements that define each of those, never here.
 
 Requirement ID prefix: **`R-FOUND-*`**.
 
@@ -88,11 +88,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 **R-FOUND-2.** For an Item from the in-place Import Source, Turbo-Collection MUST record every file of that Item at that file's Supplied path, relative to the Copy's root, and MUST NOT add a directory to that path. Such a file therefore stays at the path it has (`turbo-collection-spec.md` R-SRC-7).
 
-> **Example.** `Taxes/2024/return.pdf`, found in a directory that init makes a Copy, is recorded at `Taxes/2024/return.pdf` and is not moved.
+> **Example.** `Manuals/appliances/oven.pdf`, found in a directory that init makes a Copy, is recorded at `Manuals/appliances/oven.pdf` and is not moved.
 
 **R-FOUND-3.** For an Item from any other Import Source, Turbo-Collection MUST store every Content file it places under this Layout at `<import source>/<supplied path>`, relative to a Copy's root, where `<import source>` is that Import Source's identifier, recorded as `importSource.specId` in each manifest beneath that directory (`meta-file-spec.md` R-MFILE-9), and `<supplied path>` is that file's Supplied path. This rule applies alike to an Item whose Import Source names this Layout as its Primary Layout, and to an Item this Layout takes as the floor.
 
-> **Example.** The local-folder Import Source reads a folder named `old-laptop` and supplies `old-laptop/Taxes/2024/return.pdf` as one file's Supplied path. That file is stored at `local-folder/old-laptop/Taxes/2024/return.pdf`, so the trees of two Import Sources never merge into one directory.
+> **Example.** The local-folder Import Source reads a folder named `old-laptop` and supplies `old-laptop/Woodwork/birdhouse/drawing.pdf` as one file's Supplied path. That file is stored at `local-folder/old-laptop/Woodwork/birdhouse/drawing.pdf`, so the trees of two Import Sources never merge into one directory.
 
 **R-FOUND-4.** An importer MUST supply a relative path, and Turbo-Collection MUST write that path with segments joined by `/`. Turbo-Collection MUST NOT store a file outside the directory R-FOUND-2 or R-FOUND-3 names for it. Turbo-Collection MUST refuse an item holding a file whose supplied path is absolute, is empty, or contains a segment that is `.` or `..`, and MUST report every item refused this way.
 
