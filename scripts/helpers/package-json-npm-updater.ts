@@ -1,31 +1,33 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, URL } from "node:url";
 
-// Update every dependency to its newest allowed release, rewriting both package.json and
+// Update every npm dependency to its newest allowed release, rewriting both package.json and
 // package-lock.json, then report what moved.
 //
-// "Allowed" is `@latest` for most packages. A package listed in npm-version-exceptions.json is
-// held to the range recorded there instead: `@types/node` tracks the newest 24.x so it stays on
-// the Node major that scripts/README.md pins as the floor, while the rest of the toolchain moves
-// forward freely.
+// * Uses `@latest` for most packages.
+// * `@types/node` is held to the Node floor that package.json records in `engines.node`, so the
+//   types never describe a newer Node than the one this code has to run on.
+// * Any package listed in npm-version-exceptions.json is held to the range recorded there instead.
 //
-// Both cases resolve to a concrete version first, then a single `npm install` pins it. Resolving
-// first is what makes package.json move: `npm install pkg@^24` leaves an existing `^24.1.0` range
-// untouched, so the floor would never rise. `npm install pkg@24.13.3` rewrites it to `^24.13.3`.
+// Held or not, a package resolves to a concrete version first, then a single `npm install` pins
+// it and writes into package-lock.json. Resolving first is what makes package.json move:
+// `npm install pkg@^24` leaves an existing `^24.1.0` range untouched, so the floor would never
+// rise. `npm install pkg@24.13.3` rewrites it to `^24.13.3`.
 
 // This script lives in scripts/helpers/. package.json and package-lock.json live one level up in
 // scripts/, which is also where npm must run so it edits the right manifest and lockfile.
 // npm-version-exceptions.json sits next to this script.
-const packageDir = new URL("../", import.meta.url);
-const packageJsonUrl = new URL("package.json", packageDir);
+const packageJsonDir = new URL("../", import.meta.url);
+const packageJsonUrl = new URL("package.json", packageJsonDir);
 const npmVersionExceptionsUrl = new URL(
   "npm-version-exceptions.json",
   import.meta.url,
 );
-const npmCwd = fileURLToPath(packageDir);
+const npmCwd: string = fileURLToPath(packageJsonDir);
 
-type PackageJsonManifest = {
+type PackageJsonType = {
+  engines?: { node?: string };
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
 };
@@ -34,189 +36,244 @@ function readJson<T>(url: URL): T {
   return JSON.parse(readFileSync(url, "utf8")) as T;
 }
 
-export function ranges(manifest: PackageJsonManifest): Record<string, string> {
-  return { ...manifest.dependencies, ...manifest.devDependencies };
+export function getAllDependencies(
+  packageJsonObj: PackageJsonType,
+): Record<string, string> {
+  return { ...packageJsonObj.dependencies, ...packageJsonObj.devDependencies };
 }
 
-// Run npm through the shell with every argument double-quoted. Quoting keeps `^` literal under
-// cmd.exe and stops a POSIX shell from globbing `*`; npm forbids a quote inside a package name or
-// a range, so the wrapping is unambiguous. `npm` stays unquoted so cmd.exe resolves it to
-// `npm.cmd`, and the shell avoids the `.cmd` spawn restriction that execFile hits on Windows.
-function execNpm(args: string[], captureOutput: boolean): string {
-  const command = `npm ${args.map((token) => `"${token}"`).join(" ")}`;
-  return execSync(command, {
+// Run npm through shell: cmd.exe resolves `npm` to `npm.cmd`, and the shell avoids the `.cmd`
+// spawn restriction that execFile hits on Windows. The shell reads `npmArgs` as written, so a
+// caller double-quotes any argument carrying a character a shell acts on.
+// Returns output of command if requested.
+function execNpm(npmArgs: string, captureOutput: boolean): string {
+  return execSync(`npm ${npmArgs}`, {
     cwd: npmCwd,
     encoding: "utf8",
     stdio: captureOutput ? ["ignore", "pipe", "inherit"] : "inherit",
   });
 }
 
-// Asking `npm view` for one field (`version`) prints just that field's value, not the package
-// document: a JSON string when the spec matches a single version, a JSON array of version strings
-// (ascending) when it matches several.
+// Asking `npm view` for `version`:
+// * For a single match, like "latest" or "24.19.1", it prints a single value: string
+// * For a range with several matches, like "^24", it prints an array in publish order: string[]
 type NpmViewVersions = string | string[];
 
-// Parse that output down to the newest version: the string itself, or the last array element. An
-// empty output (nothing matched) or an empty array throws. Kept separate from the shell call so it
-// can be tested directly.
+// Parse output down to the newest version: the string itself, or the last array element. The last
+// element is the newest only where publish order follows version order, which is why
+// nodeTypesRangeFromEngines confines its range to one major. An empty output (nothing matched) or
+// an empty array throws. Kept separate from the shell call so it can be tested directly.
 export function newestVersionFromNpmView(
-  npmViewOutput: string,
+  npmViewOutputJson: string,
   packageName: string,
-  specVersion: string,
+  requestedVersion: string,
 ): string {
   const noMatchError = () =>
     new Error(
-      `no published version of ${packageName} satisfies ${specVersion}`,
+      `no published version of ${packageName} satisfies ${requestedVersion}`,
     );
 
-  const npmViewTrimmedOutput = npmViewOutput.trim();
+  const npmViewTrimmedOutput = npmViewOutputJson.trim();
   if (npmViewTrimmedOutput === "") {
     throw noMatchError();
   }
 
-  const versions = JSON.parse(npmViewTrimmedOutput) as NpmViewVersions;
-  if (!Array.isArray(versions)) {
-    return versions;
+  const npmViewVersions = JSON.parse(npmViewTrimmedOutput) as NpmViewVersions;
+
+  // Single Version
+  if (!Array.isArray(npmViewVersions)) {
+    return npmViewVersions;
   }
-  const newest = versions[versions.length - 1];
-  if (newest === undefined) {
+
+  // Last Version in Array
+  const lastVersion = npmViewVersions[npmViewVersions.length - 1];
+  if (lastVersion === undefined) {
     throw noMatchError();
   }
-  return newest;
+  return lastVersion;
 }
 
-// Newest published version satisfying `spec` (a dist-tag like "latest" or a range like "^24").
-function queryNewestVersion(packageName: string, specVersion: string): string {
-  const npmViewOutput = execNpm(
-    ["view", `${packageName}@${specVersion}`, "version", "--json"],
+// Newest published version satisfying `requestedVersion` (a dist-tag like "latest" or a range like
+// "^24").
+//
+// The spec is double-quoted because a range is made of characters a shell acts on: `^` is the
+// cmd.exe escape, `*` globs under a POSIX shell, and `^24 <=24.19` adds a space and a redirect.
+// npm forbids a quote inside a package name or a range, so the wrapping is unambiguous.
+function queryNewestVersion(
+  packageName: string,
+  requestedVersion: string,
+): string {
+  const npmViewOutputJson: string = execNpm(
+    `view "${packageName}@${requestedVersion}" version --json`,
     /*captureOutput*/ true,
   );
 
-  return newestVersionFromNpmView(npmViewOutput, packageName, specVersion);
+  return newestVersionFromNpmView(
+    npmViewOutputJson,
+    packageName,
+    requestedVersion,
+  );
 }
 
-// The collaborators of updateNpmPackageVersions that reach the outside world, gathered so a test
-// can substitute fakes and never touch the network, the filesystem, or the real npm. `readManifest`
-// is read twice, before and after the install, so the report can see what the install moved.
-export type UpdateDependencies = {
-  packageJsonManifest: () => PackageJsonManifest;
-  npmVersionExceptions: () => Record<
-    /*packageName*/ string,
-    /*specVersion*/ string
-  >;
-  newestVersion: (packageName: string, specVersion: string) => string;
-  install: (specs: string[]) => void;
-  log: (message?: string) => void;
-  warn: (message: string) => void;
+const NodeTypesPackage = "@types/node";
+
+// The range that keeps `@types/node` from describing a newer Node than the floor in package.json
+// `engines.node`. Past the floor, `tsc` would accept an API that the floor cannot run.
+//
+// The MAJOR.MINOR of `@types/node` names the Node release it describes, while its PATCH only
+// counts revisions of the types. So the hold is on MAJOR.MINOR: a floor of `>=24.19.0` becomes
+// `^24 <=24.19`, the newest 24.x at or below 24.19, whatever its patch. A floor whose minor has no
+// types release of its own lands on the nearest one beneath it.
+//
+// The `^24` half is not redundant. `npm view` lists matches in publish order, not version order,
+// so `<=24.19` alone ends on whichever older major was patched last (22.20.5 when this was
+// written), and newestVersionFromNpmView would take that for the newest.
+//
+// Only the form `>=MAJOR.MINOR.PATCH` is read. Anything else throws rather than guessing a floor.
+export function nodeTypesRangeFromEngines(
+  enginesNode: string | undefined,
+): string {
+  const floor = /^>=\s*(\d+)\.(\d+)\.\d+$/.exec(enginesNode?.trim() ?? "");
+  if (floor === null) {
+    const found = enginesNode === undefined ? "missing" : `"${enginesNode}"`;
+    throw new Error(
+      `cannot hold ${NodeTypesPackage} to the Node floor: engines.node in package.json is ${found}, expected the form >=MAJOR.MINOR.PATCH`,
+    );
+  }
+  const [, major, minor] = floor;
+  return `^${major} <=${major}.${minor}`;
+}
+
+// A dependency to update, and the range it is held to, if any.
+type PackageToUpdate = {
+  packageName: string;
+  heldRange: string | undefined;
 };
 
-const realDependencies: UpdateDependencies = {
-  packageJsonManifest: () => readJson<PackageJsonManifest>(packageJsonUrl),
-  npmVersionExceptions: () =>
+// Package dependencies to update, sorted by name: every one, or only those named in `packages` when it
+// is not empty. A name in `packages` or in `exceptions` that is not a dependency selects nothing.
+//
+// A recorded exception wins over the Node floor, so overriding the floor stays possible, and is
+// visible in the file when somebody does it. The floor is read only when `@types/node` is being
+// updated and has no exception.
+//
+// Takes data and returns data, so it can be tested without the filesystem, the network, or npm.
+export function getPackagesToUpdate(
+  packageJsonObj: PackageJsonType,
+  exceptions: Record<string, string>,
+  packages: string[],
+): PackageToUpdate[] {
+  return Object.keys(getAllDependencies(packageJsonObj))
+    .sort()
+    .filter((name) => packages.length === 0 || packages.includes(name))
+    .map((packageName) => ({
+      packageName,
+      heldRange:
+        exceptions[packageName] ??
+        (packageName === NodeTypesPackage
+          ? nodeTypesRangeFromEngines(packageJsonObj.engines?.node)
+          : undefined),
+    }));
+}
+
+function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
+  const packageJsonObj = readJson<PackageJsonType>(packageJsonUrl);
+  const initAllDependencies = getAllDependencies(packageJsonObj);
+
+  const packageExceptions =
     readJson<{ packages?: Record<string, string> }>(npmVersionExceptionsUrl)
-      .packages ?? {},
-  newestVersion: queryNewestVersion,
-  install: (specs) => {
-    execNpm(["install", ...specs], false);
-  },
-  log: (message = "") => console.log(message),
-  warn: (message) => console.warn(message),
-};
-
-// TODO:
-// @types/node version shouldn't exceed the one specified in engines/node
-
-export function updateNpmPackageVersions(
-  options: NpmUpdaterCliArgs,
-  deps: UpdateDependencies = realDependencies,
-): void {
-  const before = ranges(deps.packageJsonManifest());
-  const exceptions = deps.npmVersionExceptions();
+      .packages ?? {};
 
   // An exception naming a package that is not a dependency is a stale entry. Report it rather than
   // letting `npm install` add the package as a side effect.
-  for (const name of Object.keys(exceptions)) {
-    if (!(name in before)) {
-      deps.warn(
-        `npm-version-exceptions.json lists ${name}, which is not a dependency. Ignoring it.`,
+  for (const packageException of Object.keys(packageExceptions)) {
+    if (!(packageException in initAllDependencies)) {
+      console.warn(
+        `npm-version-exceptions.json lists ${packageException}, which is not a dependency. Ignoring it.`,
       );
     }
   }
 
-  let names = Object.keys(before).sort();
-
-  // With package names on the command line, update only those. An unrecognized name is a typo
-  // worth stopping for, not a package to silently add.
-  if (options.only.length > 0) {
-    const unknown = options.only.filter((name) => !(name in before));
-    if (unknown.length > 0) {
-      console.error(`Not a dependency: ${unknown.join(", ")}`);
-      process.exit(1);
-    }
-    names = names.filter((name) => options.only.includes(name));
+  // An unrecognized package name on the command line is a typo worth stopping for, not a package
+  // to silently add.
+  const unknown = npmUpdaterCliArgs.packages.filter(
+    (name) => !(name in initAllDependencies),
+  );
+  if (unknown.length > 0) {
+    console.error(`Not a dependency: ${unknown.join(", ")}`);
+    process.exit(1);
   }
 
-  if (names.length === 0) {
-    deps.log("No dependencies to update.");
+  const packagesToUpdate = getPackagesToUpdate(
+    packageJsonObj,
+    packageExceptions,
+    npmUpdaterCliArgs.packages,
+  );
+  if (packagesToUpdate.length === 0) {
+    console.log("No dependencies to update.");
     return;
   }
 
-  deps.log("Resolving newest versions:");
-  const specs = names.map((name) => {
-    const pin = exceptions[name];
-    const version = deps.newestVersion(name, pin ?? "latest");
-    deps.log(
-      `  ${name}: ${before[name]} -> ^${version}${pin ? `  (held to ${pin})` : ""}`,
+  console.log("Resolving newest versions:");
+  const specs = packagesToUpdate.map(({ packageName, heldRange }) => {
+    const version = queryNewestVersion(packageName, heldRange ?? "latest");
+    console.log(
+      `  ${packageName}: ${initAllDependencies[packageName]} -> ^${version}${heldRange ? `  (held to ${heldRange})` : ""}`,
     );
-    return `${name}@${version}`;
+    return `${packageName}@${version}`;
   });
 
-  if (options.dryRun) {
-    deps.log();
-    deps.log(`Dry run: would run \`npm install ${specs.join(" ")}\``);
+  if (npmUpdaterCliArgs.dryRun) {
+    console.log();
+    console.log(`Dry run: would run \`npm install ${specs.join(" ")}\``);
     return;
   }
 
-  deps.log();
-  deps.install(specs);
+  // Each spec is `name@version` with a concrete version, which holds nothing a shell acts on.
+  console.log();
+  execNpm(`install ${specs.join(" ")}`, /*captureOutput*/ false);
 
-  const after = ranges(deps.packageJsonManifest());
-  const moved = names.filter((name) => before[name] !== after[name]);
+  // package.json is read a second time so the report can see what the install moved.
+  const after = getAllDependencies(readJson<PackageJsonType>(packageJsonUrl));
+  const moved = packagesToUpdate
+    .map(({ packageName }) => packageName)
+    .filter((name) => initAllDependencies[name] !== after[name]);
 
-  deps.log();
+  console.log();
   if (moved.length === 0) {
-    deps.log(
+    console.log(
       "package.json is unchanged. package-lock.json may still have moved; check `git diff`.",
     );
   } else {
-    deps.log("package.json:");
+    console.log("package.json:");
     for (const name of moved) {
-      deps.log(`  ${name}: ${before[name]} -> ${after[name]}`);
+      console.log(`  ${name}: ${initAllDependencies[name]} -> ${after[name]}`);
     }
   }
-  deps.log();
-  deps.log(
+  console.log();
+  console.log(
     "Next: run `npm run lint && npm test`, then review `git diff` before committing.",
   );
 }
 
 type NpmUpdaterCliArgs = {
   dryRun: boolean;
-  only: string[]; // Empty means every dependency.
+  packages: string[]; // Empty means every dependency in package.json
 };
 
 const UsageMessage = `Usage: node package-json-npm-updater.ts [options] [package...]
 
 Update dependencies to their newest allowed release, rewriting package.json and
 package-lock.json. With no package names, every dependency is updated; otherwise only
-the named ones. A package in npm-version-exceptions.json stays within its recorded range.
+the named ones. @types/node stays at or below the Node floor in package.json engines.
+A package in npm-version-exceptions.json stays within its recorded range.
 
 Options:
   -n, --dry-run   Resolve and report the newest versions without installing.
   -h, --help      Show this message.`;
 
 export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
-  const npmUpdaterCliArgs: NpmUpdaterCliArgs = { dryRun: false, only: [] };
+  const npmUpdaterCliArgs: NpmUpdaterCliArgs = { dryRun: false, packages: [] };
   for (const arg of argv) {
     if (arg === "-n" || arg === "--dry-run") {
       npmUpdaterCliArgs.dryRun = true;
@@ -227,9 +284,10 @@ export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
       console.error(`Unknown option: ${arg}\n\n${UsageMessage}`);
       process.exit(1);
     } else {
-      npmUpdaterCliArgs.only.push(arg);
+      npmUpdaterCliArgs.packages.push(arg);
     }
   }
+
   return npmUpdaterCliArgs;
 }
 

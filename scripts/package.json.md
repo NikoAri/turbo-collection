@@ -30,11 +30,12 @@ run, and plain `test` stays without it.
 third-party tool. It invokes [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), which
 resolves every dependency to its newest allowed release, rewrites both `package.json` and
 `package-lock.json`, and reports what moved. It carries no flags because what to hold back is data,
-not a command-line argument: [`helpers/npm-version-exceptions.json`](helpers/npm-version-exceptions.json)
-records which ranges to pin (`@types/node` to the newest 24.x, so it stays on the Node major this
-directory floors), and the helper reads that file. Wrapping it as a verb is what lets `npm run update`
-work from anywhere, since npm runs a script from this directory and a bare `node helpers/...` path
-resolves only from here.
+not a command-line argument. `@types/node` is held to the Node floor that `engines` already records:
+a floor of `>=24.19.0` resolves it within `^24 <=24.19`, so types never describe a Node newer than
+one this code has to run on, and raising the floor is the single edit that moves both. Any other
+hold is a range recorded in [`helpers/npm-version-exceptions.json`](helpers/npm-version-exceptions.json),
+which is empty today. Wrapping it as a verb is what lets `npm run update` work from anywhere, since
+npm runs a script from this directory and a bare `node helpers/...` path resolves only from here.
 
 **`tsc` takes no arguments on purpose.** Given no input files it reads
 [`tsconfig.json`](tsconfig.json), which is where `noEmit`, `strict` and `erasableSyntaxOnly` live.

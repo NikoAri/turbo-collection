@@ -895,14 +895,7 @@ as part of a combined run: **init**, **import**, **backup**, **status**, and the
 verify inspections, **verify fixity** (R-INT-2), **verify access** (R-CLI-9),
 and **verify names** (R-NAME-1). Dry-run MUST be a mode of **init** (R-CLI-11),
 of **import** (R-SRC-14), and of **backup** (R-MIRROR-7), not a separate
-operation. A **verify** invoked with no inspection named MUST run every verify
-inspection, against every connected copy. Where a receipt on a connected copy
-names a copy that is not connected, verify MUST report that copy as not
-connected, and that absence alone MUST NOT cause a non-zero exit status.
-
-> **Example.** `verify` run while the off-site copy is away reports it as not
-> connected and still exits 0, so a routine check does not fail by design every
-> time.
+operation.
 
 **R-CLI-6.** Turbo-Collection MUST be fully usable with **no scheduler installed
 or configured**. Scheduling is optional.
@@ -975,6 +968,33 @@ directory's path, and MUST refuse a path whose parent directory does not exist.
 > **Example.** Only the final path segment is created, so a disconnected
 > removable drive fails rather than building a copy on the local disk.
 
+**R-CLI-15.** Turbo-Collection MUST be operable under more than one operating
+system. The name and content of every file a Run writes into a Copy MUST NOT
+depend on the operating system that Run is performed under. Turbo-Collection
+MUST perform every operation on a Copy whichever operating system each earlier
+Run that wrote to that Copy was performed under.
+
+> **Example.** A Copy written to from a Mac is backed up on a borrowed Windows
+> computer, and a later verify on that Mac finds nothing wrong.
+
+**R-CLI-16.** When asked for its version, Turbo-Collection MUST report the
+Turbo-Collection version and a version stamp (R-VER-18) for every specification
+it conforms to. In answering, Turbo-Collection MUST NOT act on a Copy or on an
+Import Source.
+
+> **Example.** A version report lists `turbo-collection-spec 1.2.0 (2027-03-01)`
+> and one such line for `meta-file-spec.md`, for each Layout specification, and
+> for each Import Source specification the code conforms to.
+
+**R-CLI-17.** A **verify** invoked with no inspection named MUST run every
+verify inspection, against every connected copy. Where a receipt on a connected
+copy names a copy that is not connected, verify MUST report that copy as not
+connected, and that absence alone MUST NOT cause a non-zero exit status.
+
+> **Example.** `verify` run while the off-site copy is away reports it as not
+> connected and still exits 0, so a routine check does not fail by design every
+> time.
+
 ### 8.4 Distinct read-only inspections
 
 "Verify my collection" sounds like one request, but it is several. Each MUST be
@@ -1004,7 +1024,7 @@ and the report and the log say what happened (R-LOG-4).
 > **Example.** An Import that leaves one differing file out and takes in every
 > other file exits non-zero (R-SRC-23), as does a verify that finds one extra
 > file (R-INT-8). A verify run while the off-site Copy is away exits 0
-> (R-CLI-5), and so does an Import that places a file under the floor and
+> (R-CLI-17), and so does an Import that places a file under the floor and
 > reports it (R-SRC-20): each did everything it was asked to do and found
 > nothing wrong.
 
@@ -1209,6 +1229,7 @@ Bindings as of 2026-07-12:
 | Logger               | Plain-text files, one per run, written outside every copy (R-LOG-5)                                                   |
 | Pattern matching     | `ignore` (MIT), vendored, for gitignore pattern semantics                                                             |
 | Language and runtime | TypeScript on Node.js, standard library first, minimal third-party dependencies                                       |
+| Operating systems    | Windows and macOS (R-CLI-15)                                                                                          |
 | Scheduler (external) | launchd on macOS; cron, systemd timers, or Task Scheduler elsewhere                                                   |
 | Importers            | **None yet.** What an import source delivers is stated with dated evidence, one import source specification at a time |
 
@@ -1240,6 +1261,12 @@ plugin registry, and no runtime loading of third-party code. This is a
 **binding, not a requirement**: the contracts (R-SRC-_, R-TGT-_) say nothing
 about how either is loaded, so a plugin-style loader could replace this with no
 change to the specification (Section 10).
+
+**Operating systems: Windows and macOS.** R-CLI-15 requires more than one
+operating system and names none, so which ones are named here is a **binding,
+not a requirement**. Adding another, such as Linux, changes this section and no
+requirement; it also adds one more operating system under which conformance is
+checked (Section 13).
 
 Changing a binding is expected to require changing one module and no data. **If
 a proposed change to a binding would require rewriting the contents of a copy,

@@ -109,3 +109,5 @@ there is more than one area to group.
 | 2026-10-06 | [An import never overwrites: a differing file stays out, and the rest comes in](2026-10-06-import-conflict-decision.md) | Accepted |
 | 2026-10-06 | [A run exits 0 only when it was fully successful, and the exit status says nothing more](2026-10-06-exit-status-decision.md) | Accepted |
 | 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |
+| 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
+| 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |

@@ -25,7 +25,7 @@ to pass quietly.
 
 **A copy that is not connected is not.** The off-site copy is away by design, so a verify at home
 that failed on its absence would fail every time, and an exit status that always fails says nothing.
-Verify checks the copies that are connected and names the ones that are not (`R-CLI-5`).
+Verify checks the copies that are connected and names the ones that are not (`R-CLI-17`).
 
 ## Rejected
 

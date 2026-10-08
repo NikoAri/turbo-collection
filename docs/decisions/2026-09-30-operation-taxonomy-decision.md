@@ -54,8 +54,8 @@ Dry-run is a mode of each writer, never an operation.
 
 ## Touches
 
-`turbo-collection-spec.md`: `R-CLI-5` reshaped, and states what a bare verify does; `check` became
-**verify access** (`R-CLI-9`), `check-names` became **verify names** (`R-NAME-1`), `propagation`
-became **status** (`R-CLI-10`); Section 8.4 lists the inspections; Section 1.3 names in-place
-modification as a non-goal and Section 10 states what enabling it would cost. The release
+`turbo-collection-spec.md`: `R-CLI-5` reshaped; `R-CLI-17` states what a bare verify does; `check`
+became **verify access** (`R-CLI-9`), `check-names` became **verify names** (`R-NAME-1`),
+`propagation` became **status** (`R-CLI-10`); Section 8.4 lists the inspections; Section 1.3 names
+in-place modification as a non-goal and Section 10 states what enabling it would cost. The release
 procedure's `R-REL-6` names the status report.

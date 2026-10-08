@@ -109,6 +109,10 @@ write it with the first operation that touches a filesystem, not after.
 **Every MUST maps to a test.** Section 13. Nothing to meet yet. When it starts, name the requirement
 each test exercises, so the traceability audit Section 13 describes can be run mechanically.
 
+**Nothing runs by itself.** No CI workflow and no git hook runs the tests or the lint: every run is
+one someone starts. `R-CLI-15` has this code operable under each operating system Section 12 names,
+so the suite is run on each of them by hand.
+
 ## Before this writes to anything real
 
 **No manifest written now is durable.** `R-MFILE-9` requires every manifest to name the layout
