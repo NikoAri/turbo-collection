@@ -120,8 +120,8 @@ have a working setup.
 
 **R-SET-13.** Confirm **three copies exist on three drives, one of them off-site**, before treating anything held at an import source as releasable.
 
-`turbo-collection-backup-procedure.md` takes over from here, and its release gate depends on
-R-SET-13 holding.
+`turbo-collection-backup-procedure.md` takes over from here, and the release gate in
+`turbo-collection-release-procedure.md` depends on R-SET-13 holding.
 
 ---
 

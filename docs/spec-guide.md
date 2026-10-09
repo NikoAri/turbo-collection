@@ -37,7 +37,7 @@ Every prefix resolves to exactly one document.
 |---|---|---|
 | `R-COL-*` | `turbo-collection-spec.md` | collection invariants |
 | `R-SRC-*` | `turbo-collection-spec.md` | import |
-| `R-TGT-*` | `turbo-collection-spec.md` | storage (the prefix dates from when a copy was called a target) |
+| `R-TGT-*` | `turbo-collection-spec.md` | storage layout (the prefix dates from when a copy was called a target) |
 | `R-MIRROR-*` | `turbo-collection-spec.md` | mirror semantics |
 | `R-INT-*` | `turbo-collection-spec.md` | integrity and fixity |
 | `R-NAME-*` | `turbo-collection-spec.md` | filename safety |
@@ -74,7 +74,7 @@ and states that its prefix is unassigned. No album layout specification exists y
 | 3 | Terminology, self-contained |
 | 4 | Collection invariants, which outrank everything else |
 | 5 | Import |
-| 6 | Storage |
+| 6 | Storage layout |
 | 7 | Preservation requirements: mirroring, integrity, filename safety, receipts |
 | 8 | Operation: configuration, logging, command line, and the distinct read-only inspections |
 | 9 | This specification's own version, and version stamps |

@@ -260,8 +260,8 @@ whether the engine is rclone or rsync, the config JSON or TOML, the scheduler la
 nowhere in the specification, which names concrete things instead: an **importer** reads an **import
 source**, a copy sits on a **medium** and its **storage** declares what that medium can guarantee,
 and the tool that brings copies into agreement is the **mirror engine**. Read "Source" below as the
-import contract and "Storage" as the storage contract. Reasoning:
-[the vocabulary decision](decisions/2026-10-05-spec-vocabulary-decision.md).
+import contract and "Storage" as the storage layout contract. Reasoning:
+[the vocabulary decision](decisions/2026-10-06-spec-vocabulary-decision.md).
 
 ```mermaid
 graph TD
@@ -439,7 +439,7 @@ cut at port contracts. All of it became
 requirements and the real contracts, and which has since moved past this sketch in several
 places: an exit status says only whether a run was fully successful, with no code per failure class
 ([the exit-status decision](decisions/2026-10-06-exit-status-decision.md)), and the
-import and storage contracts did not exist here at all.
+import and storage layout contracts did not exist here at all.
 
 The text is not reproduced, for two reasons. Superseded requirements sitting beside live ones invite
 a reader to follow the wrong set, and `language-requirement.md` R-LANG-17 keeps obligation keywords
@@ -459,12 +459,12 @@ are trivial.)
 |---|---|---|---|---|---|
 | **Data** (files) | "file" concept dies | none (read directly) | none | ~nil | 75-yr track record |
 | **Filesystem** (APFS↔NTFS↔ReFS↔ext4) | new drive/OS | OS-level file copy | Low (time only) | Medium | use no FS-specific features; real risk = filenames (see below) |
-| **Engine** (rclone) | project dies / better tool | swap one adapter (~40 lines); no data change | Low | Low–Med | MIT (forkable); rsync fallback; plain mirror ⇒ zero destination migration |
-| **Orchestrator** (TypeScript) | language/runtime churn | regenerate ~200 lines from spec (AI) | Low–Med | Medium | stdlib-only; language-neutral spec; thin glue |
+| **Engine** (rclone) | project dies / better tool | swap one adapter (~40 lines); no data change | Low | Low to Med | MIT (forkable); rsync fallback; plain mirror ⇒ zero destination migration |
+| **Orchestrator** (TypeScript) | language/runtime churn | regenerate ~200 lines from spec (AI) | Low to Med | Medium | stdlib-only; language-neutral spec; thin glue |
 | **Integrity** (SHA-256) | hash deprecated | recompute manifest | Low (CPU) | Low | plain JSON manifest; algo recorded; even "broken" hash detects bit-rot |
 | **Config** (JSON) | format churn | data transform (JSON↔TOML/YAML) | Trivial | Very Low | config is data; native parse = zero dep |
 | **Scheduler** (launchd) | OS change | replace external schedule file | Low | Medium | one-shot core; ship snippets for all OSes |
-| **OS** (macOS) | leave Apple | reinstall Node+rclone, copy repo, edit paths | Low–Med | Medium | every component already cross-platform; paths in config |
+| **OS** (macOS) | leave Apple | reinstall Node+rclone, copy repo, edit paths | Low to Med | Medium | every component already cross-platform; paths in config |
 | **VCS/hosting** (git/GitHub) | git/GitHub dies | export repo to plain files; `git remote set-url` to any host | Trivial | Very Low | distributed; holds the *system*, never the photos |
 
 **The filename gotcha (the real filesystem-migration risk):** a plain copy across ReFS↔NTFS↔APFS is

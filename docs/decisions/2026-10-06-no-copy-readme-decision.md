@@ -40,4 +40,4 @@ stays possible and is not made convenient
 
 `meta-file-spec.md`: `R-MFILE-22` and its section removed; `README.md` leaves `R-MFILE-2`.
 `turbo-collection-spec.md`: `README.md` leaves `R-CLI-11`, `R-CLI-13`, the meta file definition and
-the storage contract. Both layout specifications, the design record and the samples follow.
+the storage layout contract. Both layout specifications, the design record and the samples follow.

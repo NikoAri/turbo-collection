@@ -64,7 +64,8 @@ Self-contained, per [`language-requirement.md`](language-requirement.md) R-LANG-
   work product that a run creates and is free to discard.
 
 - **Contract.** An interface a specification defines between this project and something outside it,
-  such as a source of data, a store, or a tool, stating what that interface guarantees.
+  such as an origin of data, a place where data is kept, or a tool, stating what that interface
+  guarantees.
 
 - **Capability.** A specific guarantee a contract declares it can meet at a given moment, and which
   may change over time.

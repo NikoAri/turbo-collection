@@ -27,8 +27,8 @@ Requirement ID prefix: **`R-MFILE-*`**.
 This document binds the implementation. It answers one question: given something Turbo-Collection
 must write down, what does that file look like.
 
-It does not state **when** Turbo-Collection writes one, or what it may do afterward. Appending an
-arrival only after content is written, refusing to replace a receipt that would lose an arrival, and
+It does not state **when** Turbo-Collection writes one, or what it may do afterward. Writing an
+arrival only after its content is written, never altering a receipt file once it is written, and
 refusing to treat a receipt as evidence a copy still exists are behavior, and they stay in
 [`turbo-collection-spec.md`](turbo-collection-spec.md).
 
@@ -60,7 +60,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Manifest.** The meta file recording a checksum for each file in one directory (R-MFILE-8).
 
 - **Receipt.** The record of every arrival of a directory's content at a copy and every error
-  affecting it, written as one file per run (R-MFILE-13).
+  affecting it, written as one file per event (R-MFILE-13).
 
 - **Arrival.** One event of a directory's content reaching one copy.
 

@@ -85,5 +85,5 @@ Added: `R-MFILE-26` (the location receipt: copy-root placement, field order, opt
 immutability) and `R-REC-9` (the behavior: on-change cadence, candidate-then-confirm, optional and
 non-load-bearing, absolute path derived at run time, copy-root propagation union, observed and not
 remaining). Amended: `R-MFILE-2` (a `.turbo-collection/` at the copy root, distinct from the
-per-directory one) and `R-TGT-5` with the storage contract (report a stable volume identifier, and
+per-directory one) and `R-TGT-5` with the storage layout contract (report a stable volume identifier, and
 resolve it to a mount point).

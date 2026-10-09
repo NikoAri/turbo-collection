@@ -53,7 +53,8 @@ mirror covers, not only those it changed (`R-REC-6`).
 ## Errors, and version provenance
 
 Failures live only in an error file, and the next run corrects by re-deriving the manifest diff, never
-by replaying the error file (`R-MFILE-16`). An import arrival carries the full version
+by replaying the error file (`R-MFILE-16`). What an error file holds is in
+[the error-object decision](2026-10-04-error-object-decision.md). An import arrival carries the full version
 trail (`tcSpecVersion`, plus `layout` and `importSource` each as `{specId, version}`), because a
 manifest's matching blocks are a current claim a later run may re-stamp, and the receipt is the only
 durable record of the version that placed the content. A mirror arrival carries none of that, having acquired
@@ -63,9 +64,9 @@ nothing and applied no layout; that provenance travels to it on the import arriv
 
 A receipt is the one record here describing bytes on **other** copies, so it is the one that can turn
 false while nothing local changes: a drive that dies in November does not edit an arrival written in
-August. A receipt therefore records where content was **placed**, not where it **remains**, MUST NOT
-be read as evidence that a copy still exists, and MUST carry the date of every arrival a copy count
-rests on (`R-REC-8`). The release procedure, not a receipt, authorizes a deletion.
+August. A receipt therefore records where content was **placed**, not where it **remains**. It is not
+evidence that a copy still exists, and it carries the date of every arrival a copy count rests on
+(`R-REC-8`). The release procedure, not a receipt, authorizes a deletion.
 
 Hand-edit integrity needs no new field: immutability plus propagation already make an altered file
 disagree with its twins on other copies, which a self-checksum (recomputed by any editor) could not
@@ -106,4 +107,5 @@ versus mirror field sets, `{specId, version}`, `contentDigest`), `R-MFILE-16` (e
 snapshot), `R-REC-6` (propagation union everywhere; a no-op writes no arrival), `R-REC-7` (never
 delete or alter a receipt file), `R-REC-8` (placement, not permanence; dated copy counts). The
 2026-08-16 IDs `R-REC-1` to `R-REC-4` and `R-INT-1` moved into the `R-MFILE-*` family on 2026-08-27.
-The location receipt (`R-REC-9`, `R-MFILE-26`) is a separate record still owed.
+The location receipt (`R-REC-9`, `R-MFILE-26`) has a record of its own,
+[the location-receipt decision](2026-09-10-location-receipt-decision.md).

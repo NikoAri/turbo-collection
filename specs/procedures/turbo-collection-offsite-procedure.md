@@ -48,7 +48,8 @@ was withdrawn and its number is not reused.
 > R-MFILE-19), everything that bears on whether material at an import source can be deleted is written into receipts
 > on the drives rather than into a log on the machine (R-MFILE-13), and no database is kept anywhere
 > (Section 2). So the computer at the far
-> end is equipment you borrow, not part of the system. One caution, which is not a rule here: a
+> end is equipment you borrow, not part of the system, and it need not run the operating system
+> your own computer runs (R-CLI-15). One caution, which is not a rule here: a
 > borrowed computer is a machine whose state you do not control, and plugging the working copy into it
 > is a judgment you make about that machine.
 

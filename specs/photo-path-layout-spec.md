@@ -79,7 +79,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Capture timestamp.** A date and time a content file states for the moment its content was
   recorded.
 
-- **Source filename.** The name a file carries at its import source at the moment
+- **Supplied filename.** The name a file carries at its import source at the moment
   Turbo-Collection reads it.
 
 - **Uncertain date.** The state of an item whose governing timestamp was not read from a capture
@@ -105,13 +105,13 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 ## 4. The governing timestamp
 
-**R-PHOTO-6.** Turbo-Collection MUST determine an item's governing timestamp from its primary file, taking the first of these that is available: a capture timestamp stating local wall-clock time; a capture timestamp stating an instant together with the offset in force at capture, converted to local wall-clock time; a capture timestamp stating an instant with no stated offset, read as local wall-clock time; a date stated in the source filename; that file's modification time at its import source.
+**R-PHOTO-6.** Turbo-Collection MUST determine an item's governing timestamp from its primary file, taking the first of these that is available: a capture timestamp stating local wall-clock time; a capture timestamp stating an instant together with the offset in force at capture, converted to local wall-clock time; a capture timestamp stating an instant with no stated offset, read as local wall-clock time; a date stated in the Supplied filename; that file's modification time at its import source.
 
 **R-PHOTO-7.** Turbo-Collection MUST NOT convert a governing timestamp to UTC, and MUST NOT shift it to the time zone of a machine performing a run. A day begins at 00:00:00 local wall-clock time and ends at 23:59:59.999 local wall-clock time.
 
 > **Example.** A 21:00 Helsinki photo is filed by local time, not shifted to UTC where it could fall in a different month.
 
-**R-PHOTO-8.** Turbo-Collection MUST mark an item as having an **uncertain date** when that item's governing timestamp came from a capture timestamp with no stated offset, from a date stated in a source filename, or from a file modification time. Turbo-Collection MUST report every item with an uncertain date, and MUST place that item under its governing timestamp regardless.
+**R-PHOTO-8.** Turbo-Collection MUST mark an item as having an **uncertain date** when that item's governing timestamp came from a capture timestamp with no stated offset, from a date stated in a Supplied filename, or from a file modification time. Turbo-Collection MUST report every item with an uncertain date, and MUST place that item under its governing timestamp regardless.
 
 > **Example.** An item dated only from its filename is placed and flagged uncertain, never refused, which would leave it unpreserved.
 

@@ -2,13 +2,16 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 
+import { writeNodeTypesException } from "./node-types-version-exception.ts";
+
 // Update every npm dependency to its newest allowed release, rewriting both package.json and
 // package-lock.json, then report what moved.
 //
 // * Uses `@latest` for most packages.
-// * `@types/node` is held to the Node floor that package.json records in `engines.node`, so the
-//   types never describe a newer Node than the one this code has to run on.
 // * Any package listed in npm-version-exceptions.json is held to the range recorded there instead.
+// * `@types/node` always has an entry there. Each run starts by writing it, derived from the Node
+//   floor that package.json records in `engines.node`, so the types never describe a newer Node
+//   than the one this code has to run on. See node-types-version-exception.ts.
 //
 // Held or not, a package resolves to a concrete version first, then a single `npm install` pins
 // it and writes into package-lock.json. Resolving first is what makes package.json move:
@@ -26,19 +29,31 @@ const npmVersionExceptionsUrl = new URL(
 );
 const npmCwd: string = fileURLToPath(packageJsonDir);
 
+// Three kinds of string that this script keeps apart. Each is a plain string when the script runs:
+// `__distinctStringType` is never set, and exists so `tsc` rejects one kind where another is
+// expected, such as a range passed as a resolved version. The tag is optional so that a plain
+// string is accepted as any kind, which lets parsed JSON and command-line arguments in without a
+// cast. The price is that a value held in a plain `string` loses its kind.
+type DistinctStringType<T extends string> = string & {
+  readonly __distinctStringType?: T | undefined;
+};
+export type PackageName = DistinctStringType<"PackageName">; // "@types/node"
+export type VersionRange = DistinctStringType<"VersionRange">; // "^24.1.0", ">=24.0.0 <=24.19.0"
+type Version = DistinctStringType<"Version">; // "24.13.3"
+
 type PackageJsonType = {
   engines?: { node?: string };
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
+  dependencies?: Record<PackageName, VersionRange>;
+  devDependencies?: Record<PackageName, VersionRange>;
 };
 
-function readJson<T>(url: URL): T {
+function parseJson<T>(url: URL): T {
   return JSON.parse(readFileSync(url, "utf8")) as T;
 }
 
 export function getAllDependencies(
   packageJsonObj: PackageJsonType,
-): Record<string, string> {
+): Record<PackageName, VersionRange> {
   return { ...packageJsonObj.dependencies, ...packageJsonObj.devDependencies };
 }
 
@@ -57,22 +72,23 @@ function execNpm(npmArgs: string, captureOutput: boolean): string {
 // Asking `npm view` for `version`:
 // * For a single match, like "latest" or "24.19.1", it prints a single value: string
 // * For a range with several matches, like "^24", it prints an array in publish order: string[]
-type NpmViewVersions = string | string[];
+type NpmViewVersions = Version | Version[];
 
 // Parse output down to the newest version: the string itself, or the last array element. The last
 // element is the newest only where publish order follows version order, which is why
 // nodeTypesRangeFromEngines confines its range to one major. An empty output (nothing matched) or
 // an empty array throws. Kept separate from the shell call so it can be tested directly.
-export function newestVersionFromNpmView(
+export function getRequestedVersion(
   npmViewOutputJson: string,
-  packageName: string,
-  requestedVersion: string,
-): string {
+  packageName: PackageName,
+  requestedRange: VersionRange,
+): Version {
   const noMatchError = () =>
     new Error(
-      `no published version of ${packageName} satisfies ${requestedVersion}`,
+      `no published version of ${packageName} satisfies ${requestedRange}`,
     );
 
+  // Check empty
   const npmViewTrimmedOutput = npmViewOutputJson.trim();
   if (npmViewTrimmedOutput === "") {
     throw noMatchError();
@@ -90,99 +106,64 @@ export function newestVersionFromNpmView(
   if (lastVersion === undefined) {
     throw noMatchError();
   }
+
   return lastVersion;
 }
 
-// Newest published version satisfying `requestedVersion` (a dist-tag like "latest" or a range like
-// "^24").
+// Newest published version satisfying `requestedRange` (a range like "^24", or a dist-tag like
+// "latest" in a range's place).
 //
 // The spec is double-quoted because a range is made of characters a shell acts on: `^` is the
-// cmd.exe escape, `*` globs under a POSIX shell, and `^24 <=24.19` adds a space and a redirect.
-// npm forbids a quote inside a package name or a range, so the wrapping is unambiguous.
-function queryNewestVersion(
-  packageName: string,
-  requestedVersion: string,
-): string {
+// cmd.exe escape, `*` globs under a POSIX shell, and `>=24.0.0 <=24.19.0` adds a space and two
+// redirects. npm forbids a quote inside a package name or a range, so the wrapping is
+// unambiguous.
+function queryRequestedVersion(
+  packageName: PackageName,
+  requestedRange: VersionRange,
+): Version {
   const npmViewOutputJson: string = execNpm(
-    `view "${packageName}@${requestedVersion}" version --json`,
+    `view "${packageName}@${requestedRange}" version --json`,
     /*captureOutput*/ true,
   );
 
-  return newestVersionFromNpmView(
-    npmViewOutputJson,
-    packageName,
-    requestedVersion,
-  );
-}
-
-const NodeTypesPackage = "@types/node";
-
-// The range that keeps `@types/node` from describing a newer Node than the floor in package.json
-// `engines.node`. Past the floor, `tsc` would accept an API that the floor cannot run.
-//
-// The MAJOR.MINOR of `@types/node` names the Node release it describes, while its PATCH only
-// counts revisions of the types. So the hold is on MAJOR.MINOR: a floor of `>=24.19.0` becomes
-// `^24 <=24.19`, the newest 24.x at or below 24.19, whatever its patch. A floor whose minor has no
-// types release of its own lands on the nearest one beneath it.
-//
-// The `^24` half is not redundant. `npm view` lists matches in publish order, not version order,
-// so `<=24.19` alone ends on whichever older major was patched last (22.20.5 when this was
-// written), and newestVersionFromNpmView would take that for the newest.
-//
-// Only the form `>=MAJOR.MINOR.PATCH` is read. Anything else throws rather than guessing a floor.
-export function nodeTypesRangeFromEngines(
-  enginesNode: string | undefined,
-): string {
-  const floor = /^>=\s*(\d+)\.(\d+)\.\d+$/.exec(enginesNode?.trim() ?? "");
-  if (floor === null) {
-    const found = enginesNode === undefined ? "missing" : `"${enginesNode}"`;
-    throw new Error(
-      `cannot hold ${NodeTypesPackage} to the Node floor: engines.node in package.json is ${found}, expected the form >=MAJOR.MINOR.PATCH`,
-    );
-  }
-  const [, major, minor] = floor;
-  return `^${major} <=${major}.${minor}`;
+  return getRequestedVersion(npmViewOutputJson, packageName, requestedRange);
 }
 
 // A dependency to update, and the range it is held to, if any.
 type PackageToUpdate = {
-  packageName: string;
-  heldRange: string | undefined;
+  packageName: PackageName;
+  heldRange: VersionRange | undefined;
 };
 
 // Package dependencies to update, sorted by name: every one, or only those named in `packages` when it
 // is not empty. A name in `packages` or in `exceptions` that is not a dependency selects nothing.
 //
-// A recorded exception wins over the Node floor, so overriding the floor stays possible, and is
-// visible in the file when somebody does it. The floor is read only when `@types/node` is being
-// updated and has no exception.
+// An entry in `exceptions` is the only thing that holds a package. No package is treated
+// specially here: the hold on `@types/node` arrives as one more entry.
 //
 // Takes data and returns data, so it can be tested without the filesystem, the network, or npm.
 export function getPackagesToUpdate(
   packageJsonObj: PackageJsonType,
-  exceptions: Record<string, string>,
-  packages: string[],
+  exceptions: Record<PackageName, VersionRange>,
+  packages: PackageName[],
 ): PackageToUpdate[] {
   return Object.keys(getAllDependencies(packageJsonObj))
     .sort()
     .filter((name) => packages.length === 0 || packages.includes(name))
     .map((packageName) => ({
       packageName,
-      heldRange:
-        exceptions[packageName] ??
-        (packageName === NodeTypesPackage
-          ? nodeTypesRangeFromEngines(packageJsonObj.engines?.node)
-          : undefined),
+      heldRange: exceptions[packageName],
     }));
 }
 
 function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
-  const packageJsonObj = readJson<PackageJsonType>(packageJsonUrl);
+  const packageJsonObj = parseJson<PackageJsonType>(packageJsonUrl);
   const initAllDependencies = getAllDependencies(packageJsonObj);
 
   const packageExceptions =
-    readJson<{ packages?: Record<string, string> }>(npmVersionExceptionsUrl)
-      .packages ?? {};
+    parseJson<{ packages?: Record<PackageName, VersionRange> }>(
+      npmVersionExceptionsUrl,
+    ).packages ?? {};
 
   // An exception naming a package that is not a dependency is a stale entry. Report it rather than
   // letting `npm install` add the package as a side effect.
@@ -216,7 +197,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
   console.log("Resolving newest versions:");
   const specs = packagesToUpdate.map(({ packageName, heldRange }) => {
-    const version = queryNewestVersion(packageName, heldRange ?? "latest");
+    const version = queryRequestedVersion(packageName, heldRange ?? "latest");
     console.log(
       `  ${packageName}: ${initAllDependencies[packageName]} -> ^${version}${heldRange ? `  (held to ${heldRange})` : ""}`,
     );
@@ -231,10 +212,13 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
   // Each spec is `name@version` with a concrete version, which holds nothing a shell acts on.
   console.log();
+
+  // npm install
   execNpm(`install ${specs.join(" ")}`, /*captureOutput*/ false);
 
+  // Verify changes in package.json
   // package.json is read a second time so the report can see what the install moved.
-  const after = getAllDependencies(readJson<PackageJsonType>(packageJsonUrl));
+  const after = getAllDependencies(parseJson<PackageJsonType>(packageJsonUrl));
   const moved = packagesToUpdate
     .map(({ packageName }) => packageName)
     .filter((name) => initAllDependencies[name] !== after[name]);
@@ -258,18 +242,20 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
 type NpmUpdaterCliArgs = {
   dryRun: boolean;
-  packages: string[]; // Empty means every dependency in package.json
+  packages: PackageName[]; // Empty means every dependency in package.json
 };
 
 const UsageMessage = `Usage: node package-json-npm-updater.ts [options] [package...]
 
 Update dependencies to their newest allowed release, rewriting package.json and
 package-lock.json. With no package names, every dependency is updated; otherwise only
-the named ones. @types/node stays at or below the Node floor in package.json engines.
-A package in npm-version-exceptions.json stays within its recorded range.
+the named ones. A package in npm-version-exceptions.json stays within its recorded
+range. @types/node always has an entry there: each run first writes the range that
+keeps it at or below the Node floor in package.json engines.
 
 Options:
-  -n, --dry-run   Resolve and report the newest versions without installing.
+  -n, --dry-run   Resolve and report the newest versions without installing. The
+                  @types/node entry is still written.
   -h, --help      Show this message.`;
 
 export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
@@ -294,6 +280,16 @@ export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
 function main(): void {
   const npmUpdaterCliArgs: NpmUpdaterCliArgs = parseCliArgs(
     process.argv.slice(2),
+  );
+
+  // First record the hold on `@types/node` in npm-version-exceptions.json. The update that follows
+  // then reads that file and knows nothing of `@types/node`.
+  const packageJsonObj = parseJson<PackageJsonType>(packageJsonUrl);
+
+  writeNodeTypesException(
+    npmVersionExceptionsUrl,
+    getAllDependencies(packageJsonObj),
+    packageJsonObj.engines?.node,
   );
 
   updateNpmPackageVersions(npmUpdaterCliArgs);

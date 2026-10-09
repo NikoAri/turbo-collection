@@ -51,9 +51,9 @@ orientation file of its own ([the no-README decision](2026-10-06-no-copy-readme-
 
 `R-MFILE-2` and `R-MFILE-17` amended: configuration sits in the root's `.turbo-collection/`. In
 `meta-file-spec.md`, the Section 2 naming-and-placement rationale and the Section 4
-covered-by-no-manifest note are rewritten, and a 2026-09-27 change-ledger row records the relocation
-as MAJOR by that document's bump test, with the format stamp held because a draft is archived by
-nothing (`version-requirement.md` R-PUB-3). The on-disk-names commentary in `turbo-collection-spec.md`
+covered-by-no-manifest note are rewritten. The relocation is MAJOR by that document's bump test,
+with the format stamp held because a draft is archived by nothing (`version-requirement.md`
+R-PUB-3). The on-disk-names commentary in `turbo-collection-spec.md`
 follows. The 2026-08-16 artifact-naming record is deleted, superseded on configuration by this
 record, on the manifest by [the manifest-format decision](2026-08-16-manifest-format-decision.md), on
 receipts by [the receipts decision](2026-09-07-receipts-decision.md), and on copy identity by

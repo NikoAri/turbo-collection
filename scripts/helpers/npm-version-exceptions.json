@@ -1,3 +1,5 @@
 {
-  "packages": {}
+  "packages": {
+    "@types/node": ">=24.0.0 <=24.19.0"
+  }
 }

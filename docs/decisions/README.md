@@ -78,7 +78,6 @@ there is more than one area to group.
 |---|---|---|
 | 2026-08-01 | [Document-lifecycle rules move out of the core specification](2026-08-01-version-requirement-split-decision.md) | Accepted |
 | 2026-08-01 | [One document per layout](2026-08-01-layout-conventions-decision.md) | Accepted |
-| 2026-08-01 | [Specifications carry precision, `docs/` carries explanation](2026-08-01-docs-and-specs-separation-decision.md) | Accepted |
 | 2026-08-01 | [Obligation keywords appear only in normative documents](2026-08-01-obligation-keywords-decision.md) | Accepted |
 | 2026-08-01 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-08-01-language-standard-additions-decision.md) | Accepted |
 | 2026-08-08 | [An operator procedure, and the test for what belongs in it](2026-08-08-operator-procedure-decision.md) | Accepted |
@@ -99,8 +98,15 @@ there is more than one area to group.
 | 2026-09-30 | [Three operations write and two read: init, import, backup; verify and status](2026-09-30-operation-taxonomy-decision.md) | Accepted |
 | 2026-10-02 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-02-starter-ignore-file-decision.md) | Accepted |
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
-| 2026-10-05 | [The specification names concrete things, and has no ports](2026-10-05-spec-vocabulary-decision.md) | Accepted |
+| 2026-10-03 | [A normative document carries no change ledger](2026-10-03-change-ledger-decision.md) | Accepted |
+| 2026-10-03 | [A requirement is a paragraph led by its ID, not a table row](2026-10-03-requirement-paragraphs-decision.md) | Accepted |
+| 2026-10-04 | [Prose names a set and does not count it](2026-10-04-no-hardcoded-counts-decision.md) | Accepted |
+| 2026-10-04 | [An error file keeps import errors and mirror errors in separate lists](2026-10-04-error-object-decision.md) | Accepted |
+| 2026-10-04 | [A vendor's tool may perform an import, and is never needed to read what is stored](2026-10-04-vendor-tool-decision.md) | Accepted |
+| 2026-10-05 | [Specifications carry precision, `docs/` carries explanation](2026-10-05-docs-and-specs-separation-decision.md) | Accepted |
 | 2026-10-05 | [Traceability and durability are standards of their own, beside the core specification](2026-10-05-requirement-family-decision.md) | Accepted |
+| 2026-10-06 | [The specification names concrete things, and has no ports](2026-10-06-spec-vocabulary-decision.md) | Accepted |
+| 2026-10-06 | [Every file a copy preserves is a content file, with no derivative and no original](2026-10-06-content-file-decision.md) | Accepted |
 | 2026-10-06 | [Files already inside a copy are taken in by an in-place importer](2026-10-06-in-place-importer-decision.md) | Accepted |
 | 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md) | Accepted |
 | 2026-10-06 | [A file read from a directory is one item, and nothing pairs files by name](2026-10-06-one-file-one-item-decision.md) | Accepted |

@@ -13,7 +13,7 @@ Three renames carry the reframing:
 
 - **Target** as a role is retired. What was its port is a copy's **storage** (`R-TGT-*`, IDs
   frozen), which mirroring and verify act on for every copy. It was first renamed the _Storage
-  port_; [the vocabulary decision](2026-10-05-spec-vocabulary-decision.md) later removed ports from
+  port_; [the vocabulary decision](2026-10-06-spec-vocabulary-decision.md) later removed ports from
   the specification altogether.
 - The operation over copies is **symmetric and add-only, never one-way** (`R-MIRROR-*`, IDs frozen),
   not a one-directional push from a privileged copy. Its naming (the **mirror** mechanism, the

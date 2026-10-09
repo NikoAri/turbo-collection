@@ -1,13 +1,13 @@
 # The specification names concrete things, and has no ports
 
 **Status:** Accepted
-**Date:** 2026-10-05
+**Date:** 2026-10-06
+
+**Replaces the 2026-10-05 record of this name.** One conclusion reversed: a layout has one name, not
+two. The reason is under Rejected.
 
 **Replaces the vocabulary of [the peer-model decision](2026-09-05-peer-model-decision.md)**, which
 kept a _Storage port_ after retiring _Target_. The peer model stands; the port does not.
-
-**Amended 2026-10-06.** One conclusion reversed: a layout has one name, not two. The reason is under
-Rejected.
 
 A read of the core specification's glossary found several words doing no work, or the wrong work.
 What survives:
@@ -22,7 +22,7 @@ What survives:
 - **Layout**: a rule that decides where a content file is stored. Each layout is defined by its own
   specification, and "layout specification" is plain English for that document, not a second term.
 
-**There is no bare "source".** The word alone reads as source code, and before this date it also
+**There is no bare "source".** The word alone reads as source code, and until 2026-10-05 it also
 named a port, an adapter, and the origin, three things at once. Every use is now _import source_ or
 _importer_.
 
@@ -55,7 +55,7 @@ be shaped, and it is no longer vocabulary a requirement uses.
 ## Touches
 
 `turbo-collection-spec.md`: the glossary loses _Port_, _Adapter_ and _Storage port_ and gains
-_Medium_; Section 5 is _Import_ and Section 6 is _Storage_; the `R-SRC-*` and `R-TGT-*` bodies say
+_Medium_; Section 5 is _Import_ and Section 6 is _Storage layout_; the `R-SRC-*` and `R-TGT-*` bodies say
 _importer_ and _a copy's storage_; Section 11 is _Contracts_; the scope diagram shows peer copies
 without fixing how many. Requirement IDs are unchanged, so `R-SRC-*` and `R-TGT-*` keep prefixes that
 no longer match a term (`language-requirement.md` `R-LANG-20`). `meta-file-spec.md`, both layout

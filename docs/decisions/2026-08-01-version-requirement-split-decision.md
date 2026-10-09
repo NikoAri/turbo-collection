@@ -7,8 +7,9 @@ Section 9 of `turbo-collection-spec.md` served two audiences at once, as its own
 admitted. Eleven requirements there govern how a document is numbered, published, archived and
 corrected, and code has nothing to cite in them. Those move to `specs/version-requirement.md` under
 prefix `R-PUB-*`, beside `language-requirement.md`, which already carries authoring obligations. Ten
-requirements govern how artifacts declare their version and how a copy crosses a format-generation
-boundary; those stay.
+requirements governed how artifacts declare their version and how a copy crosses a
+format-generation boundary, and those stayed. Most have left since: the ones about meta files moved
+to `meta-file-spec.md`, and migration was removed from every specification.
 
 | Was | Becomes | Rule |
 |---|---|---|
@@ -17,9 +18,9 @@ boundary; those stay.
 | R-VER-10 | R-PUB-3 | what publication is |
 | R-VER-11 | R-PUB-4 | self-contained, describes only its own subject |
 | R-VER-12 | R-PUB-5 | archiving a superseded line's terminal text |
-| R-VER-13 | R-PUB-6 | change ledger |
+| R-VER-13 | R-PUB-6 | references updated when a filename changes |
 | R-VER-14 | R-PUB-7 | changes-from, at conversion grade |
-| R-VER-17 | R-PUB-8 | errata |
+| R-VER-17 | R-PUB-8 | correcting a misclassified version |
 | R-VER-19 | R-PUB-9 | changing document language |
 | R-VER-20 | R-PUB-10 | publication checklist |
 | R-VER-21 | R-PUB-11 | one authentic text per version |
@@ -31,7 +32,9 @@ cannot be renumbered and two documents cannot share a prefix.
 Three moved requirements needed generalizing, because each described one document and now governs
 several. R-PUB-1 states a floor and requires each document to state its own bump test, leaving
 turbo-collection's artifact-driven test behind in an amended R-VER-1. R-PUB-4 speaks of a document's
-subject rather than of Turbo-Collection. R-PUB-6 requires a ledger without fixing its section number.
+subject rather than of Turbo-Collection. R-PUB-6 required a change ledger without fixing its section
+number, and that ledger has since been removed
+([the change-ledger decision](2026-10-03-change-ledger-decision.md)).
 
 Because "normative document" is broader than "specification", `R-PUB-*` reaches procedures and
 authoring standards too. That covers a backlogged question about procedure versioning machinery, and
@@ -54,5 +57,5 @@ Moved and renumbered as tabled: eleven requirements. Amended and stays: R-VER-1.
 9.2 to 9.3, keeping its number: R-VER-18. Added: R-PUB-12, stating scope this material could not
 state while it was a section of another document. Withdrawn: none.
 
-Also core spec section 0.1 table and change ledger; `language-requirement.md` normative-document
+Also core spec section 0.1 table; `language-requirement.md` normative-document
 list, plus its stale reference to `spec.md` R-VER-19.
