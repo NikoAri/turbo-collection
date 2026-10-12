@@ -10,8 +10,8 @@ one is called, where it sits, and what is inside it.
 
 It governs meta files entirely and content files not at all. Where a content
 file goes is stated by a layout specification, such as
-[`photo-path-layout-spec.md`](photo-path-layout-spec.md) or
-[`as-found-path-layout-spec.md`](as-found-path-layout-spec.md).
+[`photo-path-layout-spec.md`](layouts/photo-path-layout-spec.md) or
+[`as-found-path-layout-spec.md`](layouts/as-found-path-layout-spec.md).
 
 **This document's version is the format version.** Every meta file states it,
 and a MAJOR version of this document is a change of meta file format by
@@ -39,7 +39,7 @@ It does not state **when** Turbo-Collection writes one, or what it may do
 afterward. Writing an arrival only after its content is written, never altering
 a receipt file once it is written, and refusing to treat a receipt as evidence a
 copy still exists are behavior, and they stay in
-[`turbo-collection-spec.md`](turbo-collection-spec.md).
+[`verify-spec.md`](verify-spec.md).
 
 ## 1. Terminology
 
@@ -195,13 +195,11 @@ implementation writes the same manifest.
 ## 5. The receipt
 
 **R-MFILE-13.** Turbo-Collection MUST maintain a receipt in every directory into
-which it writes a content file, in every directory where an Import records a
-content file already present (`in-place-import-source-spec.md` R-INPLACE-7), and
-in every directory in which it recorded an error affecting that directory's
-content. A receipt is a set of per-event files, each stored in that directory's
-`.turbo-collection/` subdirectory: one file per arrival, named
-`receipt-<runId>-<collectionName>.arrival.json`, and, per run that recorded any
-error for the directory, one file named
+which it writes a content file, and in every directory in which it recorded an
+error affecting that directory's content. A receipt is a set of per-event files,
+each stored in that directory's `.turbo-collection/` subdirectory: one file per
+arrival, named `receipt-<runId>-<collectionName>.arrival.json`, and, per run
+that recorded any error for the directory, one file named
 `receipt-<runId>-<collectionName>.error.json`. `<runId>` identifies the run and
 MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`)
 followed by `-` and a short disambiguating suffix, so it contains no character
@@ -212,8 +210,8 @@ for that event (R-MFILE-19), and appears in the filename so that files two
 copies author in one run cannot collide; R-MFILE-19 constrains `collectionName`
 to a portable filename character set for this reason. The copy an event names is
 not always the copy its file resides on: propagation places a copy's receipt
-files on other copies (`turbo-collection-spec.md` R-REC-6), and a mirror error
-names a destination copy that failed, which often cannot hold the file, so
+files on other copies (`verify-spec.md` R-REC-6), and a mirror error names a
+destination copy that failed, which often cannot hold the file, so
 Turbo-Collection MUST record a mirror error in an error file on the copy it is
 mirroring from, beside the content the failed transfer was driving from. A
 receipt MUST record every arrival of that directory's content at a copy and
@@ -245,10 +243,10 @@ MUST carry `layout` and `importSource`, and MAY carry `importSourceDetails`. An
 arrival that propagated content already held by another copy (a mirror) MUST
 carry neither `layout` nor `importSource`, because it acquired nothing from
 outside and applied no layout; its provenance is the import arrival that placed
-the content, which travels to it (`turbo-collection-spec.md` R-REC-6). `layout`
-MUST be an object stating the layout's identifier (`specId`) and the `version`
-of that layout's specification; `importSource` MUST be an object stating the
-import source specification's identifier (`specId`) and the `version` of that
+the content, which travels to it (`verify-spec.md` R-REC-6). `layout` MUST be an
+object stating the layout's identifier (`specId`) and the `version` of that
+layout's specification; `importSource` MUST be an object stating the import
+source specification's identifier (`specId`) and the `version` of that
 specification the run conformed to. An `importSourceDetails` value MUST be a
 JSON object whose contents that import source's own specification states, and
 Turbo-Collection MUST NOT depend on its contents. A content digest MUST cover
@@ -324,7 +322,7 @@ errors show what is needed.
 >   "collectionName": "main",
 >   "importErrors": [
 >     {
->       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-spec.md R-SRC-5)"
+>       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-core-spec.md R-SRC-5)"
 >     }
 >   ]
 > }
@@ -354,8 +352,8 @@ when it is absent, `relativePath` is relative to the location receipt file's own
 directory. `relativePath` MUST be written separator-neutral, joining segments
 with `/` rather than any one filesystem's separator. Turbo-Collection MUST treat
 `volumeId` as opaque, comparing it only for equality and never parsing or
-validating its form, because the identifier's shape is whatever that copy's
-storage reports (`turbo-collection-spec.md` R-REC-9, R-TGT-5).
+validating its form, because the identifier's shape differs from one filesystem
+to another (`verify-spec.md` R-REC-9).
 
 ## 6. Configuration and the ignore file
 
@@ -378,26 +376,26 @@ time.
 configuration file. When **init** or **backup** creates a copy, Turbo-Collection
 MUST set that copy's `collectionName` once, at creation, from a name given on
 the command line or, where **init** is given none, the default `main`
-(`turbo-collection-spec.md` R-CLI-11, R-CLI-13), and MUST write it into that
-copy's configuration file. Thereafter Turbo-Collection MUST determine a copy's
-name by reading that declaration, and MUST NOT infer it from a volume label, a
-mount path, a drive letter, or a command-line argument. `collectionName` MUST
-consist only of characters that are portable across common filesystems, namely
-ASCII letters `A` through `Z` and `a` through `z`, digits `0` through `9`,
-hyphen, and underscore, because it appears verbatim in receipt filenames
-(R-MFILE-13). Turbo-Collection MUST refuse the whole run when two connected
-copies state one name, comparing names without regard to letter case, since a
-difference of case alone names a single file on a case-insensitive filesystem
-(R-MFILE-13).
+(`turbo-collection-core-spec.md` R-CLI-11, R-CLI-13), and MUST write it into
+that copy's configuration file. Thereafter Turbo-Collection MUST determine a
+copy's name by reading that declaration, and MUST NOT infer it from a volume
+label, a mount path, a drive letter, or a command-line argument.
+`collectionName` MUST consist only of characters that are portable across common
+filesystems, namely ASCII letters `A` through `Z` and `a` through `z`, digits
+`0` through `9`, hyphen, and underscore, because it appears verbatim in receipt
+filenames (R-MFILE-13). Turbo-Collection MUST refuse the whole run when two
+connected copies state one name, comparing names without regard to letter case,
+since a difference of case alone names a single file on a case-insensitive
+filesystem (R-MFILE-13).
 
 **R-MFILE-20.** A copy MAY carry an ignore file named `.tcignore` at its root.
 It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines
 skipped and a line beginning with `#` treated as a comment. Pattern syntax and
 matching MUST follow `gitignore(5)`, evaluated relative to the copy root. The
 starter ignore file Turbo-Collection writes into a copy that has none
-(`turbo-collection-spec.md` R-CLI-11) holds patterns for files that an operating
-system and its file managers create on their own; the reference implementation
-ships that list at `scripts/templates/default.tcignore`.
+(`turbo-collection-core-spec.md` R-CLI-11) holds patterns for files that an
+operating system and its file managers create on their own; the reference
+implementation ships that list at `scripts/templates/default.tcignore`.
 
 **R-MFILE-21.** Turbo-Collection MUST exclude an ignored file from every
 manifest and MUST NOT copy one to another copy. A file that matches a copy's

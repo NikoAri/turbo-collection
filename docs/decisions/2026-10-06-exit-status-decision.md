@@ -19,9 +19,9 @@ Only a report of something that could not be done, was refused, or was found wro
 status.
 
 **An extra file is a failure.** A content file that no manifest lists is one that no backup carries
-to another copy. It used to be reported with an exit status of 0, from a time when nothing could
-take such a file in. An in-place import does (`R-CLI-12`), so the finding has a cure and no reason
-to pass quietly.
+to another copy, so the finding has no reason to pass quietly. It used to be reported with an exit
+status of 0. Its cure is to take the file out of the copy and import it; recording it where it sits
+is an in-place import, which waits for a later version.
 
 **A copy that is not connected is not.** The off-site copy is away by design, so a verify at home
 that failed on its absence would fail every time, and an exit status that always fails says nothing.

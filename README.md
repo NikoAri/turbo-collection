@@ -25,11 +25,11 @@ Each document has one job:
 - [`specs/meta-file-spec.md`](specs/meta-file-spec.md): **what is written**. Every meta file's name,
   place, and contents: manifest, receipt, configuration, ignore file. Its version is
   the meta file format version.
-- [`specs/photo-path-layout-spec.md`](specs/photo-path-layout-spec.md) and
-  [`specs/as-found-path-layout-spec.md`](specs/as-found-path-layout-spec.md): **where content
-  goes**. One layout specification per way of placing files: photographs and videos by date, and
-  any file kept at the path it was found at.
-- [`specs/import-sources/`](specs/import-sources/): one specification per **import source** a photo
+- [`specs/layouts/photo-path-layout-spec.md`](specs/layouts/photo-path-layout-spec.md) and
+  [`specs/layouts/as-found-path-layout-spec.md`](specs/layouts/as-found-path-layout-spec.md):
+  **where content goes**. One layout specification per way of placing files: photographs and
+  videos by date, and any file kept at the path it was found at.
+- [`specs/importers/`](specs/importers/): one specification per **import source** a photo
   can come in by, each paired with the procedures a human follows to import from it. The core spec is
   normative over things this project controls; an import source specification is normative over
   things a vendor controls, so it carries dated evidence and expiry dates rather than stable

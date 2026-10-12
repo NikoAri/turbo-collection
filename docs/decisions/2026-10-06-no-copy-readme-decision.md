@@ -3,9 +3,8 @@
 **Status:** Accepted
 **Date:** 2026-10-06
 
-A copy carries no orientation file written by Turbo-Collection. A `README.md` found at the root of a
-directory that becomes a copy is the owner's file: content like any other, recorded by the in-place
-import, checksummed, and carried to every other copy by backup.
+A copy carries no orientation file written by Turbo-Collection. A `README.md` at the root of a
+copy is the owner's file: content like any other, never a meta file.
 
 **One filename could not be both.** Turbo-Collection used to write its own `README.md` into every
 copy, never overwriting one already there. A found `README.md` was then content in the first copy,

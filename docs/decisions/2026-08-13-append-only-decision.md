@@ -72,3 +72,6 @@ Core specification: guiding principle added in Section 2. Amended `R-COL-4`, `R-
 *mirror-delete* term and gained *dry-run* and *temporary file*. Section 8.4 grew to four inspections.
 Section 13 gained the no-deletion conformance test. Section 14 lost the collection-location question,
 answered by [`2026-08-10-storage-hardware-decision.md`](2026-08-10-storage-hardware-decision.md).
+
+`R-TGT-5` and `R-TGT-8` were removed on 2026-10-09. `R-MIRROR-3` and `R-TGT-7` still prohibit
+deleting a file in a copy.

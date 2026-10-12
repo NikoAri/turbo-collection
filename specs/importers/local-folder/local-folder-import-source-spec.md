@@ -3,14 +3,12 @@
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
 > **Status:** Draft. No implementation exists yet.  
-> **Layout:** [`as-found-path-layout-spec.md`](../../as-found-path-layout-spec.md)
+> **Layout:** [`as-found-path-layout-spec.md`](../../layouts/as-found-path-layout-spec.md)
 
 This document is normative over the **Local-folder Import Source**: a directory
 of ordinary files outside the Copy being imported into, reachable as files from
 the computer performing a Run. It covers an old archive on a drive, a download
-directory, and a directory copied off a retired computer. Files already inside a
-Copy belong to the In-place Import Source
-([`in-place-import-source-spec.md`](../in-place/in-place-import-source-spec.md)).
+directory, and a directory copied off a retired computer.
 
 Requirement ID prefix: **`R-LOCALFOLDER-*`**.
 
@@ -63,10 +61,6 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   directories of ordinary files outside a Copy, read as files by the computer
   performing a Run.
 
-- **In-place Import Source.** The Import Source whose Items are the files
-  already inside a Copy that no Manifest of that Copy lists, identified as
-  `in-place`.
-
 - **Imported directory.** The directory, outside the Copy being imported into,
   that one Import from the Local-folder Import Source reads, together with every
   directory beneath it.
@@ -107,14 +101,13 @@ directory an identifier of its own.
 > (R-LOCALFOLDER-6), and neither is an Import Source of its own.
 
 **R-LOCALFOLDER-2.** Turbo-Collection MUST take the Imported directory of an
-Import from a setting of that Run (`turbo-collection-spec.md` R-SRC-3).
+Import from a setting of that Run (`turbo-collection-core-spec.md` R-SRC-3).
 Turbo-Collection MUST refuse an Imported directory that is inside the Copy being
 imported into, that contains that Copy, or that has no name of its own, such as
 the root of a drive.
 
-> **Example.** Files already inside a Copy belong to the In-place Import Source,
-> which records them where they sit. Importing them as a local folder would
-> store each one a second time, under `local-folder/`.
+> **Example.** Importing a directory that is inside the Copy would store each of
+> its files a second time, under `local-folder/`.
 
 ## 3. Items
 
@@ -131,20 +124,22 @@ file that R-LOCALFOLDER-3 names as an Item of its own, and MUST NOT take two or
 more files as one Item.
 
 > **Example.** `IMG_0412.HEIC` and `IMG_0412.MOV` in one directory are two
-> Items, each stored at its own Supplied path, so `turbo-collection-spec.md`
-> R-SRC-9 has no Item of several files to keep whole.
+> Items, each stored at its own Supplied path, so
+> `turbo-collection-core-spec.md` R-SRC-9 has no Item of several files to keep
+> whole.
 
 ## 4. Placement and Supplied path
 
 **R-LOCALFOLDER-5.** Turbo-Collection MUST place every Item of the Local-folder
 Import Source under the As-found Layout
-([`as-found-path-layout-spec.md`](../../as-found-path-layout-spec.md)), which is
-this Import Source's Primary Layout (`turbo-collection-spec.md` R-SRC-15).
+([`as-found-path-layout-spec.md`](../../layouts/as-found-path-layout-spec.md)),
+which is this Import Source's Primary Layout (`turbo-collection-core-spec.md`
+R-SRC-15).
 
 **R-LOCALFOLDER-6.** An Importer for the Local-folder Import Source MUST supply,
-as each file's Supplied path (`turbo-collection-spec.md` R-SRC-21), that file's
-path relative to the parent of the Imported directory, so that the Imported
-directory's own name is the first segment of every Supplied path.
+as each file's Supplied path (`turbo-collection-core-spec.md` R-SRC-21), that
+file's path relative to the parent of the Imported directory, so that the
+Imported directory's own name is the first segment of every Supplied path.
 
 > **Example.** An Imported directory named `old-laptop` is stored as
 > `local-folder/old-laptop/`, with its own shape beneath. Its file
@@ -156,7 +151,8 @@ directory's own name is the first segment of every Supplied path.
 > **Example.** Two Imported directories that share a name share a place in a
 > Copy. A file with one path and one content in both is one file. A file whose
 > path already holds different content stays out of the Collection and is
-> reported, and the Run exits non-zero (`turbo-collection-spec.md` R-SRC-23).
+> reported, and the Run exits non-zero (`turbo-collection-core-spec.md`
+> R-SRC-23).
 
 ## 5. Fidelity
 
@@ -164,7 +160,7 @@ directory's own name is the first segment of every Supplied path.
 every file with the bytes that file has in the Imported directory, unaltered.
 
 > **Example.** Nothing stands between a file and the Importer that could alter
-> it, so the best effort `turbo-collection-spec.md` R-SRC-5 asks of every
+> it, so the best effort `turbo-collection-core-spec.md` R-SRC-5 asks of every
 > Importer is met in full here.
 
 ## 6. This document's bump test

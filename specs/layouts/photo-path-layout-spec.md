@@ -6,8 +6,8 @@
 
 This document is normative over one **Layout**: where a photograph or a video is
 stored inside a copy. It states which items that Layout is able to place
-([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the
-directory each such item receives.
+([`turbo-collection-core-spec.md`](../turbo-collection-core-spec.md) R-SRC-15),
+and the directory each such item receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
 configuration file sits is stated by the requirements that define each of those,
@@ -17,11 +17,11 @@ Requirement ID prefix: **`R-PHOTO-*`**.
 
 > **Rationale.** Why items are placed by local-time month and by import source,
 > and the alternatives weighed:
-> [the import-source decision](../docs/decisions/2026-08-22-import-source-decision.md),
-> [the layout-conventions decision](../docs/decisions/2026-08-01-layout-conventions-decision.md),
-> and [design-record](../docs/design-record.md). Why an import source, not this
-> document, selects which items come here:
-> [the layout-selection decision](../docs/decisions/2026-10-03-layout-selection-decision.md).
+> [the import-source decision](../../docs/decisions/2026-08-22-import-source-decision.md),
+> [the layout-conventions decision](../../docs/decisions/2026-08-01-layout-conventions-decision.md),
+> and [design-record](../../docs/design-record.md). Why an import source, not
+> this document, selects which items come here:
+> [the layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
 
 ---
 
@@ -31,13 +31,13 @@ This document binds the implementation. It answers one question, for one kind of
 content: given an item, which directory does it go in.
 
 It does not decide what a collection holds, which is scope
-([`turbo-collection-spec.md`](turbo-collection-spec.md) Section 1), and it does
-not decide what a file inside a directory is called, which the `R-NAME-*` family
-owns. It also does not decide which items are sent to it: an import source
-specification names its primary layout (`turbo-collection-spec.md` R-SRC-15),
-and this document states only what this Layout is able to place once an item
-arrives. A second Layout, for a kind of content this one does not place, is a
-second document and changes nothing here.
+([`turbo-collection-spec.md`](../turbo-collection-spec.md) Section 1), and it
+does not decide what a file inside a directory is called, which the `R-NAME-*`
+family owns. It also does not decide which items are sent to it: an import
+source specification names its primary layout (`turbo-collection-core-spec.md`
+R-SRC-15), and this document states only what this Layout is able to place once
+an item arrives. A second Layout, for a kind of content this one does not place,
+is a second document and changes nothing here.
 
 ## 1. Terminology
 
@@ -110,7 +110,7 @@ and MUST NOT decide it from a filename extension.
 
 > **Example.** A file renamed `.txt` is still placed as the still image its
 > bytes show it to be. An item this Layout is not able to place is not skipped:
-> it goes to the as-found layout (`turbo-collection-spec.md` R-SRC-20).
+> it goes to the as-found layout (`turbo-collection-core-spec.md` R-SRC-20).
 
 **R-PHOTO-2.** Turbo-Collection MUST take as an item's primary file: that item's
 only content file, where that item holds one; otherwise that item's still image;
@@ -165,7 +165,7 @@ date, and MUST place that item under its governing timestamp regardless.
 
 **R-PHOTO-9.** This Layout MUST NOT alter a collection filename. A collection
 filename is governed by the `R-NAME-*` family in
-[`turbo-collection-spec.md`](turbo-collection-spec.md).
+[`verify-spec.md`](../verify-spec.md).
 
 ## 6. Recording this Layout
 

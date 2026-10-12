@@ -3,8 +3,9 @@
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-07-25  
 > **Status:** Stub. No requirements stated yet.  
-> **Procedure:** [`turbo-collection-icloud-procedure.md`](turbo-collection-icloud-procedure.md)
-> **Layout:** [`photo-path-layout-spec.md`](../../photo-path-layout-spec.md)
+> **Procedure:** [`turbo-collection-icloud-procedure.md`](turbo-collection-icloud-procedure.md)  
+> **Layout:**
+> [`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md)
 
 This document is normative over the **iCloud import source**: what
 Turbo-Collection may assume about getting original bytes out of it, and what it
@@ -13,8 +14,8 @@ so every claim here is a dated observation with an expiry, never a promise
 anyone has given.
 
 Requirement ID prefix: **not yet assigned.** It MUST NOT be `R-SRC-*`, which
-[`turbo-collection-spec.md`](../../turbo-collection-spec.md) already owns for
-import.
+[`turbo-collection-core-spec.md`](../../turbo-collection-core-spec.md) already
+owns for import.
 
 ---
 
@@ -38,7 +39,7 @@ over USB.
 document decides it.** They are treated as one here only because nothing is
 written yet. Two ways that deliver different bytes cannot share one fidelity
 claim, and if that is what filling this document finds, this document splits and
-each way becomes its own directory under `specs/import-sources/`.
+each way becomes its own directory under `specs/importers/`.
 
 Placeholder for the properties table. One row per way in, each with:
 
@@ -69,10 +70,10 @@ when each claim expires.
 ## 6. Layout and supplied path
 
 This import source's primary layout is the photo layout,
-[`photo-path-layout-spec.md`](../../photo-path-layout-spec.md), as
-[`turbo-collection-spec.md`](../../turbo-collection-spec.md) R-SRC-15 requires
-each import source specification to name one. An item that layout is not able to
-place goes to the as-found layout (R-SRC-20).
+[`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md), as
+[`turbo-collection-core-spec.md`](../../turbo-collection-core-spec.md) R-SRC-15
+requires each import source specification to name one. An item that layout is
+not able to place goes to the as-found layout (R-SRC-20).
 
 Placeholder for the supplied path R-SRC-21 requires: the root it is relative to,
 and whether that path is the same when one item is exported twice. A path that

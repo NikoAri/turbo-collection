@@ -1,19 +1,22 @@
-# Init creates the first copy and takes in what is already there; backup creates every later copy
+# Init creates the first copy in an empty directory; backup creates every later copy
 
 **Status:** Accepted
-**Date:** 2026-09-30
+**Date:** 2026-10-12
+
+Replaces the record of 2026-09-30, under which init also took in whatever its directory already
+held. That part reversed, and _Rejected_ says why.
 
 A directory becomes a copy when Turbo-Collection writes its configuration, which carries the name
-every receipt will use for that copy. Two operations do that, and no other ever does:
+every receipt will use for that copy. Init and backup do that, and no other operation ever does:
 
 - **`init`** creates the **first** copy, in the directory it is given. The name defaults to `main`
-  and a name given on the command line overrides it; there is no prompt. Files already in that
-  directory are **taken in where they sit**, in the same operation, by an in-place import
-  ([the in-place importer decision](2026-10-06-in-place-importer-decision.md)): they become content
-  of the copy without moving. Where no ignore file exists, init writes a starter one first, so files
-  an operating system scatters are not taken in as permanent content. Run on a
-  directory that is already a copy, init fails and changes nothing, which protects the name that
-  copy's receipts already carry. It refuses a directory inside a copy or containing one.
+  and a name given on the command line overrides it; there is no prompt. Init writes a
+  configuration file and a starter ignore file, and nothing else. It refuses a directory that holds
+  a file, at any depth, unless a starter ignore pattern matches that file: a file an operating
+  system left behind does not stand in the way, and a folder of photographs picked by mistake is
+  left as it was. Run on a directory that is already a copy, init fails and changes nothing, which
+  protects the name that copy's receipts already carry. It refuses a directory inside a copy or
+  containing one.
 - **`backup`** creates **every later** copy. Given a directory that is a copy, it mirrors it; given
   one that is empty or does not exist, it creates a copy there and fills it; given anything else, it
   refuses and lists what the directory holds. "Empty" means holding nothing except files the
@@ -22,7 +25,9 @@ every receipt will use for that copy. Two operations do that, and no other ever 
   which settles whose ignore file is inherited.
 - **`import`** never creates a copy. A directory that is not a copy is an error.
 
-Three smaller rules complete it.
+Files a person already has enter a copy as every other file does, by an import.
+
+These smaller rules complete it.
 
 **A name comes from the operator, never from a directory.** A directory name describes a drive or a
 tool, and is likely identical on every drive while the copies differ. Init has a sensible default
@@ -43,12 +48,13 @@ connected copies state one name (`R-MFILE-19`).
 
 ## Rejected
 
-- **Init requires an empty directory.** The first recommendation, to keep found files from becoming
-  permanent unexplained extras. Overturned: a directory already full of photographs is the ordinary
-  starting point, and taking those files in as an import explains every one of them.
-- **Found files move into the date layout.** A person's existing arrangement is information, and
-  moving files is the one thing an add-only tool does not do. Found files stay where they sit
-  ([the layout-selection decision](2026-10-03-layout-selection-decision.md)).
+- **Init takes in what its directory already holds.** The rule from 2026-09-30 until this date. It
+  had itself overturned "init requires an empty directory", on the ground that a directory already
+  full of photographs is the ordinary starting point. Reversed because init then does one small
+  thing, because an init run on the wrong directory fails where it would have recorded every file
+  beneath it for good, and because taking files in where they sit needs an in-place import, which
+  waits for a later version. A directory full of photographs is still the ordinary starting point:
+  it is brought in by an import.
 - **The first import or backup creates the first copy from a name argument.** It makes a routine
   operation able to turn any unmarked directory into a copy. Creation is a deliberate act with its
   own operation.
@@ -67,12 +73,13 @@ connected copies state one name (`R-MFILE-19`).
 
 ## Touches
 
-`turbo-collection-spec.md`: `R-CLI-5` gains init; `R-CLI-11` (init), `R-CLI-12` (init takes in
-what is already there), `R-CLI-13` (backup creating a copy) and `R-CLI-14` (no other operation
-creates one; last path segment only) added; the glossary gains _Init_ and _Ignored file_. An
-_Adoption_ term and an adoption clause in `R-SRC-7` also came from this decision, and both were
-retired on 2026-10-06. `meta-file-spec.md`: `R-MFILE-19` states that a name is set once, at creation;
+`turbo-collection-core-spec.md`: `R-CLI-5` names init; `R-CLI-11` (init, and its refusal of a
+directory that holds a file), `R-CLI-13` (backup creating a copy) and `R-CLI-14` (no other operation
+creates one; last path segment only). `R-CLI-12`, under which init performed an in-place import, was
+removed on 2026-10-12. The in-place import source specification was withdrawn with it, and so was
+`R-FOUND-2` in `as-found-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds _Init_
+and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19` states that a name is set once, at creation;
 `R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the rule that an ignored file never
-enters a copy ([the starter-ignore-file decision](2026-10-02-starter-ignore-file-decision.md)).
-`as-found-path-layout-spec.md` is the layout of files taken in where they sit. The setup procedure gains `R-SET-15`
-and its `R-SET-10` and `R-SET-11` create the later copies by backup.
+enters a copy ([the starter-ignore-file decision](2026-10-02-starter-ignore-file-decision.md)). The
+setup procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11` create the later copies by
+backup.

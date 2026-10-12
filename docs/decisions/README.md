@@ -94,7 +94,6 @@ there is more than one area to group.
 | 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
 | 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |
 | 2026-09-28 | [A copy's name is its `collectionName`, chosen for where it permanently rests](2026-09-28-collection-naming-decision.md) | Accepted |
-| 2026-09-30 | [Init creates the first copy and takes in what is already there; backup creates every later copy](2026-09-30-copy-creation-decision.md) | Accepted |
 | 2026-09-30 | [Three operations write and two read: init, import, backup; verify and status](2026-09-30-operation-taxonomy-decision.md) | Accepted |
 | 2026-10-02 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-02-starter-ignore-file-decision.md) | Accepted |
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
@@ -107,7 +106,6 @@ there is more than one area to group.
 | 2026-10-05 | [Traceability and durability are standards of their own, beside the core specification](2026-10-05-requirement-family-decision.md) | Accepted |
 | 2026-10-06 | [The specification names concrete things, and has no ports](2026-10-06-spec-vocabulary-decision.md) | Accepted |
 | 2026-10-06 | [Every file a copy preserves is a content file, with no derivative and no original](2026-10-06-content-file-decision.md) | Accepted |
-| 2026-10-06 | [Files already inside a copy are taken in by an in-place importer](2026-10-06-in-place-importer-decision.md) | Accepted |
 | 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md) | Accepted |
 | 2026-10-06 | [A file read from a directory is one item, and nothing pairs files by name](2026-10-06-one-file-one-item-decision.md) | Accepted |
 | 2026-10-06 | [A symbolic link is not content, and an import that meets one fails](2026-10-06-non-regular-files-decision.md) | Accepted |
@@ -117,3 +115,4 @@ there is more than one area to group.
 | 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |
 | 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
+| 2026-10-12 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-12-copy-creation-decision.md) | Accepted |

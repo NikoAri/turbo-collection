@@ -14,7 +14,7 @@ reaches exactly one import source, and configuration names it (`R-SRC-3`), so th
 declared value rather than a derived one.
 
 This is the path the **photo layout** gives an item. Which layout an item gets is decided by its
-import source, and an item taken in where it already sits keeps its own path:
+import source:
 [the layout-selection decision](2026-10-03-layout-selection-decision.md).
 
 This replaced `R-SRC-10`, which had said the layout MUST NOT depend on which source supplied a file

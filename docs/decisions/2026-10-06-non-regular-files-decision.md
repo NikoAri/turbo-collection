@@ -22,8 +22,7 @@ entries in an old archive by hand. An entry that matches a pattern in the copy's
 passed over instead, and every run reports how many files each pattern matched (`R-MFILE-21`), so
 what was passed over stays visible.
 
-A link put into a copy by hand is in no manifest, so a backup does not copy it (`R-MIRROR-9`), and
-the next in-place import of that copy fails on it and names it.
+A link put into a copy by hand is in no manifest, so a backup does not copy it (`R-MIRROR-9`).
 
 ## Rejected
 

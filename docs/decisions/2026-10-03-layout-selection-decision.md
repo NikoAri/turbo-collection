@@ -3,9 +3,9 @@
 **Status:** Accepted
 **Date:** 2026-10-03
 
-**An item's layout is decided by its import source, not by its bytes.** An in-place import is the proof: the
-same photograph is filed by date when imported from iCloud, and stays exactly where it sits when
-taken in from a directory that init makes a copy. Nothing about the bytes differs, so the bytes
+**An item's layout is decided by its import source, not by its bytes.** A local folder is the proof: the
+same photograph is filed by date when imported from iCloud, and keeps its place in its folder when
+that folder is imported. Nothing about the bytes differs, so the bytes
 cannot be what chooses.
 
 The rule has three parts.
@@ -63,3 +63,5 @@ reworded to match; the glossary gains _Primary layout_ and _As-found layout_.
 to place. `as-found-path-layout-spec.md` created (`R-FOUND-*`). Each import source specification
 names its primary layout. [The import-source decision](2026-08-22-import-source-decision.md) still
 describes the photo layout's path, where an import source is a path segment.
+
+`R-CLI-12` was removed on 2026-10-12.

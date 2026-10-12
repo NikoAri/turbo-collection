@@ -92,12 +92,12 @@ decides replacement.
 the others. A useful mark is which copy it is (**working**, **home**, or
 **off-site**) and its **purchase date**.
 
-**R-SET-8.** Put your collection on the **solid-state drive**, and treat it as
-your working copy.
+**R-SET-8.** Use the **solid-state drive** for your working copy.
 
-**R-SET-15.** Run the Turbo-Collection **init** on the directory that holds your
-collection on the solid-state drive. Init makes that directory your working
-copy, named `main`, and leaves every file already in it where it is.
+**R-SET-15.** Run the Turbo-Collection **init** on a directory on the
+solid-state drive that is empty or does not exist yet. Init makes that directory
+your working copy, named `main`. Photographs you already have enter it by an
+import (`turbo-collection-import-procedure.md`).
 
 **R-SET-9.** Use the two hard disk drives as the **home copy** and the
 **off-site copy**.
@@ -108,18 +108,18 @@ copy, named `main`, and leaves every file already in it where it is.
 
 > **Why init comes before anything else.** Until init runs, nothing on a drive
 > says it is a copy, and an import or a backup into it is refused
-> (`turbo-collection-spec.md` R-CLI-14). Init writes what makes a directory a
-> copy, and takes in files already there without moving them (R-CLI-11,
-> R-CLI-12). Give init a different name only if `main` is already the name of
-> another copy you connect.
+> (`turbo-collection-core-spec.md` R-CLI-14). Init writes what makes a directory
+> a copy, and refuses a directory that already holds files, so a folder picked
+> by mistake is left as it was (R-CLI-11). Give init a different name only if
+> `main` is already the name of another copy you connect.
 
-> **The starter ignore file.** Where a directory has no `.tcignore`, init writes
-> one listing files that operating systems create on their own, so they are not
-> taken in as content. Fuller lists are kept by the github/gitignore project,
-> under `Global` at <https://github.com/github/gitignore>. Before adding a
-> pattern from there, check that it matches no file you want kept: those lists
-> are written for source code, and name file types, such as installers and
-> shortcuts, that are real content in a collection.
+> **The starter ignore file.** Init writes a `.tcignore` listing files that
+> operating systems create on their own, so an import does not take them in as
+> content. Fuller lists are kept by the github/gitignore project, under `Global`
+> at <https://github.com/github/gitignore>. Before adding a pattern from there,
+> check that it matches no file you want kept: those lists are written for
+> source code, and name file types, such as installers and shortcuts, that are
+> real content in a collection.
 
 > **What to write on a drive, and what not to.** Marking is a memory aid, not
 > something Turbo-Collection reads, so the words are yours. Write only what
@@ -143,7 +143,7 @@ manifests.
 
 > **Why a backup, and why a name.** A backup given an empty directory creates a
 > new copy there and fills it, and refuses to do so without a name
-> (`turbo-collection-spec.md` R-CLI-13). A copy is named for where it
+> (`turbo-collection-core-spec.md` R-CLI-13). A copy is named for where it
 > permanently rests, so a drive in the wrong place is plainly wrong. A drive
 > that replaces a dead one takes the dead copy's name.
 

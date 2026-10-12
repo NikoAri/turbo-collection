@@ -7,7 +7,7 @@ Turbo-Collection has these operations and no others.
 
 **Writers**, which change a copy:
 
-- **`init`** makes the first copy ([the copy-creation decision](2026-09-30-copy-creation-decision.md)).
+- **`init`** makes the first copy ([the copy-creation decision](2026-10-12-copy-creation-decision.md)).
 - **`import`** brings files in from an import source, and never creates a copy.
 - **`backup`** mirrors peer copies, and creates every copy after the first.
 

@@ -73,20 +73,45 @@ export function withNodeTypesException(
   return { ...exceptions, [NodeTypesPackage]: range };
 }
 
+type ExceptionsFile = { packages?: Record<PackageName, VersionRange> };
+
+// npm-version-exceptions.json as it stands. A file that is missing or incorrect is read as one
+// with no entry, and the run says so.
+function readExceptionsFile(npmVersionExceptionsUrl: URL): ExceptionsFile {
+  try {
+    return JSON.parse(
+      readFileSync(npmVersionExceptionsUrl, "utf8"),
+    ) as ExceptionsFile;
+  } catch {
+    console.warn(
+      "npm-version-exceptions.json is missing or incorrect. Reading it as empty.",
+    );
+    return {};
+  }
+}
+
 // Bring the entry for `@types/node` in npm-version-exceptions.json up to date, and say so when
-// it moved. A run that finds the entry right leaves the file alone.
+// it moved. A run that finds the entry right leaves the file alone. A dry run leaves it alone
+// too, and says what it would have written. Where the file is missing or incorrect, writing the
+// entry writes the file afresh, with that one entry.
 export function writeNodeTypesException(
   npmVersionExceptionsUrl: URL,
   dependencies: Record<PackageName, VersionRange>,
   enginesNode: string | undefined,
+  dryRun: boolean,
 ): void {
-  const exceptionsFile = JSON.parse(
-    readFileSync(npmVersionExceptionsUrl, "utf8"),
-  ) as { packages?: Record<PackageName, VersionRange> };
+  const exceptionsFile = readExceptionsFile(npmVersionExceptionsUrl);
   const recorded = exceptionsFile.packages ?? {};
 
   const packages = withNodeTypesException(recorded, dependencies, enginesNode);
   if (packages === recorded) {
+    return;
+  }
+
+  if (dryRun) {
+    console.log(
+      `Dry run: would hold ${NodeTypesPackage} to ${packages[NodeTypesPackage]} in npm-version-exceptions.json`,
+    );
     return;
   }
 

@@ -28,7 +28,7 @@ which the peer model already retired.
 
 A second objection, that calling a symmetric operation "backup" would mislead an operator into
 expecting one-way protection, also falls: the operation is add-only and never deletes
-(`turbo-collection-spec.md` R-MIRROR-2, R-MIRROR-3), so any wrong expectation a familiar word invites
+(`backup-spec.md` R-MIRROR-2, R-MIRROR-3), so any wrong expectation a familiar word invites
 is a _safe_ one. Expect a deletion and none happens; expect one direction and gain files in both.
 Safety lives in the mechanism, not the word.
 

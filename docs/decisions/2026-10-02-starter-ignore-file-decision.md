@@ -3,9 +3,9 @@
 **Status:** Accepted
 **Date:** 2026-10-02
 
-When init makes a directory a copy and finds no `.tcignore`, it writes a starter one before taking in
-the files already there (`R-CLI-11`). Without it, files an operating system creates on its own, such
-as a folder-view cache, would be taken in as permanent content, and one that its operating system
+When init makes a directory a copy, it writes a starter `.tcignore` (`R-CLI-11`). Without it, files
+an operating system creates on its own, such as a folder-view cache, would be taken in by an import
+as permanent content, and one that its operating system
 later rewrites would then read as corrupt.
 
 Three things were settled about that file.
@@ -29,8 +29,8 @@ it goes stale if the implementation directory is ever renamed.
 The starting material is the macOS, Windows and Linux global templates kept by the github/gitignore
 project. Those lists are written for **source repositories**, so they ignore file types that are
 real content in a collection: Windows installers and shortcuts, editor backup files, and a few
-others. Shipped unmodified, they would make init silently decline to take in a real file sitting in a
-directory, which is the silent loss this project exists to prevent.
+others. Shipped unmodified, they would make an import silently pass over a real file, which is the silent
+loss this project exists to prevent.
 
 So the shipped list is those templates minus two groups: every pattern that can match a file a
 person made or keeps, and two macOS patterns whose filenames embed a carriage return, which no
@@ -49,6 +49,6 @@ pattern in a file with line-feed endings can match.
 ## Touches
 
 `meta-file-spec.md` `R-MFILE-20` (conceptual description and the pointer) and `R-MFILE-21` (an
-ignored file never enters a copy by an import). `turbo-collection-spec.md` `R-CLI-11`.
+ignored file never enters a copy by an import). `turbo-collection-core-spec.md` `R-CLI-11`.
 `scripts/templates/default.tcignore` created; `cspell.json` excludes `*.tcignore`, which is data and
 not prose. The setup procedure names where fuller lists are kept, with the caution above.

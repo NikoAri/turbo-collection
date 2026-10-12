@@ -5,6 +5,14 @@ Import
 Backup
 Verify
 
+This is implementation details to help with particular implemementation like in Node.js.
+Actual general instructions should be in turbo-collection-spec.md
+
+## Init
+
+add .turbo-collection directory
+If there are any files in folder where init is performed, then fail
+
 ## 5. Import (`R-SRC-*`)
 
 The Core must be indifferent to whether a photo arrived by cable, from iCloud,
@@ -13,7 +21,7 @@ through a OneDrive sync folder, or from something not yet invented.
 This contract is specified completely enough (R-META-1) that **anyone can write
 an Importer from this document alone, without modifying Turbo-Collection's
 core.** That is the extensibility that matters. How importers are loaded is a
-binding (Section 12), not a requirement.
+binding (`turbo-collection-spec.md` Section 12), not a requirement.
 
 **R-SRC-1.** Files MUST enter the collection only by Import. The Core MUST
 contain no logic specific to any individual import source, device, vendor, or
@@ -97,9 +105,10 @@ import source, wherever that layout is able to place the item. R-SRC-20 governs
 an item that layout is not able to place.
 
 > **Example.** Identical photo bytes are filed by date when imported from an
-> import source whose primary layout is the photo layout, and stay where they
-> sit in an In-place Import (R-CLI-12), where the layout is as-found. Bytes
-> decide where an item goes within a layout, never which layout.
+> import source whose primary layout is the photo layout, and keep their place
+> in their folder when that folder is imported as a local folder, where the
+> layout is as-found. Bytes decide where an item goes within a layout, never
+> which layout.
 
 **R-SRC-16.** On importing into an existing import-source directory,
 Turbo-Collection MUST compare the running import source's version against the
@@ -177,12 +186,6 @@ directory, MUST NOT change what that manifest names, MUST leave that file out of
 the Collection, and MUST report every such file. Turbo-Collection MUST still
 import every other file of that Import. A Run in which an Import reports such a
 file MUST exit with a non-zero status.
-
-> **Example.** A folder put into a Copy by hand at `local-folder/old-laptop/`,
-> and recorded there by an In-place Import, has a manifest naming `in-place`. A
-> later Import of a directory named `old-laptop` finds one file that folder
-> lacks. That file is reported and stays out, because the manifest would
-> otherwise name `in-place` for a file another Import Source brought.
 
 ---
 
@@ -284,31 +287,27 @@ be settable in configuration or by a command-line flag.
 
 **R-CLI-11.** **Init Operation** Turbo-Collection MUST provide an **init**
 operation that makes the directory it is given a copy, by writing into that
-directory a configuration file (`meta-file-spec.md` R-MFILE-17) and, where no
-ignore file exists, an ignore file holding the starter patterns that
-`meta-file-spec.md` describes (R-MFILE-20). Init MUST create a directory it is
-given that does not exist (R-CLI-14). Init MUST take the new copy's
+directory a configuration file (`meta-file-spec.md` R-MFILE-17) and an ignore
+file holding the starter patterns that `meta-file-spec.md` describes
+(R-MFILE-20). Init MUST create a directory it is given that does not exist
+(R-CLI-14). Init MUST refuse a directory that holds any file, at any depth,
+other than one a starter pattern matches. Init MUST take the new copy's
 `collectionName` from a name given on the command line, and MUST use `main`
 where no name is given. Init MUST refuse to act on a directory that is inside a
 copy or that contains a copy. Given a directory that is already a copy, init
 MUST fail without changing anything, and MUST report that the directory is
 already a copy.
 
-**R-CLI-12.** Having made a directory a Copy, Init MUST perform an In-place
-Import of that Copy (`in-place-import-source-spec.md` R-INPLACE-3). It is an
-Import like any other: R-SRC-7 keeps each file where it is, and the As-found
-Layout records it at the path it has (`as-found-path-layout-spec.md` R-FOUND-2).
-
-> **Example.** A starter ignore file is written before the In-place Import, so a
-> `.DS_Store` the OS scatters is not taken in as permanent content.
+> **Example.** An init run by mistake on a folder of photographs fails and
+> writes nothing. A folder that holds only a `.DS_Store` its operating system
+> left there is made a copy.
 
 **R-CLI-9.**  
 **Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
 **verify access** inspection that transfers and modifies nothing, and that
 reports, for every import source and copy a run would act on: whether it is
-reachable and authorized; for a Copy, what capabilities its storage
-**currently** declares (R-TGT-12); and whether the configuration would be
-refused (R-TGT-6).
+reachable and authorized; and whether the configuration would be refused
+(R-TGT-6).
 
 **R-CLI-10.**  
 **Status Operation**  
@@ -325,19 +324,19 @@ itself cause a non-zero exit status.
 **R-CLI-13.**  
 **Backup Operation**  
 In a **backup**, Turbo-Collection MUST mirror every directory the backup is
-given that is a copy (Section 7.1). Before mirroring, Turbo-Collection MUST
-create a new copy in each directory the backup is given that does not exist, or
-that holds no file at any depth except files matching a pattern in the ignore
-file of the backup's existing copy. Turbo-Collection MUST refuse a backup that
-would create a new copy unless that backup is given exactly one existing copy.
-Turbo-Collection MUST refuse to create a new copy unless a name for the new copy
-is given on the command line; that name becomes the new copy's `collectionName`.
-To create a new copy, Turbo-Collection MUST write into its directory a
-configuration file (`meta-file-spec.md` R-MFILE-17) and, where the existing copy
-has an ignore file, a duplicate of that ignore file (R-MFILE-20).
-Turbo-Collection MUST refuse to act on a directory given to a backup that is not
-a copy and that holds any file not matching such a pattern, and MUST report
-every file that directory holds.
+given that is a copy (`backup-spec.md` Section 7.1). Before mirroring,
+Turbo-Collection MUST create a new copy in each directory the backup is given
+that does not exist, or that holds no file at any depth except files matching a
+pattern in the ignore file of the backup's existing copy. Turbo-Collection MUST
+refuse a backup that would create a new copy unless that backup is given exactly
+one existing copy. Turbo-Collection MUST refuse to create a new copy unless a
+name for the new copy is given on the command line; that name becomes the new
+copy's `collectionName`. To create a new copy, Turbo-Collection MUST write into
+its directory a configuration file (`meta-file-spec.md` R-MFILE-17) and, where
+the existing copy has an ignore file, a duplicate of that ignore file
+(R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a
+backup that is not a copy and that holds any file not matching such a pattern,
+and MUST report every file that directory holds.
 
 > **Example.** A backup creates a copy only in an empty directory, so files
 > already there are not pulled into the collection by the two-way mirror.
@@ -370,7 +369,7 @@ In answering, Turbo-Collection MUST NOT act on a Copy or on an Import Source.
 > and one such line for `meta-file-spec.md`, for each Layout specification, and
 > for each Import Source specification the code conforms to.
 
-**R-CLI-17**  
+**R-CLI-17.**  
 **Verify Arg**  
  A **verify** invoked with no inspection named MUST run every verify inspection,
 against every connected copy. Where a receipt on a connected copy names a copy
@@ -387,14 +386,14 @@ absence alone MUST NOT cause a non-zero exit status.
 separately answerable (R-CLI-5), because they fail in different ways and at
 different times.
 
-| Question                                                                                       | Operation                | Requirement |
-| ---------------------------------------------------------------------------------------------- | ------------------------ | ----------- |
-| Are my import sources and copies reachable, authorized, and still honoring what they promised? | **verify access**        | R-CLI-9     |
-| Do the bytes on this copy still match the manifest? (fixity)                                   | **verify fixity**        | R-INT-2     |
-| Would any filename fail to survive a move to another filesystem? (name hazards)                | **verify names**         | R-NAME-1    |
-| How far apart are two copies? What _would_ a run transfer? (drift)                             | **backup**, dry-run mode | R-MIRROR-7  |
-| What does this import source still hold that the collection lacks? (import-source coverage)    | **import**, dry-run mode | R-SRC-14    |
-| How many copies hold this content, and when did each receive it? (propagation)                 | **status**               | R-CLI-10    |
+| Question                                                                                    | Operation                | Requirement |
+| ------------------------------------------------------------------------------------------- | ------------------------ | ----------- |
+| Are my import sources and copies reachable and authorized?                                  | **verify access**        | R-CLI-9     |
+| Do the bytes on this copy still match the manifest? (fixity)                                | **verify fixity**        | R-INT-2     |
+| Would any filename fail to survive a move to another filesystem? (name hazards)             | **verify names**         | R-NAME-1    |
+| How far apart are two copies? What _would_ a run transfer? (drift)                          | **backup**, dry-run mode | R-MIRROR-7  |
+| What does this import source still hold that the collection lacks? (import-source coverage) | **import**, dry-run mode | R-SRC-14    |
+| How many copies hold this content, and when did each receive it? (propagation)              | **status**               | R-CLI-10    |
 
 > **Example.** `status` reads receipts, not bytes, so it reports which copies
 > received content and when with no other drive connected; it never claims a
@@ -437,18 +436,18 @@ distinguishes no failure by exit status (Section 8.5).
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `capabilities() -> Capabilities`; `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                   |
-| Capabilities  | Declares whether the copy is a plain tree, whether it can be verified in place, whether it is remote, and whether it can report a stable volume identifier for the copy (R-TGT-5). Re-evaluated every run (R-TGT-12); never cached                                        |
+| Operations    | `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                     |
 | Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                          |
 | Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
-| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds, or expose an operation that does (R-TGT-8); store data other than as a plain tree (R-COL-4)                           |
+| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds (R-TGT-7); store data other than as a plain tree (R-COL-4)                                                             |
 | Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                   |
 
 ### Mirror engine
 
 Scoped as _the mechanism by which two copies are brought into agreement_. This
 is what keeps the "swap rclone for rsync by changing one binding" property
-intact, while storage layout (Section 6) covers _what_ a copy is.
+intact, while storage layout (`turbo-collection-spec.md` Section 6) covers
+_what_ a copy is.
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

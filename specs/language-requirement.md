@@ -249,12 +249,11 @@ digit width of a date field, is not a count of this kind and MAY appear.
 reference anchored to the moment of writing ("currently", "recently", "modern",
 "new") MUST NOT appear.
 
-> **The distinction that matters.** "What capabilities it _currently_ declares"
-> in `turbo-collection-spec.md` is anchored to the moment a run executes, and
-> stays correct forever. "The _current_ best tool is rclone" is anchored to the
-> moment of writing, and rots silently. The first is fine; the second belongs in
-> a dated bindings section, which is exactly where `turbo-collection-spec.md`
-> puts it.
+> **The distinction that matters.** "That file's _current_ content" in
+> `verify-spec.md` is anchored to the moment a run executes, and stays correct
+> forever. "The _current_ best tool is rclone" is anchored to the moment of
+> writing, and rots silently. The first is fine; the second belongs in a dated
+> bindings section, which is exactly where `turbo-collection-spec.md` puts it.
 
 ### 3.5 Commentary and redundant encoding (`R-LANG-12`, `R-LANG-13`)
 

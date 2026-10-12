@@ -9,11 +9,14 @@ in [`decisions/`](decisions/), never here.
 | Document | Job | Binds | May code cite it |
 |---|---|---|---|
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
+| [`specs/turbo-collection-core-spec.md`](../specs/turbo-collection-core-spec.md) | Import, configuration, logging, the command line, and the contracts. | implementation | yes |
+| [`specs/backup-spec.md`](../specs/backup-spec.md) | Mirror semantics: what a backup does between peer copies. | implementation | yes |
+| [`specs/verify-spec.md`](../specs/verify-spec.md) | Integrity, filename safety, and receipts. | implementation | yes |
 | [`specs/meta-file-spec.md`](../specs/meta-file-spec.md) | What is written: every meta file's name, place, and contents. Its version is the meta file format version. | implementation | yes |
-| [`specs/photo-path-layout-spec.md`](../specs/photo-path-layout-spec.md) | Where a photograph or a video goes inside a copy. | implementation | yes |
-| [`specs/as-found-path-layout-spec.md`](../specs/as-found-path-layout-spec.md) | Where a file goes when it is kept at the path its import source supplied: files taken in where they already sit, and the floor beneath every other layout. | implementation | yes |
-| `specs/import-sources/<import-source>/*-spec.md` | What may be assumed about getting original bytes out of one import source, and which layout governs its items. | implementation | yes |
-| `specs/import-sources/<import-source>/*-procedure.md` | Steps a human operator follows to import from that import source. | operator | no |
+| [`specs/layouts/photo-path-layout-spec.md`](../specs/layouts/photo-path-layout-spec.md) | Where a photograph or a video goes inside a copy. | implementation | yes |
+| [`specs/layouts/as-found-path-layout-spec.md`](../specs/layouts/as-found-path-layout-spec.md) | Where a file goes when it is kept at the path its import source supplied: a folder brought in whole, and the floor beneath every other layout. | implementation | yes |
+| `specs/importers/<import-source>/*-spec.md` | What may be assumed about getting original bytes out of one import source, and which layout governs its items. | implementation | yes |
+| `specs/importers/<import-source>/*-procedure.md` | Steps a human operator follows to import from that import source. | operator | no |
 | [`specs/procedures/*-procedure.md`](../specs/procedures/) | What a person does, one document per sitting: setup, import, backup, off-site, release. Steps only; reasoning lives in [`decisions/`](decisions/). | operator | no |
 | [`specs/language-requirement.md`](../specs/language-requirement.md) | How a normative document is written, so its English stays interpretable across decades. | document authors | no |
 | [`specs/version-requirement.md`](../specs/version-requirement.md) | How a normative document is numbered, published, archived, and corrected. | document authors | no |
@@ -36,21 +39,20 @@ Every prefix resolves to exactly one document.
 | Prefix | Document | Covers |
 |---|---|---|
 | `R-COL-*` | `turbo-collection-spec.md` | collection invariants |
-| `R-SRC-*` | `turbo-collection-spec.md` | import |
+| `R-SRC-*` | `turbo-collection-core-spec.md` | import |
 | `R-TGT-*` | `turbo-collection-spec.md` | storage layout (the prefix dates from when a copy was called a target) |
-| `R-MIRROR-*` | `turbo-collection-spec.md` | mirror semantics |
-| `R-INT-*` | `turbo-collection-spec.md` | integrity and fixity |
-| `R-NAME-*` | `turbo-collection-spec.md` | filename safety |
-| `R-REC-*` | `turbo-collection-spec.md` | when a receipt is written, and what it may be taken to prove |
-| `R-CFG-*` | `turbo-collection-spec.md` | configuration |
-| `R-LOG-*` | `turbo-collection-spec.md` | logging |
-| `R-CLI-*` | `turbo-collection-spec.md` | command line and operations |
+| `R-MIRROR-*` | `backup-spec.md` | mirror semantics |
+| `R-INT-*` | `verify-spec.md` | integrity and fixity |
+| `R-NAME-*` | `verify-spec.md` | filename safety |
+| `R-REC-*` | `verify-spec.md` | when a receipt is written, and what it may be taken to prove |
+| `R-CFG-*` | `turbo-collection-core-spec.md` | configuration |
+| `R-LOG-*` | `turbo-collection-core-spec.md` | logging |
+| `R-CLI-*` | `turbo-collection-core-spec.md` | command line and operations |
 | `R-VER-*` | `turbo-collection-spec.md` | this specification's version, and version stamps |
 | `R-MFILE-*` | `meta-file-spec.md` | every meta file's name, place, and contents |
-| `R-PHOTO-*` | `photo-path-layout-spec.md` | photo layout |
-| `R-FOUND-*` | `as-found-path-layout-spec.md` | as-found layout |
-| `R-INPLACE-*` | `import-sources/in-place/in-place-import-source-spec.md` | files already inside a copy, taken in where they sit |
-| `R-LOCALFOLDER-*` | `import-sources/local-folder/local-folder-import-source-spec.md` | a directory of files outside a copy, stored under its own name |
+| `R-PHOTO-*` | `layouts/photo-path-layout-spec.md` | photo layout |
+| `R-FOUND-*` | `layouts/as-found-path-layout-spec.md` | as-found layout |
+| `R-LOCALFOLDER-*` | `importers/local-folder/local-folder-import-source-spec.md` | a directory of files outside a copy, stored under its own name |
 | `R-SET-*` | `procedures/turbo-collection-setup-procedure.md` | buying, labeling and filling drives, once |
 | `R-IMP-*` | `procedures/turbo-collection-import-procedure.md` | getting photos off an import source into a collection |
 | `R-BAK-*` | `procedures/turbo-collection-backup-procedure.md` | bringing the home copy up to date |
@@ -61,7 +63,7 @@ Every prefix resolves to exactly one document.
 | `R-META-*` | `traceability-requirement.md` | how documents, requirements, and code trace to one another |
 | `R-DUR-*` | `durability-requirement.md` | durability axioms every specification and design must satisfy |
 
-Not yet assigned: the iCloud import source specification under `specs/import-sources/` is a stub,
+Not yet assigned: the iCloud import source specification under `specs/importers/` is a stub,
 and states that its prefix is unassigned. No album layout specification exists yet.
 
 ## Map of the core specification

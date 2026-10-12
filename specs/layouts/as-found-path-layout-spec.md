@@ -7,8 +7,8 @@
 This document is normative over one **Layout**: a content file is stored at the
 path its import source supplied for it, so a tree of files enters a copy shaped
 as it was found. It states which items that Layout is able to place
-([`turbo-collection-spec.md`](turbo-collection-spec.md) R-SRC-15), and the path
-each file receives.
+([`turbo-collection-core-spec.md`](../turbo-collection-core-spec.md) R-SRC-15),
+and the path each file receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
 configuration file sits is stated by the requirements that define each of those,
@@ -16,11 +16,8 @@ never here.
 
 Requirement ID prefix: **`R-FOUND-*`**.
 
-> **Rationale.** Why files already inside a Copy stay where they sit, and why
-> this Layout sits beneath every other as a floor:
-> [the copy-creation decision](../docs/decisions/2026-09-30-copy-creation-decision.md)
-> and
-> [the layout-selection decision](../docs/decisions/2026-10-03-layout-selection-decision.md).
+> **Rationale.** Why this Layout sits beneath every other as a floor:
+> [the layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
 
 ---
 
@@ -33,12 +30,10 @@ go.
 One rule serves each of these roles:
 
 - **Primary Layout.** An Import Source specification names this Layout to govern
-  its Items (`turbo-collection-spec.md` R-SRC-15). Files from the in-place
-  Import Source are already inside the Copy and do not move; files from every
-  other Import Source are copied in from elsewhere.
+  its Items (`turbo-collection-core-spec.md` R-SRC-15).
 - **Floor.** This Layout takes an item that another primary layout is not able
   to place, so no item is left out of a collection for want of a place
-  (`turbo-collection-spec.md` R-SRC-20).
+  (`turbo-collection-core-spec.md` R-SRC-20).
 
 It does not decide what a file inside a directory is called, which the
 `R-NAME-*` family owns, and it does not decide which files a copy ignores, which
@@ -71,11 +66,6 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   named by the operator; a leaf manifest records which one placed a directory
   (`meta-file-spec.md` R-MFILE-9).
 
-- **In-place Import Source.** The Import Source whose Items are the files
-  already inside a Copy that no manifest of that Copy lists, identified as
-  `in-place`
-  ([`in-place-import-source-spec.md`](import-sources/in-place/in-place-import-source-spec.md)).
-
 - **Importer.** The component that brings files into the collection from one
   import source.
 
@@ -91,7 +81,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Supplied path.** The path a file has at its import source, relative to a
   root that import source's specification states. An importer supplies it with
-  every file (`turbo-collection-spec.md` R-SRC-21).
+  every file (`turbo-collection-core-spec.md` R-SRC-21).
 
 - **Collection filename.** The name a content file carries inside a copy.
 
@@ -106,16 +96,8 @@ its kind, or its filename extension.
 
 ## 3. The path
 
-**R-FOUND-2.** For an Item from the in-place Import Source, Turbo-Collection
-MUST record every file of that Item at that file's Supplied path, relative to
-the Copy's root, and MUST NOT add a directory to that path. Such a file
-therefore stays at the path it has (`turbo-collection-spec.md` R-SRC-7).
-
-> **Example.** `Manuals/appliances/oven.pdf`, found in a directory that init
-> makes a Copy, is recorded at `Manuals/appliances/oven.pdf` and is not moved.
-
-**R-FOUND-3.** For an Item from any other Import Source, Turbo-Collection MUST
-store every Content file it places under this Layout at
+**R-FOUND-3.** For an Item from any Import Source, Turbo-Collection MUST store
+every Content file it places under this Layout at
 `<import source>/<supplied path>`, relative to a Copy's root, where
 `<import source>` is that Import Source's identifier, recorded as
 `importSource.specId` in each manifest beneath that directory
@@ -131,10 +113,10 @@ as its Primary Layout, and to an Item this Layout takes as the floor.
 
 **R-FOUND-4.** An importer MUST supply a relative path, and Turbo-Collection
 MUST write that path with segments joined by `/`. Turbo-Collection MUST NOT
-store a file outside the directory R-FOUND-2 or R-FOUND-3 names for it.
-Turbo-Collection MUST refuse an item holding a file whose supplied path is
-absolute, is empty, or contains a segment that is `.` or `..`, and MUST report
-every item refused this way.
+store a file outside the directory R-FOUND-3 names for it. Turbo-Collection MUST
+refuse an item holding a file whose supplied path is absolute, is empty, or
+contains a segment that is `.` or `..`, and MUST report every item refused this
+way.
 
 > **Example.** A supplied path of `../../Windows/notes.txt` is refused and
 > reported, never resolved to a place outside the copy.
@@ -144,7 +126,7 @@ every item refused this way.
 **R-FOUND-5.** Turbo-Collection MUST preserve every segment of a supplied path
 exactly as supplied, including its letter case. This Layout MUST NOT alter a
 collection filename, which is governed by the `R-NAME-*` family in
-[`turbo-collection-spec.md`](turbo-collection-spec.md).
+[`verify-spec.md`](../verify-spec.md).
 
 ## 5. Recording this Layout
 

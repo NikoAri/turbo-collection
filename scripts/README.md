@@ -111,7 +111,7 @@ compiler, and neither package is present when the tool runs.
 run, so `erasableSyntaxOnly` in [`tsconfig.json`](tsconfig.json) rejects them at
 check time instead.
 
-**Never delete.** `R-MIRROR-3` and `R-TGT-8` prohibit deleting a file in a copy,
+**Never delete.** `R-MIRROR-3` and `R-TGT-7` prohibit deleting a file in a copy,
 with one carve-out for Turbo-Collection's own temporary files (`R-MIRROR-8`).
 Section 13 requires a test asserting no code path deletes. That test cannot be
 written until there is code to assert about; write it with the first operation

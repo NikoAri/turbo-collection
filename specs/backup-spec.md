@@ -3,8 +3,8 @@
 ### 7.1 Mirroring (`R-MIRROR-*`)
 
 The semantics of the mirror mechanism, as distinct from the storage layout
-contract in Section 6. Mirroring is symmetric between peer copies, and is what
-the **backup** operation (R-CLI-5) performs.
+contract in `turbo-collection-spec.md` Section 6. Mirroring is symmetric between
+peer copies, and is what the **backup** operation (R-CLI-5) performs.
 
 **R-MIRROR-1.** When mirroring two copies, Turbo-Collection MUST copy to each
 copy every content file the other holds that is absent at it. If a **content

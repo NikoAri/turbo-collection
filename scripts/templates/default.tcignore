@@ -1,15 +1,15 @@
 # Starter .tcignore for a new Turbo-Collection copy.
 #
 # Turbo-Collection writes this file into a copy it creates that has none
-# (turbo-collection-spec.md R-CLI-11). The patterns match files the operating
+# (turbo-collection-core-spec.md R-CLI-11). The patterns match files the operating
 # system and its file managers create on their own: metadata, caches, and trash.
 # After creation the file is yours; edit it freely.
 #
 # Source: github/gitignore Global templates for macOS, Windows, and Linux
 # (https://github.com/github/gitignore/tree/main/Global). Patterns that match
 # application- or user-created files (installers, shortcuts, shell and crash
-# output, editor backups) are left out on purpose, so adopting an existing
-# directory never silently skips a file someone meant to keep.
+# output, editor backups) are left out on purpose, so an import never silently
+# skips a file someone meant to keep.
 
 # macOS
 .DS_Store

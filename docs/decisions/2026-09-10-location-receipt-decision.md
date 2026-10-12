@@ -35,7 +35,7 @@ lie, and the tool falls back to asking. This is why it stays a locator and never
 still exists, the same limit `R-REC-8` places on an arrival.
 
 Two anchors keep the relative path relative in both real and test settings. With `volumeId` present,
-`relativePath` is relative to that volume's root, resolved through that copy's storage at run time. With
+`relativePath` is relative to that volume's root, resolved at run time. With
 `volumeId` absent (a `null` value means the same), it is relative to the receipt file's own directory,
 so a co-located set of copies held in git resolves with no real drives.
 
@@ -44,8 +44,8 @@ so a co-located set of copies held in git resolves with no real drives.
 Turbo-Collection treats `volumeId` as opaque, comparing it only for equality and never parsing its
 form (`R-MFILE-26`). No universal format exists: exFAT, the project's portable filesystem, exposes only
 a short volume serial, while other filesystems expose longer identifiers. The core never interprets the
-value; it compares it and hands it to that copy's storage to resolve to a current mount point
-(`R-REC-9`, `R-TGT-5`). This is the same opaque-token treatment `importSourceDetails` already carries. Pinning a format would either disqualify exFAT or force a copy's storage to
+value; it compares it, to find that volume's current mount point
+(`R-REC-9`). This is the same opaque-token treatment `importSourceDetails` already carries. Pinning a format would either disqualify exFAT or force a copy's storage to
 fabricate an identifier, and it would invite a concrete bug: validation against the exFAT shape would
 reject a valid identifier from another filesystem. A serial collision is safe regardless, because
 configuration-confirm turns it into a question, never a wrong action.
@@ -87,3 +87,6 @@ non-load-bearing, absolute path derived at run time, copy-root propagation union
 remaining). Amended: `R-MFILE-2` (a `.turbo-collection/` at the copy root, distinct from the
 per-directory one) and `R-TGT-5` with the storage layout contract (report a stable volume identifier, and
 resolve it to a mount point).
+
+`R-TGT-5` was removed on 2026-10-09, and the contract's capabilities on 2026-10-12, so `R-REC-9` no
+longer names what resolves a `volumeId`.

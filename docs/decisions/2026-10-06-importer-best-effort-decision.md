@@ -13,7 +13,7 @@ source unable to do so is declared, and refused by default (`R-SRC-6`); that an 
 beginning to degrade is caught at the next import (`R-SRC-11`); and that an import source whose
 degradation cannot be detected is refused outright (`R-SRC-19`). All four rested on knowledge the
 core does not have. Whether a vendor delivered its true original is visible only as far as that
-vendor exposes evidence. For a folder of files, a camera card, or files already inside a copy,
+vendor exposes evidence. For a folder of files or a camera card,
 nothing exists to check against, so `R-SRC-19` read literally refused them all.
 
 What a particular import source delivers, and how an operator gets the best version out of it,
@@ -39,3 +39,5 @@ now an importer's care and an operator's procedure, not a guarantee.
 and `R-TGT-12` no longer mention a degraded import or an importer's capabilities.
 `meta-file-spec.md`: the error example. Both file-based import source stubs: their fidelity
 sections.
+
+`R-TGT-12` was removed on 2026-10-09.

@@ -32,9 +32,8 @@ whichever copy it appears. A Run that reports one MUST exit with a non-zero
 status (R-CLI-1). Turbo-Collection MUST NOT report a manifest as **extra** in
 any copy, since R-MFILE-8 excludes it by design.
 
-> **Example.** A file a person put into a Copy with a file manager is extra
-> until an In-place Import records it (R-CLI-12). Until then no Backup carries
-> it to another Copy, so a verify that finds it does not exit 0.
+> **Example.** A file a person put into a Copy with a file manager is extra. No
+> Backup carries it to another Copy, so a verify that finds it does not exit 0.
 
 **R-INT-10.** Turbo-Collection MUST NOT replace a file's recorded checksum with
 a newly computed one unless Turbo-Collection wrote that file's current content
@@ -118,12 +117,11 @@ MUST NOT infer identity from a matched `volumeId` or `relativePath`. The hint
 MUST be optional and non-load-bearing: Turbo-Collection MUST function without
 it, MUST fall back to asking when it is absent or no longer resolves, and MUST
 NOT store an absolute path, deriving the mount point at run time from `volumeId`
-through that copy's storage (R-TGT-5) instead. Location receipts propagate as
-every receipt file does: on a mirror, Turbo-Collection MUST bring both copies'
-copy-root location receipts to the union of the two, copying into each copy
-every one the other holds that it lacks and never overwriting one (R-REC-6,
-R-REC-7). A location receipt records where a copy was **observed**, not where it
-**remains** (R-REC-8).
+instead. Location receipts propagate as every receipt file does: on a mirror,
+Turbo-Collection MUST bring both copies' copy-root location receipts to the
+union of the two, copying into each copy every one the other holds that it lacks
+and never overwriting one (R-REC-6, R-REC-7). A location receipt records where a
+copy was **observed**, not where it **remains** (R-REC-8).
 
 > **Example.** A matched `volumeId` says only "look here"; the copy's identity
 > is confirmed from its own configuration (R-MFILE-19), never from the matched

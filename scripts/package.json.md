@@ -33,23 +33,27 @@ threshold, so it never fails a run, and plain `test` stays without it.
 repository's own**, not a third-party tool. It invokes
 [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), which
 resolves every dependency to its newest allowed release, rewrites both
-`package.json` and `package-lock.json`, and reports what moved. It carries no
-flags because what to hold back is data, not a command-line argument.
-`@types/node` is held to the Node floor that `engines` already records: a floor
-of `>=24.19.0` resolves it within `>=24.0.0 <=24.19.0`, so types never carry a
-version above the lowest Node this code has to run on, and raising the floor is
-the single edit that moves both. The cap is the floor's own version on purpose.
-The patch of `@types/node` only counts revisions of the types, so a later
-`24.19.x` would describe the same Node, but a plain comparison of two versions
-is easier to hold in mind than that numbering, and a few revisions of the types
-are the accepted price. Every hold is a range recorded in
+`package.json` and `package-lock.json`, and reports what moved. A range keeps
+its form, whatever npm is configured to write on the machine: what stands in
+front of its version (`^`, `~`, `>=`, `=`, or nothing) stays in front of the new
+one. It carries no flags because what to hold back is data, not a command-line
+argument. `@types/node` is held to the Node floor that `engines` already
+records: a floor of `>=24.19.0` resolves it within `>=24.0.0 <=24.19.0`, so
+types never carry a version above the lowest Node this code has to run on, and
+raising the floor is the single edit that moves both. The cap is the floor's own
+version on purpose. The patch of `@types/node` only counts revisions of the
+types, so a later `24.19.x` would describe the same Node, but a plain comparison
+of two versions is easier to hold in mind than that numbering, and a few
+revisions of the types are the accepted price. Every hold is a range recorded in
 [`helpers/npm-version-exceptions.json`](helpers/npm-version-exceptions.json).
-The one for `@types/node` is written there at the start of each run, a dry run
-included, by
+The one for `@types/node` is written there at the start of each run by
 [`node-types-version-exception.ts`](helpers/node-types-version-exception.ts);
-any other is recorded by hand, and there is none today. Wrapping it as a verb is
-what lets `npm run update` work from anywhere, since npm runs a script from this
-directory and a bare `node helpers/...` path resolves only from here.
+any other is recorded by hand, and there is none today. A dry run changes no
+file and reports what it would have written and installed. `--no-types-node`
+leaves out the writing of that entry, and `--no-dependencies` leaves out the
+update. Wrapping it as a verb is what lets `npm run update` work from anywhere,
+since npm runs a script from this directory and a bare `node helpers/...` path
+resolves only from here.
 
 **`tsc` takes no arguments on purpose.** Given no input files it reads
 [`tsconfig.json`](tsconfig.json), which is where `noEmit`, `strict` and
@@ -124,8 +128,8 @@ good evidence, but it is not a vendor promise and may change.
 They are different numbers for different things, and they should be free to
 diverge.
 
-`turbo-collection-spec.md` R-LOG-3 requires a run's log to record **both** the
-Turbo-Collection version and the specification version it conforms to. That
+`turbo-collection-core-spec.md` R-LOG-3 requires a run's log to record **both**
+the Turbo-Collection version and the specification version it conforms to. That
 obligation only means something if the two are separate. Their bump tests differ
 as well: the specification's is artifact-driven (R-VER-1, MAJOR when an artifact
 written under the previous version would parse differently), while this one

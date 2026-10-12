@@ -20,7 +20,7 @@ relationship pointers already used there, as a `Depends on:` field naming the de
 identifier and the MAJOR line depended on. Ordinary cross-citations, the "see also" and rationale
 pointers documents make of each other constantly, are informative and are not declared.
 
-The declaration is required, not a convention, because `turbo-collection-spec.md` R-META-1 makes the
+The declaration is required, not a convention, because `traceability-requirement.md` R-META-1 makes the
 set of documents that bind the implementation *jointly sufficient*, and sufficiency is worth little
 if a reader holding one document cannot tell which others belong in the set. A future reader
 recovering the data needs the document to state what else it must be read with. This is the same job

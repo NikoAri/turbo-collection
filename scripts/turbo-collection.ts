@@ -15,7 +15,7 @@ async function runTurboCollection(): Promise<void> {
 }
 
 async function main(args: readonly string[]): Promise<void> {
-  const { values } = parseArgs({
+  const { values: cliArgs } = parseArgs({
     args: [...args],
     options: {
       help: { type: "boolean", short: "h" },
@@ -23,7 +23,7 @@ async function main(args: readonly string[]): Promise<void> {
     allowPositionals: true,
   });
 
-  if (values.help) {
+  if (cliArgs.help) {
     console.log(HELP_TEXT);
     return;
   }
