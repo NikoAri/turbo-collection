@@ -312,7 +312,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
         : "latest";
     }
     console.log(
-      `Package ${packageName}: ${origVersion} -> ${npmVersion}  (${versionNoteString})`,
+      `Package: ${packageName}: ${origVersion} -> ${npmVersion}  (${versionNoteString})`,
     );
     if (alreadyAtVersion) {
       continue;
@@ -389,7 +389,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
       const origRange = origAllDependencies[packageName] ?? "absent";
       const newRange = newAllDependencies[packageName] ?? "absent";
       console.log(
-        `Updated Package ${packageName}: ${origRange} -> ${newRange}`,
+        `Updated Package: ${packageName}: ${origRange} -> ${newRange}`,
       );
     }
   }
