@@ -33,6 +33,7 @@ import { writeNodeTypesException } from "./node-types-version-exception.ts";
 // npm-version-exceptions.json sits next to this script.
 const packageJsonDir = new URL("../", import.meta.url);
 const packageJsonUrl = new URL("package.json", packageJsonDir);
+const packageLockUrl = new URL("package-lock.json", packageJsonDir);
 const npmVersionExceptionsUrl = new URL(
   "npm-version-exceptions.json",
   import.meta.url,
@@ -194,6 +195,21 @@ function findPackageExceptions(): Record<PackageName, VersionRange> {
   }
 }
 
+// package-lock.json, read for the version it has installed of each package. Its `packages` are
+// keyed by where a package sits, `node_modules/<name>` for a direct dependency. A lockfile that
+// is missing or incorrect reads as one with no package, so every package is then installed.
+type PackageLockType = {
+  packages?: Record<string, { version?: Version }>;
+};
+
+function findPackageLock(): PackageLockType {
+  try {
+    return EnsureJsonParseUrl<PackageLockType>(packageLockUrl);
+  } catch {
+    return {};
+  }
+}
+
 // The npm settings that make `npm install name@version` write a range of the same form as
 // `origRange`: whatever stands in front of its version stays in front of the new one. That is
 // `^`, `~`, `>=`, `=`, or nothing for an exact version. Left alone, npm writes the form its own
@@ -263,6 +279,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
   // npm takes its save settings once for a whole command, so packages are installed together
   // only where their ranges have the same form. Keyed by those settings.
   const nameVersionStringsBySaveSettings: Record<string, string[]> = {};
+  const packageLock = findPackageLock();
   for (const { packageName, requestedRange } of packagesToUpdate) {
     const origVersion = EnsureObj(origAllDependencies[packageName]);
     const saveSettings = getSaveSettings(packageName, origVersion);
@@ -271,12 +288,35 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
       packageName,
       requestedRange ?? "latest",
     );
-    const versionNoteString = requestedRange
-      ? `held to ${requestedRange}`
-      : "latest";
+
+    // A package is left out of the install only where both files already have this version:
+    // the range in package.json and the version package-lock.json has installed. The range can
+    // allow more than a hold does, so the lockfile is what shows a package that drifted.
+    //
+    // getSaveSettings has checked that the range is one version with at most a prefix in front,
+    // so the version starts at the first digit.
+    const origVersionNumber = origVersion.slice(origVersion.search(/\d/));
+    const lockedVersion =
+      packageLock.packages?.[`node_modules/${packageName}`]?.version;
+    const alreadyAtVersion =
+      origVersionNumber === npmVersion && lockedVersion === npmVersion;
+
+    let versionNoteString: string;
+    if (requestedRange) {
+      versionNoteString = alreadyAtVersion
+        ? `already at newest allowed, held to ${requestedRange}, not updating`
+        : `held to ${requestedRange}`;
+    } else {
+      versionNoteString = alreadyAtVersion
+        ? "already at latest, not updating"
+        : "latest";
+    }
     console.log(
       `Package ${packageName}: ${origVersion} -> ${npmVersion}  (${versionNoteString})`,
     );
+    if (alreadyAtVersion) {
+      continue;
+    }
 
     const nameVersionStrings = (nameVersionStringsBySaveSettings[
       saveSettings
@@ -292,6 +332,12 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     npmInstallArgsList.push(
       `install ${saveSettings} ${nameVersionStrings.join(" ")}`,
     );
+  }
+
+  if (npmInstallArgsList.length === 0) {
+    console.log();
+    console.log("Every package is already at its version. Nothing to install.");
+    return;
   }
 
   if (npmUpdaterCliArgs.dryRun) {
