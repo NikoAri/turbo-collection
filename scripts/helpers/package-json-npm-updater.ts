@@ -388,13 +388,13 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     for (const packageName of updatedPackages) {
       const origRange = origAllDependencies[packageName] ?? "absent";
       const newRange = newAllDependencies[packageName] ?? "absent";
-      console.log(`  ${packageName}: ${origRange} -> ${newRange}`);
+      console.log(
+        `Updated Package ${packageName}: ${origRange} -> ${newRange}`,
+      );
     }
   }
   console.log();
-  console.log(
-    "Next: run `npm run lint && npm test`, then review `git diff` before committing.",
-  );
+  console.log("Next: run `npm run lint && npm test`");
 }
 
 type NpmUpdaterCliArgs = {
