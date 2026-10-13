@@ -324,7 +324,8 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     nameVersionStrings.push(`${packageName}@${npmVersion}`);
   }
 
-  // Each spec is `name@version` with a concrete version, which holds nothing a shell acts on.
+  // Each spec is `name@version` with a concrete version
+  // Used by "npm install name@version" to modify package.json and package-lock.json files
   const npmInstallArgsList: string[] = [];
   for (const [saveSettings, nameVersionStrings] of Object.entries(
     nameVersionStringsBySaveSettings,
