@@ -1,3 +1,4 @@
+import console from "node:console";
 import { readFileSync, writeFileSync } from "node:fs";
 import type { URL } from "node:url";
 

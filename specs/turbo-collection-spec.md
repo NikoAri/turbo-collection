@@ -2,7 +2,7 @@
 
 > **Spec version:** 0.1.0-draft  
 > **Created:** 2026-07-12  
-> **Status:** Draft. No implementation exists yet.
+> **Status:** Draft.
 
 This document is the **normative source of truth** for what Turbo-Collection
 must do. It is language-neutral and tool-neutral on purpose, so that the tests
@@ -408,14 +408,14 @@ SL stands for Standard Library
 | Integrity         | SL                | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                         |
 | Meta Files        | SL                | JSON, parsed by the runtime's standard library, with no third-party dependency        |
 | Logger            | SL                | Standard Library; Plain-text files, one per run, written outside every copy (R-LOG-5) |
-| .tcignore         | `ignore`          | (MIT) Link???, vendored, for gitignore pattern semantics                              |
+| .tcignore         | `ignore`          | (MIT) <https://www.npmjs.com/package/ignore>, for gitignore pattern semantics         |
 
 **Minimal third-party dependencies, and the test one must pass.**
 
 - It implements a **documented format** that this specification already cites.
 - It carries **no transitive dependencies**.
-- It is **vendored into the repository**, with its license notice, rather than
-  resolved at build time, so the tool still builds with no registry reachable.
+- It is **listed in the table above**, with its license and a link, and
+  installed with npm.
 
 **Loading: compiled in.** Importers and storage support are ordinary modules in
 the codebase, selected by configuration. There is no dynamic discovery, no

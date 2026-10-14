@@ -115,4 +115,4 @@ there is more than one area to group.
 | 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |
 | 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
-| 2026-10-12 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-12-copy-creation-decision.md) | Accepted |
+| 2026-10-13 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-13-copy-creation-decision.md) | Accepted |

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import console from "node:console";
+import process from "node:process";
 import { test } from "node:test";
 
 import {
@@ -177,9 +179,8 @@ test("parseCliArgs: --types-node and --dependencies state the default", () => {
   assert.equal(stated.dependencies, true);
 });
 
-test("parseCliArgs: --dry-run and -n both set the dry-run flag", () => {
+test("parseCliArgs: --dry-run sets the dry-run flag", () => {
   assert.equal(parseCliArgs(["--dry-run"]).dryRun, true);
-  assert.equal(parseCliArgs(["-n"]).dryRun, true);
 });
 
 test("parseCliArgs: positional names are collected in order", () => {
@@ -190,12 +191,15 @@ test("parseCliArgs: positional names are collected in order", () => {
 });
 
 test("parseCliArgs: flags and package names mix freely", () => {
-  assert.deepEqual(parseCliArgs(["-n", "--no-types-node", "typescript"]), {
-    dryRun: true,
-    typesNode: false,
-    dependencies: true,
-    packages: ["typescript"],
-  });
+  assert.deepEqual(
+    parseCliArgs(["--dry-run", "--no-types-node", "typescript"]),
+    {
+      dryRun: true,
+      typesNode: false,
+      dependencies: true,
+      packages: ["typescript"],
+    },
+  );
 });
 
 test("parseCliArgs: --help prints usage and exits 0", (t) => {

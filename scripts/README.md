@@ -43,7 +43,7 @@ From the `scripts` directory:
 npm install
 ```
 
-That installs dev-time dependencies, and is the whole of setup.
+That installs every dependency, and is the whole of setup.
 
 ## Commands
 
@@ -75,19 +75,24 @@ being told, and what `package.json` deliberately leaves out:
 
 ## What this is today
 
-**A working toolchain and nothing else.** The entry point prints its own name
-and the suite runs one empty test. Implementation starts next session.
+**The start of the implementation: `init` works, and nothing else does yet.**
+`node turbo-collection.ts init` makes a directory a copy, as
+`turbo-collection-core-spec.md` R-CLI-11 describes. Import, backup, status and
+verify are not written.
 
-That is deliberate. What this proves is that Node runs TypeScript with no build
-step, that `tsc` checks it, that Prettier and cspell reach it, and that
-`node --test` discovers `test/`. Those are the things worth having settled
-before any requirement is implemented, and they are now settled.
+Init itself still owes the report of what each ignore pattern matched
+(`meta-file-spec.md` R-MFILE-21), a log of the run (R-LOG-1), and a dry run
+(R-CLI-5).
 
-| File                                         | What it holds                                           |
-| -------------------------------------------- | ------------------------------------------------------- |
-| [`turbo-collection.ts`](turbo-collection.ts) | Entry point. A placeholder.                             |
-| [`test/`](test/)                             | Tests. One placeholder, proving the runner works.       |
-| [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do. |
+| File                                         | What it holds                                             |
+| -------------------------------------------- | --------------------------------------------------------- |
+| [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line and runs init.        |
+| [`init.ts`](init.ts)                         | The init operation.                                       |
+| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says whether a path is ignored. |
+| [`templates/`](templates/)                   | The starter ignore file that init writes into a copy.     |
+| [`helpers/`](helpers/)                       | The script behind `npm run update`.                       |
+| [`test/`](test/)                             | Tests, each named for the requirement it exercises.       |
+| [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do.   |
 
 ## Rules this code is held to
 
@@ -99,23 +104,32 @@ code and tests to documents whose filename ends in `-spec.md`. Never cite
 two remedies: add the requirement, or remove the code. There is no third option,
 and "it seemed useful" is not one.
 
-**Zero installed runtime dependencies.** Section 12 binds this to TypeScript on
-Node, standard library first, and admits a third-party package only when it is
-vendored into the repository, so nothing is resolved from a registry at run
-time. `typescript` and `@types/node` are development-time only: Node strips
-types as it loads each file, so TypeScript is a checker here and never a
-compiler, and neither package is present when the tool runs.
+**Standard library first.** Section 12 binds this to TypeScript on Node, and
+admits a third-party package only when it implements a documented format the
+specification cites, carries no dependencies of its own, and is listed in that
+section's table with its license and a link. Such a package is installed with
+npm. `ignore`, which matches `.tcignore` patterns, is listed there. `typescript`
+and `@types/node` are development-time only: Node strips types as it loads each
+file, so TypeScript is a checker here and never a compiler, and neither package
+is present when the tool runs.
 
 **Erasable syntax only.** Type stripping erases; it does not transform. `enum`,
 `namespace`, parameter properties and `import =` all type check and then fail to
 run, so `erasableSyntaxOnly` in [`tsconfig.json`](tsconfig.json) rejects them at
 check time instead.
 
+**TypeScript best practices.**
+[`docs/typescript-best-practice/`](../docs/typescript-best-practice/) holds how
+the TypeScript here is written, one practice to a document. Read each document
+there before changing a `.ts` file.
+
 **Never delete.** `R-MIRROR-3` and `R-TGT-7` prohibit deleting a file in a copy,
 with one carve-out for Turbo-Collection's own temporary files (`R-MIRROR-8`).
-Section 13 requires a test asserting no code path deletes. That test cannot be
-written until there is code to assert about; write it with the first operation
-that touches a filesystem, not after.
+Section 13 requires a test asserting no code path deletes. That test is not
+written. A scan of the source for calls that delete was considered on 2026-10-13
+and set aside as too weak: it misses a delete done by a program this code runs,
+and a rename or an overwrite that destroys content. A better form is owed. Until
+there is one, whoever reads a change holds this rule.
 
 **Every MUST maps to a test.** Section 13. Nothing to meet yet. When it starts,
 name the requirement each test exercises, so the traceability audit Section 13

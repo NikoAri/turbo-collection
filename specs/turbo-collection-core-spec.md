@@ -5,7 +5,7 @@ Import
 Backup
 Verify
 
-This is implementation details to help with particular implemementation like in Node.js.
+This is implementation details to help with particular implementation like in Node.js.
 Actual general instructions should be in turbo-collection-spec.md
 
 ## Init
@@ -289,18 +289,26 @@ be settable in configuration or by a command-line flag.
 operation that makes the directory it is given a copy, by writing into that
 directory a configuration file (`meta-file-spec.md` R-MFILE-17) and an ignore
 file holding the starter patterns that `meta-file-spec.md` describes
-(R-MFILE-20). Init MUST create a directory it is given that does not exist
-(R-CLI-14). Init MUST refuse a directory that holds any file, at any depth,
-other than one a starter pattern matches. Init MUST take the new copy's
-`collectionName` from a name given on the command line, and MUST use `main`
-where no name is given. Init MUST refuse to act on a directory that is inside a
-copy or that contains a copy. Given a directory that is already a copy, init
-MUST fail without changing anything, and MUST report that the directory is
-already a copy.
+(R-MFILE-20). Init MUST create a directory it is given that does not exist,
+with every directory above it that does not exist. Where it is given no
+directory, init MUST act on the current working directory. Init MUST refuse a
+directory that holds any file, at any depth, other than one a starter pattern
+matches. Init MUST take the new copy's
+`collectionName` from a name given on the command line and, where no name is
+given, from the name of that copy's directory, with ASCII letters `A` through
+`Z` in lower case, each run of ASCII characters that are neither a letter nor a
+digit replaced by one hyphen, and a hyphen at either end removed. Where the
+name is not a valid `collectionName` (`meta-file-spec.md` R-MFILE-18,
+R-MFILE-19), init MUST refuse, and MUST report that a valid name is needed.
+Init MUST write a description given on the command line as the new copy's
+`collectionDescription` (`meta-file-spec.md` R-MFILE-18), and MUST write none
+where none is given or the one given is empty.
 
 > **Example.** An init run by mistake on a folder of photographs fails and
 > writes nothing. A folder that holds only a `.DS_Store` its operating system
-> left there is made a copy.
+> left there is made a copy. A directory that is already a copy holds its
+> configuration file, so an init of it fails the same way. An init of a folder
+> named `Photos (2019)`, given no name, makes a copy named `photos-2019`.
 
 **R-CLI-9.**  
 **Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
@@ -344,11 +352,11 @@ and MUST report every file that directory holds.
 **R-CLI-14.** Turbo-Collection MUST NOT create a copy in any operation other
 than **init** and **backup**, and in every other operation MUST refuse to act on
 a directory given as a copy that is not a copy. Where init or backup creates a
-directory, Turbo-Collection MUST create only the last segment of that
-directory's path, and MUST refuse a path whose parent directory does not exist.
+directory, Turbo-Collection MUST also create every directory above it that does
+not exist.
 
-> **Example.** Only the final path segment is created, so a disconnected
-> removable drive fails rather than building a copy on the local disk.
+> **Example.** A backup given `archive/photos`, where `archive` does not exist,
+> creates both directories.
 
 **R-CLI-15.** Turbo-Collection MUST be operable under more than one operating
 system. The name and content of every file a Run writes into a Copy MUST NOT

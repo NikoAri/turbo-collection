@@ -204,9 +204,15 @@ what turns `node turbo-collection.ts` into `turbo-collection`.
 
 ## Dependencies
 
-Runtime dependencies are **zero and must stay zero**, which is what
-`turbo-collection-spec.md` Section 12 binds: a third-party package it admits is
-vendored into the repository, never installed. The four development dependencies
-never ship and never run against a collection: `typescript` and `@types/node`
-type check source that Node already understands, and `prettier` and `cspell`
-check formatting and spelling.
+Runtime dependencies are **kept few**, which is what `turbo-collection-spec.md`
+Section 12 binds: a third-party package it admits implements a documented format
+the specification cites, carries no dependencies of its own, and is listed in
+that section's table with its license and a link. `ignore`, which matches
+`.tcignore` patterns, is listed there, sits under `dependencies`, and is
+installed with npm like every package here. Until 2026-10-13 Section 12 had such
+a package copied into the repository and not installed. Now npm installs it, and
+`package-lock.json` records its exact version and integrity hash.
+
+The development dependencies never ship and never run against a collection:
+`typescript` and `@types/node` type check source that Node already understands,
+and `prettier` and `cspell` check formatting and spelling.

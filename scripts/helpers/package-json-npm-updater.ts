@@ -1,5 +1,7 @@
 import { execSync } from "node:child_process";
+import console from "node:console";
 import { readFileSync } from "node:fs";
+import process from "node:process";
 import { fileURLToPath, URL } from "node:url";
 
 import { writeNodeTypesException } from "./node-types-version-exception.ts";
@@ -413,7 +415,7 @@ range. @types/node always has an entry there: each run first writes the range th
 keeps it at or below the Node floor in package.json engines.
 
 Options:
-  -n, --dry-run            Report what a run would write and install, and change no
+      --dry-run            Report what a run would write and install, and change no
                            file.
       --[no-]types-node    Write the @types/node entry first. On by default;
                            --no-types-node skips it.
@@ -428,8 +430,9 @@ export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
     dependencies: true,
     packages: [],
   };
+
   for (const arg of argv) {
-    if (arg === "-n" || arg === "--dry-run") {
+    if (arg === "--dry-run") {
       npmUpdaterCliArgs.dryRun = true;
     } else if (arg === "--types-node" || arg === "--no-types-node") {
       npmUpdaterCliArgs.typesNode = arg === "--types-node";
