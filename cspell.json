@@ -67,7 +67,8 @@
     "unparseable",
     "unpowered",
     "unwritable",
-    "winget"
+    "winget",
+    "φωτος"
   ],
   "flagWords": [
     "regeneratable->regenerable",

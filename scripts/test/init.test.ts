@@ -18,7 +18,7 @@ import {
   collectionNameFor,
   createDirectoryIfMissing,
   ensureDirectoryHoldsNoFiles,
-  init,
+  initializeTc,
 } from "../init.ts";
 
 // A new, empty directory under the system's temporary directory, removed when the test ends.
@@ -202,7 +202,7 @@ function configurationFileOf(directory: string): string {
 test("R-CLI-11: init writes a configuration file and the starter ignore file, and nothing else", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  assert.equal(init(directory, undefined, undefined), "family-photos");
+  assert.equal(initializeTc(directory, undefined, undefined), "family-photos");
 
   assert.deepEqual(listUnder(directory), [
     ".tcignore",
@@ -214,7 +214,7 @@ test("R-CLI-11: init writes a configuration file and the starter ignore file, an
 test("R-MFILE-18, R-MFILE-27: the configuration file states its version and the copy's name, a field to a line", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  init(directory, undefined, undefined);
+  initializeTc(directory, undefined, undefined);
 
   assert.equal(
     readFileSync(configurationFileOf(directory), "utf8"),
@@ -225,7 +225,7 @@ test("R-MFILE-18, R-MFILE-27: the configuration file states its version and the 
 test("R-CLI-11: a description given is written as the copy's collectionDescription", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
-  init(directory, "main", "The drive in the desk");
+  initializeTc(directory, "main", "The drive in the desk");
 
   assert.deepEqual(
     JSON.parse(readFileSync(configurationFileOf(directory), "utf8")),
@@ -244,7 +244,7 @@ test("R-CLI-11: with no description given, or an empty one, none is written", (t
   ] as const) {
     const directory = path.join(temporaryDirectory(t), folder);
 
-    init(directory, "main", description);
+    initializeTc(directory, "main", description);
 
     assert.deepEqual(
       JSON.parse(readFileSync(configurationFileOf(directory), "utf8")),
@@ -256,7 +256,7 @@ test("R-CLI-11: with no description given, or an empty one, none is written", (t
 test("R-CLI-15: the ignore file is the starter file byte for byte, with no carriage return", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
-  init(directory, undefined, undefined);
+  initializeTc(directory, undefined, undefined);
 
   const written = readFileSync(path.join(directory, ".tcignore"));
   assert.deepEqual(
@@ -268,11 +268,14 @@ test("R-CLI-15: the ignore file is the starter file byte for byte, with no carri
 
 test("R-CLI-11: an init of a directory that is already a copy is an error and changes nothing", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  init(directory, "main", undefined);
+  initializeTc(directory, "main", undefined);
   const holds = listUnder(directory);
   const configuration = readFileSync(configurationFileOf(directory), "utf8");
 
-  assert.throws(() => init(directory, "other", undefined), /holds a file/);
+  assert.throws(
+    () => initializeTc(directory, "other", undefined),
+    /holds a file/,
+  );
 
   assert.deepEqual(listUnder(directory), holds);
   assert.equal(
@@ -285,6 +288,9 @@ test("R-CLI-11: an init of a folder of photographs is an error and writes nothin
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, "2019/photo.jpg");
 
-  assert.throws(() => init(directory, "main", undefined), /holds a file/);
+  assert.throws(
+    () => initializeTc(directory, "main", undefined),
+    /holds a file/,
+  );
   assert.deepEqual(listUnder(directory), ["2019", "2019/photo.jpg"]);
 });

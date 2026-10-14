@@ -380,12 +380,16 @@ copy's directory (`turbo-collection-core-spec.md` R-CLI-11, R-CLI-13), and MUST
 write it into that copy's configuration file. Thereafter Turbo-Collection MUST
 determine a copy's name by reading that declaration, and MUST NOT infer it from
 a volume label, a mount path, a drive letter, or a command-line argument.
-`collectionName` MUST consist only of characters that are portable across common
-filesystems, namely ASCII letters `a` through `z`, digits `0` through `9`, and
-hyphen, because it appears verbatim in receipt filenames (R-MFILE-13).
+`collectionName` MUST be in Unicode Normalization Form C (NFC), and MUST NOT
+contain a control character (Unicode general category Cc) or any of
+`< > : " / \ | ? *`, because it appears verbatim in Receipt filenames
+(R-MFILE-13).
 Turbo-Collection MUST refuse the whole run when two connected copies state one
 name, comparing names without regard to letter case, since a difference of case
 alone names a single file on a case-insensitive filesystem (R-MFILE-13).
+
+> **Example.** On every computer, whatever its language, `MAIN` and `main` are
+> one name, and so are `ΦΩΤΟΣ` and `φωτος`.
 
 **R-MFILE-20.** A copy MAY carry an ignore file named `.tcignore` at its root.
 It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines

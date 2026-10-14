@@ -105,13 +105,14 @@ export function collectionNameFor(
   }
 
   const directoryPath = path.resolve(directory);
-  const name = nameFromDirectoryName(path.basename(directoryPath));
-  if (!CollectionNamePattern.test(name)) {
+  const tcName = nameFromDirectoryName(path.basename(directoryPath));
+  if (!CollectionNamePattern.test(tcName)) {
     throw new Error(
       `No name for the copy can be taken from "${directoryPath}". Give one with -n, in lower case letters, digits and hyphens.`,
     );
   }
-  return name;
+
+  return tcName;
 }
 
 // Makes `directory` a copy, and returns the name that copy takes (R-CLI-11).
@@ -119,12 +120,12 @@ export function collectionNameFor(
 // The name is checked before a directory is created, and the directory before a file is written.
 // The ignore file is written first and the configuration file last, since the configuration file
 // is what makes a directory a copy. A description is optional, and an empty one is none.
-export function init(
+export function initializeTc(
   directory: string,
   givenName: string | undefined,
   description: string | undefined,
 ): string {
-  const name = collectionNameFor(directory, givenName);
+  const tcName = collectionNameFor(directory, givenName);
   createDirectoryIfMissing(directory);
   ensureDirectoryHoldsNoFiles(directory);
 
@@ -135,7 +136,7 @@ export function init(
   // The fields of R-MFILE-18, each on a line of its own (R-MFILE-27).
   const configuration = {
     version: MetaFileSpecVersion,
-    collectionName: name,
+    collectionName: tcName,
     ...(description ? { collectionDescription: description } : {}),
   };
   const metaDirectory = path.join(directory, ".turbo-collection");
@@ -144,5 +145,6 @@ export function init(
     path.join(metaDirectory, "turbo-collection-config.json"),
     `${JSON.stringify(configuration, null, 2)}\n`,
   );
-  return name;
+
+  return tcName;
 }

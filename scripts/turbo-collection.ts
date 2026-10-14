@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { parseArgs } from "node:util";
 
-import { init } from "./init.ts";
+import { initializeTc as initializeTc } from "./init.ts";
 
 const HELP_TEXT = `Turbo-Collection
 
@@ -58,7 +58,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
 
 // Reports an error in the command line, and has the run exit with a non-zero status
 // (turbo-collection-core-spec.md R-CLI-1).
-function reportUsageError(message: string): void {
+function reportCliUsageError(message: string): void {
   console.error(`${message}\n\n${HELP_TEXT}`);
   process.exitCode = 1;
 }
@@ -77,21 +77,21 @@ async function main(args: readonly string[]): Promise<void> {
   }
 
   if (tcCliArgs.command !== "init") {
-    reportUsageError(`Unknown command: ${tcCliArgs.command}`);
+    reportCliUsageError(`Unknown command: ${tcCliArgs.command}`);
     return;
   }
 
   // Given no directory, init acts on the current one (R-CLI-11).
   const [directory = ".", ...unexpected] = tcCliArgs.commandArgs;
   if (unexpected.length > 0) {
-    reportUsageError(
+    reportCliUsageError(
       `init takes one directory, and was also given: ${unexpected.join(" ")}\nA path that holds a space needs quotes around it.`,
     );
     return;
   }
 
-  const name = init(directory, tcCliArgs.name, tcCliArgs.description);
-  console.log(`Made "${path.resolve(directory)}" a copy named "${name}".`);
+  const tcName = initializeTc(directory, tcCliArgs.name, tcCliArgs.description);
+  console.log(`Made "${path.resolve(directory)}" a copy named "${tcName}".`);
 }
 
 if (import.meta.main) {
