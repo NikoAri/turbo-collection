@@ -116,3 +116,4 @@ there is more than one area to group.
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
 | 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md) | Accepted |
 | 2026-10-14 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-14-copy-creation-decision.md) | Accepted |
+| 2026-10-14 | [A run's log is one JSON document in the operating system's directory for temporary files](2026-10-14-log-location-decision.md) | Accepted |

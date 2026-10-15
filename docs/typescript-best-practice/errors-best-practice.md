@@ -55,6 +55,10 @@ is what `turbo-collection-core-spec.md` R-CLI-1 asks of a run that could not do 
   carries on is not an error stopping a run.
 - **A `catch` that throws again with more to say.** Naming the package or the file that a lower
   error was about is still one plain `Error` on its way out.
+- **The `catch` around `main` that writes an error into the run's log and throws it again**, since
+  `turbo-collection-core-spec.md` R-LOG-4 asks for every failure in the log. The same error goes on
+  its way out, so Node still reports its message and stack trace, and the run still exits with
+  status 1. Only the source line Node quotes above them becomes a line of Node's own.
 
 ## What holds it
 

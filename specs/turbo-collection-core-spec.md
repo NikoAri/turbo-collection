@@ -236,9 +236,9 @@ non-zero. A crash MUST NOT be the only evidence that something went wrong.
 **R-LOG-5.** A log MUST NOT be the only record of an event that changes whether
 material at an import source can safely be deleted. Such events are recorded in
 receipts (R-MFILE-13); a log MAY additionally record them and MUST NOT be relied
-on to. Turbo-Collection MUST NOT write a log inside a copy. A log MAY be written
-elsewhere on a drive that holds a copy, and MAY be ephemeral and local to the
-computer performing the run.
+on to. Turbo-Collection MUST NOT write a log inside a copy. Turbo-Collection
+MUST write a Run's log into the operating system's directory for temporary
+files.
 
 ### 8.3 Command Line (`R-CLI-*`)
 

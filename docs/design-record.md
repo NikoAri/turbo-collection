@@ -191,9 +191,10 @@ as requirements, in [`specs/durability-requirement.md`](../specs/durability-requ
   dependency** rather than none. Reasoning:
   [the drive and hardware decision](decisions/2026-08-15-drive-naming-and-hardware-decision.md).
 - **The computer is equipment, not infrastructure.** No machine is part of this system. Configuration
-  travels on the working copy, logs are written to the drives, and nothing is installed or
-  remembered on a host, so a backup can be performed on a borrowed computer in another building. This
-  is what several separately-argued decisions were quietly buying.
+  travels on the working copy, and nothing is installed on a host or remembered there: a run leaves
+  its log in the computer's temporary directory, and no later run reads it. So a backup can be
+  performed on a borrowed computer in another building. This is what several separately-argued
+  decisions were quietly buying.
 - **The code is not the trust anchor.** This principle is what makes the previous one hard. If the
   orchestrator is small, regenerable from a specification, and therefore disposable, then any
   guarantee resting on the code alone can be regenerated away. Borg is instructive here: it does not
@@ -277,7 +278,7 @@ graph TD
     E -.rsync fallback.-> RS[rsync]
     I --> MAN[manifest.json]
     C --> CFG[turbo-collection-config.json]
-    L --> LOG[logs/*.txt]
+    L --> LOG[turbo-collection/logs/*.log.json<br/>in the OS temporary directory]
 
     RC --> DATA[(Plain file tree<br/>on external drive)]
     RS --> DATA
