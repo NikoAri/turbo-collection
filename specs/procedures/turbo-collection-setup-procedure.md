@@ -37,7 +37,7 @@ what you do with each and where it sits:
 > the copies are peers. _Working_, _home_ and _off-site_ name what a copy is for
 > and where it rests, not a rank. Which drive becomes the working copy is a
 > convention you adopt, not a property Turbo-Collection depends on: it
-> identifies a copy by its `collectionName` in configuration, not by which one
+> identifies a copy by its `copyName` in configuration, not by which one
 > you import into.
 
 ## 2. Get three drives

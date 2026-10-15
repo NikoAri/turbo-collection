@@ -17,8 +17,9 @@ trail (`R-REC-9`).
 Two guardrails, carried from the in-principle decision, hold it safe:
 
 - **A locator finds a candidate; configuration authorizes.** A resolved locator points at a candidate
-  only; Turbo-Collection reads that copy's `turbo-collection-config.json` and confirms `collectionName`
-  before acting, and never infers identity from a matched volume (`R-REC-9`, `R-MFILE-19`).
+  only; Turbo-Collection reads that copy's `turbo-collection-config.json` and confirms its
+  `collectionId` and `copyName` before acting, and never infers identity from a matched volume
+  (`R-REC-9`, `R-MFILE-19`).
 - **It is optional and non-load-bearing.** Turbo-Collection functions without it and falls back to
   asking when it is absent or no longer resolves. A cloud copy has no volume at all. Per the
   future-reader axiom, a convenience is never required.

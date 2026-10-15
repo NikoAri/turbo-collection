@@ -13,8 +13,8 @@ These decisions were taken together, because each one constrains the next.
 | **home copy** | kept with you, backed up with the working copy | hard disk |
 | **off-site copy** | kept in another building; it never travels | hard disk |
 
-How copies are named, and the `collectionName` field that holds a copy's name, are settled in
-[the collection-naming decision](2026-09-28-collection-naming-decision.md): a copy is named for where
+How copies are named, and the `copyName` field that holds a copy's name, are settled in
+[the collection-naming decision](2026-10-14-collection-naming-decision.md): a copy is named for where
 it permanently rests, and the working copy is `main`. That record also carries the rule that a name
 may encode only what changes by deliberate re-designation, which is why `R-SET-7` marks the off-site
 copy's placement but no other copy's.

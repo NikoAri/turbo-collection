@@ -93,7 +93,6 @@ there is more than one area to group.
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md) | Accepted |
 | 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
 | 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |
-| 2026-09-28 | [A copy's name is its `collectionName`, chosen for where it permanently rests](2026-09-28-collection-naming-decision.md) | Accepted |
 | 2026-09-30 | [Three operations write and two read: init, import, backup; verify and status](2026-09-30-operation-taxonomy-decision.md) | Accepted |
 | 2026-10-02 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-02-starter-ignore-file-decision.md) | Accepted |
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
@@ -115,4 +114,5 @@ there is more than one area to group.
 | 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |
 | 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
-| 2026-10-13 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-13-copy-creation-decision.md) | Accepted |
+| 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md) | Accepted |
+| 2026-10-14 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-14-copy-creation-decision.md) | Accepted |

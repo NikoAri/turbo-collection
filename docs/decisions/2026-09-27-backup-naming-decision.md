@@ -63,6 +63,6 @@ replaced by **Mirror**), the `MirrorEngine` port, and Sections 12.1, 12.3 and 14
 `meta-file-spec.md`: `R-MFILE-13`, `R-MFILE-15`, `R-MFILE-16` and commentary. The five procedures:
 `turbo-collection-backup-procedure.md` regains its title (the filename never changed), and operator
 prose across all five moves to _back up_. Requirement identifiers are not renumbered. The worked example and fixtures were renamed on
-2026-09-28 (`collectionName: "main"` and `"off-site"`, replacing the subordinate `backup1` and
+2026-09-28 (the copies `main` and `off-site`, replacing the subordinate `backup1` and
 `sample-backup-1`); copy naming is settled in
-[the collection-naming decision](2026-09-28-collection-naming-decision.md).
+[the collection-naming decision](2026-10-14-collection-naming-decision.md).

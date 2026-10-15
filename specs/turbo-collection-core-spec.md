@@ -293,22 +293,20 @@ file holding the starter patterns that `meta-file-spec.md` describes
 with every directory above it that does not exist. Where it is given no
 directory, init MUST act on the current working directory. Init MUST refuse a
 directory that holds any file, at any depth, other than one a starter pattern
-matches. Init MUST take the new copy's
-`collectionName` from a name given on the command line and, where no name is
-given, from the name of that copy's directory, with ASCII letters `A` through
-`Z` in lower case, each run of ASCII characters that are neither a letter nor a
-digit replaced by one hyphen, and a hyphen at either end removed. Where the
-name is not a valid `collectionName` (`meta-file-spec.md` R-MFILE-18,
-R-MFILE-19), init MUST refuse, and MUST report that a valid name is needed.
-Init MUST write a description given on the command line as the new copy's
-`collectionDescription` (`meta-file-spec.md` R-MFILE-18), and MUST write none
-where none is given or the one given is empty.
+matches. Init MUST take the new Collection's `collectionName` from a name given
+on the command line for the Collection and, where none is given, from the name
+of the new Copy's directory, unchanged. Init MUST take the new Copy's `copyName`
+from a name given on the command line for the Copy and, where none is given,
+MUST set `copyName` to `main`. Where a name is not valid (`meta-file-spec.md`
+R-MFILE-18, R-MFILE-19), init MUST refuse, and MUST report which name is not
+valid.
 
 > **Example.** An init run by mistake on a folder of photographs fails and
 > writes nothing. A folder that holds only a `.DS_Store` its operating system
 > left there is made a copy. A directory that is already a copy holds its
 > configuration file, so an init of it fails the same way. An init of a folder
-> named `Photos (2019)`, given no name, makes a copy named `photos-2019`.
+> named `Photos (2019)`, given neither name, makes a Copy named `main` of a
+> Collection named `Photos (2019)`.
 
 **R-CLI-9.**  
 **Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
@@ -324,30 +322,36 @@ from receipts alone and with no other copy connected, which copies each
 directory's content has reached, the date of each arrival, and the content
 present that has reached no other copy. It MUST report every arrival's date
 (R-REC-8), and MUST NOT state or imply that a copy still exists or is still
-intact. A status MUST also report each connected Copy's `collectionName` and,
-where that Copy's configuration holds a `collectionDescription`, that
-description (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
+intact. A status MUST also report each connected Copy's `collectionName` and
+`copyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
 itself cause a non-zero exit status.
 
 **R-CLI-13.**  
 **Backup Operation**  
 In a **backup**, Turbo-Collection MUST mirror every directory the backup is
-given that is a copy (`backup-spec.md` Section 7.1). Before mirroring,
-Turbo-Collection MUST create a new copy in each directory the backup is given
-that does not exist, or that holds no file at any depth except files matching a
-pattern in the ignore file of the backup's existing copy. Turbo-Collection MUST
-refuse a backup that would create a new copy unless that backup is given exactly
-one existing copy. Turbo-Collection MUST refuse to create a new copy unless a
-name for the new copy is given on the command line; that name becomes the new
-copy's `collectionName`. To create a new copy, Turbo-Collection MUST write into
-its directory a configuration file (`meta-file-spec.md` R-MFILE-17) and, where
-the existing copy has an ignore file, a duplicate of that ignore file
-(R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a
+given that is a copy (`backup-spec.md` Section 7.1). Turbo-Collection MUST
+refuse a backup unless every Copy the backup is given states the same
+`collectionId`, comparing the values character for character
+(`meta-file-spec.md` R-MFILE-18). On that refusal, Turbo-Collection MUST report
+the `collectionId` and `collectionName` of every Copy the backup is given.
+Before mirroring, Turbo-Collection MUST create a new copy in each directory the
+backup is given that does not exist, or that holds no file at any depth except
+files matching a pattern in the ignore file of the backup's existing copy.
+Turbo-Collection MUST refuse a backup that would create a new copy unless that
+backup is given exactly one existing copy. Turbo-Collection MUST refuse to
+create a new copy unless a name for the new copy is given on the command line;
+that name becomes the new copy's `copyName`. To create a new copy,
+Turbo-Collection MUST write into its directory a configuration file
+(`meta-file-spec.md` R-MFILE-17, R-MFILE-19) and, where the existing copy has an
+ignore file, a duplicate of that ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a
 backup that is not a copy and that holds any file not matching such a pattern,
 and MUST report every file that directory holds.
 
 > **Example.** A backup creates a copy only in an empty directory, so files
-> already there are not pulled into the collection by the two-way mirror.
+> already there are not pulled into the collection by the two-way mirror. Two
+> folders named `Photos`, each made a Copy by its own init, belong to different
+> Collections, so a backup given both refuses and copies nothing, although both
+> state the `collectionName` `Photos`.
 
 **R-CLI-14.** Turbo-Collection MUST NOT create a copy in any operation other
 than **init** and **backup**, and in every other operation MUST refuse to act on

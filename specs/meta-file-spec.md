@@ -25,7 +25,7 @@ Requirement ID prefix: **`R-MFILE-*`**.
 > [the receipts decision](../docs/decisions/2026-09-07-receipts-decision.md),
 > [the location-receipt decision](../docs/decisions/2026-09-10-location-receipt-decision.md),
 > [the config-placement decision](../docs/decisions/2026-09-27-config-placement-decision.md),
-> [the collection-naming decision](../docs/decisions/2026-09-28-collection-naming-decision.md),
+> [the collection-naming decision](../docs/decisions/2026-10-14-collection-naming-decision.md),
 > and [design-record](../docs/design-record.md).
 
 ---
@@ -107,11 +107,11 @@ whose name it does not recognize, and MUST report such a file instead.
 copy's root: `.tcignore` at the root; a `.turbo-collection/` subdirectory of the
 root holding the configuration file named `turbo-collection-config.json` and
 per-event location receipt files named
-`receipt-<runId>-<collectionName>.location.json` (R-MFILE-26); and, for each
+`receipt-<runId>-<copyName>.location.json` (R-MFILE-26); and, for each
 directory holding content, a `.turbo-collection/` subdirectory of that directory
 holding a manifest named `manifest.json` and per-event receipt files named
-`receipt-<runId>-<collectionName>.arrival.json` and
-`receipt-<runId>-<collectionName>.error.json`. A carried copy of a specification
+`receipt-<runId>-<copyName>.arrival.json` and
+`receipt-<runId>-<copyName>.error.json`. A carried copy of a specification
 MUST be named for the document and the full version of the text it holds.
 
 ## 3. Rules for every JSON meta file
@@ -198,17 +198,17 @@ implementation writes the same manifest.
 which it writes a content file, and in every directory in which it recorded an
 error affecting that directory's content. A receipt is a set of per-event files,
 each stored in that directory's `.turbo-collection/` subdirectory: one file per
-arrival, named `receipt-<runId>-<collectionName>.arrival.json`, and, per run
+arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run
 that recorded any error for the directory, one file named
-`receipt-<runId>-<collectionName>.error.json`. `<runId>` identifies the run and
+`receipt-<runId>-<copyName>.error.json`. `<runId>` identifies the run and
 MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`)
 followed by `-` and a short disambiguating suffix, so it contains no character
 illegal in a filename and orders files by the time the run occurred
 (`photo-path-layout-spec.md` R-PHOTO-4 uses the same basic format).
-`<collectionName>` names the copy the run wrote to, or attempted to write to,
+`<copyName>` names the copy the run wrote to, or attempted to write to,
 for that event (R-MFILE-19), and appears in the filename so that files two
-copies author in one run cannot collide; R-MFILE-19 constrains `collectionName`
-to a portable filename character set for this reason. The copy an event names is
+copies author in one run cannot collide; R-MFILE-19 limits `copyName`, for this
+reason, to characters that common filesystems accept in a filename. The copy an event names is
 not always the copy its file resides on: propagation places a copy's receipt
 files on other copies (`verify-spec.md` R-REC-6), and a mirror error names a
 destination copy that failed, which often cannot hold the file, so
@@ -224,7 +224,7 @@ writing it.
 - `tcSpecVersion`, stating the version of `turbo-collection-spec.md` the run
   conformed to
 - `runId`, identifying the run that wrote the file
-- `collectionName`, the copy the content reached
+- `copyName`, the copy the content reached
 - `date`, the date and time it was reached
 - `fileCount`, the number of content files present in the directory at that
   moment
@@ -262,7 +262,7 @@ directory. Its fields MUST be:
 - `version` (R-MFILE-4)
 - `tcSpecVersion`
 - `runId`
-- `collectionName`, the copy the run wrote to or attempted to write to
+- `copyName`, the copy the run wrote to or attempted to write to
 - `importErrors`, an array holding one object per import error: content the run
   could not place in the collection
 - `mirrorErrors`, an array holding one object per mirror error: content already
@@ -286,7 +286,7 @@ errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "collectionName": "main",
+>   "copyName": "main",
 >   "date": "2026-08-14T18:04:22Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c...",
@@ -304,7 +304,7 @@ errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260902T090500Z-b1d2",
->   "collectionName": "off-site",
+>   "copyName": "off-site",
 >   "date": "2026-09-02T09:05:00Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c..."
@@ -319,7 +319,7 @@ errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "collectionName": "main",
+>   "copyName": "main",
 >   "importErrors": [
 >     {
 >       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-core-spec.md R-SRC-5)"
@@ -332,13 +332,13 @@ errors show what is needed.
 finding it, and states that copy's own location, never another's.
 Turbo-Collection MUST store it in the `.turbo-collection/` subdirectory of the
 copy root (R-MFILE-2), one file per observation named
-`receipt-<runId>-<collectionName>.location.json`, and MUST NOT modify or delete
+`receipt-<runId>-<copyName>.location.json`, and MUST NOT modify or delete
 it once written, as with every receipt file (R-MFILE-13). Its fields MUST be:
 
 - `version` (R-MFILE-4)
 - `tcSpecVersion`
 - `runId`
-- `collectionName`, the copy this locates
+- `copyName`, the copy this locates
 - `date`, when the location was observed, in the same form an arrival's `date`
   takes (R-MFILE-14)
 - an optional `volumeId`, an identifier the volume the copy is stored on carries
@@ -363,30 +363,45 @@ named `turbo-collection-config.json` and MUST sit in the `.turbo-collection/`
 subdirectory of the root of the copy it describes (R-MFILE-2).
 
 **R-MFILE-18.** A configuration file's fields MUST be: `version` (R-MFILE-4);
-`collectionName`, stating the name receipts use for this copy; and, optionally,
-`collectionDescription`, human-readable text describing this copy.
-`collectionName` MUST be non-empty. `collectionDescription` MAY be omitted;
-where present it MUST be a non-empty string, MAY differ from copy to copy, and
-is descriptive only, so nothing MUST depend on it. Configuration states a copy's
-own identity and nothing about other copies: it declares no role and no roster
-of copies expected to exist, since copies are peers and are discovered at run
-time.
+`collectionId`, identifying the Collection this Copy belongs to;
+`collectionName`, stating that Collection's name; and `copyName`, stating the
+name Receipts use for this Copy. `collectionId` MUST be a version 4 UUID
+(RFC 9562) in its text form, with every letter in lower case, because a random
+identifier tells two Collections apart where their `collectionName` values are
+the same. `collectionName` and `copyName` MUST be non-empty. Configuration
+states a Copy's own identity and nothing about other Copies: it declares no role
+and no roster of Copies expected to exist, since Copies are peers and are
+discovered at run time.
 
-**R-MFILE-19.** Every copy MUST declare its own identity in its own
-configuration file. When **init** or **backup** creates a copy, Turbo-Collection
-MUST set that copy's `collectionName` once, at creation, from a name given on
-the command line or, where **init** is given none, a name init takes from that
-copy's directory (`turbo-collection-core-spec.md` R-CLI-11, R-CLI-13), and MUST
-write it into that copy's configuration file. Thereafter Turbo-Collection MUST
-determine a copy's name by reading that declaration, and MUST NOT infer it from
-a volume label, a mount path, a drive letter, or a command-line argument.
-`collectionName` MUST be in Unicode Normalization Form C (NFC), and MUST NOT
-contain a control character (Unicode general category Cc) or any of
-`< > : " / \ | ? *`, because it appears verbatim in Receipt filenames
-(R-MFILE-13).
-Turbo-Collection MUST refuse the whole run when two connected copies state one
-name, comparing names without regard to letter case, since a difference of case
-alone names a single file on a case-insensitive filesystem (R-MFILE-13).
+> **Example.** The configuration file of a Copy named `off-site`, in a
+> Collection named `Family Photos`:
+>
+> ```json
+> {
+>   "version": "0.1.0-draft",
+>   "collectionId": "3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30",
+>   "collectionName": "Family Photos",
+>   "copyName": "off-site"
+> }
+> ```
+
+**R-MFILE-19.** Every Copy MUST declare its own identity in its own
+configuration file. When **init** or **backup** creates a Copy, Turbo-Collection
+MUST set that Copy's `collectionId`, `collectionName` and `copyName` once, at
+creation, as `turbo-collection-core-spec.md` R-CLI-11 and R-CLI-13 state, and
+MUST write them into that Copy's configuration file. Turbo-Collection MUST
+generate a new `collectionId` for a Copy that init creates. Turbo-Collection
+MUST give a Copy that a backup creates the `collectionId` and `collectionName`
+of the backup's existing Copy, so that all Copies of a Collection hold the same
+`collectionId` and `collectionName`. Thereafter Turbo-Collection MUST determine
+a Copy's identity by reading that declaration, and MUST NOT infer it from a
+volume label, a mount path, a drive letter, or a command-line argument.
+`copyName` MUST be in Unicode Normalization Form C (NFC), and MUST NOT contain a
+control character (Unicode general category Cc) or any of `< > : " / \ | ? *`,
+because it appears verbatim in Receipt filenames (R-MFILE-13).
+Turbo-Collection MUST refuse the whole Run when two connected Copies state one
+`copyName`, comparing names without regard to letter case, since a difference of
+case alone names a single file on a case-insensitive filesystem (R-MFILE-13).
 
 > **Example.** On every computer, whatever its language, `MAIN` and `main` are
 > one name, and so are `ΦΩΤΟΣ` and `φωτος`.

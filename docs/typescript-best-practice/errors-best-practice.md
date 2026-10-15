@@ -8,9 +8,9 @@ binds nothing, and no code cites it.
 **A thing that goes wrong is an error. It is thrown as a plain `Error`, and Node reports it.**
 
 ```ts
-if (!isCollectionName(name)) {
+if (copyName === "" || CharacterNotInCopyName.test(copyName)) {
   throw new Error(
-    `"${name}" cannot be a copy's name. A name holds lower case letters, digits and hyphens.`,
+    `"${givenName}" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
   );
 }
 ```
@@ -21,9 +21,10 @@ code did wrong, and the word in names, comments and messages is _error_.
 An error that stops a run is not caught on its way out. Node prints it and exits with status 1:
 
 ```
-Error: "My Photos" cannot be a copy's name. A name holds lower case letters, digits and hyphens.
-    at collectionNameFor (file:///C:/turbo-collection/scripts/init.ts:31:11)
-    at main (file:///C:/turbo-collection/scripts/turbo-collection.ts:92:16)
+Error: "a/b" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \ | ? *.
+    at copyNameFor (file:///C:/turbo-collection/scripts/init.ts:122:11)
+    at initializeTc (file:///C:/turbo-collection/scripts/init.ts:150:20)
+    at main (file:///C:/turbo-collection/scripts/turbo-collection.ts:92:20)
 
 Node.js v24.20.0
 ```

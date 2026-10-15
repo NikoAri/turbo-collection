@@ -34,43 +34,47 @@ test("R-CLI-11: given no directory, init makes the current directory a copy, and
   });
 
   assert.equal(run.status, 0);
-  assert.match(run.stdout, /a copy named "family-photos"/);
   assert.match(
-    readFileSync(
-      path.join(directory, ".turbo-collection", "turbo-collection-config.json"),
-      "utf8",
-    ),
-    /"collectionName": "family-photos"/,
+    run.stdout,
+    /a copy named "main", of a new collection named "Family Photos"/,
   );
+  const tcConfig = readFileSync(
+    path.join(directory, ".turbo-collection", "turbo-collection-config.json"),
+    "utf8",
+  );
+  assert.match(tcConfig, /"collectionName": "Family Photos"/);
+  assert.match(tcConfig, /"copyName": "main"/);
 });
 
 test("R-CLI-5: init is a command of its own, given the directory to act on", () => {
   assert.deepEqual(parseCliArgs(["init", "D:\\Photos"]), {
     help: false,
     name: undefined,
-    description: undefined,
+    copy: undefined,
     command: "init",
     commandArgs: ["D:\\Photos"],
   });
 });
 
-test("R-CLI-11: a description of a new copy is given by --description", () => {
+test("R-CLI-11: the name of a new collection is given by --name or -n, before the command or after it", () => {
   assert.equal(
-    parseCliArgs(["init", "--description", "The drive in the desk"])
-      .description,
-    "The drive in the desk",
+    parseCliArgs(["init", "D:\\Photos", "--name", "Family Photos"]).name,
+    "Family Photos",
+  );
+  assert.equal(
+    parseCliArgs(["init", "-n", "Family Photos"]).name,
+    "Family Photos",
+  );
+  assert.equal(
+    parseCliArgs(["--name", "Family Photos", "init", "D:\\Photos"]).name,
+    "Family Photos",
   );
 });
 
-test("R-CLI-11: the name of a new copy is given by --name or -n, before the command or after it", () => {
+test("R-CLI-11: the name of a new copy is given by --copy", () => {
   assert.equal(
-    parseCliArgs(["init", "D:\\Photos", "--name", "offsite"]).name,
-    "offsite",
-  );
-  assert.equal(parseCliArgs(["init", "-n", "offsite"]).name, "offsite");
-  assert.equal(
-    parseCliArgs(["--name", "offsite", "init", "D:\\Photos"]).name,
-    "offsite",
+    parseCliArgs(["init", "D:\\Photos", "--copy", "off-site"]).copy,
+    "off-site",
   );
 });
 
@@ -89,7 +93,7 @@ test("R-CLI-1: an unknown command exits with a non-zero status, and is named", (
 });
 
 test("R-CLI-1: init given a name that cannot be a copy's name exits with a non-zero status, and says why", () => {
-  const run = runTurboCollection("init", "-n", "My Photos");
+  const run = runTurboCollection("init", "--copy", "a/b");
 
   assert.notEqual(run.status, 0);
   assert.match(run.stderr, /cannot be a copy's name/);

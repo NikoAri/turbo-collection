@@ -16,6 +16,7 @@ import { URL } from "node:url";
 
 import {
   collectionNameFor,
+  copyNameFor,
   createDirectoryIfMissing,
   ensureDirectoryHoldsNoFiles,
   initializeTc,
@@ -116,29 +117,35 @@ test("R-CLI-11: a directory that exists is left as it is", (t) => {
   );
 });
 
-test("R-CLI-11: a name given on the command line is taken as typed", () => {
-  assert.equal(collectionNameFor("My Photos", "offsite"), "offsite");
+// "Photo" in Cyrillic letters, and "photograph" in Japanese.
+const PhotoInCyrillic = String.fromCodePoint(0x424, 0x43e, 0x442, 0x43e);
+const PhotographInJapanese = String.fromCodePoint(0x5199, 0x771f);
+
+test("R-CLI-11: a collection's name given on the command line is taken as given", () => {
+  assert.equal(
+    collectionNameFor("My Photos", "Family Photos"),
+    "Family Photos",
+  );
 });
 
-test("R-CLI-11: with no name given, the directory's name is taken in lower case, with hyphens", () => {
-  for (const [directoryName, expected] of [
-    ["Photos", "photos"],
-    ["My Photos", "my-photos"],
-    ["photos_2019", "photos-2019"],
-    ["My_Family Photos", "my-family-photos"],
-    ["Photos (2019)", "photos-2019"],
-    ["photos.backup", "photos-backup"],
-    ["photos - 2019", "photos-2019"],
-    ["(2019)", "2019"],
-  ] as const) {
-    assert.equal(collectionNameFor(directoryName, undefined), expected);
+test("R-CLI-11: with no name given, the collection takes its directory's name, unchanged", () => {
+  for (const directoryName of [
+    "Photos",
+    "My Photos",
+    "photos_2019",
+    "Photos (2019)",
+    "Été 2019",
+    PhotoInCyrillic,
+    PhotographInJapanese,
+  ]) {
+    assert.equal(collectionNameFor(directoryName, undefined), directoryName);
   }
 });
 
 test("R-CLI-11: the last segment of the path is the directory's name", () => {
   assert.equal(
     collectionNameFor("Family Archive/2019 Trip", undefined),
-    "2019-trip",
+    "2019 Trip",
   );
 });
 
@@ -149,38 +156,63 @@ test("R-CLI-11: the current directory gives its own name", () => {
   );
 });
 
-test("R-CLI-11: a directory name that gives no valid name is an error asking for one", () => {
-  // Nothing left once converted, "Photo" in Cyrillic letters, and a name with accented letters.
-  for (const directoryName of [
-    "...",
-    String.fromCodePoint(0x424, 0x43e, 0x442, 0x43e),
-    "Été 2019",
-  ]) {
-    assert.throws(
-      () => collectionNameFor(directoryName, undefined),
-      /Give one with -n/,
-    );
-  }
-});
-
-test("R-CLI-11: the root of a drive has no name to take, which is an error", () => {
+test("R-CLI-11: the root of a drive has no name to take, which is an error asking for one", () => {
   const root = path.parse(process.cwd()).root;
 
-  assert.throws(() => collectionNameFor(root, undefined), /Give one with -n/);
+  assert.throws(
+    () => collectionNameFor(root, undefined),
+    /Give one with --name/,
+  );
 });
 
-test("R-MFILE-19: a given name holds lower case letters, digits and hyphens only", () => {
-  assert.equal(collectionNameFor(".", "off-site-2"), "off-site-2");
-  for (const name of ["MyPhotos", "my photos", "my_photos", "my.photos"]) {
-    assert.throws(
-      () => collectionNameFor(".", name),
-      /cannot be a copy's name/,
-    );
+test("R-MFILE-18: an empty collection name is an error", () => {
+  assert.throws(
+    () => collectionNameFor(".", ""),
+    /A collection's name cannot be empty/,
+  );
+});
+
+test("R-CLI-11: with no copy name given, the copy is main", () => {
+  assert.equal(copyNameFor(undefined), "main");
+});
+
+test("R-MFILE-19: a copy's name may be in any script, and keeps its case", () => {
+  for (const name of [
+    "off-site",
+    "Off-site at Mom's",
+    PhotoInCyrillic,
+    PhotographInJapanese,
+  ]) {
+    assert.equal(copyNameFor(name), name);
   }
 });
 
-test("R-MFILE-18: an empty name is an error", () => {
-  assert.throws(() => collectionNameFor(".", ""), /cannot be a copy's name/);
+test("R-MFILE-19: a copy's name is converted to Unicode Normalization Form C", () => {
+  // "Café" with its accent as a combining character, and as one letter.
+  assert.equal(copyNameFor("Café"), "Café");
+});
+
+test("R-MFILE-19: a copy's name holding a control character or a character a filename refuses is an error", () => {
+  for (const name of [
+    "a<b",
+    "a>b",
+    "a:b",
+    'a"b',
+    "a/b",
+    "a\\b",
+    "a|b",
+    "a?b",
+    "a*b",
+    "a\tb",
+    "a\nb",
+    "a\u007fb",
+  ]) {
+    assert.throws(() => copyNameFor(name), /cannot be a copy's name/);
+  }
+});
+
+test("R-MFILE-18: an empty copy name is an error", () => {
+  assert.throws(() => copyNameFor(""), /cannot be a copy's name/);
 });
 
 // What `directory` holds at every depth, as sorted paths with `/` between their segments.
@@ -199,11 +231,17 @@ function configurationFileOf(directory: string): string {
   );
 }
 
+// A version 4 UUID in its text form, in lower case (meta-file-spec.md R-MFILE-18).
+const CollectionIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
 test("R-CLI-11: init writes a configuration file and the starter ignore file, and nothing else", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  assert.equal(initializeTc(directory, undefined, undefined), "family-photos");
+  const tcConfig = initializeTc(directory, undefined, undefined);
 
+  assert.equal(tcConfig.collectionName, "Family Photos");
+  assert.equal(tcConfig.copyName, "main");
   assert.deepEqual(listUnder(directory), [
     ".tcignore",
     ".turbo-collection",
@@ -211,46 +249,53 @@ test("R-CLI-11: init writes a configuration file and the starter ignore file, an
   ]);
 });
 
-test("R-MFILE-18, R-MFILE-27: the configuration file states its version and the copy's name, a field to a line", (t) => {
+test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the collection's ID and name, and the copy's name, a field to a line", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  initializeTc(directory, undefined, undefined);
+  const { collectionId } = initializeTc(directory, undefined, undefined);
 
+  assert.match(collectionId, CollectionIdPattern);
   assert.equal(
     readFileSync(configurationFileOf(directory), "utf8"),
-    '{\n  "version": "0.1.0-draft",\n  "collectionName": "family-photos"\n}\n',
+    `{\n  "version": "0.1.0-draft",\n  "collectionId": "${collectionId}",\n  "collectionName": "Family Photos",\n  "copyName": "main"\n}\n`,
   );
 });
 
-test("R-CLI-11: a description given is written as the copy's collectionDescription", (t) => {
+test("R-MFILE-19: each init generates a new collectionId", (t) => {
+  const first = initializeTc(
+    path.join(temporaryDirectory(t), "photos"),
+    undefined,
+    undefined,
+  );
+  const second = initializeTc(
+    path.join(temporaryDirectory(t), "photos"),
+    undefined,
+    undefined,
+  );
+
+  assert.notEqual(first.collectionId, second.collectionId);
+});
+
+test("R-CLI-11: names given on the command line are written as the collection's and the copy's", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
-  initializeTc(directory, "main", "The drive in the desk");
+  initializeTc(directory, "Family Photos", "desk");
 
-  assert.deepEqual(
-    JSON.parse(readFileSync(configurationFileOf(directory), "utf8")),
-    {
-      version: "0.1.0-draft",
-      collectionName: "main",
-      collectionDescription: "The drive in the desk",
-    },
+  const tcConfig = JSON.parse(
+    readFileSync(configurationFileOf(directory), "utf8"),
   );
+  assert.equal(tcConfig.collectionName, "Family Photos");
+  assert.equal(tcConfig.copyName, "desk");
 });
 
-test("R-CLI-11: with no description given, or an empty one, none is written", (t) => {
-  for (const [folder, description] of [
-    ["none-given", undefined],
-    ["empty", ""],
-  ] as const) {
-    const directory = path.join(temporaryDirectory(t), folder);
+test("R-CLI-11: a name that is not valid is an error before anything is written", (t) => {
+  const directory = path.join(temporaryDirectory(t), "new-copy");
 
-    initializeTc(directory, "main", description);
-
-    assert.deepEqual(
-      JSON.parse(readFileSync(configurationFileOf(directory), "utf8")),
-      { version: "0.1.0-draft", collectionName: "main" },
-    );
-  }
+  assert.throws(
+    () => initializeTc(directory, undefined, "a/b"),
+    /cannot be a copy's name/,
+  );
+  assert.throws(() => statSync(directory), /ENOENT/);
 });
 
 test("R-CLI-15: the ignore file is the starter file byte for byte, with no carriage return", (t) => {
@@ -268,12 +313,12 @@ test("R-CLI-15: the ignore file is the starter file byte for byte, with no carri
 
 test("R-CLI-11: an init of a directory that is already a copy is an error and changes nothing", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  initializeTc(directory, "main", undefined);
+  initializeTc(directory, undefined, "main");
   const holds = listUnder(directory);
   const configuration = readFileSync(configurationFileOf(directory), "utf8");
 
   assert.throws(
-    () => initializeTc(directory, "other", undefined),
+    () => initializeTc(directory, undefined, "other"),
     /holds a file/,
   );
 
@@ -289,7 +334,7 @@ test("R-CLI-11: an init of a folder of photographs is an error and writes nothin
   writeFileUnder(directory, "2019/photo.jpg");
 
   assert.throws(
-    () => initializeTc(directory, "main", undefined),
+    () => initializeTc(directory, undefined, undefined),
     /holds a file/,
   );
   assert.deepEqual(listUnder(directory), ["2019", "2019/photo.jpg"]);

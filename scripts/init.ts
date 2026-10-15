@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   copyFileSync,
   mkdirSync,
@@ -75,57 +76,78 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
   }
 }
 
-// A copy's name is not empty (meta-file-spec.md R-MFILE-18), and holds only the letters `a`
-// through `z`, digits and hyphen (R-MFILE-19).
-const CollectionNamePattern = /^[a-z0-9-]+$/;
-
-// The name a copy takes from the name of its directory (R-CLI-11): the letters `A` through `Z` in
-// lower case, one hyphen for each run of ASCII characters that are neither a letter nor a digit,
-// and no hyphen at either end. A character outside ASCII is left as it is.
-function nameFromDirectoryName(directoryName: string): string {
-  return directoryName
-    .replace(/[A-Z]/g, (letter) => letter.toLowerCase())
-    .replace(/[^a-z0-9\u0080-￿]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-// The name of a new copy in `directory` (R-CLI-11): `givenName` as typed where there is one, and
-// otherwise a name taken from that of the directory. A name that is not valid is an error.
+// The name of the collection a copy in `directory` begins (R-CLI-11): `givenName` as given where
+// there is one, and otherwise the name of the directory, unchanged. A collection's name is not
+// empty (meta-file-spec.md R-MFILE-18), and an empty one is an error.
 export function collectionNameFor(
   directory: string,
   givenName: string | undefined,
 ): string {
   if (givenName !== undefined) {
-    if (!CollectionNamePattern.test(givenName)) {
-      throw new Error(
-        `"${givenName}" cannot be a copy's name. A name holds lower case letters, digits and hyphens.`,
-      );
+    if (givenName === "") {
+      throw new Error("A collection's name cannot be empty.");
     }
     return givenName;
   }
 
+  // The root of a drive has no name.
   const directoryPath = path.resolve(directory);
-  const tcName = nameFromDirectoryName(path.basename(directoryPath));
-  if (!CollectionNamePattern.test(tcName)) {
+  const directoryName = path.basename(directoryPath);
+  if (directoryName === "") {
     throw new Error(
-      `No name for the copy can be taken from "${directoryPath}". Give one with -n, in lower case letters, digits and hyphens.`,
+      `No name for the collection can be taken from "${directoryPath}". Give one with --name.`,
     );
   }
 
-  return tcName;
+  return directoryName;
 }
 
-// Makes `directory` a copy, and returns the name that copy takes (R-CLI-11).
+// The name a new copy takes where none is given (R-CLI-11).
+const DefaultCopyName = "main";
+
+// A character a copy's name cannot hold: a control character, or one that an operating system
+// refuses in a filename (meta-file-spec.md R-MFILE-19).
+const CharacterNotInCopyName = /[\p{Cc}<>:"\/\\|?*]/u;
+
+// The name of a new copy (R-CLI-11): `givenName` in Unicode Normalization Form C where there is
+// one, and otherwise `main`. A name that is empty or holds a character it cannot hold is an error
+// (meta-file-spec.md R-MFILE-18, R-MFILE-19).
+export function copyNameFor(givenName: string | undefined): string {
+  if (givenName === undefined) {
+    return DefaultCopyName;
+  }
+
+  const copyName = givenName.normalize("NFC");
+  if (copyName === "" || CharacterNotInCopyName.test(copyName)) {
+    throw new Error(
+      `"${givenName}" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
+    );
+  }
+
+  return copyName;
+}
+
+// A copy's configuration file (meta-file-spec.md R-MFILE-18).
+export type TcConfig = {
+  version: string;
+  collectionId: string;
+  collectionName: string;
+  copyName: string;
+};
+
+// Makes `directory` the first copy of a new collection, and returns the configuration it writes
+// there (R-CLI-11).
 //
-// The name is checked before a directory is created, and the directory before a file is written.
-// The ignore file is written first and the configuration file last, since the configuration file
-// is what makes a directory a copy. A description is optional, and an empty one is none.
+// Both names are checked before a directory is created, and the directory before a file is
+// written. The ignore file is written first and the configuration file last, since the
+// configuration file is what makes a directory a copy.
 export function initializeTc(
   directory: string,
-  givenName: string | undefined,
-  description: string | undefined,
-): string {
-  const tcName = collectionNameFor(directory, givenName);
+  givenCollectionName: string | undefined,
+  givenCopyName: string | undefined,
+): TcConfig {
+  const collectionName = collectionNameFor(directory, givenCollectionName);
+  const copyName = copyNameFor(givenCopyName);
   createDirectoryIfMissing(directory);
   ensureDirectoryHoldsNoFiles(directory);
 
@@ -133,18 +155,20 @@ export function initializeTc(
   // operating system that made it (R-CLI-15).
   copyFileSync(StarterIgnoreFileUrl, path.join(directory, ".tcignore"));
 
-  // The fields of R-MFILE-18, each on a line of its own (R-MFILE-27).
-  const configuration = {
+  // The fields of R-MFILE-18, each on a line of its own (R-MFILE-27). Init generates the
+  // collection's ID (R-MFILE-19), which Node writes in lower case.
+  const tcConfig: TcConfig = {
     version: MetaFileSpecVersion,
-    collectionName: tcName,
-    ...(description ? { collectionDescription: description } : {}),
+    collectionId: randomUUID(),
+    collectionName,
+    copyName,
   };
   const metaDirectory = path.join(directory, ".turbo-collection");
   mkdirSync(metaDirectory, { recursive: true });
   writeFileSync(
     path.join(metaDirectory, "turbo-collection-config.json"),
-    `${JSON.stringify(configuration, null, 2)}\n`,
+    `${JSON.stringify(tcConfig, null, 2)}\n`,
   );
 
-  return tcName;
+  return tcConfig;
 }
