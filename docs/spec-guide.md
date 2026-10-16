@@ -9,9 +9,10 @@ in [`decisions/`](decisions/), never here.
 | Document | Job | Binds | May code cite it |
 |---|---|---|---|
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
-| [`specs/turbo-collection-core-spec.md`](../specs/turbo-collection-core-spec.md) | Import, configuration, logging, the command line, and the contracts. | implementation | yes |
+| [`specs/turbo-collection-core-spec.md`](../specs/turbo-collection-core-spec.md) | Import, configuration, the command line, and the contracts. | implementation | yes |
 | [`specs/backup-spec.md`](../specs/backup-spec.md) | Mirror semantics: what a backup does between peer copies. | implementation | yes |
 | [`specs/verify-spec.md`](../specs/verify-spec.md) | Integrity, filename safety, and receipts. | implementation | yes |
+| [`specs/logging-spec.md`](../specs/logging-spec.md) | What a run's log records, and where it is written. | implementation | yes |
 | [`specs/meta-file-spec.md`](../specs/meta-file-spec.md) | What is written: every meta file's name, place, and contents. Its version is the meta file format version. | implementation | yes |
 | [`specs/layouts/photo-path-layout-spec.md`](../specs/layouts/photo-path-layout-spec.md) | Where a photograph or a video goes inside a copy. | implementation | yes |
 | [`specs/layouts/as-found-path-layout-spec.md`](../specs/layouts/as-found-path-layout-spec.md) | Where a file goes when it is kept at the path its import source supplied: a folder brought in whole, and the floor beneath every other layout. | implementation | yes |
@@ -46,7 +47,7 @@ Every prefix resolves to exactly one document.
 | `R-NAME-*` | `verify-spec.md` | filename safety |
 | `R-REC-*` | `verify-spec.md` | when a receipt is written, and what it may be taken to prove |
 | `R-CFG-*` | `turbo-collection-core-spec.md` | configuration |
-| `R-LOG-*` | `turbo-collection-core-spec.md` | logging |
+| `R-LOG-*` | `logging-spec.md` | logging |
 | `R-CLI-*` | `turbo-collection-core-spec.md` | command line and operations |
 | `R-VER-*` | `turbo-collection-spec.md` | this specification's version, and version stamps |
 | `R-MFILE-*` | `meta-file-spec.md` | every meta file's name, place, and contents |

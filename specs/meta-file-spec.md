@@ -201,10 +201,11 @@ each stored in that directory's `.turbo-collection/` subdirectory: one file per
 arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run
 that recorded any error for the directory, one file named
 `receipt-<runId>-<copyName>.error.json`. `<runId>` identifies the run and
-MUST be an ISO 8601 basic-format instant in UTC (for example `20260814T180422Z`)
-followed by `-` and a short disambiguating suffix, so it contains no character
-illegal in a filename and orders files by the time the run occurred
-(`photo-path-layout-spec.md` R-PHOTO-4 uses the same basic format).
+MUST be an ISO 8601 basic-format instant in UTC, to the second (for example
+`20260814T180422Z`), followed by `-` and four lower-case hexadecimal digits
+chosen at random, so it contains no character illegal in a filename and orders
+files by the time the run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses
+the same basic format).
 `<copyName>` names the copy the run wrote to, or attempted to write to,
 for that event (R-MFILE-19), and appears in the filename so that files two
 copies author in one run cannot collide; R-MFILE-19 limits `copyName`, for this
