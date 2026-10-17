@@ -7,7 +7,7 @@
     "types": ["node"],
 
     // Node runs these files directly, stripping types as it loads them. Nothing is ever emitted,
-    // so TypeScript is a checker here and never a compiler (turbo-collection-spec.md 12.1).
+    // so TypeScript is a checker here and never a compiler (turbo-collection-spec.md Section 12).
     "noEmit": true,
     "allowImportingTsExtensions": true,
 
