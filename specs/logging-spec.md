@@ -25,3 +25,9 @@ receipts (R-MFILE-13); a log MAY additionally record them and MUST NOT be relied
 on to. Turbo-Collection MUST NOT write a log inside a copy. Turbo-Collection
 MUST write a Run's log into the operating system's directory for temporary
 files.
+
+**R-LOG-6.** For each Run, Turbo-Collection MUST make a directory
+`turbo-collection/runs/<runId>/` within the directory for temporary files that
+R-LOG-5 names, where `<runId>` is that Run's ID (`meta-file-spec.md`
+R-MFILE-13). Turbo-Collection MUST write a Run's log into that Run's directory,
+as `<runId>.log.json`.
