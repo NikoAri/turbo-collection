@@ -37,11 +37,14 @@ Copy's configuration file, to learn which Collection that Copy belongs to.
 **R-PARALLEL-5.** Turbo-Collection MUST NOT let two Runs on one computer hold
 one Collection's lock at the same time. Where a Run finds its Collection's lock
 held, Turbo-Collection MUST end that Run at once with an error, and MUST NOT
-wait for the lock.
+wait for the lock. That error MUST state the `collectionName` and `collectionId`
+of that Collection (`meta-file-spec.md` R-MFILE-18) and the process ID of the
+Run that holds the lock.
 
 > **Example.** While a backup of a Collection runs, a status of that Collection
-> started on the same computer ends at once with an error. Started again once
-> the backup has ended, the status reports.
+> started on the same computer ends at once with an error that names that
+> Collection and the backup's process ID. Started again once the backup has
+> ended, the status reports.
 
 **R-PARALLEL-6.** Turbo-Collection MUST hold a Collection's lock in a form that
 the computer releases when the Run holding that lock ends, however that Run

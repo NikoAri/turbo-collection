@@ -201,9 +201,11 @@ states, rather than hardcoding them. It MUST NOT hardcode any path, and MUST NOT
 require a copy to declare the other copies expected to exist, which are
 discovered at run time.
 
-**R-CFG-3.** Turbo-Collection MUST validate configuration **before** performing
-any filesystem mutation. Invalid configuration MUST cause the run to fail
-immediately, with no partial effect.
+**R-CFG-3.** In a Run, Turbo-Collection MUST validate configuration **before**
+performing any filesystem mutation other than making that Run's directory and
+writing that Run's log (`logging-spec.md` R-LOG-6). Invalid configuration MUST
+cause that Run to fail immediately, with no partial effect outside that Run's
+directory.
 
 **R-CFG-4.** Turbo-Collection MUST fail rather than guess. A missing, ambiguous,
 or unparseable setting MUST NOT be silently defaulted into a behavior that loses
@@ -336,6 +338,31 @@ not exist.
 > **Example.** A backup given `archive/photos`, where `archive` does not exist,
 > creates both directories.
 
+**R-CLI-18.** A Copy MUST NOT lie inside another Copy. Where a Copy that a Run
+acts on, or a directory that a Run is to make a Copy, lies inside a Copy,
+Turbo-Collection MUST end that Run with an error before that Run makes a
+directory or writes a file inside any Copy. Where a Run finds a configuration
+file (`meta-file-spec.md` R-MFILE-17) below the root of a Copy that Run acts
+on, Turbo-Collection MUST end that Run with an error, and MUST NOT let that Run
+write into the Copy that configuration file describes.
+
+> **Example.** An init given `photos/2024`, where `photos` is a Copy, fails and
+> makes no directory. A backup given a Copy that a person moved into another
+> Copy fails before it writes. A verify that meets another Copy's configuration
+> file in a subdirectory fails.
+
+**R-CLI-19.** Where a Run would read a directory entry inside a Copy that is
+neither a regular file nor a directory, such as a symbolic link, a junction, a
+device, a socket, or a named pipe, Turbo-Collection MUST end that Run with an
+error, MUST report every such entry that Run read, and MUST NOT follow such an
+entry. Turbo-Collection MUST pass over an entry that matches a pattern in that
+Copy's ignore file (`meta-file-spec.md` R-MFILE-21), and MUST NOT end a Run with
+an error on account of such an entry.
+
+> **Example.** A person puts a symbolic link named `latest` into a Copy. The
+> next backup of that Copy fails, names `latest`, and copies nothing from where
+> `latest` points.
+
 **R-CLI-15.** Turbo-Collection MUST be operable under more than one operating
 system. The name and content of every file a Run writes into a Copy MUST NOT
 depend on the operating system that Run is performed under. Turbo-Collection
@@ -457,12 +484,12 @@ _what_ a copy is.
 
 ### Config
 
-| Aspect        | Contract                                                                        |
-| ------------- | ------------------------------------------------------------------------------- |
-| Operation     | `load(path) -> Config`                                                          |
-| Postcondition | Returns a fully validated Config, or fails before any mutation occurs (R-CFG-3) |
-| MUST NOT      | Apply a destructive default for an absent setting (R-CFG-4)                     |
-| Errors        | Missing, unparseable, or invalid configuration                                  |
+| Aspect        | Contract                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Operation     | `load(path) -> Config`                                                                               |
+| Postcondition | Returns a fully validated Config, or fails before any mutation outside the Run's directory (R-CFG-3) |
+| MUST NOT      | Apply a destructive default for an absent setting (R-CFG-4)                                          |
+| Errors        | Missing, unparseable, or invalid configuration                                                       |
 
 ### Logger
 

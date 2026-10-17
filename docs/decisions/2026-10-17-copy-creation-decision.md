@@ -1,12 +1,12 @@
 # Init creates the first copy in an empty directory; backup creates every later copy
 
 **Status:** Accepted
-**Date:** 2026-10-14
+**Date:** 2026-10-17
 
-Replaces the record of 2026-10-13, under which init named the copy after its directory, converted
-to lower case with hyphens, and wrote a description given to it. The directory's name now names the
-collection, as it stands, the first copy is `main` unless told otherwise, and no description is
-written; _Rejected_ says why.
+Replaces the record of 2026-10-14, under which nothing stopped a directory inside a copy from being
+made a copy. Init and backup now refuse one, as every run does: a copy inside another keeps its meta
+files in that copy's directories, so runs of both would write one manifest, and for two collections
+each of those runs would hold only its own collection's lock.
 
 A directory becomes a copy when Turbo-Collection writes its configuration, which states the
 collection the copy belongs to and the name every receipt will use for that copy
@@ -20,10 +20,10 @@ that, and no other operation ever does:
   an error, and there is no prompt. Init writes a configuration file and a starter ignore file, and
   nothing else. It refuses a directory that holds a file, at any depth, unless a starter ignore
   pattern matches that file: a file an operating system left behind does not stand in the way, and
-  a folder of photographs picked by mistake is left as it was. That is the one check init makes. A
-  directory that is already a copy holds its configuration file, and one that contains a copy holds
-  that copy's files, so init stops on both and changes nothing, which protects the name a copy's
-  receipts already carry.
+  a folder of photographs picked by mistake is left as it was. A directory that is already a copy
+  holds its configuration file, and one that contains a copy holds that copy's files, so init stops
+  on both and changes nothing, which protects the name a copy's receipts already carry. A directory
+  inside a copy is refused as well, before init makes any directory.
 - **`backup`** creates **every later** copy. Given a directory that is a copy, it mirrors it; given
   one that is empty or does not exist, it creates a copy there and fills it; given anything else, it
   refuses and lists what the directory holds. "Empty" means holding nothing except files the
@@ -54,6 +54,11 @@ in no filename and has only to be non-empty.
 **Every directory a path needs is created.** `init a/b/c` creates all three, and backup does the
 same, so a person meets one behavior in both operations.
 
+**No copy lies inside another.** Every run refuses a directory inside a copy, init and backup
+included, before it makes a directory or writes a file, and a run that finds a configuration file
+below a copy's root fails too (`R-CLI-18`). This holds for two copies of one collection as it does
+for copies of two collections.
+
 **A replacement drive takes the dead copy's name.** Receipts record where content was placed, never
 that a copy survives (`R-REC-8`), a release already requires a real verification, and location
 receipts exist to record which volumes have stood behind a name (`R-MFILE-26`). So a reused name
@@ -79,10 +84,10 @@ connected copies state one name (`R-MFILE-19`).
   missing path could build a copy on whatever disk the parent resolves to, with the drive it was
   meant for sitting unplugged. Reversed so that a path given to init or to backup is simply
   created, and the two agree. Nothing in this rule now stops that case.
-- **Checks of their own for a copy at, under or above the directory.** The rule until 2026-10-13,
-  when init was kept to one check: a directory that holds a file is not made a copy. That check
-  already stops a directory that is a copy and one that contains a copy. It does not stop a
-  directory inside a copy, and nothing else does.
+- **Checks of their own for a copy at or under the directory.** The rule until 2026-10-13. The
+  check for a file already stops a directory that is a copy and one that contains a copy.
+- **Letting a directory inside a copy be made a copy.** The rule from 2026-10-13 until 2026-10-17,
+  when init checked only for files and nothing else stopped one. Reversed for the reason at the top.
 - **A question for the name, as `npm init` asks.** Familiar, but `yarn init` asks nothing, and no
   operation may need a prompt (`R-CLI-8`).
 - **The first import or backup creates the first copy from a name argument.** It makes a routine
@@ -102,14 +107,15 @@ connected copies state one name (`R-MFILE-19`).
 ## Touches
 
 `turbo-collection-core-spec.md`: `R-CLI-5` names init; `R-CLI-11` (init: its directory, its two
-names, and its refusal of a directory that holds a file), `R-CLI-13` (backup creating a copy) and
-`R-CLI-14` (no other operation creates one; every directory a path needs is created). `R-CLI-12`,
-under which init performed an in-place import, was removed on 2026-10-12. The in-place import
-source specification was withdrawn with it, and so was `R-FOUND-2` in
-`as-found-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds _Init_ and _Ignored
-file_. `meta-file-spec.md`: `R-MFILE-19` states that a copy's identity is set once, at creation,
-that init generates the `collectionId` and backup passes it on, and what a copy's name may hold;
-`R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the rule that an ignored file never
-enters a copy ([the starter-ignore-file decision](2026-10-02-starter-ignore-file-decision.md)). The
-setup procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11` create the later copies by
+names, and its refusal of a directory that holds a file), `R-CLI-13` (backup creating a copy),
+`R-CLI-14` (no other operation creates one; every directory a path needs is created) and `R-CLI-18`
+(no copy inside another, for every run). `R-CLI-12`, under which init performed an in-place import,
+was removed on 2026-10-12. The in-place import source specification was withdrawn with it, and so
+was `R-FOUND-2` in `as-found-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds
+_Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19` states that a copy's identity is set
+once, at creation, that init generates the `collectionId` and backup passes it on, and what a copy's
+name may hold; `R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the rule that an
+ignored file never enters a copy
+([the starter-ignore-file decision](2026-10-02-starter-ignore-file-decision.md)). The setup
+procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11` create the later copies by
 backup.

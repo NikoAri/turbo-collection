@@ -107,7 +107,6 @@ there is more than one area to group.
 | 2026-10-06 | [Every file a copy preserves is a content file, with no derivative and no original](2026-10-06-content-file-decision.md) | Accepted |
 | 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md) | Accepted |
 | 2026-10-06 | [A file read from a directory is one item, and nothing pairs files by name](2026-10-06-one-file-one-item-decision.md) | Accepted |
-| 2026-10-06 | [A symbolic link is not content, and an import that meets one fails](2026-10-06-non-regular-files-decision.md) | Accepted |
 | 2026-10-06 | [A local folder is stored under its own name, and a clash is reported, not prevented](2026-10-06-local-folder-path-decision.md) | Accepted |
 | 2026-10-06 | [An import never overwrites: a differing file stays out, and the rest comes in](2026-10-06-import-conflict-decision.md) | Accepted |
 | 2026-10-06 | [A run exits 0 only when it was fully successful, and the exit status says nothing more](2026-10-06-exit-status-decision.md) | Accepted |
@@ -115,5 +114,7 @@ there is more than one area to group.
 | 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
 | 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md) | Accepted |
-| 2026-10-14 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-14-copy-creation-decision.md) | Accepted |
 | 2026-10-14 | [A run's log is one JSON document in the operating system's directory for temporary files](2026-10-14-log-location-decision.md) | Accepted |
+| 2026-10-17 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-17-copy-creation-decision.md) | Accepted |
+| 2026-10-17 | [A symbolic link is not content, and a run that meets one fails](2026-10-17-non-regular-files-decision.md) | Accepted |
+| 2026-10-17 | [Overlapping runs are kept apart by a directory per run, a configuration file written first, and a lock per collection](2026-10-17-parallel-safety-decision.md) | Accepted |

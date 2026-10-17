@@ -21,7 +21,7 @@ Every copy's configuration states three things (`R-MFILE-18`, `R-MFILE-19`):
   backup writes into each copy it creates. Nobody chooses or types it.
 - **`collectionName`**, that collection's name, for people. Init takes it from `--name`, or else
   from the directory it makes a copy
-  ([the copy-creation decision](2026-10-14-copy-creation-decision.md)). It appears in no filename,
+  ([the copy-creation decision](2026-10-17-copy-creation-decision.md)). It appears in no filename,
   so it has only to be non-empty.
 - **`copyName`**, the copy's own name, which every receipt carries in its filename and its contents
   (`R-MFILE-13`). It may be in any script, kept in NFC and free of the characters an operating

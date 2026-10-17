@@ -1,12 +1,18 @@
-# A symbolic link is not content, and an import that meets one fails
+# A symbolic link is not content, and a run that meets one fails
 
 **Status:** Accepted
-**Date:** 2026-10-06
+**Date:** 2026-10-17
+
+Replaces the record of 2026-10-06, under which a link put into a copy by hand was passed over by a
+backup, being in no manifest. A run that meets one inside a copy now fails, as an import does:
+Turbo-Collection does not support links, and a run that followed one could act on another copy's
+files.
 
 Turbo-Collection takes in regular files and nothing else. Where an import would read a symbolic
 link, a junction, a device, a socket or a named pipe, that import fails, adds nothing to the
-collection, and names every such entry. Handling them is a non-goal for now, listed in Section 1.3
-of the core specification with its path in Section 10.
+collection, and names every such entry. Where any run would read one inside a copy, that run fails
+and names it. No run follows one. Handling them is a non-goal for now, listed in Section 1.3 of
+`turbo-collection-spec.md` with its path in Section 10.
 
 **A link holds no content of its own.** What it points at lives elsewhere, possibly outside the
 folder being imported or on a drive that is not connected. Taking one in means choosing what is
@@ -20,9 +26,11 @@ imported, so an import that stepped over one and finished would look complete.
 (`R-SRC-7`), so without an exemption the only cure for a failed import would be deleting or moving
 entries in an old archive by hand. An entry that matches a pattern in the copy's ignore file is
 passed over instead, and every run reports how many files each pattern matched (`R-MFILE-21`), so
-what was passed over stays visible.
+what was passed over stays visible. Inside a copy, a pattern passes over a link the same way.
 
-A link put into a copy by hand is in no manifest, so a backup does not copy it (`R-MIRROR-9`).
+**Turbo-Collection never writes a link.** So a link inside a copy was put there from outside, and a
+run that followed it could read or write another copy's files while holding only its own
+collection's lock.
 
 ## Rejected
 
@@ -34,8 +42,12 @@ A link put into a copy by hand is in no manifest, so a backup does not copy it (
   line in a long report is easy to miss.
 - **Failing on an ignored entry as well.** It would leave editing the import source by hand as the
   only cure.
+- **Passing over a link inside a copy.** The rule until 2026-10-17, since a link is in no manifest
+  and a backup did not copy it. Links are not supported, so one inside a copy is an error, as one at
+  an import source is.
 
 ## Touches
 
-`turbo-collection-spec.md`: `R-SRC-22` added; one non-goal added to Section 1.3, with its row in
-Section 10; one error added to the importer contract in Section 11.
+`turbo-collection-core-spec.md`: `R-SRC-22` (an import), `R-CLI-19` (any run, inside a copy), and
+one error in the importer contract in Section 11. `turbo-collection-spec.md`: one non-goal in
+Section 1.3, with its row in Section 10.

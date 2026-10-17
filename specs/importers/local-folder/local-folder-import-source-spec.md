@@ -61,9 +61,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   directories of ordinary files outside a Copy, read as files by the computer
   performing a Run.
 
-- **Imported directory.** The directory, outside the Copy being imported into,
-  that one Import from the Local-folder Import Source reads, together with every
-  directory beneath it.
+- **Imported directory.** The directory, outside every Copy, that one Import
+  from the Local-folder Import Source reads, together with every directory
+  beneath it.
 
 - **Importer.** The component that brings files into the Collection from one
   Import Source.
@@ -102,12 +102,14 @@ directory an identifier of its own.
 
 **R-LOCALFOLDER-2.** Turbo-Collection MUST take the Imported directory of an
 Import from a setting of that Run (`turbo-collection-core-spec.md` R-SRC-3).
-Turbo-Collection MUST refuse an Imported directory that is inside the Copy being
-imported into, that contains that Copy, or that has no name of its own, such as
+Turbo-Collection MUST refuse an Imported directory that is a Copy, that is
+inside a Copy, that contains a Copy, or that has no name of its own, such as
 the root of a drive.
 
-> **Example.** Importing a directory that is inside the Copy would store each of
-> its files a second time, under `local-folder/`.
+> **Example.** Importing a directory that is inside the Copy being imported
+> into would store each of its files a second time, under `local-folder/`.
+> Importing a directory that holds a Copy of another Collection would take in
+> that Copy's Meta files as Items.
 
 ## 3. Items
 
