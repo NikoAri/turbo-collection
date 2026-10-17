@@ -458,9 +458,9 @@ distinguishes no failure by exit status (Section 8.5).
 ### Mirror engine
 
 Scoped as _the mechanism by which two copies are brought into agreement_. This
-is what keeps the "swap rclone for rsync by changing one binding" property
-intact, while storage layout (`turbo-collection-spec.md` Section 6) covers
-_what_ a copy is.
+contract keeps that mechanism a binding, which `turbo-collection-spec.md`
+Section 12 records, while storage layout (`turbo-collection-spec.md` Section 6)
+covers _what_ a copy is.
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

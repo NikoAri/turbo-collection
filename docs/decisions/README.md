@@ -116,5 +116,6 @@ there is more than one area to group.
 | 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md) | Accepted |
 | 2026-10-14 | [A run's log is one JSON document in the operating system's directory for temporary files](2026-10-14-log-location-decision.md) | Accepted |
 | 2026-10-17 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-17-copy-creation-decision.md) | Accepted |
+| 2026-10-17 | [Turbo-Collection copies files itself, and no copying program writes into a copy](2026-10-17-mirror-engine-decision.md) | Accepted |
 | 2026-10-17 | [A symbolic link is not content, and a run that meets one fails](2026-10-17-non-regular-files-decision.md) | Accepted |
 | 2026-10-17 | [Overlapping runs are kept apart by a directory per run, a configuration file written first, and a lock per collection](2026-10-17-parallel-safety-decision.md) | Accepted |

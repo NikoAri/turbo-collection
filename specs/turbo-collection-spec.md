@@ -404,7 +404,7 @@ SL stands for Standard Library
 | ----------------- | ----------------- | ------------------------------------------------------------------------------------- |
 | Operating systems | Windows and macOS | Windows and macOS (R-CLI-15)                                                          |
 | File Manipulation | SL                | Windows and macOS (R-CLI-15)                                                          |
-| Mirror Engine     | rclone            | rclone (MIT licensed)                                                                 |
+| Mirror Engine     | SL                | Standard Library; a run writes every file into a copy itself (R-PARALLEL-8)           |
 | Integrity         | SL                | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                         |
 | Meta Files        | SL                | JSON, parsed by the runtime's standard library, with no third-party dependency        |
 | Logger            | SL                | Standard Library; Plain-text files, one per run, written outside every copy (R-LOG-5) |

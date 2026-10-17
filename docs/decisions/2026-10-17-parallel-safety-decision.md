@@ -3,6 +3,10 @@
 **Status:** Accepted
 **Date:** 2026-10-17
 
+Replaces the version written earlier on 2026-10-17, under which every refusal named the process ID
+of the holder. Neither operating system tells a refused run who holds a lock, so a refusal now names
+that process ID only where the run can learn it.
+
 Runs of Turbo-Collection may overlap on one computer. They are kept apart where two runs can meet,
 and every such rule is in `parallel-safety-spec.md`.
 
@@ -17,9 +21,9 @@ and every such rule is in `parallel-safety-spec.md`.
   configuration file exists, and a backup holds the lock of its own collection.
 - **Acting on a copy.** Every run but init holds the lock of each collection whose copy it reads or
   writes, status and verify included (`R-PARALLEL-4`). A run that finds a lock held ends at once and
-  names the collection and the process that holds it (`R-PARALLEL-5`). The computer releases a lock
-  when its run ends, however it ends, so a crash leaves nothing for a person to clean up
-  (`R-PARALLEL-6`).
+  names the collection, and also the process that holds the lock where the run can learn it
+  (`R-PARALLEL-5`). The computer releases a lock when its run ends, however it ends, so a crash
+  leaves nothing for a person to clean up (`R-PARALLEL-6`).
 
 **The lock relies on every file belonging to one copy.** No copy lies inside another (`R-CLI-18`,
 [the copy-creation decision](2026-10-17-copy-creation-decision.md)), no run follows a link inside a
@@ -27,8 +31,16 @@ copy (`R-CLI-19`, [the non-regular-files decision](2026-10-17-non-regular-files-
 no import reads a folder that is a copy, lies inside one or holds one (`R-LOCALFOLDER-2`). A
 configuration is validated before its `collectionId` names a lock (`R-CFG-3`).
 
-**The specification states behavior.** How each operating system holds a lock, and how a refused run
-learns the process ID of the holder, belong in `docs/typescript-best-practice/`.
+**The lock relies on a run doing its own writing.** A process that a run starts can keep running
+after that run has ended, while the computer releases the lock when the run ends, so such a process
+could still be writing into a copy when the next run takes the lock. Turbo-Collection starts no
+process that writes into a copy (`R-PARALLEL-8`), so it copies files itself
+([the mirror engine decision](2026-10-17-mirror-engine-decision.md)).
+
+**The specification states behavior.** How each operating system holds a lock belongs in
+`docs/typescript-best-practice/`. How a refused run learns the process ID of the holder is left for
+later: the holder has to publish it, and until that is built a refusal says the process ID is not
+known. A process ID helps a person find the run in the way, and nothing breaks without it.
 
 **Out of scope:** runs of other accounts and runs under `sudo` on one computer, runs in WSL against
 runs in Windows, and two versions of Turbo-Collection running at once. A copy is on an external hard
@@ -60,7 +72,7 @@ drive, which one computer reaches at a time.
 
 ## Touches
 
-`parallel-safety-spec.md`: Section 8.6, `R-PARALLEL-1` to `R-PARALLEL-7`. `logging-spec.md`:
+`parallel-safety-spec.md`: Section 8.6, `R-PARALLEL-1` to `R-PARALLEL-8`. `logging-spec.md`:
 `R-LOG-6`. `turbo-collection-core-spec.md`: `R-CFG-3` lets a run make its directory and write its
 log before it validates configuration; `R-CLI-18` and `R-CLI-19`.
 `local-folder-import-source-spec.md`: `R-LOCALFOLDER-2`. [`spec-guide.md`](../spec-guide.md): a row

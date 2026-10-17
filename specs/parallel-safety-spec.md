@@ -38,8 +38,10 @@ Copy's configuration file, to learn which Collection that Copy belongs to.
 one Collection's lock at the same time. Where a Run finds its Collection's lock
 held, Turbo-Collection MUST end that Run at once with an error, and MUST NOT
 wait for the lock. That error MUST state the `collectionName` and `collectionId`
-of that Collection (`meta-file-spec.md` R-MFILE-18) and the process ID of the
-Run that holds the lock.
+of that Collection (`meta-file-spec.md` R-MFILE-18). Where Turbo-Collection can
+learn the process ID of the Run that holds the lock, that error MUST state that
+process ID. Where Turbo-Collection cannot learn that process ID, that error MUST
+state that the process ID is not known.
 
 > **Example.** While a backup of a Collection runs, a status of that Collection
 > started on the same computer ends at once with an error that names that
@@ -58,3 +60,11 @@ ends.
 Collection's lock before that Run reads or writes a Copy of that Collection,
 other than that Copy's configuration file, and MUST end that Run with an error
 where that confirmation fails.
+
+**R-PARALLEL-8.** Turbo-Collection MUST NOT start a process that writes into a
+Copy.
+
+> **Example.** A backup writes files into a Copy of a Collection itself, rather
+> than handing them to a copying program. Where that backup ends with an error
+> partway through, nothing is left writing into that Copy, so the next Run to
+> take that Collection's lock is the only Run writing there.

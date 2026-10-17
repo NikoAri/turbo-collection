@@ -113,7 +113,7 @@ as requirements, in [`specs/durability-requirement.md`](../specs/durability-requ
   it and never in place of it, is a deferred goal (core specification Section 10); nothing renders
   one today.
 - **Durable invariants vs. dated bindings.** Some things are near-permanent (files, checksums,
-  the 3-2-1 rule, the *intent*). Others are today's expression of them (rclone, TypeScript, Mermaid,
+  the 3-2-1 rule, the *intent*). Others are today's expression of them (TypeScript, Mermaid,
   GitHub) and are expected to be swapped. Isolate the volatile parts so churn never touches the data.
 - **Minimize dependencies.** Every dependency is a future liability, for both humans and AIs to
   maintain or translate. Prefer standard libraries and single-binary tools.
@@ -233,11 +233,11 @@ An **open, "Bvckup-like" file-mirroring preservation system**. Conceptually:
 
 ```
 Photos (plain folder tree)
-   ├── mirror engine (rclone) ──▶ external drive  (exact, browsable copy)
+   ├── mirror engine (stdlib) ──▶ external drive  (exact, browsable copy)
    ├── SHA-256 manifest ────────▶ bit-rot / integrity detection
    ├── thin orchestrator (TypeScript) coordinates the run
    ├── OS scheduler (launchd) runs it automatically
-   └── (optional, later) off-site copy: physical drive rotation OR cloud (rclone→B2)
+   └── (optional, later) off-site copy: physical drive rotation OR cloud (e.g., B2)
 ```
 
 Key properties:
@@ -245,8 +245,8 @@ Key properties:
 - The destination is a **plain mirror** you can browse in Finder/Explorer; no tool required to restore.
 - **CLI-first / headless core.** A GUI, if ever built, is a *consumer* of the core, not part of it
   (avoids GUI dependency hell: WinUI3, React Native, Swift, etc.).
-- **Plain mirror ⇒ engine swaps need zero data migration** (both rclone and rsync produce the same
-  browsable file tree; switching them never rewrites the destination).
+- **Plain mirror ⇒ engine swaps need zero data migration** (every engine that copies files plainly
+  produces the same browsable file tree, so replacing one never rewrites the destination).
 - Start **local-only** (like Bvckup). Cloud off-site and versioning are clean later additions.
 
 ---
@@ -255,7 +255,7 @@ Key properties:
 
 The design is **hexagonal (ports & adapters)**: a thin orchestrator core talks to the outside world
 only through **ports** (interfaces); each port has a swappable **adapter**. The core never knows
-whether the engine is rclone or rsync, the config JSON or TOML, the scheduler launchd or cron.
+which engine copies the files, the config JSON or TOML, the scheduler launchd or cron.
 
 **A note on words.** _Port_ and _adapter_ are this section's architecture vocabulary and appear
 nowhere in the specification, which names concrete things instead: an **importer** reads an **import
@@ -274,14 +274,12 @@ graph TD
     CORE -->|Config port| C{{config adapter}}
     CORE -->|Logger port| L{{log adapter}}
 
-    E -.rclone today.-> RC[rclone]
-    E -.rsync fallback.-> RS[rsync]
+    E -.today.-> SL[Node standard library]
     I --> MAN[manifest.json]
     C --> CFG[turbo-collection-config.json]
     L --> LOG[turbo-collection/logs/*.log.json<br/>in the OS temporary directory]
 
-    RC --> DATA[(Plain file tree<br/>on external drive)]
-    RS --> DATA
+    SL --> DATA[(Plain file tree<br/>on external drive)]
 ```
 
 **The pieces:**
@@ -291,7 +289,7 @@ graph TD
 | Data | (none) | Plain file tree | The sacred core; only the engine touches it |
 | Source | `list()` / `fetch(item)` | none yet | Every vendor-specific fact lives in an adapter, never in the core |
 | Storage | `push()` / `verify()` | local drive | Every medium-specific fact lives in storage support for that medium, never in the core (port formerly **Target**; `R-TGT-*` IDs frozen) |
-| Mirror engine | `mirror(src, dst, excludes)` | rclone | Swap to rsync = change one adapter, no data change |
+| Mirror engine | `mirror(src, dst, excludes)` | Node standard library | Another engine = change one adapter, no data change |
 | Integrity | `build()` / `verify()` | SHA-256 manifest | Verification is separate from copying |
 | Config | `load() -> Config` | JSON file (data) | Config is *data, not code*; survives a language rewrite |
 | Logger | `log(event)` | Plain-text file | Observability decoupled from logic |
@@ -299,9 +297,11 @@ graph TD
 
 **Architectural principles (why it's sound):**
 
-1. **Dependency inversion on the engine**: core depends on the *idea* "mirror A→B," not on rclone.
+1. **Dependency inversion on the engine**: core depends on the *idea* "mirror A→B," not on how the
+   copying is done.
 2. **Config as data, not code**: rewrite the orchestrator in any language later; config carries over.
-3. **Thin orchestrator**: glue only coordinates; real work is in the durable engine + plain data.
+3. **Thin orchestrator**: glue coordinates, and copies with the runtime's standard library; what
+   lasts is the plain data.
    Keep it small enough to rewrite/regenerate in an afternoon.
 4. **One-shot core + external scheduler**: the program does one run and exits with a clear code;
    *when* it runs is the OS scheduler's job (the most OS-specific part stays outside the code).
@@ -364,7 +364,7 @@ What lost:
 
 | Concern | Decision | Rationale |
 |---|---|---|
-| **Mirror engine** | **rclone** (MIT); **rsync** as fallback | MIT license; single self-contained Go binary; runs on every OS incl. Windows; local + 70 cloud backends with same syntax. rsync is the ultra-durable fallback and swap is trivial (plain mirror ⇒ no data migration). |
+| **Mirror engine** | **Standard library** (`node:fs`, `node:crypto`) | Turbo-Collection writes every file into a copy itself, reading each file once both to check it against its manifest and to copy it. No copying program is started, since one could keep writing after its run's lock is released (`R-PARALLEL-8`). Why: [the mirror engine decision](decisions/2026-10-17-mirror-engine-decision.md). |
 | **Orchestration language** | **TypeScript on Node.js** (direct TS execution, no transpile step) | Owner values **strong static types**. Node runs TS directly (type-stripping) → no build/transpile. Mainstream + idiomatic + small ⇒ future-AI-translatable. Runs on any OS. |
 | **Dependencies** | **Standard library first** (minimal third-party) | Dependencies are the hardest thing to maintain/translate. Node built-ins (`node:child_process`, `node:crypto`, `node:fs`, `node:path`) cover nearly everything. A package is admitted only when it implements a documented format the specification cites, has no dependencies of its own, and is listed in the table of core specification Section 12, with its license and a link, and installed with npm. |
 | **Config format** | **JSON** | Node parses JSON **natively** (zero dependency). (TOML was the earlier default *for a Python build*, since Python 3.11+ has built-in `tomllib`; Node has no built-in TOML parser, so JSON keeps deps at zero.) Config is pure data, trivially convertible later. |
@@ -415,7 +415,7 @@ implementations for 40+ years.
    AI reads both the English and the code. Bidirectional: also flag code doing things the spec
    doesn't mention (→ update spec) and requirements with no code (→ fix code).
 2. **External (assumptions vs. the world):** periodically re-validate the dated assumptions
-   (Section 13) against then-current reality (is rclone still maintained & MIT? better tool now?
+   (Section 13) against then-current reality (does Node still run TypeScript directly?
    prices/drives/filesystems shifted? SHA-256 still fine? scheduler changed?).
 
 **Tests complement, don't replace, AI review.** AI conformance-checking is a strong *reviewer*, not a
@@ -458,12 +458,12 @@ are trivial.)
 |---|---|---|---|---|---|
 | **Data** (files) | "file" concept dies | none (read directly) | none | ~nil | 75-yr track record |
 | **Filesystem** (APFS↔NTFS↔ReFS↔ext4) | new drive/OS | OS-level file copy | Low (time only) | Medium | use no FS-specific features; real risk = filenames (see below) |
-| **Engine** (rclone) | project dies / better tool | swap one adapter (~40 lines); no data change | Low | Low to Med | MIT (forkable); rsync fallback; plain mirror ⇒ zero destination migration |
+| **Engine** (standard library) | a better way to copy | rewrite one module; no data change | Low | Low | plain mirror ⇒ zero destination migration |
 | **Orchestrator** (TypeScript) | language/runtime churn | regenerate ~200 lines from spec (AI) | Low to Med | Medium | stdlib-only; language-neutral spec; thin glue |
 | **Integrity** (SHA-256) | hash deprecated | recompute manifest | Low (CPU) | Low | plain JSON manifest; algo recorded; even "broken" hash detects bit-rot |
 | **Config** (JSON) | format churn | data transform (JSON↔TOML/YAML) | Trivial | Very Low | config is data; native parse = zero dep |
 | **Scheduler** (launchd) | OS change | replace external schedule file | Low | Medium | one-shot core; ship snippets for all OSes |
-| **OS** (macOS) | leave Apple | reinstall Node+rclone, copy repo, edit paths | Low to Med | Medium | every component already cross-platform; paths in config |
+| **OS** (macOS) | leave Apple | reinstall Node, copy repo, edit paths | Low to Med | Medium | every component already cross-platform; paths in config |
 | **VCS/hosting** (git/GitHub) | git/GitHub dies | export repo to plain files; `git remote set-url` to any host | Trivial | Very Low | distributed; holds the *system*, never the photos |
 
 **The filename gotcha (the real filesystem-migration risk):** a plain copy across ReFS↔NTFS↔APFS is
@@ -476,7 +476,7 @@ move.
 
 | Dependency | What-if trigger | Continuity path | Cost | Likelihood | Mitigation |
 |---|---|---|---|---|---|
-| **Host computer** | ~3-yr refresh; OS/HW EOL; laptop dies | install Node+rclone, clone repo, plug drives, edit paths | Low (~1–2 hr / 3 yr) | High | host holds *no* irreplaceable state ("cattle, not pets") |
+| **Host computer** | ~3-yr refresh; OS/HW EOL; laptop dies | install Node, clone repo, plug drives, edit paths | Low (~1–2 hr / 3 yr) | High | host holds *no* irreplaceable state ("cattle, not pets") |
 | **Electricity** | outage (short/long) | batch system resumes when power returns; storage persists powerless | ~Zero (short) | Common, zero-impact | UPS on primary; SHA-256 catches mid-write corruption |
 | **Internet** | outage / sustained loss | core backup is fully offline; only cloud off-site + AI need net | ~Zero for core | Common, zero-impact on core | choose physical off-site ⇒ entire core is offline-capable |
 | **AI access** | internet loss / lose frontier AI | local open-weight model → or hand-maintain (owner is tech-savvy) | Low | Medium | small, spec-driven code lowers the AI bar; whoever maintains it later needs little help to translate or fix it |
@@ -508,7 +508,7 @@ The complete end-to-end human workflow, from one-time setup through rare events.
 
 | Task | Effort | Notes |
 |---|---|---|
-| Stand up the stack | ~an afternoon | Install Node + rclone, drop in scripts, write config, first backup, set schedule |
+| Stand up the stack | ~an afternoon | Install Node, drop in scripts, write config, first backup, set schedule |
 | Consolidate existing photos | ~a few hours | Pull years of scattered manual backups into one library tree; de-dup; EXIF-sort |
 
 ### Monthly hot path (recurring)
@@ -518,7 +518,7 @@ flowchart TD
     A[Take photos - phone] -->|automatic| B[Phone storage]
     B -->|monthly, you ~20 min:<br/>plug in / Wi-Fi transfer| C[Ingest to internal disk]
     C -->|automatic: EXIF-sort, copy into collection| D[Collection on working copy<br/>external disk]
-    D -->|scheduled or on demand:<br/>rclone mirror + SHA-256| E[Home copy]
+    D -->|scheduled or on demand:<br/>mirror + SHA-256| E[Home copy]
     E -->|monthly, you ~12 min:<br/>back up off-site| F[Off-site copy]
     D -->|automatic| G[AI-summarized log]
     G -->|monthly, you ~8 min: glance| H[Verified safe]
@@ -699,8 +699,6 @@ These fold into the spec: off-site becomes *geographic*; library defaults to *po
 
 | Assumption (as of 2026-07-09) | Re-verify |
 |---|---|
-| rclone exists, is maintained, and is MIT-licensed | tool status + license |
-| rsync remains a viable fallback engine | tool status |
 | restic/Borg/Kopia remain options for later versioning (BSD/Apache) | tool status + license |
 | Node.js runs TypeScript directly (type-stripping), no transpile needed | runtime behavior + version |
 | Python 3.11+ has built-in `tomllib` (relevant only if switching to Python) | runtime behavior |
@@ -723,7 +721,7 @@ SHA-256 *as a chosen mechanism*.
 ## 14. Glossary
 
 - **3-2-1 rule**: 3 copies of data, on 2 different media, with 1 off-site.
-- **Binding**: today's concrete expression of a durable intent (e.g., rclone, TypeScript, Mermaid,
+- **Binding**: today's concrete expression of a durable intent (e.g., TypeScript, Mermaid,
   GitHub); expected to be swapped over time.
 - **Fixity**: proof that data has not changed/corrupted, via checksums (here, SHA-256).
 - **Bit-rot**: silent data corruption on storage over time; detected by comparing checksums.
