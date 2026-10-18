@@ -138,8 +138,8 @@ does not exist here.
 ## Touches
 
 Withdraws `R-OFF-6` and `R-BAK-4`, the two media prohibitions, and drops the six-month clause from
-the setup requirement that assigns backup roles, now `R-SET-9`. Adds `R-SET-1` (a Windows or macOS
-computer) and `R-SET-6` (format as exFAT). Renumbers every `R-SET-*` into reading order, which
+the setup requirement that assigns backup roles, now `R-SET-9`. Adds `R-SET-1` (a computer for the
+drives) and `R-SET-6` (format as exFAT). Renumbers every `R-SET-*` into reading order, which
 R-LANG-20 permits while no version is published. Leaves verification cadence open, which is now the
 only thing standing where a media rule stood.
 

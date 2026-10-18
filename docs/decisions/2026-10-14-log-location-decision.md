@@ -9,7 +9,7 @@ performing it (`R-LOG-5`), as one JSON document. Inside that directory, an init 
 
 **Every run writes a log, including runs that promise to write nothing.** `R-LOG-1` requires a log
 of every run. A dry run mutates nothing (`R-SRC-14`, `R-MIRROR-7`), status is read-only
-(`R-CLI-10`), and an init run by mistake fails and writes nothing (`R-CLI-11`). A log beside a copy
+(`R-CLI-10`), and an init run by mistake fails and writes nothing (`R-INIT-3`). A log beside a copy
 would write a file on a drive in each of those runs. A log in the directory for temporary files
 breaks none of those promises, and a run can open it before it knows which directory it acts on.
 

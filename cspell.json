@@ -26,6 +26,7 @@
     "erasable",
     "exFAT",
     "EXIF",
+    "EXLOCK",
     "forkable",
     "hardlink",
     "hardlinks",

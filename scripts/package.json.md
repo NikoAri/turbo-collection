@@ -12,22 +12,30 @@ recorded here so they do not come back by habit.
 ## The scripts carry no preference flags
 
 ```
-lint             npm run lint:typecheck && npm run lint:format && npm run lint:spell
-lint:typecheck   tsc
-lint:format      prettier --write .
-lint:spell       cspell .
-test             node --test
-test:coverage    node --test --experimental-test-coverage
-update           node helpers/package-json-npm-updater.ts
+lint                   npm run lint:typecheck && npm run lint:format && npm run lint:spell
+lint:typecheck         tsc
+lint:format            prettier --write .
+lint:spell             cspell .
+test                   node --test
+test:coverage          node --test --experimental-test-coverage
+test:windows-and-wsl   npm run test && wsl -e bash -ic "npm run test"
+update                 node helpers/package-json-npm-updater.ts
 ```
 
-The flags that do appear (`--write`, `--test`, `--experimental-test-coverage`)
-select a mode or turn on a capability; none tunes a preference, and that is the
-line worth holding. Each script is otherwise the tool's default behavior pointed
-at the current directory. `node --test` takes no path: it discovers `test/` and
-any `*.test.ts` on its own. `test:coverage` adds `--experimental-test-coverage`
-because Node exposes coverage no other way; it only reports and sets no
-threshold, so it never fails a run, and plain `test` stays without it.
+The flags that do appear (`--write`, `--test`, `--experimental-test-coverage`,
+and the `-e` and `-ic` of `test:windows-and-wsl`) select a mode or turn on a
+capability; none tunes a preference, and that is the line worth holding. Each
+script is otherwise the tool's default behavior pointed at the current
+directory. `node --test` takes no path: it discovers `test/` and any `*.test.ts`
+on its own. `test:coverage` adds `--experimental-test-coverage` because Node
+exposes coverage no other way; it only reports and sets no threshold, so it
+never fails a run, and plain `test` stays without it.
+
+`test:windows-and-wsl` runs `test` under Windows, then under Linux in WSL, from
+a Windows terminal, so one command covers Windows and the Linux that WSL runs on
+the same computer (R-CLI-15). `wsl -e` starts bash in this directory, and `-ic`
+makes that bash interactive, so it reads `~/.bashrc`, where WSL's Linux has Node
+on its `PATH`. Under macOS, `test` alone is the suite.
 
 **`update` is the exception: the one verb that runs a helper of this
 repository's own**, not a third-party tool. It invokes

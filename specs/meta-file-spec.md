@@ -389,9 +389,9 @@ discovered at run time.
 **R-MFILE-19.** Every Copy MUST declare its own identity in its own
 configuration file. When **init** or **backup** creates a Copy, Turbo-Collection
 MUST set that Copy's `collectionId`, `collectionName` and `copyName` once, at
-creation, as `turbo-collection-core-spec.md` R-CLI-11 and R-CLI-13 state, and
-MUST write them into that Copy's configuration file. Turbo-Collection MUST
-generate a new `collectionId` for a Copy that init creates. Turbo-Collection
+creation, as `init-spec.md` R-INIT-4 and `turbo-collection-core-spec.md`
+R-CLI-13 state, and
+MUST write them into that Copy's configuration file. Turbo-Collection
 MUST give a Copy that a backup creates the `collectionId` and `collectionName`
 of the backup's existing Copy, so that all Copies of a Collection hold the same
 `collectionId` and `collectionName`. Thereafter Turbo-Collection MUST determine
@@ -412,7 +412,7 @@ It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines
 skipped and a line beginning with `#` treated as a comment. Pattern syntax and
 matching MUST follow `gitignore(5)`, evaluated relative to the copy root. The
 starter ignore file Turbo-Collection writes into a copy that has none
-(`turbo-collection-core-spec.md` R-CLI-11) holds patterns for files that an
+(`init-spec.md` R-INIT-1) holds patterns for files that an
 operating system and its file managers create on their own; the reference
 implementation ships that list at `scripts/templates/default.tcignore`.
 

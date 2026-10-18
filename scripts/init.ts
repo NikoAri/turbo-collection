@@ -15,7 +15,7 @@ import {
   type IsIgnored,
 } from "./tcignore.ts";
 
-// The init operation, which makes a directory a copy (turbo-collection-core-spec.md R-CLI-11).
+// The init operation, which makes a directory a copy (init-spec.md R-INIT-1).
 
 // The starter ignore file (meta-file-spec.md R-MFILE-20).
 const StarterIgnoreFileUrl = new URL(
@@ -27,7 +27,7 @@ const StarterIgnoreFileUrl = new URL(
 const MetaFileSpecVersion = "0.1.0-draft";
 
 // Creates `directory` where it does not exist, with every directory above it that does not exist
-// (R-CLI-11). One that exists is left as it is.
+// (R-INIT-2). One that exists is left as it is.
 export function createDirectoryIfMissing(directory: string): void {
   mkdirSync(directory, { recursive: true });
 }
@@ -63,7 +63,7 @@ function findFileNotIgnored(
 }
 
 // Throws an error where `directory` holds a file, at any depth, that no starter pattern ignores
-// (R-CLI-11).
+// (R-INIT-3).
 export function ensureDirectoryHoldsNoFiles(directory: string): void {
   const isIgnored = compileIgnorePatterns(
     readIgnorePatterns(readFileSync(StarterIgnoreFileUrl, "utf8")),
@@ -76,7 +76,7 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
   }
 }
 
-// The name of the collection a copy in `directory` begins (R-CLI-11): `givenName` as given where
+// The name of the collection a copy in `directory` begins (R-INIT-4): `givenName` as given where
 // there is one, and otherwise the name of the directory, unchanged. A collection's name is not
 // empty (meta-file-spec.md R-MFILE-18), and an empty one is an error.
 export function collectionNameFor(
@@ -102,14 +102,14 @@ export function collectionNameFor(
   return directoryName;
 }
 
-// The name a new copy takes where none is given (R-CLI-11).
+// The name a new copy takes where none is given (R-INIT-4).
 const DefaultCopyName = "main";
 
 // A character a copy's name cannot hold: a control character, or one that an operating system
 // refuses in a filename (meta-file-spec.md R-MFILE-19).
 const CharacterNotInCopyName = /[\p{Cc}<>:"\/\\|?*]/u;
 
-// The name of a new copy (R-CLI-11): `givenName` in Unicode Normalization Form C where there is
+// The name of a new copy (R-INIT-4): `givenName` in Unicode Normalization Form C where there is
 // one, and otherwise `main`. A name that is empty or holds a character it cannot hold is an error
 // (meta-file-spec.md R-MFILE-18, R-MFILE-19).
 export function copyNameFor(givenName: string | undefined): string {
@@ -136,7 +136,7 @@ export type TcConfig = {
 };
 
 // Makes `directory` the first copy of a new collection, and returns the configuration it writes
-// there (R-CLI-11).
+// there (R-INIT-1).
 //
 // Both names are checked before a directory is created, and the directory before a file is
 // written. The ignore file is written first and the configuration file last, since the
@@ -156,7 +156,7 @@ export function initializeTc(
   copyFileSync(StarterIgnoreFileUrl, path.join(directory, ".tcignore"));
 
   // The fields of R-MFILE-18, each on a line of its own (R-MFILE-27). Init generates the
-  // collection's ID (R-MFILE-19), which Node writes in lower case.
+  // collection's ID (R-INIT-4), which Node writes in lower case.
   const tcConfig: TcConfig = {
     version: MetaFileSpecVersion,
     collectionId: randomUUID(),

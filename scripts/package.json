@@ -14,6 +14,7 @@
     "lint:spell": "cspell .",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
+    "test:windows-and-wsl": "npm run test && wsl -e bash -ic \"npm run test\"",
     "update": "node helpers/package-json-npm-updater.ts"
   },
   "devDependencies": {

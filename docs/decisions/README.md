@@ -94,7 +94,6 @@ there is more than one area to group.
 | 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
 | 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |
 | 2026-09-30 | [Three operations write and two read: init, import, backup; verify and status](2026-09-30-operation-taxonomy-decision.md) | Accepted |
-| 2026-10-02 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-02-starter-ignore-file-decision.md) | Accepted |
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
 | 2026-10-03 | [A normative document carries no change ledger](2026-10-03-change-ledger-decision.md) | Accepted |
 | 2026-10-03 | [A requirement is a paragraph led by its ID, not a table row](2026-10-03-requirement-paragraphs-decision.md) | Accepted |
@@ -111,11 +110,12 @@ there is more than one area to group.
 | 2026-10-06 | [An import never overwrites: a differing file stays out, and the rest comes in](2026-10-06-import-conflict-decision.md) | Accepted |
 | 2026-10-06 | [A run exits 0 only when it was fully successful, and the exit status says nothing more](2026-10-06-exit-status-decision.md) | Accepted |
 | 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md) | Accepted |
-| 2026-10-08 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-08-operating-systems-decision.md) | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md) | Accepted |
 | 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md) | Accepted |
 | 2026-10-14 | [A run's log is one JSON document in the operating system's directory for temporary files](2026-10-14-log-location-decision.md) | Accepted |
-| 2026-10-17 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-17-copy-creation-decision.md) | Accepted |
 | 2026-10-17 | [Turbo-Collection copies files itself, and no copying program writes into a copy](2026-10-17-mirror-engine-decision.md) | Accepted |
-| 2026-10-17 | [A symbolic link is not content, and a run that meets one fails](2026-10-17-non-regular-files-decision.md) | Accepted |
 | 2026-10-17 | [Overlapping runs are kept apart by a directory per run, a configuration file written first, and a lock per collection](2026-10-17-parallel-safety-decision.md) | Accepted |
+| 2026-10-18 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-18-operating-systems-decision.md) | Accepted |
+| 2026-10-18 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-18-copy-creation-decision.md) | Accepted |
+| 2026-10-18 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-18-starter-ignore-file-decision.md) | Accepted |
+| 2026-10-18 | [A symbolic link is not content, and a run that meets one fails](2026-10-18-non-regular-files-decision.md) | Accepted |

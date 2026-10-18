@@ -136,7 +136,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Init** v  
   The operation that creates a directory for a new copy with no other copy
-  present, which is how a collection's first copy comes to exist (R-CLI-11).
+  present, which is how a collection's first copy comes to exist
+  (`init-spec.md` R-INIT-1).
 
 - **Import** v  
   Bringing files into the collection Copy from an import source, performed by an
@@ -384,7 +385,7 @@ something.
 | **Cloud off-site**                                              | A copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | R-TGT-1                                   | None. Storage support for one more medium.                                                                                                                                                                           |
 | **Deduplication**                                               | The manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | R-MFILE-8                                 | None.                                                                                                                                                                                                                |
 | **Restore, repair, and manifest rebuild**                       | Each would modify or replace a file already in a copy, which no operation does today (R-MIRROR-2, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix the shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10).                                                                                                                                                                                                                                                      | R-INT-6, R-INT-7, R-INT-10, R-TGT-11      | None to the plain tree. One operation added; whether it may overwrite a content file is the decision deferred with it.                                                                                               |
-| **Symbolic links and other non-regular files**                  | A symbolic link holds no content of its own: what it points at lives elsewhere, possibly outside the directory being imported. Taking one in means first deciding what is preserved, the bytes it points at or a plain record of where it pointed, and neither is needed to preserve a regular file. Until that is decided an Import that meets one fails, adds nothing, and names it (R-SRC-22), a Run that meets one inside a Copy fails and names it (R-CLI-19), and a pattern in the ignore file passes over an entry an operator does not want taken in (R-MFILE-21).                                                                                                                                                                     | R-SRC-22, R-CLI-19, R-MFILE-21            | **One design, not yet made:** whether a link is followed or recorded. R-SRC-22 and R-CLI-19 amended.                                                                                                                 |
+| **Symbolic links and other non-regular files**                  | A symbolic link holds no content of its own: what it points at lives elsewhere, possibly outside the directory being imported. Taking one in means first deciding what is preserved, the bytes it points at or a plain record of where it pointed, and neither is needed to preserve a regular file. Until that is decided an Import that meets one fails, adds nothing, and names it (R-SRC-22), a Run that meets one inside a Copy fails and names it (R-CLI-19), a Run given a path that passes through one fails and names where that path leads (R-CLI-20), and a pattern in the ignore file passes over an entry an operator does not want taken in (R-MFILE-21).                                                                        | R-SRC-22, R-CLI-19, R-CLI-20, R-MFILE-21  | **One design, not yet made:** whether a link is followed or recorded. R-SRC-22, R-CLI-19 and R-CLI-20 amended.                                                                                                       |
 | **Third-party importers and storage support loaded as plugins** | The import and storage layout contracts are already specified completely enough for anyone to implement either (R-META-1). Making them _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against the collection is a trust decision, and because the machinery cuts against keeping the orchestrator thin.                                                                                                                                                                                                                                                                                                               | R-SRC-2, R-META-1                         | **None. This specification never says how an importer or storage support is loaded**, so this is a change to Section 12 and nothing more.                                                                            |
 | **Browsing GUI, AI search, face recognition**                   | Any such tool is a **consumer** of a plain file tree. It reads the collection; the core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | R-COL-1, R-COL-3, R-CLI-3                 | **None, ever.** This is the entire payoff of plain files.                                                                                                                                                            |
 
@@ -400,15 +401,15 @@ something.
 
 SL stands for Standard Library
 
-| Concern           | Utility           | Today's Dependency                                                                    |
-| ----------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| Operating systems | Windows and macOS | Windows and macOS (R-CLI-15)                                                          |
-| File Manipulation | SL                | Windows and macOS (R-CLI-15)                                                          |
-| Mirror Engine     | SL                | Standard Library; a run writes every file into a copy itself (R-PARALLEL-8)           |
-| Integrity         | SL                | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                         |
-| Meta Files        | SL                | JSON, parsed by the runtime's standard library, with no third-party dependency        |
-| Logger            | SL                | Standard Library; Plain-text files, one per run, written outside every copy (R-LOG-5) |
-| .tcignore         | `ignore`          | (MIT) <https://www.npmjs.com/package/ignore>, for gitignore pattern semantics         |
+| Concern           | Utility                  | Today's Dependency                                                                    |
+| ----------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| Operating systems | Windows, macOS and Linux | The supported operating systems (R-CLI-15)                                            |
+| File Manipulation | SL                       | Under every supported operating system (R-CLI-15)                                     |
+| Mirror Engine     | SL                       | Standard Library; a run writes every file into a copy itself (R-PARALLEL-8)           |
+| Integrity         | SL                       | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                         |
+| Meta Files        | SL                       | JSON, parsed by the runtime's standard library, with no third-party dependency        |
+| Logger            | SL                       | Standard Library; Plain-text files, one per run, written outside every copy (R-LOG-5) |
+| .tcignore         | `ignore`                 | (MIT) <https://www.npmjs.com/package/ignore>, for gitignore pattern semantics         |
 
 **Minimal third-party dependencies, and the test one must pass.**
 
@@ -424,11 +425,13 @@ plugin registry, and no runtime loading of third-party code. This is a
 about how either is loaded, so a plugin-style loader could replace this with no
 change to the specification (Section 10).
 
-**Operating systems: Windows and macOS.** R-CLI-15 requires more than one
-operating system and names none, so which ones are named here is a **binding,
-not a requirement**. Adding another, such as Linux, changes this section and no
-requirement; it also adds one more operating system under which conformance is
-checked (Section 13).
+**Operating systems.** The operating systems the table above names are the
+**supported operating systems**. R-CLI-15 requires more than one operating
+system and names none, so which ones are named here is a **binding, not a
+requirement**. Adding another changes this section and
+`turbo-collection-setup-procedure.md` R-SET-1, which names them for a person
+choosing a computer. It changes no requirement of a specification, and adds
+one more operating system under which conformance is checked (Section 13).
 
 Changing a binding is expected to require changing one module and no data. **If
 a proposed change to a binding would require rewriting the contents of a copy,

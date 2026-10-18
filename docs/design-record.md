@@ -559,7 +559,7 @@ and pushes the whole burden of protecting new photos onto the backup procedure, 
 | Capacity | Buy **≥ 2× the library** so *age*, not fullness, is the trigger. Headroom costs money and costs no verification time |
 | Quantity | **Three copies total, bought on separated dates** (`R-SET-13`, `R-SET-3`). Never two matching drives together |
 | Brand | Prefer different models, and different manufacturers where an enclosure discloses one. A suggestion, not a rule, because enclosures often do not disclose |
-| Filesystem | exFAT only where a drive must be written by both macOS and Windows; a journaled native filesystem everywhere else |
+| Filesystem | exFAT only where a drive must be written by more than one supported operating system; a journaled native filesystem everywhere else |
 | On arrival | First mirror + checksum verify = free DOA/burn-in check |
 
 **Why these choices.**

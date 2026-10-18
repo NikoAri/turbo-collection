@@ -26,8 +26,8 @@ and every such rule is in `parallel-safety-spec.md`.
   leaves nothing for a person to clean up (`R-PARALLEL-6`).
 
 **The lock relies on every file belonging to one copy.** No copy lies inside another (`R-CLI-18`,
-[the copy-creation decision](2026-10-17-copy-creation-decision.md)), no run follows a link inside a
-copy (`R-CLI-19`, [the non-regular-files decision](2026-10-17-non-regular-files-decision.md)), and
+[the copy-creation decision](2026-10-18-copy-creation-decision.md)), no run follows a link inside a
+copy (`R-CLI-19`, [the non-regular-files decision](2026-10-18-non-regular-files-decision.md)), and
 no import reads a folder that is a copy, lies inside one or holds one (`R-LOCALFOLDER-2`). A
 configuration is validated before its `collectionId` names a lock (`R-CFG-3`).
 

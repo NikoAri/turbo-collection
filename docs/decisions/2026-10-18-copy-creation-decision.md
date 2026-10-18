@@ -1,12 +1,11 @@
 # Init creates the first copy in an empty directory; backup creates every later copy
 
 **Status:** Accepted
-**Date:** 2026-10-17
+**Date:** 2026-10-18
 
-Replaces the record of 2026-10-14, under which nothing stopped a directory inside a copy from being
-made a copy. Init and backup now refuse one, as every run does: a copy inside another keeps its meta
-files in that copy's directories, so runs of both would write one manifest, and for two collections
-each of those runs would hold only its own collection's lock.
+Replaces the record of 2026-10-17. Init has no dry run, and it lists every file that stops it. The
+dry run came in on 2026-09-30, when init took in the files already in its directory and a dry run
+could list them, and with that parked it had nothing left to show.
 
 A directory becomes a copy when Turbo-Collection writes its configuration, which states the
 collection the copy belongs to and the name every receipt will use for that copy
@@ -19,11 +18,12 @@ that, and no other operation ever does:
   stands. `--copy` names the copy, and without it the copy is `main`. A name that cannot be used is
   an error, and there is no prompt. Init writes a configuration file and a starter ignore file, and
   nothing else. It refuses a directory that holds a file, at any depth, unless a starter ignore
-  pattern matches that file: a file an operating system left behind does not stand in the way, and
-  a folder of photographs picked by mistake is left as it was. A directory that is already a copy
-  holds its configuration file, and one that contains a copy holds that copy's files, so init stops
-  on both and changes nothing, which protects the name a copy's receipts already carry. A directory
-  inside a copy is refused as well, before init makes any directory.
+  pattern matches that file, and lists every such file: a file an operating system left behind does
+  not stand in the way, and a folder of photographs picked by mistake is left as it was. A directory
+  that is already a copy holds its configuration file, and one that contains a copy holds that
+  copy's files, so init stops on both and changes nothing, which protects the name a copy's
+  receipts already carry. A directory inside a copy is refused as well, before init makes any
+  directory.
 - **`backup`** creates **every later** copy. Given a directory that is a copy, it mirrors it; given
   one that is empty or does not exist, it creates a copy there and fills it; given anything else, it
   refuses and lists what the directory holds. "Empty" means holding nothing except files the
@@ -57,7 +57,13 @@ same, so a person meets one behavior in both operations.
 **No copy lies inside another.** Every run refuses a directory inside a copy, init and backup
 included, before it makes a directory or writes a file, and a run that finds a configuration file
 below a copy's root fails too (`R-CLI-18`). This holds for two copies of one collection as it does
-for copies of two collections.
+for copies of two collections. A copy inside another keeps its meta files in that copy's
+directories, so runs of both would write one manifest, and for two collections each of those runs
+would hold only its own collection's lock.
+
+**Init has no dry run.** Init writes its configuration file and ignore file into an empty directory,
+writes nothing when it fails, and leaves a copy that can be deleted while nothing refers to it. A
+dry run would report only what a person can already see, and `yarn init` offers none either.
 
 **A replacement drive takes the dead copy's name.** Receipts record where content was placed, never
 that a copy survives (`R-REC-8`), a release already requires a real verification, and location
@@ -74,6 +80,9 @@ connected copies state one name (`R-MFILE-19`).
   beneath it for good, and because taking files in where they sit needs an in-place import, which
   waits for a later version. A directory full of photographs is still the ordinary starting point:
   it is brought in by an import.
+- **A dry run of init.** The rule from 2026-09-30 until 2026-10-18. It came in with init's taking in
+  the files already in its directory, which a dry run could list. With that parked, it cost a flag
+  and code to report what a person can already see.
 - **The first copy named after its directory.** The rule on 2026-10-13. A directory's name says
   what is kept, which is the collection; a copy is named for where it rests.
 - **A directory's name converted to lower case and hyphens.** The rule on 2026-10-13, so that one
@@ -86,8 +95,12 @@ connected copies state one name (`R-MFILE-19`).
   created, and the two agree. Nothing in this rule now stops that case.
 - **Checks of their own for a copy at or under the directory.** The rule until 2026-10-13. The
   check for a file already stops a directory that is a copy and one that contains a copy.
+- **Naming only the first file that stops init.** It says why init stopped, but a person clearing
+  stray files would need one run per file. Listing every file takes one run, as backup's refusal
+  lists what its directory holds.
 - **Letting a directory inside a copy be made a copy.** The rule from 2026-10-13 until 2026-10-17,
-  when init checked only for files and nothing else stopped one. Reversed for the reason at the top.
+  when init checked only for files and nothing else stopped one. Reversed for the reason under
+  _No copy lies inside another_, above.
 - **A question for the name, as `npm init` asks.** Familiar, but `yarn init` asks nothing, and no
   operation may need a prompt (`R-CLI-8`).
 - **The first import or backup creates the first copy from a name argument.** It makes a routine
@@ -106,16 +119,18 @@ connected copies state one name (`R-MFILE-19`).
 
 ## Touches
 
-`turbo-collection-core-spec.md`: `R-CLI-5` names init; `R-CLI-11` (init: its directory, its two
-names, and its refusal of a directory that holds a file), `R-CLI-13` (backup creating a copy),
-`R-CLI-14` (no other operation creates one; every directory a path needs is created) and `R-CLI-18`
-(no copy inside another, for every run). `R-CLI-12`, under which init performed an in-place import,
-was removed on 2026-10-12. The in-place import source specification was withdrawn with it, and so
-was `R-FOUND-2` in `as-found-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds
-_Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19` states that a copy's identity is set
-once, at creation, that init generates the `collectionId` and backup passes it on, and what a copy's
-name may hold; `R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the rule that an
-ignored file never enters a copy
-([the starter-ignore-file decision](2026-10-02-starter-ignore-file-decision.md)). The setup
+`init-spec.md`: `R-INIT-1` to `R-INIT-4` (init: what it writes, its directory, its refusal of a
+directory that holds a file and its report of every such file, the `collectionId` it generates, and
+its two names), which were `R-CLI-11` and a sentence of `R-MFILE-19` until 2026-10-18.
+`turbo-collection-core-spec.md`: `R-CLI-5` names init, and makes dry run a mode of import and
+backup only; `R-CLI-13` (backup creating a copy), `R-CLI-14` (no other operation creates one; every
+directory a backup's path needs is created) and `R-CLI-18` (no copy inside another, for every run).
+`R-CLI-12`, under which init performed an in-place import, was removed on 2026-10-12. The in-place
+import source specification was withdrawn with it, and so was `R-FOUND-2` in
+`as-found-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds _Init_ and _Ignored
+file_. `meta-file-spec.md`: `R-MFILE-19` states that a copy's identity is set once, at creation,
+that backup passes the `collectionId` on, and what a copy's name may hold; `R-MFILE-20` and
+`R-MFILE-21` carry the starter ignore file and the rule that an ignored file never enters a copy
+([the starter-ignore-file decision](2026-10-18-starter-ignore-file-decision.md)). The setup
 procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11` create the later copies by
 backup.

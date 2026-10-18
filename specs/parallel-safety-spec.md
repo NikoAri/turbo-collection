@@ -12,8 +12,8 @@ Run another ID, and make the Run's directory under the new ID.
 > `turbo-collection/runs/20261015T215020Z-3b52/` first keeps that ID. The other
 > Run takes a new ID and makes its directory under that one.
 
-**R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy
-(`turbo-collection-core-spec.md` R-CLI-11, R-CLI-13), Turbo-Collection MUST
+**R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy (`init-spec.md`
+R-INIT-1, `turbo-collection-core-spec.md` R-CLI-13), Turbo-Collection MUST
 write that Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before
 any other file it writes into that directory. Turbo-Collection MUST write that
 configuration file only where nothing exists at its path.

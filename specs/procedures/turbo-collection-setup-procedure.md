@@ -16,8 +16,8 @@ Do these once. Written under
 
 ## 1. What you need
 
-**R-SET-1.** You MUST have a laptop or desktop computer running **Windows** or
-**macOS**, with a port the drives connect to.
+**R-SET-1.** You MUST have a laptop or desktop computer running **Windows**,
+**macOS** or **Linux**, with a port the drives connect to.
 
 You also need three drives, which Section 2 covers. The three copies are
 **peers**: none is a master, each carries its own manifest, and any one can
@@ -102,16 +102,17 @@ import (`turbo-collection-import-procedure.md`).
 **R-SET-9.** Use the two hard disk drives as the **home copy** and the
 **off-site copy**.
 
-> **Why exFAT.** It is the one format Windows and macOS both read and write with
-> no extra software. The alternatives each need paid kernel-level drivers on one
-> of the two, which the project's simplicity filter rejects.
+> **Why exFAT.** It is the one format every supported operating system reads and
+> writes with no extra software. The alternatives each need paid kernel-level
+> drivers on one of them, which the project's simplicity filter rejects.
 
 > **Why init comes before anything else.** Until init runs, nothing on a drive
 > says it is a copy, and an import or a backup into it is refused
 > (`turbo-collection-core-spec.md` R-CLI-14). Init writes what makes a directory
 > a copy, and refuses a directory that already holds files, so a folder picked
-> by mistake is left as it was (R-CLI-11). Give init a different name only if
-> `main` is already the name of another copy you connect.
+> by mistake is left as it was (`init-spec.md` R-INIT-1, R-INIT-3). Give init
+> a different name only if `main` is already the name of another copy you
+> connect.
 
 > **The starter ignore file.** Init writes a `.tcignore` listing files that
 > operating systems create on their own, so an import does not take them in as

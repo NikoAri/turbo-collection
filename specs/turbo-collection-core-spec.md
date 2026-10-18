@@ -8,11 +8,6 @@ Verify
 This is implementation details to help with particular implementation like in Node.js.
 Actual general instructions should be in turbo-collection-spec.md
 
-## Init
-
-add .turbo-collection directory
-If there are any files in folder where init is performed, then fail
-
 ## 5. Import (`R-SRC-*`)
 
 The Core must be indifferent to whether a photo arrived by cable, from iCloud,
@@ -243,9 +238,8 @@ locally-attached copy.
 Every operation MUST be independently invocable on demand, not only as part of a
 combined run: **init**, **import**, **backup**, **status**, and **verify**
 inspections. Further subdivisions **verify fixity** (R-INT-2), **verify access**
-(R-CLI-9), and **verify names** (R-NAME-1). Dry-run MUST be a mode of **init**
-(R-CLI-11), of **import** (R-SRC-14), and of **backup** (R-MIRROR-7), not a
-separate operation.
+(R-CLI-9), and **verify names** (R-NAME-1). Dry-run MUST be a mode of **import**
+(R-SRC-14) and of **backup** (R-MIRROR-7), not a separate operation.
 
 **R-CLI-6.**  
 Turbo-Collection MUST be fully usable with **no scheduler installed or
@@ -260,29 +254,6 @@ terminal); effects MUST NOT.
 An operation MUST NOT require an interactive prompt to complete, because a
 scheduled run cannot answer one. Every option that changes what a run does MUST
 be settable in configuration or by a command-line flag.
-
-**R-CLI-11.** **Init Operation** Turbo-Collection MUST provide an **init**
-operation that makes the directory it is given a copy, by writing into that
-directory a configuration file (`meta-file-spec.md` R-MFILE-17) and an ignore
-file holding the starter patterns that `meta-file-spec.md` describes
-(R-MFILE-20). Init MUST create a directory it is given that does not exist,
-with every directory above it that does not exist. Where it is given no
-directory, init MUST act on the current working directory. Init MUST refuse a
-directory that holds any file, at any depth, other than one a starter pattern
-matches. Init MUST take the new Collection's `collectionName` from a name given
-on the command line for the Collection and, where none is given, from the name
-of the new Copy's directory, unchanged. Init MUST take the new Copy's `copyName`
-from a name given on the command line for the Copy and, where none is given,
-MUST set `copyName` to `main`. Where a name is not valid (`meta-file-spec.md`
-R-MFILE-18, R-MFILE-19), init MUST refuse, and MUST report which name is not
-valid.
-
-> **Example.** An init run by mistake on a folder of photographs fails and
-> writes nothing. A folder that holds only a `.DS_Store` its operating system
-> left there is made a copy. A directory that is already a copy holds its
-> configuration file, so an init of it fails the same way. An init of a folder
-> named `Photos (2019)`, given neither name, makes a Copy named `main` of a
-> Collection named `Photos (2019)`.
 
 **R-CLI-9.**  
 **Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
@@ -331,7 +302,7 @@ and MUST report every file that directory holds.
 
 **R-CLI-14.** Turbo-Collection MUST NOT create a copy in any operation other
 than **init** and **backup**, and in every other operation MUST refuse to act on
-a directory given as a copy that is not a copy. Where init or backup creates a
+a directory given as a copy that is not a copy. Where backup creates a
 directory, Turbo-Collection MUST also create every directory above it that does
 not exist.
 
@@ -362,6 +333,15 @@ an error on account of such an entry.
 > **Example.** A person puts a symbolic link named `latest` into a Copy. The
 > next backup of that Copy fails, names `latest`, and copies nothing from where
 > `latest` points.
+
+**R-CLI-20.** Where the path of a directory given to a Run passes through a
+symbolic link or a junction, Turbo-Collection MUST end that Run with an error,
+and MUST report the directory that path leads to. Turbo-Collection MUST end that
+Run before that Run makes a directory or writes a file, other than that Run's
+directory and its log (`logging-spec.md` R-LOG-6).
+
+> **Example.** An init given `D:\photos`, where `photos` is a junction to
+> `E:\archive`, fails and names `E:\archive`, which can be given instead.
 
 **R-CLI-15.** Turbo-Collection MUST be operable under more than one operating
 system. The name and content of every file a Run writes into a Copy MUST NOT

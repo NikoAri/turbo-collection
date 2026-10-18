@@ -80,7 +80,7 @@ async function main(args: readonly string[]): Promise<void> {
     return;
   }
 
-  // Given no directory, init acts on the current one (R-CLI-11).
+  // Given no directory, init acts on the current one (init-spec.md R-INIT-2).
   const [directory = ".", ...unexpected] = tcCliArgs.commandArgs;
   if (unexpected.length > 0) {
     reportCliUsageError(

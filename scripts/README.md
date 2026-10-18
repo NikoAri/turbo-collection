@@ -24,6 +24,12 @@ On macOS:
 brew install node
 ```
 
+On Linux, with Homebrew:
+
+```Terminal
+brew install node
+```
+
 The floor is Node 24.19.0. Two things need a recent Node 24: stripping
 TypeScript types as each file loads, enabled by default only from Node 22.18 and
 24.0 onward, and the `import.meta.main` run-guard in
@@ -49,11 +55,12 @@ That installs every dependency, and is the whole of setup.
 
 Run these from this directory.
 
-| Command                    | What it does                                         |
-| -------------------------- | ---------------------------------------------------- |
-| `npm run lint`             | Types, formatting, and spelling. Reformats in place. |
-| `npm run test`             | Run the test suite.                                  |
-| `node turbo-collection.ts` | Run the entry point.                                 |
+| Command                        | What it does                                               |
+| ------------------------------ | ---------------------------------------------------------- |
+| `npm run lint`                 | Types, formatting, and spelling. Reformats in place.       |
+| `npm run test`                 | Run the test suite.                                        |
+| `npm run test:windows-and-wsl` | Run the test suite under Windows, then under Linux in WSL. |
+| `node turbo-collection.ts`     | Run the entry point.                                       |
 
 `lint` is three steps, each runnable alone: `lint:typecheck` (`tsc`),
 `lint:format` (`prettier --write`), and `lint:spell` (`cspell`). It **rewrites
@@ -76,23 +83,26 @@ being told, and what `package.json` deliberately leaves out:
 ## What this is today
 
 **The start of the implementation: `init` works, and nothing else does yet.**
-`node turbo-collection.ts init` makes a directory a copy, as
-`turbo-collection-core-spec.md` R-CLI-11 describes. Import, backup, status and
-verify are not written.
+`node turbo-collection.ts init` makes a directory a copy, as `init-spec.md`
+describes. Import, backup, status and verify are not written.
 
 Init itself still owes the report of what each ignore pattern matched
 (`meta-file-spec.md` R-MFILE-21), a log of the run (R-LOG-1), and a dry run
 (R-CLI-5).
 
-| File                                         | What it holds                                             |
-| -------------------------------------------- | --------------------------------------------------------- |
-| [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line and runs init.        |
-| [`init.ts`](init.ts)                         | The init operation.                                       |
-| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says whether a path is ignored. |
-| [`templates/`](templates/)                   | The starter ignore file that init writes into a copy.     |
-| [`helpers/`](helpers/)                       | The script behind `npm run update`.                       |
-| [`test/`](test/)                             | Tests, each named for the requirement it exercises.       |
-| [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do.   |
+`NamedMutex`, which is to hold a collection's lock for every run other than init
+(`parallel-safety-spec.md` R-PARALLEL-4), is written, and nothing takes it yet.
+
+| File                                         | What it holds                                                                      |
+| -------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line and runs init.                                 |
+| [`init.ts`](init.ts)                         | The init operation.                                                                |
+| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says whether a path is ignored.                          |
+| [`templates/`](templates/)                   | The starter ignore file that init writes into a copy.                              |
+| [`helpers/`](helpers/)                       | The script behind `npm run update`, and `NamedMutex`, a mutex held under a name.   |
+| [`samples/`](samples/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it. |
+| [`test/`](test/)                             | Tests, each named for the requirement it exercises.                                |
+| [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do.                            |
 
 ## Rules this code is held to
 
@@ -138,7 +148,8 @@ describes can be run mechanically.
 **Nothing runs by itself.** No CI workflow and no git hook runs the tests or the
 lint: every run is one someone starts. `R-CLI-15` has this code operable under
 each operating system Section 12 names, so the suite is run on each of them by
-hand.
+hand. From Windows, `npm run test:windows-and-wsl` runs it under Windows and
+under Linux in WSL.
 
 ## Before this writes to anything real
 

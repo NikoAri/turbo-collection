@@ -1,7 +1,7 @@
 # Starter .tcignore for a new Turbo-Collection copy.
 #
 # Turbo-Collection writes this file into a copy it creates that has none
-# (turbo-collection-core-spec.md R-CLI-11). The patterns match files the operating
+# (init-spec.md R-INIT-1). The patterns match files the operating
 # system and its file managers create on their own: metadata, caches, and trash.
 # After creation the file is yours; edit it freely.
 #
@@ -9,7 +9,8 @@
 # (https://github.com/github/gitignore/tree/main/Global). Patterns that match
 # application- or user-created files (installers, shortcuts, shell and crash
 # output, editor backups) are left out on purpose, so an import never silently
-# skips a file someone meant to keep.
+# skips a file someone meant to keep. System Volume Information/ is added:
+# Windows creates it at the root of a drive, and the Windows template lacks it.
 
 # macOS
 .DS_Store
@@ -62,6 +63,7 @@ ehthumbs.db
 ehthumbs_vista.db
 [Dd]esktop.ini
 $RECYCLE.BIN/
+System Volume Information/
 
 # Linux
 .fuse_hidden*

@@ -22,7 +22,7 @@ function runTurboCollection(...args: string[]) {
   });
 }
 
-test("R-CLI-11: given no directory, init makes the current directory a copy, and exits with status 0", (t) => {
+test("R-INIT-2: given no directory, init makes the current directory a copy, and exits with status 0", (t) => {
   const temporary = mkdtempSync(path.join(tmpdir(), "turbo-collection-test-"));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));
   const directory = path.join(temporary, "Family Photos");
@@ -56,7 +56,7 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
   });
 });
 
-test("R-CLI-11: the name of a new collection is given by --name or -n, before the command or after it", () => {
+test("R-INIT-4: the name of a new collection is given by --name or -n, before the command or after it", () => {
   assert.equal(
     parseCliArgs(["init", "D:\\Photos", "--name", "Family Photos"]).name,
     "Family Photos",
@@ -71,7 +71,7 @@ test("R-CLI-11: the name of a new collection is given by --name or -n, before th
   );
 });
 
-test("R-CLI-11: the name of a new copy is given by --copy", () => {
+test("R-INIT-4: the name of a new copy is given by --copy", () => {
   assert.equal(
     parseCliArgs(["init", "D:\\Photos", "--copy", "off-site"]).copy,
     "off-site",

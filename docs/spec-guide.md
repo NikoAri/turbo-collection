@@ -10,6 +10,7 @@ in [`decisions/`](decisions/), never here.
 |---|---|---|---|
 | [`specs/turbo-collection-spec.md`](../specs/turbo-collection-spec.md) | What must be true of Turbo-Collection itself. | implementation | yes |
 | [`specs/turbo-collection-core-spec.md`](../specs/turbo-collection-core-spec.md) | Import, configuration, the command line, and the contracts. | implementation | yes |
+| [`specs/init-spec.md`](../specs/init-spec.md) | What init does: making a directory the first copy of a new collection. | implementation | yes |
 | [`specs/backup-spec.md`](../specs/backup-spec.md) | Mirror semantics: what a backup does between peer copies. | implementation | yes |
 | [`specs/verify-spec.md`](../specs/verify-spec.md) | Integrity, filename safety, and receipts. | implementation | yes |
 | [`specs/logging-spec.md`](../specs/logging-spec.md) | What a run's log records, and where it is written. | implementation | yes |
@@ -41,6 +42,7 @@ Every prefix resolves to exactly one document.
 | Prefix | Document | Covers |
 |---|---|---|
 | `R-COL-*` | `turbo-collection-spec.md` | collection invariants |
+| `R-INIT-*` | `init-spec.md` | init |
 | `R-SRC-*` | `turbo-collection-core-spec.md` | import |
 | `R-TGT-*` | `turbo-collection-spec.md` | storage layout (the prefix dates from when a copy was called a target) |
 | `R-MIRROR-*` | `backup-spec.md` | mirror semantics |

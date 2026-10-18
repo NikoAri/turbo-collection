@@ -1,9 +1,12 @@
 # The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation
 
 **Status:** Accepted
-**Date:** 2026-10-02
+**Date:** 2026-10-18
 
-When init makes a directory a copy, it writes a starter `.tcignore` (`R-CLI-11`). Without it, files
+Replaces the record of 2026-10-02. The shipped list now also holds a pattern its sources lack,
+`System Volume Information/`, for the folder Windows keeps at the root of a drive.
+
+When init makes a directory a copy, it writes a starter `.tcignore` (`R-INIT-1`). Without it, files
 an operating system creates on its own, such as a folder-view cache, would be taken in by an import
 as permanent content, and one that its operating system
 later rewrites would then read as corrupt.
@@ -36,6 +39,13 @@ So the shipped list is those templates minus two groups: every pattern that can 
 person made or keeps, and two macOS patterns whose filenames embed a carriage return, which no
 pattern in a file with line-feed endings can match.
 
+It also holds one pattern the templates lack, `System Volume Information/`. Windows keeps that
+folder at the root of a drive, as macOS keeps the folders its template already lists under _Files
+and directories that might appear in the root of a volume_. The Windows template lacks it only
+because a proposal to add it, [github/gitignore#1498](https://github.com/github/gitignore/pull/1498)
+from 2015, was closed for inactivity. Without it, init fails at a drive's root under Windows, and a
+copy at a drive's root would hold files Windows wrote there.
+
 ## Rejected
 
 - **A verbatim list inside `meta-file-spec.md`.** It would make every change of an operating system's
@@ -43,12 +53,17 @@ pattern in a file with line-feed endings can match.
 - **The list under `specs/`, as a template file.** Same churn, and it reverses the dependency
   direction for something that is a tool input.
 - **The upstream templates unmodified.** See above.
+- **Leaving out `System Volume Information/`, as the Windows template does.** Its absence there is a
+  proposal that stalled, not a judgment that the folder is content.
+- **Keeping copies away from a drive's root instead.** A rule a person must remember, where one
+  pattern lets a drive's root be made a copy as any other directory can.
 - **No pointer from the specification to the implementation's file.** Cleaner in principle, and it
   hides from a reader what a new copy ignores from its first moment.
 
 ## Touches
 
 `meta-file-spec.md` `R-MFILE-20` (conceptual description and the pointer) and `R-MFILE-21` (an
-ignored file never enters a copy by an import). `turbo-collection-core-spec.md` `R-CLI-11`.
-`scripts/templates/default.tcignore` created; `cspell.json` excludes `*.tcignore`, which is data and
-not prose. The setup procedure names where fuller lists are kept, with the caution above.
+ignored file never enters a copy by an import). `init-spec.md` `R-INIT-1`.
+`scripts/templates/default.tcignore` holds the list, and its header names its sources and the
+pattern added to them; `cspell.json` excludes `*.tcignore`, which is data and not prose. The setup
+procedure names where fuller lists are kept, with the caution above.

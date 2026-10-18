@@ -21,7 +21,7 @@ Every copy's configuration states three things (`R-MFILE-18`, `R-MFILE-19`):
   backup writes into each copy it creates. Nobody chooses or types it.
 - **`collectionName`**, that collection's name, for people. Init takes it from `--name`, or else
   from the directory it makes a copy
-  ([the copy-creation decision](2026-10-17-copy-creation-decision.md)). It appears in no filename,
+  ([the copy-creation decision](2026-10-18-copy-creation-decision.md)). It appears in no filename,
   so it has only to be non-empty.
 - **`copyName`**, the copy's own name, which every receipt carries in its filename and its contents
   (`R-MFILE-13`). It may be in any script, kept in NFC and free of the characters an operating
@@ -75,8 +75,9 @@ operator imports into.
 - `meta-file-spec.md`: `R-MFILE-18` (the fields) and `R-MFILE-19` (each set once, at creation; what
   a copy's name may hold; the refusal of one name on two connected copies); `R-MFILE-2`,
   `R-MFILE-13`, `R-MFILE-14`, `R-MFILE-16` and `R-MFILE-26` carry `copyName`.
-- `turbo-collection-core-spec.md`: `R-CLI-10` (status reports both names), `R-CLI-11` (init's two
-  names) and `R-CLI-13` (backup's refusal, and the name of a copy it creates).
+- `turbo-collection-core-spec.md`: `R-CLI-10` (status reports both names) and `R-CLI-13` (backup's
+  refusal, and the name of a copy it creates).
+- `init-spec.md`: `R-INIT-4` (the `collectionId` init generates, and init's two names).
 - `samples/` fixtures, and the setup procedure's field reference.
 - The [2026-08-15 record](2026-08-15-drive-naming-and-hardware-decision.md) loses its naming section
   to this one.

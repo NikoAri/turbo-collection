@@ -38,5 +38,6 @@ stays possible and is not made convenient
 ## Touches
 
 `meta-file-spec.md`: `R-MFILE-22` and its section removed; `README.md` leaves `R-MFILE-2`.
-`turbo-collection-spec.md`: `README.md` leaves `R-CLI-11`, `R-CLI-13`, the meta file definition and
-the storage layout contract. Both layout specifications, the design record and the samples follow.
+`turbo-collection-spec.md`: `README.md` leaves `R-CLI-13`, the meta file definition and the storage
+layout contract. `init-spec.md`: it leaves `R-INIT-1`. Both layout specifications, the design record
+and the samples follow.
