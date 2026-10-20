@@ -10,7 +10,8 @@ export const TurboCollectionVersion: string = packageJson.version;
 export const MetaFileSpecVersion = "0.1.0-draft";
 
 // A version stamp (turbo-collection-spec.md R-VER-18) for every specification this code conforms
-// to. A draft has no publication date, so its stamp is the name and the number alone.
+// to, including a layout or an import source that no operation uses yet. A draft has no
+// publication date, so its stamp is the name and the number alone.
 export const SpecificationVersionStamps: readonly string[] = [
   "turbo-collection-spec 0.1.0-draft",
   `meta-file-spec ${MetaFileSpecVersion}`,

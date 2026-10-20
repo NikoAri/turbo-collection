@@ -8,7 +8,11 @@ import { TcError } from "./helpers/tc-error.ts";
 // The path of the configuration file of a copy whose root is `copyRoot` (meta-file-spec.md
 // R-MFILE-17). Something at this path is what makes a directory a copy.
 export function configurationFileOf(copyRoot: string): string {
-  return path.join(copyRoot, ".turbo-collection", "turbo-collection-config.json");
+  return path.join(
+    copyRoot,
+    ".turbo-collection",
+    "turbo-collection-config.json",
+  );
 }
 
 // The root of the copy that `directory` is or lies inside, or undefined where there is none

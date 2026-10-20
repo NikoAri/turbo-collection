@@ -23,19 +23,29 @@ export function readIgnorePatterns(text: string): IgnorePattern[] {
   return patterns;
 }
 
-// Says whether a path is ignored.
+// The pattern that ignores a path, or undefined where the path is not ignored. Where more than one
+// pattern matches, the last decides, as in a `.gitignore`.
 //
 // `path` is relative to the copy root, with `/` between its segments. The path of a directory ends
 // in `/`, which is how the `ignore` package tells one: a pattern ending in `/` matches a directory
 // and not a file.
-export type IsIgnored = (path: string) => boolean;
+export type IgnoringPattern = (path: string) => IgnorePattern | undefined;
 
-// A test of whether a path is ignored by `patterns`. Pattern syntax and matching are those of a
+// A test of which of `patterns` ignores a path. Pattern syntax and matching are those of a
 // `.gitignore` (R-MFILE-20), and are the work of the `ignore` package, used as it comes
-// (turbo-collection-spec.md Section 12).
+// (turbo-collection-spec.md Section 12). Each pattern is added with its index as its mark, which
+// the package hands back with the rule that decided.
 export function compileIgnorePatterns(
   patterns: readonly IgnorePattern[],
-): IsIgnored {
-  const matcher = ignore().add(patterns.map((pattern) => pattern.text));
-  return (path) => matcher.ignores(path);
+): IgnoringPattern {
+  const matcher = ignore();
+  for (const [index, pattern] of patterns.entries()) {
+    matcher.add({ pattern: pattern.text, mark: String(index) });
+  }
+  return (path) => {
+    const { ignored, rule } = matcher.test(path);
+    return ignored && rule?.mark !== undefined
+      ? patterns[Number(rule.mark)]
+      : undefined;
+  };
 }

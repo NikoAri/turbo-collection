@@ -96,7 +96,9 @@ is what `turbo-collection-core-spec.md` R-CLI-1 asks of a run that could not do 
 - **The `catch` around `main` that writes an error into the run's log and throws it again**, since
   `logging-spec.md` R-LOG-4 asks for every failure in the log. The same error goes on
   its way out, so Node still reports its message and stack trace, and the run still exits with
-  status 1. Only the source line Node quotes above them becomes a line of Node's own.
+  status 1. Only the source line Node quotes above them becomes a line of Node's own. Standard
+  error then holds the message twice, first as the `error` entry's line (`logging-spec.md`
+  R-LOG-9), then in Node's report with the stack trace under it, and both stay.
 - **`ExitSignal`**, which stands in for `process.exit` in the npm updater's
   [test](../../scripts/test/package-json-npm-updater.test.ts): throwing it ends a call the way an
   exit would end the process. It reports no failure, so it extends `Error` directly.

@@ -287,8 +287,8 @@ graph TD
 | Piece | Port (interface) | Today's adapter | Why isolated |
 |---|---|---|---|
 | Data | (none) | Plain file tree | The sacred core; only the engine touches it |
-| Source | `list()` / `fetch(item)` | none yet | Every vendor-specific fact lives in an adapter, never in the core |
-| Storage | `push()` / `verify()` | local drive | Every medium-specific fact lives in storage support for that medium, never in the core (port formerly **Target**; `R-TGT-*` IDs frozen) |
+| Source | `list()` | none yet | Every vendor-specific fact lives in an adapter, never in the core |
+| Storage | `read()` / `write()` / `verify()` | local drive | Every medium-specific fact lives in storage support for that medium, never in the core (port formerly **Target**; `R-TGT-*` IDs frozen) |
 | Mirror engine | `mirror(src, dst, excludes)` | Node standard library | Another engine = change one adapter, no data change |
 | Integrity | `build()` / `verify()` | SHA-256 manifest | Verification is separate from copying |
 | Config | `load() -> Config` | JSON file (data) | Config is *data, not code*; survives a language rewrite |
@@ -320,8 +320,9 @@ goes, and writes every meta file. An importer never sees a copy (`R-SRC-17`).
   from there. Every real import source already delivers files (a camera card, an export directory,
   an archive), so streaming bytes through the core would buy almost nothing and cost a second code
   path. Because a separate executable hands over files, no framing protocol over a byte stream is
-  ever needed. This transport is a binding, as the way importers are loaded is: the specification
-  states the boundary and leaves the hand-off mechanism free. The
+  ever needed. The Importer contract (`turbo-collection-core-spec.md` Section 11) has an importer
+  hand over each file by the path at which the core reads it, and leaves free how a file comes to
+  be there. The
   local-folder importer copies nothing first: a folder of files already is a hand-off directory, so
   the importer lists its files where they sit and the core reads them from there. A copy made
   beforehand would move every byte twice and add a hop the core does not verify, where reading the

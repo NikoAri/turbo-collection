@@ -12,7 +12,8 @@ const starterIgnoreFile = readFileSync(
 
 // A test of whether a path is ignored by an ignore file whose content is `text`.
 function isIgnoredBy(text: string): (path: string) => boolean {
-  return compileIgnorePatterns(readIgnorePatterns(text));
+  const ignoringPattern = compileIgnorePatterns(readIgnorePatterns(text));
+  return (path) => ignoringPattern(path) !== undefined;
 }
 
 test("R-MFILE-20: each line is one pattern, numbered from 1", () => {

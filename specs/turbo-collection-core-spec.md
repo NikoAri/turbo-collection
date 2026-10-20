@@ -259,8 +259,7 @@ be settable in configuration or by a command-line flag.
 **Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
 **verify access** inspection that transfers and modifies nothing, and that
 reports, for every import source and copy a run would act on: whether it is
-reachable and authorized; and whether the configuration would be refused
-(R-TGT-6).
+reachable and authorized; and whether the configuration would be refused.
 
 **R-CLI-10.**  
 **Status Operation**  
@@ -272,6 +271,16 @@ present that has reached no other copy. It MUST report every arrival's date
 intact. A status MUST also report each connected Copy's `collectionName` and
 `copyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
 itself cause a non-zero exit status.
+
+**R-CLI-21.**  
+**Import Operation**  
+In an **import**, Turbo-Collection MUST import into the Copy given to that
+import. Where an import is given no Copy, Turbo-Collection MUST treat the
+current working directory as the Copy given to that import.
+
+> **Example.** An import from `D:\old-laptop`, given no Copy and run in
+> `E:\photos`, imports into the Copy at `E:\photos`. The same import run in a
+> directory that is not a Copy is refused, and imports nothing (R-CLI-14).
 
 **R-CLI-13.**  
 **Backup Operation**  
@@ -418,8 +427,8 @@ distinguishes no failure by exit status (Section 8.5).
 
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `list() -> Item[]`; `fetch(item) -> Bytes`                                                                                                                                                                                                                                                                                                   |
-| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with the metadata its import source supplies and the path each file has there (R-SRC-21)                                                                                                                                                                                |
+| Operations    | `list() -> Item[]`                                                                                                                                                                                                                                                                                                                           |
+| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with the metadata its import source supplies and, for each file, the path at which the core reads that file and the path that file has at its import source (R-SRC-21)                                                                                                  |
 | Precondition  | The import source is reachable and authorized                                                                                                                                                                                                                                                                                                |
 | Postcondition | Every returned item is supplied as plain files, unaltered as far as the Importer is able (R-SRC-5)                                                                                                                                                                                                                                           |
 | MUST NOT      | Delete, modify, move, or rename a file at an Import Source that it did not create (R-SRC-7); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the import source no longer supplies (R-SRC-13) |
@@ -430,10 +439,10 @@ distinguishes no failure by exit status (Section 8.5).
 | Aspect        | Contract                                                                                                                                                                                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Operations    | `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                     |
-| Precondition  | The copy is reachable, and writable when written, **and declares itself a plain tree** (R-TGT-6)                                                                                                                                                                          |
+| Precondition  | The copy is reachable, and writable when written                                                                                                                                                                                                                          |
 | Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
 | MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds (R-TGT-7); store data other than as a plain tree (R-COL-4)                                                             |
-| Errors        | Copy unreachable, unmounted, or unwritable; copy does not declare itself a plain tree; transfer failure                                                                                                                                                                   |
+| Errors        | Copy unreachable, unmounted, or unwritable; transfer failure                                                                                                                                                                                                              |
 
 ### Mirror engine
 
