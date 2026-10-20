@@ -4,6 +4,8 @@ import { mkdir, open, type FileHandle } from "node:fs/promises";
 import { createServer, type Server } from "node:net";
 import process from "node:process";
 
+import { TcError } from "./tc-error.ts";
+
 // A mutex that one process on this computer holds under a name, and that the system lets go when
 // that process ends, however it ends (parallel-safety-spec.md R-PARALLEL-6).
 //
@@ -63,7 +65,9 @@ export class NamedMutex implements AsyncDisposable {
   static async verifyHeld(name: string): Promise<void> {
     await using second = await hold(name);
     if (second !== undefined) {
-      throw new Error(`Taking the mutex "${name}" failed: it was taken twice.`);
+      throw new TcError(
+        `Taking the mutex "${name}" failed: it was taken twice.`,
+      );
     }
   }
 } // end of class
@@ -94,7 +98,7 @@ function generatePipeName(name: string): string {
     return `\0turbo-collection-${name}`;
   }
 
-  throw new Error(
+  throw new TcError(
     `A named mutex is not written yet for platform ${process.platform}.`,
   );
 }

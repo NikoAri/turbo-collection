@@ -3,6 +3,7 @@ import process from "node:process";
 import { setTimeout } from "node:timers/promises";
 
 import { NamedMutex } from "../helpers/named-mutex.ts";
+import { TcError } from "../helpers/tc-error.ts";
 
 // A sample of NamedMutex, held the way a run holds its collection's lock. Nothing imports it.
 //
@@ -29,7 +30,7 @@ async function main(): Promise<void> {
   // the error, since only the caller knows what the name stands for. A run's error names its
   // collection (parallel-safety-spec.md R-PARALLEL-5).
   if (mutex === undefined) {
-    throw new Error(
+    throw new TcError(
       `Another process holds the mutex "${name}" on this computer, and its process ID is not known. Run this again once it has finished.`,
     );
   }

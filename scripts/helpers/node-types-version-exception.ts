@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import type { URL } from "node:url";
 
 import type { PackageName, VersionRange } from "./package-json-npm-updater.ts";
+import { TcError } from "./tc-error.ts";
 
 // The hold that keeps `@types/node` at or below the Node floor in package.json `engines.node`, so
 // the types never describe a newer Node than the one this code has to run on.
@@ -43,7 +44,7 @@ export function nodeTypesRangeFromEngines(
   const floor = /^>=\s*((\d+)\.\d+\.\d+)$/.exec(enginesNode?.trim() ?? "");
   if (floor === null) {
     const found = enginesNode === undefined ? "missing" : `"${enginesNode}"`;
-    throw new Error(
+    throw new TcError(
       `cannot hold ${NodeTypesPackage} to the Node floor: engines.node in package.json is ${found}, expected the form >=MAJOR.MINOR.PATCH`,
     );
   }

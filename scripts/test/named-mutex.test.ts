@@ -7,6 +7,7 @@ import { test, type TestContext } from "node:test";
 import { URL } from "node:url";
 
 import { NamedMutex } from "../helpers/named-mutex.ts";
+import { TcError } from "../helpers/tc-error.ts";
 
 // Each test takes mutexes of names of its own, so that no test meets another's mutex, nor a run's,
 // which is named for a collection's ID.
@@ -40,7 +41,7 @@ async function holdInAnotherProcess(
     return holder;
   }
 
-  throw new Error(`The process taking "${name}" ended before it held it.`);
+  throw new TcError(`The process taking "${name}" ended before it held it.`);
 }
 
 test(

@@ -473,11 +473,11 @@ covers _what_ a copy is.
 
 ### Logger
 
-| Aspect        | Contract                                                |
-| ------------- | ------------------------------------------------------- |
-| Operation     | `log(event)`                                            |
-| Postcondition | The event is appended, as plain text, to this run's log |
-| MUST NOT      | Be load-bearing for correctness (R-LOG-2)               |
+| Aspect        | Contract                                               |
+| ------------- | ------------------------------------------------------ |
+| Operation     | `log(event)`                                           |
+| Postcondition | The event is the last line of this run's log (R-LOG-7) |
+| MUST NOT      | Be load-bearing for correctness (R-LOG-2)              |
 
 ---
 

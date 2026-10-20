@@ -5,6 +5,7 @@ import process from "node:process";
 import { fileURLToPath, URL } from "node:url";
 
 import { writeNodeTypesException } from "./node-types-version-exception.ts";
+import { TcError } from "./tc-error.ts";
 
 // Update every npm dependency to its newest allowed release, rewriting both package.json and
 // package-lock.json, then report what moved.
@@ -127,7 +128,7 @@ export function getRequestedVersion(
 
     return EnsureObj(lastVersion);
   } catch (e) {
-    throw new Error(
+    throw new TcError(
       `no published version of ${packageName} satisfies ${requestedRange}: npmViewOutputJson: ${npmViewOutputJson}`,
       { cause: e },
     );
@@ -230,7 +231,7 @@ export function getSaveSettings(
 ): string {
   const form = /^(\^|~|>=|=)?\d+\.\d+\.\d+([-+][\w.+-]*)?$/.exec(origRange);
   if (form === null) {
-    throw new Error(
+    throw new TcError(
       `cannot keep the form of the range "${origRange}" of ${packageName}: only a version with ^, ~, >=, = or nothing in front is updated`,
     );
   }

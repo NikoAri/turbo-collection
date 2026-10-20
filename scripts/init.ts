@@ -9,6 +9,7 @@ import {
 import path from "node:path";
 import { URL } from "node:url";
 
+import { TcError } from "./helpers/tc-error.ts";
 import {
   compileIgnorePatterns,
   readIgnorePatterns,
@@ -70,7 +71,7 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
   );
   const found = findFileNotIgnored(directory, isIgnored);
   if (found !== undefined) {
-    throw new Error(
+    throw new TcError(
       `"${path.resolve(directory)}" holds a file that the starter .tcignore does not ignore: "${found}". Init makes a copy only in a directory that holds no such file.`,
     );
   }
@@ -85,7 +86,7 @@ export function collectionNameFor(
 ): string {
   if (givenName !== undefined) {
     if (givenName === "") {
-      throw new Error("A collection's name cannot be empty.");
+      throw new TcError("A collection's name cannot be empty.");
     }
     return givenName;
   }
@@ -94,7 +95,7 @@ export function collectionNameFor(
   const directoryPath = path.resolve(directory);
   const directoryName = path.basename(directoryPath);
   if (directoryName === "") {
-    throw new Error(
+    throw new TcError(
       `No name for the collection can be taken from "${directoryPath}". Give one with --name.`,
     );
   }
@@ -119,7 +120,7 @@ export function copyNameFor(givenName: string | undefined): string {
 
   const copyName = givenName.normalize("NFC");
   if (copyName === "" || CharacterNotInCopyName.test(copyName)) {
-    throw new Error(
+    throw new TcError(
       `"${givenName}" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
     );
   }
