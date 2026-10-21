@@ -10,7 +10,8 @@ const starterIgnoreFile = readFileSync(
   "utf8",
 );
 
-// A test of whether a path is ignored by an ignore file whose content is `text`.
+// A test of whether a path is ignored by an ignore file whose content
+// is `text`.
 function isIgnoredBy(text: string): (path: string) => boolean {
   const ignoringPattern = compileIgnorePatterns(readIgnorePatterns(text));
   return (path) => ignoringPattern(path) !== undefined;

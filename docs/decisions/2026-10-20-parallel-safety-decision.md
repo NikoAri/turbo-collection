@@ -1,19 +1,19 @@
-# Overlapping runs are kept apart by a directory per run, a configuration file written first, and a lock per collection
+# Overlapping runs are kept apart by a log created exclusively, a configuration file written first, and a lock per collection
 
 **Status:** Accepted
-**Date:** 2026-10-17
+**Date:** 2026-10-20
 
-Replaces the version written earlier on 2026-10-17, under which every refusal named the process ID
-of the holder. Neither operating system tells a refused run who holds a lock, so a refusal now names
-that process ID only where the run can learn it.
+Replaces the 2026-10-17 record, under which a run claimed its ID by making a directory of its own. A
+run no longer makes one ([the log-location decision](2026-10-20-log-location-decision.md)), so
+creating its log claims the ID instead.
 
 Runs of Turbo-Collection may overlap on one computer. They are kept apart where two runs can meet,
 and every such rule is in `parallel-safety-spec.md`.
 
-- **A run's ID.** Two runs started in one second can draw one ID. A run makes a directory of its
-  own, named by its ID (`R-LOG-6`), only where nothing is at that path, and draws a new ID where
-  something is (`R-PARALLEL-1`). Making a directory fails where one exists, so of two runs exactly
-  one makes it.
+- **A run's ID.** Two runs started in one second can draw one ID. A run creates its log, named by
+  its ID (`R-LOG-6`), only where nothing is at that path, and draws a new ID where something is
+  (`R-PARALLEL-1`). Creating a file only where none exists fails where one does, so of two runs
+  writing into one log directory exactly one creates it.
 - **Making a directory a copy.** An init, or a backup creating a copy, writes that copy's
   configuration file before any other file in it, and only where none exists. A run that finds one
   in place ends with an error, having written nothing else there (`R-PARALLEL-2`, `R-PARALLEL-3`).
@@ -73,7 +73,7 @@ drive, which one computer reaches at a time.
 ## Touches
 
 `parallel-safety-spec.md`: Section 8.6, `R-PARALLEL-1` to `R-PARALLEL-8`. `logging-spec.md`:
-`R-LOG-6`. `turbo-collection-core-spec.md`: `R-CFG-3` lets a run make its directory and write its
+`R-LOG-6`. `turbo-collection-core-spec.md`: `R-CFG-3` lets a run make its log directory and write its
 log before it validates configuration; `R-CLI-18` and `R-CLI-19`.
 `local-folder-import-source-spec.md`: `R-LOCALFOLDER-2`. [`spec-guide.md`](../spec-guide.md): a row
 for `parallel-safety-spec.md` in each of its tables.

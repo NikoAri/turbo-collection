@@ -5,15 +5,15 @@
 
 ### 8.6 Parallel safety (`R-PARALLEL-*`)
 
-**R-PARALLEL-1.** Turbo-Collection MUST make a Run's directory
-(`logging-spec.md` R-LOG-6) only where nothing exists at the path of that
-directory. Where something exists at that path, Turbo-Collection MUST give the
-Run another ID, and make the Run's directory under the new ID.
+**R-PARALLEL-1.** Turbo-Collection MUST create a Run's log (`logging-spec.md`
+R-LOG-6) only where nothing exists at the path of that log. Where something
+exists at that path, Turbo-Collection MUST give the Run another ID, and create
+the Run's log under the new ID.
 
 > **Example.** Two Runs started in one second draw the same ID,
-> `20261015T215020Z-3b52`. The Run that makes
-> `turbo-collection/runs/20261015T215020Z-3b52/` first keeps that ID. The other
-> Run takes a new ID and makes its directory under that one.
+> `20261015T215020Z-3b52`. The Run that creates
+> `turbo-collection/logs/tc-20261015T215020Z-3b52.log.json` first keeps that ID.
+> The other Run takes a new ID and creates its log under that one.
 
 **R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy (`init-spec.md`
 R-INIT-1, `turbo-collection-core-spec.md` R-CLI-13), Turbo-Collection MUST

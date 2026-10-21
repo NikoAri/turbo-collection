@@ -6,14 +6,13 @@ import { parseArgs } from "node:util";
 import { TcError } from "./helpers/tc-error.ts";
 import { initializeTc } from "./init.ts";
 import {
-  logError,
+  createRunLog,
+  defaultLogDirectory,
+  ensureUsableLogDirectory,
   logRunEnd,
   logRunStart,
-  makeRunDirectory,
-  openRunLog,
-  runsDirectoryIn,
   type Logger,
-} from "./run.ts";
+} from "./logger.ts";
 import {
   SpecificationVersionStamps,
   TurboCollectionVersion,
@@ -47,13 +46,20 @@ async function runTurboCollection(): Promise<void> {
 
 type TcCliArgs = {
   help: boolean;
-  version: boolean; // --version: report the versions (turbo-collection-core-spec.md R-CLI-16)
-  verbose: boolean; // --verbose: show verbose log entries too (logging-spec.md R-LOG-9)
-  logDir: string | undefined; // --log-dir: where the run's log goes (logging-spec.md R-LOG-10)
-  name: string | undefined; // -n, --name: what a new collection is called
-  copy: string | undefined; // --copy: what a new copy is called
-  command: string | undefined; // The first argument that is not an option: `init`
-  commandArgs: string[]; // What follows the command: the directory init is given
+  // --version: report the versions (turbo-collection-core-spec.md R-CLI-16)
+  version: boolean;
+  // --verbose: show verbose log entries too (logging-spec.md R-LOG-9)
+  verbose: boolean;
+  // --log-dir: where the run's log goes (logging-spec.md R-LOG-10)
+  logDir: string | undefined;
+  // -n, --name: what a new collection is called
+  name: string | undefined;
+  // --copy: what a new copy is called
+  copy: string | undefined;
+  // The first argument that is not an option: `init`
+  command: string | undefined;
+  // What follows the command: the directory init is given
+  commandArgs: string[];
 };
 
 export function parseCliArgs(args: readonly string[]): TcCliArgs {
@@ -83,7 +89,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
   };
 }
 
-// Whether `error` is the one parseArgs throws for a command line it cannot read.
+// Whether `error` is what parseArgs throws for a command line it cannot read.
 function isCliArgsError(error: unknown): boolean {
   return (
     error instanceof TypeError &&
@@ -91,14 +97,13 @@ function isCliArgsError(error: unknown): boolean {
   );
 }
 
-type Outcome = "success" | "failure";
-
-// Reports an error in the command line: the error into the log, and the usage text after it. The
-// run then exits with a non-zero status (turbo-collection-core-spec.md R-CLI-1).
-function reportCliUsageError(log: Logger, error: unknown): Outcome {
-  logError(log, error);
+// Reports an error in the command line: the error into the log, and the usage
+// text after it. The run did not succeed, so it exits with a non-zero status
+// (turbo-collection-core-spec.md R-CLI-1).
+function reportCliUsageError(logger: Logger, error: unknown): boolean {
+  logger.error(error);
   console.error(`\n${HELP_TEXT}`);
-  return "failure";
+  return false;
 }
 
 // The version report (turbo-collection-core-spec.md R-CLI-16).
@@ -109,26 +114,29 @@ function versionReport(): string {
   ].join("\n");
 }
 
-// Carries out what the command line asks.
-async function runCommand(tcCliArgs: TcCliArgs, log: Logger): Promise<Outcome> {
+// Carries out what the command line asks; returns whether the run succeeded.
+async function runCommand(
+  tcCliArgs: TcCliArgs,
+  logger: Logger,
+): Promise<boolean> {
   if (tcCliArgs.help) {
     console.log(HELP_TEXT);
-    return "success";
+    return true;
   }
 
   if (tcCliArgs.version) {
     console.log(versionReport());
-    return "success";
+    return true;
   }
 
   if (tcCliArgs.command === undefined) {
     await runTurboCollection();
-    return "success";
+    return true;
   }
 
   if (tcCliArgs.command !== "init") {
     return reportCliUsageError(
-      log,
+      logger,
       new TcError(`Unknown command: ${tcCliArgs.command}`),
     );
   }
@@ -137,21 +145,21 @@ async function runCommand(tcCliArgs: TcCliArgs, log: Logger): Promise<Outcome> {
   const [directory = ".", ...unexpected] = tcCliArgs.commandArgs;
   if (unexpected.length > 0) {
     return reportCliUsageError(
-      log,
+      logger,
       new TcError(
         `init takes one directory, and was also given: ${unexpected.join(" ")}\nA path that holds a space needs quotes around it.`,
       ),
     );
   }
 
-  initializeTc(directory, tcCliArgs.name, tcCliArgs.copy, log);
-  return "success";
+  initializeTc(directory, tcCliArgs.name, tcCliArgs.copy, logger);
+  return true;
 }
 
 async function main(args: readonly string[]): Promise<void> {
-  // The command line is read before the log is opened, since --log-dir says where the log goes. A
-  // command line that cannot be read is an error of the run, logged in its own directory
-  // (logging-spec.md R-LOG-10).
+  // The command line is read before the log is opened, since --log-dir says
+  // where the log goes. A command line that cannot be read is an error of the
+  // run, logged in the default log directory (logging-spec.md R-LOG-6).
   let tcCliArgs: TcCliArgs | undefined;
   let cliArgsError: unknown;
   try {
@@ -160,39 +168,47 @@ async function main(args: readonly string[]): Promise<void> {
     if (!isCliArgsError(e)) {
       throw e;
     }
+
     cliArgsError = e;
   }
 
-  // Every run, help and version among them, makes its own directory and writes its log
-  // (logging-spec.md R-LOG-6).
-  const opened = openRunLog(
-    makeRunDirectory(runsDirectoryIn(os.tmpdir())),
-    tcCliArgs?.logDir,
-    tcCliArgs?.verbose ?? false,
-  );
-  using log = opened.log;
-  logRunStart(log, args);
+  // Every run, help and version among them,
+  // writes its log: into the directory --log-dir names,
+  // and otherwise into the default log directory
+  // (logging-spec.md R-LOG-6, R-LOG-10). A --log-dir
+  // the run cannot use ends it with an error,
+  // before it has a log.
+  if (tcCliArgs?.logDir !== undefined) {
+    ensureUsableLogDirectory(tcCliArgs.logDir);
+  }
+  const logDirectory = tcCliArgs?.logDir ?? defaultLogDirectory(os.tmpdir());
 
-  // The error that ends a run is written into its log, and thrown again, so that Node reports it
-  // and the run exits with a non-zero status (logging-spec.md R-LOG-4, R-LOG-12). A person sees
-  // it twice on standard error: the error entry's line (R-LOG-9), then Node's report.
-  let outcome: Outcome;
+  using logger = createRunLog(
+    logDirectory,
+    /*verbose*/ tcCliArgs?.verbose ?? false,
+  );
+  logRunStart(logger, args);
+
+  // The error that ends a run is written into its log, and thrown again,
+  // so that Node reports it
+  // and the run exits with a non-zero status
+  // (logging-spec.md R-LOG-4, R-LOG-12). A person sees
+  // it twice on standard error: the error entry's line (R-LOG-9),
+  // then Node's report.
+  let succeeded: boolean;
   try {
-    if (opened.logDirectoryError !== undefined) {
-      throw opened.logDirectoryError;
-    }
-    outcome =
+    succeeded =
       tcCliArgs === undefined
-        ? reportCliUsageError(log, cliArgsError)
-        : await runCommand(tcCliArgs, log);
+        ? reportCliUsageError(logger, cliArgsError)
+        : await runCommand(tcCliArgs, logger);
   } catch (e) {
-    logError(log, e);
-    logRunEnd(log, true);
+    logger.error(e);
+    logRunEnd(logger, true);
     throw e;
   }
 
-  logRunEnd(log, outcome === "failure");
-  if (outcome === "failure") {
+  logRunEnd(logger, !succeeded);
+  if (!succeeded) {
     process.exitCode = 1;
   }
 }

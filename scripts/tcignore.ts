@@ -2,14 +2,16 @@ import ignore from "ignore";
 
 // A copy's ignore file, `.tcignore` (meta-file-spec.md R-MFILE-20).
 
-// One pattern of an ignore file: the number of its line, counted from 1, and that line as written.
+// One pattern of an ignore file: the number of its line, counted from 1, and
+// that line as written.
 export type IgnorePattern = {
   line: number;
   text: string;
 };
 
-// The patterns of an ignore file whose content is `text`: one pattern per line, where a blank line
-// is skipped and a line beginning with `#` is a comment (R-MFILE-20).
+// The patterns of an ignore file whose content is `text`: one pattern per line,
+// where a blank line is skipped and a line beginning with `#` is a comment
+// (R-MFILE-20).
 //
 // Takes text and returns data, so it can be tested without the filesystem.
 export function readIgnorePatterns(text: string): IgnorePattern[] {
@@ -23,18 +25,19 @@ export function readIgnorePatterns(text: string): IgnorePattern[] {
   return patterns;
 }
 
-// The pattern that ignores a path, or undefined where the path is not ignored. Where more than one
-// pattern matches, the last decides, as in a `.gitignore`.
+// The pattern that ignores a path, or undefined where the path is not ignored.
+// Where more than one pattern matches, the last decides, as in a `.gitignore`.
 //
-// `path` is relative to the copy root, with `/` between its segments. The path of a directory ends
-// in `/`, which is how the `ignore` package tells one: a pattern ending in `/` matches a directory
-// and not a file.
+// `path` is relative to the copy root, with `/` between its segments. The path
+// of a directory ends in `/`, which is how the `ignore` package tells one: a
+// pattern ending in `/` matches a directory and not a file.
 export type IgnoringPattern = (path: string) => IgnorePattern | undefined;
 
-// A test of which of `patterns` ignores a path. Pattern syntax and matching are those of a
-// `.gitignore` (R-MFILE-20), and are the work of the `ignore` package, used as it comes
-// (turbo-collection-spec.md Section 12). Each pattern is added with its index as its mark, which
-// the package hands back with the rule that decided.
+// A test of which of `patterns` ignores a path. Pattern syntax and matching are
+// those of a `.gitignore` (R-MFILE-20), and are the work of the `ignore`
+// package, used as it comes (turbo-collection-spec.md Section 12). Each pattern
+// is added with its index as its mark, which the package hands back with the
+// rule that decided.
 export function compileIgnorePatterns(
   patterns: readonly IgnorePattern[],
 ): IgnoringPattern {

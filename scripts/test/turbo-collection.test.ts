@@ -22,8 +22,9 @@ const entryPoint = fileURLToPath(
   new URL("../turbo-collection.ts", import.meta.url),
 );
 
-// A new, empty directory under the system's temporary directory, removed when the test ends. Its
-// path is resolved, since on a Mac the temporary directory lies behind a link.
+// A new, empty directory under the system's temporary directory, removed when
+// the test ends. Its path is resolved, since on a Mac the temporary directory
+// lies behind a link.
 function temporaryDirectory(t: TestContext): string {
   const directory = realpathSync(
     mkdtempSync(path.join(tmpdir(), "turbo-collection-test-")),
@@ -32,16 +33,16 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// The environment of a run whose directory for temporary files is `temporary`, so that the run's
-// own directory and its log are made there (logging-spec.md R-LOG-6).
+// The environment of a run whose directory for temporary files is `temporary`,
+// so that the run's log is made there (logging-spec.md R-LOG-6).
 function environmentWithTemporaryDirectory(
   temporary: string,
 ): NodeJS.ProcessEnv {
   return { ...process.env, TEMP: temporary, TMP: temporary, TMPDIR: temporary };
 }
 
-// Runs the entry point as a person would, with its directory for temporary files in `temporary`,
-// and returns its exit status and what it printed.
+// Runs the entry point as a person would, with its directory for temporary
+// files in `temporary`, and returns its exit status and what it printed.
 function runTurboCollection(temporary: string, args: string[], cwd?: string) {
   return spawnSync(process.execPath, [entryPoint, ...args], {
     encoding: "utf8",
@@ -50,10 +51,10 @@ function runTurboCollection(temporary: string, args: string[], cwd?: string) {
   });
 }
 
-// The directories of the runs made with `temporary` as their directory for temporary files.
-function runDirectoriesIn(temporary: string): string[] {
-  const runs = path.join(temporary, "turbo-collection", "runs");
-  return readdirSync(runs).map((runId) => path.join(runs, runId));
+// The logs of the runs whose directory for temporary files is `temporary`.
+function logsIn(temporary: string): string[] {
+  const logs = path.join(temporary, "turbo-collection", "logs");
+  return readdirSync(logs).map((name) => path.join(logs, name));
 }
 
 // The entries of the log file `file`, one JSON object to a line.
@@ -64,16 +65,16 @@ function entriesOf(file: string): Record<string, unknown>[] {
     .map((line) => JSON.parse(line));
 }
 
-// The entries of the log of the one run made with `temporary` as its directory for temporary
-// files, where that log is in the run's own directory.
+// The entries of the log of the one run made with `temporary` as its directory
+// for temporary files, where that log is in the default log directory.
 function onlyRunEntries(temporary: string): Record<string, unknown>[] {
-  const [runDirectory, ...others] = runDirectoriesIn(temporary);
+  const [log, ...others] = logsIn(temporary);
   assert.equal(others.length, 0);
-  const runId = path.basename(runDirectory!);
-  return entriesOf(path.join(runDirectory!, `tc-${runId}.log.json`));
+  return entriesOf(log!);
 }
 
-// The path of the configuration file of a copy in `directory` (meta-file-spec.md R-MFILE-17).
+// The path of the configuration file of a copy in `directory`
+// (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(
     directory,
@@ -153,15 +154,17 @@ test("R-CLI-1: asking for help exits with status 0, and names the init command",
   assert.match(run.stdout, /init \[<directory>\]/);
 });
 
-test("R-LOG-6: help is a run, which makes its own directory and writes its log there", (t) => {
+test("R-LOG-6: help is a run, which writes its log into turbo-collection/logs/ in the directory for temporary files", (t) => {
   const temporary = temporaryDirectory(t);
 
   runTurboCollection(temporary, ["--help"]);
 
-  const [runDirectory] = runDirectoriesIn(temporary);
-  const runId = path.basename(runDirectory!);
-  assert.match(runId, /^\d{8}T\d{6}Z-[0-9a-f]{4}$/);
-  assert.deepEqual(readdirSync(runDirectory!), [`tc-${runId}.log.json`]);
+  assert.deepEqual(readdirSync(path.join(temporary, "turbo-collection")), [
+    "logs",
+  ]);
+  const [log, ...others] = logsIn(temporary);
+  assert.equal(others.length, 0);
+  assert.match(path.basename(log!), /^tc-\d{8}T\d{6}Z-[0-9a-f]{4}\.log\.json$/);
 });
 
 test("R-CLI-16: the version report names the Turbo-Collection version and each specification's, and exits with status 0", (t) => {
@@ -219,7 +222,7 @@ test("R-LOG-12: a usage error is logged as an error, and the run ends in failure
   assert.equal(entries[2]?.outcome, "failure");
 });
 
-test("R-LOG-10: a command line that cannot be read is logged in the run's own directory, and shows the usage text", (t) => {
+test("R-LOG-6: a command line that cannot be read is logged in the default log directory, and shows the usage text", (t) => {
   const temporary = temporaryDirectory(t);
 
   const run = runTurboCollection(temporary, ["--bogus"]);
@@ -293,9 +296,9 @@ test("R-LOG-13, R-LOG-14: init's log holds the ignore counts and the configurati
   );
 });
 
-test("R-LOG-10: --log-dir puts the log into the directory it names, making it, and the run still makes its own directory", (t) => {
+test("R-LOG-10: --log-dir puts the log into the directory it names, making it, and the run makes no directory in the directory for temporary files", (t) => {
   const temporary = temporaryDirectory(t);
-  const logDirectory = path.join(temporary, "logs", "turbo");
+  const logDirectory = path.join(temporary, "named", "logs");
 
   const run = runTurboCollection(temporary, [
     "--version",
@@ -304,17 +307,14 @@ test("R-LOG-10: --log-dir puts the log into the directory it names, making it, a
   ]);
 
   assert.equal(run.status, 0);
-  const [runDirectory] = runDirectoriesIn(temporary);
-  const runId = path.basename(runDirectory!);
-  assert.deepEqual(readdirSync(runDirectory!), []);
-  assert.deepEqual(readdirSync(logDirectory), [`tc-${runId}.log.json`]);
-  assert.equal(
-    entriesOf(path.join(logDirectory, `tc-${runId}.log.json`))[0]?.event,
-    "run-start",
-  );
+  assert.deepEqual(readdirSync(temporary), ["named"]);
+  const [log, ...others] = readdirSync(logDirectory);
+  assert.equal(others.length, 0);
+  assert.match(log!, /^tc-\d{8}T\d{6}Z-[0-9a-f]{4}\.log\.json$/);
+  assert.equal(entriesOf(path.join(logDirectory, log!))[0]?.event, "run-start");
 });
 
-test("R-LOG-10: a log directory inside a copy is an error, nothing is made in the copy, and the log goes into the run's own directory", (t) => {
+test("R-LOG-10: a log directory inside a copy is an error, and the run makes nothing in the copy and writes no log", (t) => {
   const temporary = temporaryDirectory(t);
   const copy = path.join(temporary, "photos");
   assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
@@ -332,13 +332,11 @@ test("R-LOG-10: a log directory inside a copy is an error, nothing is made in th
     ".tcignore",
     ".turbo-collection",
   ]);
-  const entries = onlyRunEntries(second);
-  assert.equal(entries[1]?.event, "error");
-  assert.equal(entries.at(-1)?.outcome, "failure");
+  assert.deepEqual(readdirSync(second), []);
 });
 
-// Runs the entry point without waiting for it, with its directory for temporary files in
-// `temporary`.
+// Runs the entry point without waiting for it, with its directory for temporary
+// files in `temporary`.
 function startTurboCollection(
   temporary: string,
   args: string[],
@@ -391,5 +389,5 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
     ".turbo-collection",
     ".turbo-collection/turbo-collection-config.json",
   ]);
-  assert.equal(runDirectoriesIn(temporary).length, InitsAtOnce);
+  assert.equal(logsIn(temporary).length, InitsAtOnce);
 });

@@ -11,7 +11,7 @@ copy (`R-PARALLEL-8`). Until 2026-10-17 the binding was rclone, with rsync as a 
   computer releases the collection's lock when the run ends (`R-PARALLEL-6`). A copying program
   left running by a backup that failed could still be writing into a copy when the next run takes
   the lock, which is what the lock is there to prevent
-  ([the parallel-safety decision](2026-10-17-parallel-safety-decision.md)).
+  ([the parallel-safety decision](2026-10-20-parallel-safety-decision.md)).
 - **One read of each file.** Turbo-Collection already reads a file to check it against its manifest
   before copying it (`R-MIRROR-9`). Copying in that same read writes exactly the bytes that were
   checked, under a temporary name renamed into place only where they matched. A copying program

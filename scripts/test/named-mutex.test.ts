@@ -9,11 +9,12 @@ import { URL } from "node:url";
 import { NamedMutex } from "../helpers/named-mutex.ts";
 import { TcError } from "../helpers/tc-error.ts";
 
-// Each test takes mutexes of names of its own, so that no test meets another's mutex, nor a run's,
-// which is named for a collection's ID.
+// Each test takes mutexes of names of its own, so that no test meets another's
+// mutex, nor a run's, which is named for a collection's ID.
 
-// Starts a process that takes the mutex named `name` and holds it until it is ended, and returns
-// that process once it holds the mutex. The test ends it, where the test has not already.
+// Starts a process that takes the mutex named `name` and holds it until it is
+// ended, and returns that process once it holds the mutex. The test ends it,
+// where the test has not already.
 async function holdInAnotherProcess(
   t: TestContext,
   name: string,

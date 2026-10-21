@@ -3,10 +3,12 @@ import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
 
-// Checks on a directory a run is given, and where a copy keeps its configuration.
+// Checks on a directory a run is given, and where a copy keeps
+// its configuration.
 
-// The path of the configuration file of a copy whose root is `copyRoot` (meta-file-spec.md
-// R-MFILE-17). Something at this path is what makes a directory a copy.
+// The path of the configuration file of a copy whose root is `copyRoot`
+// (meta-file-spec.md R-MFILE-17). Something at this path is what makes a
+// directory a copy.
 export function configurationFileOf(copyRoot: string): string {
   return path.join(
     copyRoot,
@@ -15,9 +17,9 @@ export function configurationFileOf(copyRoot: string): string {
   );
 }
 
-// The root of the copy that `directory` is or lies inside, or undefined where there is none
-// (turbo-collection-core-spec.md R-CLI-18). `directory` is looked at first, then each directory
-// above it.
+// The root of the copy that `directory` is or lies inside, or undefined where
+// there is none (turbo-collection-core-spec.md R-CLI-18). `directory` is looked
+// at first, then each directory above it.
 export function copyRootAtOrAbove(directory: string): string | undefined {
   let current = path.resolve(directory);
   for (;;) {
@@ -35,12 +37,14 @@ export function copyRootAtOrAbove(directory: string): string | undefined {
   }
 }
 
-// Throws an error where the path of `directory` passes through a symbolic link or a junction,
-// naming the directory that path leads to (turbo-collection-core-spec.md R-CLI-20). Node reports
-// a junction as a symbolic link.
+// Throws an error where the path of `directory` passes through a symbolic link
+// or a junction, naming the directory that path leads to
+// (turbo-collection-core-spec.md R-CLI-20). Node reports a junction as a
+// symbolic link.
 //
-// Only the part of the path that exists is looked at, a directory at a time from its root. A
-// directory that does not exist yet is made by the run, and so is not a link.
+// Only the part of the path that exists is looked at, a directory at a time
+// from its root. A directory that does not exist yet is made by the run, and so
+// is not a link.
 export function ensureNoLinkInPath(directory: string): void {
   const absolute = path.resolve(directory);
   const { root } = path.parse(absolute);

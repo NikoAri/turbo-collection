@@ -86,8 +86,9 @@ being told, and what `package.json` deliberately leaves out:
 `node turbo-collection.ts init` makes a directory a copy, as `init-spec.md`
 describes. Import, backup, status and verify are not written.
 
-Every run, help and version among them, makes its own directory in the directory
-for temporary files and writes its log, as `logging-spec.md` describes.
+Every run, help and version among them, writes its log into
+`turbo-collection/logs/` in the directory for temporary files, or into the
+directory `--log-dir` names, as `logging-spec.md` describes.
 
 `NamedMutex`, which is to hold a collection's lock for every run other than init
 (`parallel-safety-spec.md` R-PARALLEL-4), is written, and nothing takes it yet.
@@ -96,7 +97,8 @@ for temporary files and writes its log, as `logging-spec.md` describes.
 | -------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line, makes the run and its log, and runs init.     |
 | [`init.ts`](init.ts)                         | The init operation.                                                                |
-| [`run.ts`](run.ts)                           | A run: its ID, its own directory, and its log.                                     |
+| [`run.ts`](run.ts)                           | A run: its ID.                                                                     |
+| [`logger.ts`](logger.ts)                     | A run's log: where it goes, what an entry holds, and the entries every run writes. |
 | [`paths.ts`](paths.ts)                       | Checks on a directory a run is given: a link in its path, and a copy above it.     |
 | [`versions.ts`](versions.ts)                 | The versions that a run's log records and the version report states.               |
 | [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says which pattern ignores a path.                       |

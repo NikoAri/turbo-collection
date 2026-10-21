@@ -277,7 +277,7 @@ graph TD
     E -.today.-> SL[Node standard library]
     I --> MAN[manifest.json]
     C --> CFG[turbo-collection-config.json]
-    L --> LOG[turbo-collection/runs/*/tc-*.log.json<br/>in the OS temporary directory]
+    L --> LOG[turbo-collection/logs/tc-*.log.json<br/>in the OS temporary directory]
 
     SL --> DATA[(Plain file tree<br/>on external drive)]
 ```
@@ -292,7 +292,7 @@ graph TD
 | Mirror engine | `mirror(src, dst, excludes)` | Node standard library | Another engine = change one adapter, no data change |
 | Integrity | `build()` / `verify()` | SHA-256 manifest | Verification is separate from copying |
 | Config | `load() -> Config` | JSON file (data) | Config is *data, not code*; survives a language rewrite |
-| Logger | `log(event)` | JSON file, one object per line | Observability decoupled from logic |
+| Logger | `log(event)` / `error(error)` | JSON file, one object per line | Observability decoupled from logic |
 | Scheduler | *(external)* | launchd | Lives *outside* the core; core is one-shot "run once" |
 
 **Architectural principles (why it's sound):**

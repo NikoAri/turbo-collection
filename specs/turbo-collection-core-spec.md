@@ -200,10 +200,10 @@ require a copy to declare the other copies expected to exist, which are
 discovered at run time.
 
 **R-CFG-3.** In a Run, Turbo-Collection MUST validate configuration **before**
-performing any filesystem mutation other than making that Run's directory and
-writing that Run's log (`logging-spec.md` R-LOG-6). Invalid configuration MUST
-cause that Run to fail immediately, with no partial effect outside that Run's
-directory.
+performing any filesystem mutation other than making that Run's log directory
+and writing that Run's log (`logging-spec.md` R-LOG-6). Invalid configuration
+MUST cause that Run to fail immediately, with no partial effect besides that
+Run's log and its log directory.
 
 **R-CFG-4.** Turbo-Collection MUST fail rather than guess. A missing, ambiguous,
 or unparseable setting MUST NOT be silently defaulted into a behavior that loses
@@ -356,7 +356,7 @@ an error on account of such an entry.
 symbolic link or a junction, Turbo-Collection MUST end that Run with an error,
 and MUST report the directory that path leads to. Turbo-Collection MUST end that
 Run before that Run makes a directory or writes a file, other than that Run's
-directory and its log (`logging-spec.md` R-LOG-6).
+log and its log directory (`logging-spec.md` R-LOG-6).
 
 > **Example.** An init given `D:\photos`, where `photos` is a junction to
 > `E:\archive`, fails and names `E:\archive`, which can be given instead.
@@ -494,20 +494,20 @@ covers _what_ a copy is.
 
 ### Config
 
-| Aspect        | Contract                                                                                             |
-| ------------- | ---------------------------------------------------------------------------------------------------- |
-| Operation     | `load(path) -> Config`                                                                               |
-| Postcondition | Returns a fully validated Config, or fails before any mutation outside the Run's directory (R-CFG-3) |
-| MUST NOT      | Apply a destructive default for an absent setting (R-CFG-4)                                          |
-| Errors        | Missing, unparseable, or invalid configuration                                                       |
+| Aspect        | Contract                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Operation     | `load(path) -> Config`                                                                         |
+| Postcondition | Returns a fully validated Config, or fails before any mutation besides the Run's log (R-CFG-3) |
+| MUST NOT      | Apply a destructive default for an absent setting (R-CFG-4)                                    |
+| Errors        | Missing, unparseable, or invalid configuration                                                 |
 
 ### Logger
 
-| Aspect        | Contract                                               |
-| ------------- | ------------------------------------------------------ |
-| Operation     | `log(event)`                                           |
-| Postcondition | The event is the last line of this run's log (R-LOG-7) |
-| MUST NOT      | Be load-bearing for correctness (R-LOG-2)              |
+| Aspect        | Contract                                                                                                                                              |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `log(event)`; `error(error)`                                                                                                                          |
+| Postcondition | `log` leaves the event as the last line of this Run's log (R-LOG-7); `error` leaves an `error` event recording the error as that last line (R-LOG-12) |
+| MUST NOT      | Be load-bearing for correctness (R-LOG-2)                                                                                                             |
 
 ---
 

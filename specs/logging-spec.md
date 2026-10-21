@@ -29,25 +29,24 @@ on to. Turbo-Collection MUST NOT write a log inside a copy. Turbo-Collection
 MUST write a Run's log into the operating system's directory for temporary
 files, unless the command line names another directory for it (R-LOG-10).
 
-**R-LOG-6.** For each Run, Turbo-Collection MUST make a directory
-`turbo-collection/runs/<runId>/` within the directory for temporary files that
-R-LOG-5 names, where `<runId>` is that Run's ID (`meta-file-spec.md`
-R-MFILE-13). Turbo-Collection MUST write a Run's log into that Run's directory,
-as `tc-<runId>.log.json`, unless the command line names another directory for it
-(R-LOG-10).
+**R-LOG-6.** Turbo-Collection MUST use `turbo-collection/logs/`, within the
+directory for temporary files that R-LOG-5 names, as a Run's log directory,
+unless the command line names another (R-LOG-10). Turbo-Collection MUST write a
+Run's log into that Run's log directory, as `tc-<runId>.log.json`, where
+`<runId>` is that Run's ID (`meta-file-spec.md` R-MFILE-13), making the log
+directory, with every missing directory above it, where it does not exist.
 
 > **Example.** A Run that only shows help, or only reports the version
-> (R-CLI-16), still makes its directory and writes its log, and exits with
-> status 0 (R-CLI-1).
+> (R-CLI-16), still writes its log, and exits with status 0 (R-CLI-1).
 
 > **Example.** Without `--log-dir`, a Run with ID `20261018T142205Z-3f9a` writes
 > its log to a path such as one of these, where the part before
 > `turbo-collection` is the directory for temporary files:
 >
 > ```text
-> C:\Users\alice\AppData\Local\Temp\turbo-collection\runs\20261018T142205Z-3f9a\tc-20261018T142205Z-3f9a.log.json
-> /tmp/turbo-collection/runs/20261018T142205Z-3f9a/tc-20261018T142205Z-3f9a.log.json
-> /var/folders/15/x8w2kq1n4d0c7mrv5jtg9h3p0000gn/T/turbo-collection/runs/20261018T142205Z-3f9a/tc-20261018T142205Z-3f9a.log.json
+> C:\Users\alice\AppData\Local\Temp\turbo-collection\logs\tc-20261018T142205Z-3f9a.log.json
+> /tmp/turbo-collection/logs/tc-20261018T142205Z-3f9a.log.json
+> /var/folders/15/x8w2kq1n4d0c7mrv5jtg9h3p0000gn/T/turbo-collection/logs/tc-20261018T142205Z-3f9a.log.json
 > ```
 
 **R-LOG-7.** A Run's log MUST be text encoded in UTF-8 that holds one JSON
@@ -72,16 +71,15 @@ a verbose entry to standard output in the same way where the command line holds
 `--verbose`, and MUST NOT otherwise.
 
 **R-LOG-10.** Where the command line holds `--log-dir` with a directory,
-Turbo-Collection MUST write a Run's log into that directory, as
-`tc-<runId>.log.json`, making the directory, with every missing directory above
-it, where it does not exist. Where that directory lies inside a Copy, the Run
-MUST end with an error before it makes a directory there. Where a Run ends with
-an error because it cannot use that directory, it MUST write its log into its
-own directory (R-LOG-6) instead.
+Turbo-Collection MUST use that directory as the Run's log directory (R-LOG-6).
+Where that directory lies inside a Copy, the Run MUST end with an error before
+it makes a directory there. Where the Run cannot use that directory, it MUST end
+with an error without writing its log into any other directory, as an exception
+to R-LOG-1 and R-LOG-4.
 
 > **Example.** A Run with ID `20261018T142205Z-3f9a`, given `--log-dir D:\logs`,
-> writes its log to `D:\logs\tc-20261018T142205Z-3f9a.log.json`, and still makes
-> its own directory in the directory for temporary files.
+> writes its log to `D:\logs\tc-20261018T142205Z-3f9a.log.json`, and makes no
+> directory in the directory for temporary files.
 
 **R-LOG-11.** A Run's first entry MUST be `run-start`, holding:
 
@@ -102,7 +100,7 @@ Run exits with a non-zero status (R-CLI-1). `run-start`, and a `run-end` whose
 > these:
 >
 > ```text
-> {"date":"2026-10-18T14:22:05Z","event":"run-start","verbose":true,"version":"0.1.0","specifications":["turbo-collection-spec 1.2.0 (2027-03-01)","meta-file-spec 1.0.0 (2027-03-01)"],"arguments":["init","D:\\Photos"],"system":"Windows 10.0.26200","runtime":"node 24.20.0"}
+> {"date":"2026-10-18T14:22:05Z","event":"run-start","verbose":true,"version":"0.1.0","specifications":["turbo-collection-spec 1.2.0 (2027-03-01)","meta-file-spec 1.0.0 (2027-03-01)"],"arguments":["init","D:\\Photos"],"system":"Windows_NT 10.0.26200","runtime":"node 24.20.0"}
 > {"date":"2026-10-18T14:22:06Z","event":"run-end","verbose":true}
 > ```
 

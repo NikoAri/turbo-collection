@@ -25,11 +25,12 @@ import {
   initializeTc,
   writeConfigurationFile,
 } from "../init.ts";
-import type { LogEntry, Logger } from "../run.ts";
+import type { LogEntry, Logger } from "../logger.ts";
 
-// A new, empty directory under the system's temporary directory, removed when the test ends. Its
-// path is resolved, since on a Mac the temporary directory lies behind a link, and a path through
-// a link is an error (turbo-collection-core-spec.md R-CLI-20).
+// A new, empty directory under the system's temporary directory, removed when
+// the test ends. Its path is resolved, since on a Mac the temporary directory
+// lies behind a link, and a path through a link is an error
+// (turbo-collection-core-spec.md R-CLI-20).
 function temporaryDirectory(t: TestContext): string {
   const directory = realpathSync(
     mkdtempSync(path.join(tmpdir(), "turbo-collection-test-")),
@@ -38,7 +39,8 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// Writes a file at `relativePath` under `directory`, creating the directories it needs.
+// Writes a file at `relativePath` under `directory`, creating the directories
+// it needs.
 function writeFileUnder(directory: string, relativePath: string): void {
   const file = path.join(directory, relativePath);
   mkdirSync(path.dirname(file), { recursive: true });
@@ -48,11 +50,11 @@ function writeFileUnder(directory: string, relativePath: string): void {
 // A logger that keeps each entry it is given, in order.
 function collectingLogger(): Logger & { entries: LogEntry[] } {
   const entries: LogEntry[] = [];
-  return { entries, log: (entry) => entries.push(entry) };
+  return { entries, log: (entry) => entries.push(entry), error: () => {} };
 }
 
 // A logger that keeps nothing.
-const silentLogger: Logger = { log: () => {} };
+const silentLogger: Logger = { log: () => {}, error: () => {} };
 
 // The files that `logger` was told stop init, in order.
 function filesNotIgnored(logger: { entries: LogEntry[] }): unknown[] {
@@ -309,14 +311,16 @@ test("R-MFILE-18: an empty copy name is an error", () => {
   assert.throws(() => copyNameFor(""), /cannot be a copy's name/);
 });
 
-// What `directory` holds at every depth, as sorted paths with `/` between their segments.
+// What `directory` holds at every depth, as sorted paths with `/` between
+// their segments.
 function listUnder(directory: string): string[] {
   return readdirSync(directory, { recursive: true, encoding: "utf8" })
     .map((entry) => entry.replaceAll("\\", "/"))
     .sort();
 }
 
-// The path of the configuration file of a copy in `directory` (meta-file-spec.md R-MFILE-17).
+// The path of the configuration file of a copy in `directory`
+// (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(
     directory,
@@ -325,7 +329,8 @@ function configurationFileOf(directory: string): string {
   );
 }
 
-// A version 4 UUID in its text form, in lower case (meta-file-spec.md R-MFILE-18).
+// A version 4 UUID in its text form, in lower case (meta-file-spec.md
+// R-MFILE-18).
 const CollectionIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -511,7 +516,8 @@ test("R-CLI-20: a path through a link is an error that names where it leads, and
   const target = path.join(parent, "target");
   mkdirSync(target);
   const link = path.join(parent, "link");
-  // A junction on Windows, which needs no administrator; a symbolic link elsewhere.
+  // A junction on Windows, which needs no administrator; a symbolic
+  // link elsewhere.
   symlinkSync(target, link, "junction");
 
   assert.throws(
