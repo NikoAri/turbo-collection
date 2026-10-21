@@ -1,3 +1,6 @@
+> **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
+> of which this file is a part.
+
 ## Init (`R-INIT-*`)
 
 **R-INIT-1.** **Init Operation** Turbo-Collection MUST provide an **init**

@@ -93,7 +93,6 @@ there is more than one area to group.
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md) | Accepted |
 | 2026-09-27 | [The operation is backup; its mechanism is a mirror](2026-09-27-backup-naming-decision.md) | Accepted |
 | 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md) | Accepted |
-| 2026-09-30 | [Three operations write and two read: init, import, backup; verify and status](2026-09-30-operation-taxonomy-decision.md) | Accepted |
 | 2026-10-03 | [An import source names its layout, and the as-found layout is the floor](2026-10-03-layout-selection-decision.md) | Accepted |
 | 2026-10-03 | [A normative document carries no change ledger](2026-10-03-change-ledger-decision.md) | Accepted |
 | 2026-10-03 | [A requirement is a paragraph led by its ID, not a table row](2026-10-03-requirement-paragraphs-decision.md) | Accepted |
@@ -119,3 +118,6 @@ there is more than one area to group.
 | 2026-10-18 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-18-starter-ignore-file-decision.md) | Accepted |
 | 2026-10-18 | [A symbolic link is not content, and a run that meets one fails](2026-10-18-non-regular-files-decision.md) | Accepted |
 | 2026-10-19 | [A run logs one JSON object per line to the directory for temporary files, and text to the terminal](2026-10-19-log-location-decision.md) | Accepted |
+| 2026-10-19 | [A backup mirrors two copies and leaves their meta files consistent](2026-10-19-backup-mirror-decision.md) | Accepted |
+| 2026-10-19 | [Three operations write and two read: init, import, backup; verify and status](2026-10-19-operation-taxonomy-decision.md) | Accepted |
+| 2026-10-19 | [A quick verify checks copies by name and size; a deep verify reads every byte](2026-10-19-verify-copies-decision.md) | Accepted |

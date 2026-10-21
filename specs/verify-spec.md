@@ -1,3 +1,6 @@
+> **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
+> of which this file is a part.
+
 ## Verify
 
 ### 7.2 Integrity (`R-INT-*`)
@@ -45,6 +48,39 @@ covered is not a replacement and is unrestricted.
 > **Example.** A silent rebuild would hash a corrupted file and record its bad
 > checksum as correct.
 
+**R-INT-11.** Turbo-Collection MUST provide a read-only **verify copies**
+inspection, which checks each Copy it acts on against that Copy's manifests. A
+verify copies MUST NOT read the content of any Content File. For each Copy it
+acts on, a verify copies MUST report every file a manifest lists that is absent
+from that manifest's directory (**missing**), every file whose length in bytes
+differs from the `size` its manifest records (**corrupt**), and every Content
+File that no manifest lists (**extra**, R-INT-8). A verify copies MUST NOT
+report a file as **ok**, since it compares no checksum.
+
+**R-INT-12.** A verify copies MUST report every Content File that a manifest of
+one Copy it acts on lists and that no manifest of another Copy it acts on lists
+at the same path relative to each Copy's root, naming each Copy that lacks that
+Content File. A verify copies MUST also report every path at which manifests of
+two Copies it acts on list a Content File with differing checksums, naming which
+Copies differ (R-INT-7).
+
+**R-INT-13.** A verify copies MUST report every Copy it acts on whose ignore
+file (`meta-file-spec.md` R-MFILE-20) does not hold the same patterns in the
+same order as the ignore file of some other Copy it acts on, as
+`backup-spec.md` R-MIRROR-12 compares them, where a Copy with no ignore file
+holds no pattern.
+
+**R-INT-14.** A Run in which a verify copies reports anything that R-INT-11,
+R-INT-12 or R-INT-13 requires it to report MUST exit with a non-zero status
+(R-CLI-1).
+
+> **Example.** A verify copies acts on Copies named `main` and `off-site`. A
+> photo deleted from `off-site` in a file manager is still listed in that Copy's
+> manifest, so it is reported missing there. A photo imported into `main` since
+> the last Backup is reported as lacking from `off-site`. Either report makes
+> the Run exit non-zero, and neither needs a photo's content to be read, which
+> only **verify fixity** does (R-INT-2).
+
 > **The manifest.** Its name, placement, fields, and format are stated by
 > [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-8 through R-MFILE-12), the
 > only document code may cite for them.
@@ -54,15 +90,18 @@ covered is not a replacement and is unrestricted.
 > [the manifest-format decision](../docs/decisions/2026-08-16-manifest-format-decision.md)
 > and
 > [the append-only decision](../docs/decisions/2026-08-13-append-only-decision.md).
+> Why a verify copies reads names and sizes but no content, and leaves reading
+> every byte to verify fixity:
+> [the verify-copies decision](../docs/decisions/2026-10-19-verify-copies-decision.md).
 
 ### 7.3 Filename safety (`R-NAME-*`)
 
-**R-NAME-1.** Before copying, Turbo-Collection MUST check collection filenames
-for hazards that do not survive a move between common filesystems, and MUST
-report them. At minimum: characters reserved on some filesystems; names
-differing only by case; Unicode normalization differences (NFC versus NFD);
-trailing spaces or dots; reserved device names; and path lengths beyond common
-limits.
+**R-NAME-1.** In a **verify names** inspection (`turbo-collection-core-spec.md`
+R-CLI-5), Turbo-Collection MUST check collection filenames for hazards that do
+not survive a move between common filesystems, and MUST report them. At minimum:
+characters reserved on some filesystems; names differing only by case; Unicode
+normalization differences (NFC versus NFD); trailing spaces or dots; reserved
+device names; and path lengths beyond common limits.
 
 **R-NAME-2.** Turbo-Collection MUST NOT silently rename a file to resolve such a
 hazard. It reports; the human decides.

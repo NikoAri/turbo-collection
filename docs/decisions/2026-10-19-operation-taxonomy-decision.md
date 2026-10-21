@@ -1,7 +1,11 @@
 # Three operations write and two read: init, import, backup; verify and status
 
 **Status:** Accepted
-**Date:** 2026-09-30
+**Date:** 2026-10-19
+
+Replaces the record of 2026-09-30. Verify gained a quick `copies` inspection, and a verify with no
+inspection named no longer reads every byte unless it is given `--deep`
+([the verify-copies decision](2026-10-19-verify-copies-decision.md)).
 
 Turbo-Collection has these operations and no others.
 
@@ -13,9 +17,10 @@ Turbo-Collection has these operations and no others.
 
 **Readers**, which write nothing:
 
-- **`verify`** probes live reality and reports discrepancies. Its inspections are `fixity` (bytes
-  against a manifest), `access` (import sources and copies reachable, authorized, and still
-  declaring what they promised), and `names` (filename hazards).
+- **`verify`** probes live reality and reports discrepancies. Its inspections are `copies` (every
+  file each copy's manifests list is there at its recorded size, and the copies hold the same files),
+  `fixity` (bytes against a manifest), `access` (import sources and copies reachable and authorized),
+  and `names` (filename hazards).
 - **`status`** reads Turbo-Collection's own records and reports them: which copies each directory's
   content reached, when, and what sits on one copy only.
 
@@ -24,13 +29,15 @@ world and can find it wrong. Status checks nothing against the world: it reads r
 receipt records where content was placed, never that a copy still exists (`R-REC-8`). Filing status
 under verify would claim more than a receipt can know, so it is an operation of its own.
 
-**`verify` with no inspection named runs all of them**, against every connected copy (settled
-2026-10-04). A copy that receipts name and that is not connected is reported as not connected, and
-that alone is not a failure. The reasoning is survey against act: verify and status survey every
-copy known, so one that is unplugged is simply not here right now, while backup and import act on
-what they are given, where an absent copy is a real error. It also keeps a routine command from
-failing every time the off-site copy is away, which is where that copy is meant to be. A command that
-always fails teaches an operator to ignore it.
+**`verify` with no inspection named runs all of them but `fixity`**, against every connected copy,
+and runs `fixity` too when given `--deep`. Fixity reads every byte, which takes hours per terabyte,
+so a check run after every backup cannot be the one that reads them. A copy that receipts name and
+that is not connected is reported as not connected, and that alone is not a failure (settled
+2026-10-04). The reasoning is survey against act: verify and status survey every copy known, so one
+that is unplugged is simply not here right now, while backup and import act on what they are given,
+where an absent copy is a real error. It also keeps a routine command from failing every time the
+off-site copy is away, which is where that copy is meant to be. A command that always fails teaches
+an operator to ignore it.
 
 **Modifying a file in place is a non-goal for now**, and that one call removes three candidate
 operations. _Restore_ is not an operation: recovery is an ordinary file copy, or init and backup for
@@ -54,8 +61,9 @@ Dry-run is a mode of each writer, never an operation.
 
 ## Touches
 
-`turbo-collection-spec.md`: `R-CLI-5` reshaped; `R-CLI-17` states what a bare verify does; `check`
-became **verify access** (`R-CLI-9`), `check-names` became **verify names** (`R-NAME-1`),
-`propagation` became **status** (`R-CLI-10`); Section 8.4 lists the inspections; Section 1.3 names
-in-place modification as a non-goal and Section 10 states what enabling it would cost. The release
-procedure's `R-REL-6` names the status report.
+`turbo-collection-core-spec.md`: `R-CLI-5` reshaped; `R-CLI-17` states what a bare verify does and
+names `--deep`; `check` became **verify access** (`R-CLI-9`), `check-names` became **verify names**
+(`R-NAME-1`), `propagation` became **status** (`R-CLI-10`); Section 8.4 lists the inspections.
+`verify-spec.md`: **verify copies** (`R-INT-11` to `R-INT-14`). `turbo-collection-spec.md`: Section
+1.3 names in-place modification as a non-goal and Section 10 states what enabling it would cost. The
+release procedure's `R-REL-6` names the status report.

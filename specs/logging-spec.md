@@ -1,3 +1,6 @@
+> **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
+> of which this file is a part.
+
 ## Logging
 
 ### 8.2 Logging (`R-LOG-*`)
@@ -139,4 +142,25 @@ MAY leave out a pattern that matched no file.
 >
 > ```text
 > {"date":"2026-10-18T14:22:06Z","event":"ignore","verbose":true,"path":"D:\\Photos","patterns":[{"pattern":".DS_Store","count":3},{"pattern":"*.mov","count":4213},{"pattern":"Thumbs.db","count":0}]}
+> ```
+
+**R-LOG-15.** For each Content File a backup copies, Turbo-Collection MUST
+record a verbose `transfer` entry holding `from`, that file's path in the Copy
+it is copied from, `to`, its path in the Copy it is copied to, and `size`, its
+length in bytes.
+
+**R-LOG-16.** For each of the two Copies a backup mirrors, Turbo-Collection MUST
+record a `mirror` entry once it has finished copying into that Copy, holding
+`path`, that Copy's root, `copyName`, its name, `files`, how many files the
+backup copied into it, and `bytes`, their total length in bytes (R-LOG-1). A
+Dry-Run of a backup (`backup-spec.md` R-MIRROR-7) MUST record the entries of
+R-LOG-15 and of this requirement for what a real run would copy.
+
+> **Example.** A backup that copies 412 photographs to a Copy named `home`, and
+> nothing back, records lines such as these, the first of them once per file:
+>
+> ```text
+> {"date":"2026-10-19T20:14:03Z","event":"transfer","verbose":true,"from":"D:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","to":"E:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","size":4718592}
+> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"E:\\Photos","copyName":"home","files":412,"bytes":1932735283}
+> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"D:\\Photos","copyName":"main","files":0,"bytes":0}
 > ```

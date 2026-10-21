@@ -1,3 +1,6 @@
+> **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
+> of which this file is a part.
+
 ## Parallel safety
 
 ### 8.6 Parallel safety (`R-PARALLEL-*`)

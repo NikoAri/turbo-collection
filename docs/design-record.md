@@ -469,9 +469,9 @@ are trivial.)
 
 **The filename gotcha (the real filesystem-migration risk):** a plain copy across ReFS↔NTFS↔APFS is
 lossless *except* filenames: reserved characters, case-sensitivity collisions, and macOS's NFD vs.
-everyone else's NFC Unicode normalization. Mitigation: the **name-hazard check (`R-NAME-1`)** flags
-risky names before copying, and the **SHA-256 manifest** verifies every file arrived intact after any
-move.
+everyone else's NFC Unicode normalization. Mitigation: the **name-hazard check (`R-NAME-1`)**, run as
+verify names before a move, flags risky names, and the **SHA-256 manifest** verifies every file
+arrived intact after any move.
 
 ### Substrate layer (the environment beneath the stack)
 

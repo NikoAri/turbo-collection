@@ -16,6 +16,12 @@ are governed by `traceability-requirement.md` (`R-META-*`). Which other
 documents exist, and what each one governs, is mapped in `docs/spec-guide.md`,
 which is navigation and binds nothing, so no obligation here depends on it.
 
+This document is written across several files: this one,
+`turbo-collection-core-spec.md`, `init-spec.md`, `backup-spec.md`,
+`verify-spec.md`, `logging-spec.md` and `parallel-safety-spec.md`. Each of the
+others is a part of this document. Its version is this document's version,
+decided under Section 9.2, and its section numbers continue this document's.
+
 ---
 
 ## 1. Scope, Non-Goals, and Invocation
@@ -161,7 +167,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   among them.
 
 - **Content File**  
-  Any file a copy holds that is neither a Meta file nor an Ignored file.
+  Any file a copy holds outside its `.turbo-collection/` directories that is
+  neither a Meta file nor an Ignored file.
   Photographs and videos are one kind of content file; where each kind is placed
   is decided by layout specifications (R-SRC-15).
 
@@ -447,9 +454,9 @@ unauthorized behavior.
 
 **External: Specification against the External Dependencies**  
 Periodically re-validate the bindings in Section 12, and the dated assumptions
-behind them in the assumptions register of `docs/design-record.md`. Is the
-mirror engine still maintained and permissively licensed? Has a better one
-appeared? Is SHA-256 still adequate? Have filesystem or hardware norms shifted?
+behind them in the assumptions register of `docs/design-record.md`. Is each
+third-party dependency still maintained and permissively licensed? Has a better
+one appeared? Is SHA-256 still adequate? Have filesystem or hardware norms shifted?
 And, most importantly: **has an import source's behavior changed underneath
 us?** OS, File System, etc
 
@@ -465,7 +472,8 @@ to (R-VER-9).
 
 **no-deletion test.**  
 Conformance MUST include a test asserting that no code path deletes a file in
-any copy of the collection. This is checked as a property of the code rather
+any copy of the collection, other than a file in a copy's
+`.turbo-collection/tmp/` directory (R-MIRROR-8). This is checked as a property of the code rather
 than only as a behavior of a run, because a deletion path that exists but is not
 reached today is a defect that a later change activates silently. Under
 R-META-3, a delete call traceable to no requirement is unauthorized behavior and

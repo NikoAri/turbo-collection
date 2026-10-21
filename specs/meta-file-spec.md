@@ -51,8 +51,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Copy.** One physical instance of the collection, held on one storage medium.
   Copies are peers; none is privileged.
 
-- **Content file.** Any file a copy holds that is neither a meta file nor an
-  ignored file, preserved untouched.
+- **Content file.** Any file a copy holds outside its `.turbo-collection/`
+  directories that is neither a meta file nor an ignored file, preserved
+  untouched.
 
 - **Meta file.** A file that describes a copy or what happened to it: a
   manifest, a receipt, a configuration file, an ignore file, and any copy of a
@@ -107,7 +108,9 @@ whose name it does not recognize, and MUST report such a file instead.
 copy's root: `.tcignore` at the root; a `.turbo-collection/` subdirectory of the
 root holding the configuration file named `turbo-collection-config.json` and
 per-event location receipt files named
-`receipt-<runId>-<copyName>.location.json` (R-MFILE-26); and, for each
+`receipt-<runId>-<copyName>.location.json` (R-MFILE-26), and a `tmp/`
+directory for files a Run has not finished writing (`backup-spec.md`
+R-MIRROR-6); and, for each
 directory holding content, a `.turbo-collection/` subdirectory of that directory
 holding a manifest named `manifest.json` and per-event receipt files named
 `receipt-<runId>-<copyName>.arrival.json` and
