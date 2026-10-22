@@ -75,7 +75,10 @@ Turbo-Collection MUST use that directory as the Run's log directory (R-LOG-6).
 Where that directory lies inside a Copy, the Run MUST end with an error before
 it makes a directory there. Where the Run cannot use that directory, it MUST end
 with an error without writing its log into any other directory, as an exception
-to R-LOG-1 and R-LOG-4.
+to R-LOG-1 and R-LOG-4. Where a Run's command line names an option or a command
+that Turbo-Collection does not have, or cannot otherwise be read, the Run MUST
+end with an error without writing a log, as a further exception to R-LOG-1,
+R-LOG-4 and R-LOG-17.
 
 > **Example.** A Run with ID `20261018T142205Z-3f9a`, given `--log-dir D:\logs`,
 > writes its log to `D:\logs\tc-20261018T142205Z-3f9a.log.json`, and makes no
@@ -116,6 +119,16 @@ error carries one, `stack`, the trace of the calls that led to it.
 > {"date":"2026-10-18T14:22:06Z","event":"run-end","outcome":"failure"}
 > ```
 
+**R-LOG-17.** Where a Run shows a person text that no other entry records, such
+as its help or its version report, Turbo-Collection MUST record that text as a
+`message` entry that is not verbose, holding `message`, that text.
+
+> **Example.** A Run given `--version` records a line such as this:
+>
+> ```text
+> {"date":"2026-10-18T14:22:05Z","event":"message","message":"turbo-collection 0.1.0\nturbo-collection-spec 0.1.0-draft\n…"}
+> ```
+
 **R-LOG-13.** Each time a Run reads or writes a Copy's configuration file,
 Turbo-Collection MUST record a verbose `configuration` entry holding `path`, the
 file's path, and `configuration`, the configuration it read or wrote.
@@ -125,21 +138,6 @@ file's path, and `configuration`, the configuration it read or wrote.
 >
 > ```text
 > {"date":"2026-10-18T14:22:06Z","event":"configuration","verbose":true,"path":"D:\\Photos\\.turbo-collection\\turbo-collection-config.json","configuration":{"version":"0.1.0-draft","collectionId":"3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30","collectionName":"Family Photos","copyName":"main"}}
-> ```
-
-**R-LOG-14.** For each directory whose files a Run checks against ignore
-patterns, Turbo-Collection MUST record a verbose `ignore` entry once it has
-checked them, holding `path`, that directory's path, and `patterns`, a list
-holding, for every pattern, `pattern`, the pattern as written, and `count`, how
-many files it matched (`meta-file-spec.md` R-MFILE-21). The entry's line of text
-MAY leave out a pattern that matched no file.
-
-> **Example.** An init of `D:\Photos` records the count for each starter pattern
-> with a line such as this, which `--verbose` shows as
-> `ignore D:\Photos: .DS_Store 3, *.mov 4213`:
->
-> ```text
-> {"date":"2026-10-18T14:22:06Z","event":"ignore","verbose":true,"path":"D:\\Photos","patterns":[{"pattern":".DS_Store","count":3},{"pattern":"*.mov","count":4213},{"pattern":"Thumbs.db","count":0}]}
 > ```
 
 **R-LOG-15.** For each Content File a backup copies, Turbo-Collection MUST

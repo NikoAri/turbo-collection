@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -106,31 +107,38 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
     version: false,
     verbose: false,
     logDir: undefined,
-    name: undefined,
-    copy: undefined,
-    command: "init",
-    commandArgs: ["D:\\Photos"],
+    init: {
+      directory: "D:\\Photos",
+      collectionName: undefined,
+      copyName: undefined,
+    },
   });
+});
+
+test("R-INIT-2: init given no directory acts on the current one", () => {
+  assert.equal(parseCliArgs(["init"]).init?.directory, ".");
 });
 
 test("R-INIT-4: the name of a new collection is given by --name or -n, before the command or after it", () => {
   assert.equal(
-    parseCliArgs(["init", "D:\\Photos", "--name", "Family Photos"]).name,
+    parseCliArgs(["init", "D:\\Photos", "--name", "Family Photos"]).init
+      ?.collectionName,
     "Family Photos",
   );
   assert.equal(
-    parseCliArgs(["init", "-n", "Family Photos"]).name,
+    parseCliArgs(["init", "-n", "Family Photos"]).init?.collectionName,
     "Family Photos",
   );
   assert.equal(
-    parseCliArgs(["--name", "Family Photos", "init", "D:\\Photos"]).name,
+    parseCliArgs(["--name", "Family Photos", "init", "D:\\Photos"]).init
+      ?.collectionName,
     "Family Photos",
   );
 });
 
 test("R-INIT-4: the name of a new copy is given by --copy", () => {
   assert.equal(
-    parseCliArgs(["init", "D:\\Photos", "--copy", "off-site"]).copy,
+    parseCliArgs(["init", "D:\\Photos", "--copy", "off-site"]).init?.copyName,
     "off-site",
   );
 });
@@ -196,9 +204,10 @@ test("R-LOG-9: a verbose entry is shown only under --verbose", (t) => {
     "--verbose",
   ]);
 
-  assert.doesNotMatch(quiet.stdout, /run-start/);
-  assert.match(verbose.stdout, /^run-start: turbo-collection 0\.1\.0, node /m);
-  assert.match(verbose.stdout, /^run-end: success$/m);
+  assert.doesNotMatch(quiet.stdout, /, node /);
+  assert.doesNotMatch(quiet.stdout, /^Done$/m);
+  assert.match(verbose.stdout, /^Turbo-Collection 0\.1\.0, node /m);
+  assert.match(verbose.stdout, /^Done$/m);
 });
 
 test("R-CLI-1: an unknown command exits with a non-zero status, and is named", (t) => {
@@ -208,29 +217,30 @@ test("R-CLI-1: an unknown command exits with a non-zero status, and is named", (
   assert.match(run.stderr, /Unknown command: bogus/);
 });
 
-test("R-LOG-12: a usage error is logged as an error, and the run ends in failure", (t) => {
+test("R-LOG-10: an unknown command ends the run with an error, after the usage text, and writes no log", (t) => {
   const temporary = temporaryDirectory(t);
 
-  runTurboCollection(temporary, ["bogus"]);
-
-  const entries = onlyRunEntries(temporary);
-  assert.deepEqual(
-    entries.map((entry) => entry.event),
-    ["run-start", "error", "run-end"],
-  );
-  assert.equal(entries[1]?.message, "Unknown command: bogus");
-  assert.equal(entries[2]?.outcome, "failure");
-});
-
-test("R-LOG-6: a command line that cannot be read is logged in the default log directory, and shows the usage text", (t) => {
-  const temporary = temporaryDirectory(t);
-
-  const run = runTurboCollection(temporary, ["--bogus"]);
+  const run = runTurboCollection(temporary, ["bogus"]);
 
   assert.notEqual(run.status, 0);
-  assert.match(run.stderr, /--bogus/);
-  assert.match(run.stderr, /Usage:/);
-  assert.equal(onlyRunEntries(temporary)[1]?.event, "error");
+  assert.match(run.stderr, /Usage:[\s\S]*Unknown command: bogus/);
+  assert.equal(existsSync(path.join(temporary, "turbo-collection")), false);
+});
+
+test("R-LOG-10: a command line that cannot be read ends the run with an error, after the usage text, and writes no log", (t) => {
+  const temporary = temporaryDirectory(t);
+  const logDirectory = path.join(temporary, "logs");
+
+  const run = runTurboCollection(temporary, [
+    "--bogus",
+    "--log-dir",
+    logDirectory,
+  ]);
+
+  assert.notEqual(run.status, 0);
+  assert.match(run.stderr, /Usage:[\s\S]*--bogus/);
+  assert.equal(existsSync(logDirectory), false);
+  assert.equal(existsSync(path.join(temporary, "turbo-collection")), false);
 });
 
 test("R-CLI-1: init given a name that cannot be a copy's name exits with a non-zero status, and says why", (t) => {
@@ -256,8 +266,8 @@ test("R-LOG-4, R-LOG-12: an error that ends a run is in its log, with its stack,
   ]);
 
   assert.equal(run.status, 1);
-  assert.match(run.stderr, /^error: "a\/b" cannot be a copy's name/m);
-  assert.match(run.stderr, /^run-end: failure$/m);
+  assert.match(run.stderr, /^"a\/b" cannot be a copy's name/m);
+  assert.match(run.stderr, /^Failed$/m);
   const entries = onlyRunEntries(temporary);
   assert.deepEqual(
     entries.map((entry) => entry.event),
@@ -278,7 +288,7 @@ test("R-CLI-1: init given a path split at a space exits with a non-zero status, 
   assert.match(run.stderr, /also given: Photos/);
 });
 
-test("R-LOG-13, R-LOG-14: init's log holds the ignore counts and the configuration it wrote", (t) => {
+test("R-LOG-13: init's log holds the configuration it wrote", (t) => {
   const temporary = temporaryDirectory(t);
   const directory = path.join(temporary, "photos");
 
@@ -287,10 +297,10 @@ test("R-LOG-13, R-LOG-14: init's log holds the ignore counts and the configurati
   const entries = onlyRunEntries(temporary);
   assert.deepEqual(
     entries.map((entry) => entry.event),
-    ["run-start", "ignore", "configuration", "init", "run-end"],
+    ["run-start", "configuration", "message", "run-end"],
   );
   assert.deepEqual(
-    (entries[2]?.configuration as Record<string, unknown>).collectionId,
+    (entries[1]?.configuration as Record<string, unknown>).collectionId,
     JSON.parse(readFileSync(configurationFileOf(directory), "utf8"))
       .collectionId,
   );
@@ -371,7 +381,7 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
   const failed = runs.filter((run) => run.status !== 0);
   assert.equal(made.length, 1);
   const lateToWrite = failed.filter((run) =>
-    /another run made it a copy first/.test(run.stderr),
+    /Another run made .* a copy first/.test(run.stderr),
   ).length;
   const lateToLook = failed.filter((run) =>
     /that the starter \.tcignore does not ignore/.test(run.stderr),

@@ -48,8 +48,8 @@ run wrote (`R-MFILE-13`). `tc-` says whose file it is, in a directory a person n
 
 **The terminal shows a person what went wrong, and detail on request.** Errors go to standard error
 and are never verbose, so every one reaches the screen (`R-LOG-8`, `R-LOG-9`). Detail, such as
-`run-start`, the configuration and the count per ignore pattern, is verbose (`R-LOG-11`, `R-LOG-13`,
-`R-LOG-14`): the file always holds it, and `--verbose` shows it too.
+`run-start` and the configuration, is verbose (`R-LOG-11`, `R-LOG-13`): the file always holds it,
+and `--verbose` shows it too.
 
 **Nothing removes an old log.** The directory for temporary files is the operating system's to
 clean, and a directory named with `--log-dir` is its owner's. A run that removes nothing cannot
@@ -91,7 +91,7 @@ than two years old in its directory for temporary files.
 ## Touches
 
 `logging-spec.md`: `R-LOG-5` and `R-LOG-6` place the log directory and name the log, `R-LOG-7` to
-`R-LOG-14` give its form and entries, `R-LOG-10` makes a directory named with `--log-dir` the log
+`R-LOG-13` give its form and entries, `R-LOG-10` makes a directory named with `--log-dir` the log
 directory, and `R-LOG-1` no longer says plain text. `parallel-safety-spec.md`: `R-PARALLEL-1` claims
 a run's ID by creating its log. `turbo-collection-core-spec.md`: `R-CFG-3`, `R-CLI-20`, and the
 postconditions of the Config and Logger contracts. `turbo-collection-spec.md` Section 12: the Logger row.

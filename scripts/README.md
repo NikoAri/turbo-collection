@@ -97,13 +97,12 @@ directory `--log-dir` names, as `logging-spec.md` describes.
 | -------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line, makes the run and its log, and runs init.     |
 | [`init.ts`](init.ts)                         | The init operation.                                                                |
-| [`run.ts`](run.ts)                           | A run: its ID.                                                                     |
 | [`logger.ts`](logger.ts)                     | A run's log: where it goes, what an entry holds, and the entries every run writes. |
 | [`paths.ts`](paths.ts)                       | Checks on a directory a run is given: a link in its path, and a copy above it.     |
 | [`versions.ts`](versions.ts)                 | The versions that a run's log records and the version report states.               |
-| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says which pattern ignores a path.                       |
+| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says whether it ignores a path.                          |
 | [`templates/`](templates/)                   | The starter ignore file that init writes into a copy.                              |
-| [`helpers/`](helpers/)                       | The script behind `npm run update`, and `NamedMutex`, a mutex held under a name.   |
+| [`helpers/`](helpers/)                       | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.    |
 | [`samples/`](samples/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it. |
 | [`test/`](test/)                             | Tests, each named for the requirement it exercises.                                |
 | [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do.                            |

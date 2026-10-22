@@ -13,7 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { test, type TestContext } from "node:test";
+import { mock, test, type TestContext } from "node:test";
 import { URL } from "node:url";
 
 import {
@@ -25,7 +25,7 @@ import {
   initializeTc,
   writeConfigurationFile,
 } from "../init.ts";
-import type { LogEntry, Logger } from "../logger.ts";
+import { logEntryOf, logger, type LogEntry } from "../logger.ts";
 
 // A new, empty directory under the system's temporary directory, removed when
 // the test ends. Its path is resolved, since on a Mac the temporary directory
@@ -47,38 +47,41 @@ function writeFileUnder(directory: string, relativePath: string): void {
   writeFileSync(file, "content");
 }
 
-// A logger that keeps each entry it is given, in order.
-function collectingLogger(): Logger & { entries: LogEntry[] } {
+// What these tests make init log is shown nowhere, unless a test collects it.
+mock.method(logger, "log", () => {});
+
+// The entries `logger` is given during the test `t`, in order.
+function collectEntries(t: TestContext): LogEntry[] {
   const entries: LogEntry[] = [];
-  return { entries, log: (entry) => entries.push(entry), error: () => {} };
+  t.mock.method(logger, "log", (entry: LogEntry | string) =>
+    entries.push(logEntryOf(entry)),
+  );
+  return entries;
 }
 
-// A logger that keeps nothing.
-const silentLogger: Logger = { log: () => {}, error: () => {} };
-
-// The files that `logger` was told stop init, in order.
-function filesNotIgnored(logger: { entries: LogEntry[] }): unknown[] {
-  return logger.entries
+// The files that `entries` say stop init, in order.
+function filesNotIgnored(entries: LogEntry[]): unknown[] {
+  return entries
     .filter((entry) => entry.event === "file-not-ignored")
     .map((entry) => entry.file);
 }
 
 test("R-INIT-3: a directory that holds nothing passes", (t) => {
-  ensureDirectoryHoldsNoFiles(temporaryDirectory(t), silentLogger);
+  ensureDirectoryHoldsNoFiles(temporaryDirectory(t));
 });
 
 test("R-INIT-3: a directory that holds a file is an error, and the file is logged as a failure", (t) => {
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, "photo.jpg");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
   assert.throws(
-    () => ensureDirectoryHoldsNoFiles(directory, logger),
+    () => ensureDirectoryHoldsNoFiles(directory),
     /holds a file that the starter \.tcignore does not ignore/,
   );
-  assert.deepEqual(filesNotIgnored(logger), ["photo.jpg"]);
+  assert.deepEqual(filesNotIgnored(entries), ["photo.jpg"]);
   assert.equal(
-    logger.entries.find((entry) => entry.event === "file-not-ignored")?.outcome,
+    entries.find((entry) => entry.event === "file-not-ignored")?.outcome,
     "failure",
   );
 });
@@ -86,10 +89,10 @@ test("R-INIT-3: a directory that holds a file is an error, and the file is logge
 test("R-INIT-3: a file at any depth is an error", (t) => {
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, "2019/trip/photo.jpg");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
-  assert.throws(() => ensureDirectoryHoldsNoFiles(directory, logger));
-  assert.deepEqual(filesNotIgnored(logger), ["2019/trip/photo.jpg"]);
+  assert.throws(() => ensureDirectoryHoldsNoFiles(directory));
+  assert.deepEqual(filesNotIgnored(entries), ["2019/trip/photo.jpg"]);
 });
 
 test("R-INIT-3: every file that stops init is reported, not only the first", (t) => {
@@ -98,13 +101,13 @@ test("R-INIT-3: every file that stops init is reported, not only the first", (t)
   writeFileUnder(directory, "2019/b.jpg");
   writeFileUnder(directory, "2019/trip/c.jpg");
   writeFileUnder(directory, "2019/.DS_Store");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
   assert.throws(
-    () => ensureDirectoryHoldsNoFiles(directory, logger),
+    () => ensureDirectoryHoldsNoFiles(directory),
     /holds 3 files that the starter \.tcignore does not ignore/,
   );
-  assert.deepEqual(filesNotIgnored(logger).sort(), [
+  assert.deepEqual(filesNotIgnored(entries).sort(), [
     "2019/b.jpg",
     "2019/trip/c.jpg",
     "a.jpg",
@@ -116,70 +119,30 @@ test("R-INIT-3: a file that a starter pattern matches does not stand in the way"
   writeFileUnder(directory, ".DS_Store");
   writeFileUnder(directory, "2019/Thumbs.db");
 
-  ensureDirectoryHoldsNoFiles(directory, silentLogger);
+  ensureDirectoryHoldsNoFiles(directory);
 });
 
 test("R-INIT-3: a directory that holds no file does not stand in the way", (t) => {
   const directory = temporaryDirectory(t);
   mkdirSync(path.join(directory, "2019", "trip"), { recursive: true });
 
-  ensureDirectoryHoldsNoFiles(directory, silentLogger);
+  ensureDirectoryHoldsNoFiles(directory);
 });
 
 test("R-INIT-3: a directory that a starter pattern ignores is not looked into", (t) => {
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, "__MACOSX/2019/photo.jpg");
 
-  ensureDirectoryHoldsNoFiles(directory, silentLogger);
+  ensureDirectoryHoldsNoFiles(directory);
 });
 
 test("R-INIT-3: a .tcignore already in the directory is a file like any other", (t) => {
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, ".tcignore");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
-  assert.throws(() => ensureDirectoryHoldsNoFiles(directory, logger));
-  assert.deepEqual(filesNotIgnored(logger), [".tcignore"]);
-});
-
-test("R-LOG-14: a verbose ignore entry counts, for every starter pattern, the entries it ignored", (t) => {
-  const directory = temporaryDirectory(t);
-  writeFileUnder(directory, ".DS_Store");
-  writeFileUnder(directory, "2019/.DS_Store");
-  writeFileUnder(directory, "2019/Thumbs.db");
-  writeFileUnder(directory, "__MACOSX/2019/a.jpg");
-  writeFileUnder(directory, "__MACOSX/2019/b.jpg");
-  const logger = collectingLogger();
-
-  ensureDirectoryHoldsNoFiles(directory, logger);
-
-  const [entry] = logger.entries;
-  assert.equal(entry?.event, "ignore");
-  assert.equal(entry?.verbose, true);
-  assert.equal(entry?.path, directory);
-  const counts = new Map(
-    (entry?.patterns as { pattern: string; count: number }[]).map(
-      ({ pattern, count }) => [pattern, count],
-    ),
-  );
-  assert.equal(counts.get(".DS_Store"), 2);
-  assert.equal(counts.get("Thumbs.db"), 1);
-  // An ignored directory counts once, and what it holds is not looked at.
-  assert.equal(counts.get("__MACOSX/"), 1);
-  // A pattern that matched nothing is listed with a count of 0.
-  assert.equal(counts.get("$RECYCLE.BIN/"), 0);
-});
-
-test("R-LOG-14: the ignore entry comes before the files that stop init", (t) => {
-  const directory = temporaryDirectory(t);
-  writeFileUnder(directory, "photo.jpg");
-  const logger = collectingLogger();
-
-  assert.throws(() => ensureDirectoryHoldsNoFiles(directory, logger));
-  assert.deepEqual(
-    logger.entries.map((entry) => entry.event),
-    ["ignore", "file-not-ignored"],
-  );
+  assert.throws(() => ensureDirectoryHoldsNoFiles(directory));
+  assert.deepEqual(filesNotIgnored(entries), [".tcignore"]);
 });
 
 test("R-INIT-2: a directory that does not exist is created, empty", (t) => {
@@ -337,7 +300,7 @@ const CollectionIdPattern =
 test("R-INIT-1: init writes a configuration file and the starter ignore file, and nothing else", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  const tcConfig = initializeTc(directory, undefined, undefined, silentLogger);
+  const tcConfig = initializeTc({ directory });
 
   assert.equal(tcConfig.collectionName, "Family Photos");
   assert.equal(tcConfig.copyName, "main");
@@ -351,12 +314,7 @@ test("R-INIT-1: init writes a configuration file and the starter ignore file, an
 test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the collection's ID and name, and the copy's name, a field to a line", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
-  const { collectionId } = initializeTc(
-    directory,
-    undefined,
-    undefined,
-    silentLogger,
-  );
+  const { collectionId } = initializeTc({ directory });
 
   assert.match(collectionId, CollectionIdPattern);
   assert.equal(
@@ -366,18 +324,12 @@ test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the col
 });
 
 test("R-INIT-4: each init generates a new collectionId", (t) => {
-  const first = initializeTc(
-    path.join(temporaryDirectory(t), "photos"),
-    undefined,
-    undefined,
-    silentLogger,
-  );
-  const second = initializeTc(
-    path.join(temporaryDirectory(t), "photos"),
-    undefined,
-    undefined,
-    silentLogger,
-  );
+  const first = initializeTc({
+    directory: path.join(temporaryDirectory(t), "photos"),
+  });
+  const second = initializeTc({
+    directory: path.join(temporaryDirectory(t), "photos"),
+  });
 
   assert.notEqual(first.collectionId, second.collectionId);
 });
@@ -385,7 +337,11 @@ test("R-INIT-4: each init generates a new collectionId", (t) => {
 test("R-INIT-4: names given on the command line are written as the collection's and the copy's", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
-  initializeTc(directory, "Family Photos", "desk", silentLogger);
+  initializeTc({
+    directory,
+    collectionName: "Family Photos",
+    copyName: "desk",
+  });
 
   const tcConfig = JSON.parse(
     readFileSync(configurationFileOf(directory), "utf8"),
@@ -398,7 +354,7 @@ test("R-INIT-4: a name that is not valid is an error before anything is written"
   const directory = path.join(temporaryDirectory(t), "new-copy");
 
   assert.throws(
-    () => initializeTc(directory, undefined, "a/b", silentLogger),
+    () => initializeTc({ directory, copyName: "a/b" }),
     /cannot be a copy's name/,
   );
   assert.throws(() => statSync(directory), /ENOENT/);
@@ -407,7 +363,7 @@ test("R-INIT-4: a name that is not valid is an error before anything is written"
 test("R-CLI-15: the ignore file is the starter file byte for byte, with no carriage return", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
-  initializeTc(directory, undefined, undefined, silentLogger);
+  initializeTc({ directory });
 
   const written = readFileSync(path.join(directory, ".tcignore"));
   assert.deepEqual(
@@ -419,12 +375,12 @@ test("R-CLI-15: the ignore file is the starter file byte for byte, with no carri
 
 test("R-INIT-3: an init of a directory that is already a copy is an error and changes nothing", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  initializeTc(directory, undefined, "main", silentLogger);
+  initializeTc({ directory, copyName: "main" });
   const holds = listUnder(directory);
   const configuration = readFileSync(configurationFileOf(directory), "utf8");
 
   assert.throws(
-    () => initializeTc(directory, undefined, "other", silentLogger),
+    () => initializeTc({ directory, copyName: "other" }),
     /holds 2 files/,
   );
 
@@ -439,10 +395,7 @@ test("R-INIT-3: an init of a folder of photographs is an error and writes nothin
   const directory = temporaryDirectory(t);
   writeFileUnder(directory, "2019/photo.jpg");
 
-  assert.throws(
-    () => initializeTc(directory, undefined, undefined, silentLogger),
-    /holds a file/,
-  );
+  assert.throws(() => initializeTc({ directory }), /holds a file/);
   assert.deepEqual(listUnder(directory), ["2019", "2019/photo.jpg"]);
 });
 
@@ -458,55 +411,52 @@ test("R-PARALLEL-3: a configuration file that appears before init writes one is 
 
   assert.throws(
     () => writeConfigurationFile(directory, tcConfig),
-    /another run made it a copy first/,
+    /Another run made .* a copy first/,
   );
   assert.equal(readFileSync(configurationFileOf(directory), "utf8"), "content");
 });
 
 test("R-LOG-13: init logs the configuration it wrote, and where, as a verbose entry", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
-  const tcConfig = initializeTc(directory, "Family Photos", undefined, logger);
+  const tcConfig = initializeTc({ directory, collectionName: "Family Photos" });
 
-  const entry = logger.entries.find((entry) => entry.event === "configuration");
+  const entry = entries.find((entry) => entry.event === "configuration");
   assert.equal(entry?.verbose, true);
   assert.equal(entry?.path, configurationFileOf(directory));
   assert.deepEqual(entry?.configuration, tcConfig);
 });
 
-test("R-LOG-9: init logs the copy it made in an entry that is not verbose", (t) => {
+test("R-LOG-17: init says what it made in a message", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  const logger = collectingLogger();
+  const entries = collectEntries(t);
 
-  initializeTc(directory, "Family Photos", undefined, logger);
+  initializeTc({ directory, collectionName: "Family Photos" });
 
   assert.deepEqual(
-    logger.entries.map((entry) => entry.event),
-    ["ignore", "configuration", "init"],
+    entries.map((entry) => entry.event),
+    ["configuration", "message"],
   );
-  const entry = logger.entries.at(-1);
-  assert.equal(entry?.verbose, undefined);
-  assert.equal(entry?.copyName, "main");
-  assert.equal(entry?.collectionName, "Family Photos");
+  assert.equal(
+    entries.at(-1)?.message,
+    `Made ${directory} a copy named "main", of a new collection named "Family Photos"`,
+  );
 });
 
 test("R-CLI-18: a directory inside a copy is an error, and nothing is made", (t) => {
   const copy = path.join(temporaryDirectory(t), "photos");
-  initializeTc(copy, undefined, undefined, silentLogger);
+  initializeTc({ directory: copy });
   const holds = listUnder(copy);
   const directory = path.join(copy, "2024", "trip");
 
-  assert.throws(
-    () => initializeTc(directory, undefined, undefined, silentLogger),
-    /lies inside a copy at/,
-  );
+  assert.throws(() => initializeTc({ directory }), /lies inside a copy at/);
   assert.deepEqual(listUnder(copy), holds);
 });
 
 test("R-CLI-18: a directory beside a copy is not inside it", (t) => {
   const parent = temporaryDirectory(t);
-  initializeTc(path.join(parent, "photos"), undefined, undefined, silentLogger);
+  initializeTc({ directory: path.join(parent, "photos") });
 
   ensureNotInsideCopy(path.join(parent, "photos-2"));
 });
@@ -521,13 +471,7 @@ test("R-CLI-20: a path through a link is an error that names where it leads, and
   symlinkSync(target, link, "junction");
 
   assert.throws(
-    () =>
-      initializeTc(
-        path.join(link, "photos"),
-        undefined,
-        undefined,
-        silentLogger,
-      ),
+    () => initializeTc({ directory: path.join(link, "photos") }),
     (error: Error) =>
       error.message.includes(`a link at "${link}"`) &&
       error.message.includes(`"${path.join(target, "photos")}"`),

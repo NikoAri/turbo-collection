@@ -88,9 +88,10 @@ is what `turbo-collection-core-spec.md` R-CLI-1 asks of a run that could not do 
 - **An error that Node or a third-party dependency throws.** It goes on its way as it was thrown.
   A `catch` that only gave it a new class would hide where it came from, so it is never caught
   just to be thrown again as a `TcError`.
-- **An error in the command line itself**, such as an unknown option or an unknown command. The
-  usage text is what answers it, so it is reported with that text and a non-zero exit status, and
-  no stack trace.
+- **The `catch` around reading the command line**, which writes the usage text to standard error
+  and throws the same error again. A command line that cannot be read, an unknown option or
+  command among them, ends the run before it has a log (`logging-spec.md` R-LOG-10), so Node's
+  report, with its stack trace, follows the usage text.
 - **A failure the code goes on from.** A `catch` that turns a missing file into a warning and
   carries on is not an error stopping a run.
 - **The `catch` around `main` that writes an error into the run's log and throws it again**, since

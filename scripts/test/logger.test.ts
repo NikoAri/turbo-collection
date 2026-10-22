@@ -16,12 +16,12 @@ import { TcError } from "../helpers/tc-error.ts";
 import {
   createRunLog,
   defaultLogDirectory,
+  logEntryOf,
+  logger,
   logLeafFileName,
-  logRunEnd,
-  logRunStart,
   RunLog,
+  RunScope,
   type LogEntry,
-  type Logger,
 } from "../logger.ts";
 
 // A new, empty directory under the system's temporary directory, removed when
@@ -34,10 +34,21 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// A logger that keeps each entry it is given, in order.
-function collectingLogger(): Logger & { entries: LogEntry[] } {
+// The entries `logger` is given during the test `t`, in order, an error as an
+// `error` entry holding its message.
+function collectEntries(t: TestContext): LogEntry[] {
   const entries: LogEntry[] = [];
-  return { entries, log: (entry) => entries.push(entry), error: () => {} };
+  t.mock.method(logger, "log", (entry: LogEntry | string) =>
+    entries.push(logEntryOf(entry)),
+  );
+  t.mock.method(logger, "error", (error: unknown) =>
+    entries.push({
+      event: "error",
+      message: (error as Error).message,
+      toString: () => "error",
+    }),
+  );
+  return entries;
 }
 
 test("R-LOG-6: a run's log is named tc-<runId>.log.json", () => {
@@ -136,12 +147,14 @@ test("R-LOG-7: a log is created only where nothing is at its path", (t) => {
   assert.equal(readFileSync(file, "utf8"), "another run's");
 });
 
-test("R-LOG-11: run-start is verbose, and records the versions, the command line, the system and the runtime", () => {
-  const logger = collectingLogger();
+test("R-LOG-11: run-start is verbose, and records the versions, the command line, the system and the runtime", (t) => {
+  const entries = collectEntries(t);
 
-  logRunStart(logger, ["init", "D:\\Photos"]);
+  {
+    using _runScope = new RunScope(["init", "D:\\Photos"]);
+  }
 
-  const [entry] = logger.entries;
+  const [entry] = entries;
   assert.equal(entry?.event, "run-start");
   assert.equal(entry?.verbose, true);
   assert.equal(entry?.version, "0.1.0");
@@ -155,23 +168,64 @@ test("R-LOG-11: run-start is verbose, and records the versions, the command line
   assert.match(entry?.runtime as string, /^node \d+\.\d+\.\d+$/);
 });
 
-test("R-LOG-11: run-end is verbose where the run succeeded, and a failure that is not verbose otherwise", () => {
-  const logger = collectingLogger();
+test("R-LOG-11, R-LOG-12: run-end is verbose where no error was given, and otherwise a failure that is not verbose, after the error's entry", (t) => {
+  const entries = collectEntries(t);
 
-  logRunEnd(logger, false);
-  logRunEnd(logger, true);
+  {
+    using _runScope = new RunScope([]);
+  }
+  {
+    using runScope = new RunScope([]);
+    runScope.error = new TcError("what went wrong");
+  }
 
+  const ends = entries.filter((entry) => entry.event !== "run-start");
   assert.deepEqual(
-    logger.entries.map((entry) => JSON.parse(JSON.stringify(entry))),
+    ends.map((entry) => JSON.parse(JSON.stringify(entry))),
     [
       { event: "run-end", verbose: true },
+      { event: "error", message: "what went wrong" },
       { event: "run-end", outcome: "failure" },
     ],
   );
-  assert.deepEqual(logger.entries.map(String), [
-    "run-end: success",
-    "run-end: failure",
-  ]);
+  assert.deepEqual(ends.map(String), ["Done", "error", "Failed"]);
+});
+
+test("logger writes into the open run's log, and to the terminal alone once it is closed", (t) => {
+  const file = path.join(temporaryDirectory(t), "tc-test.log.json");
+  const shown = t.mock.method(console, "log", () => {});
+
+  {
+    using _runLog = RunLog.create(file, false);
+    logger.log("into the log");
+  }
+  logger.log("after the log");
+
+  assert.equal(JSON.parse(readFileSync(file, "utf8")).message, "into the log");
+  assert.deepEqual(
+    shown.mock.calls.map((call) => call.arguments),
+    [["into the log"], ["after the log"]],
+  );
+});
+
+test("R-LOG-17: text given to log is a message entry that is not verbose, shown as it is", (t) => {
+  const file = path.join(temporaryDirectory(t), "tc-test.log.json");
+  const shown = t.mock.method(console, "log", () => {});
+  const text = "Usage:\n  turbo-collection init";
+
+  {
+    using logger = RunLog.create(file, false);
+    logger.log(text);
+  }
+
+  const entry = JSON.parse(readFileSync(file, "utf8"));
+  assert.equal(entry.event, "message");
+  assert.equal(entry.message, text);
+  assert.equal(entry.verbose, undefined);
+  assert.deepEqual(
+    shown.mock.calls.map((call) => call.arguments),
+    [[text]],
+  );
 });
 
 test("R-LOG-12: an error entry is a failure holding the error's message and stack, and its cause", (t) => {

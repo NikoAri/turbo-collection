@@ -4,9 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 
+import { dateToString } from "./helpers/date-helper.ts";
+import { generateRunId } from "./helpers/run-id.ts";
 import { TcError } from "./helpers/tc-error.ts";
 import { copyRootAtOrAbove, ensureNoLinkInPath } from "./paths.ts";
-import { dateToString, generateRunId } from "./run.ts";
 import {
   SpecificationVersionStamps,
   TurboCollectionVersion,
@@ -35,10 +36,62 @@ export type LogEntry = {
 
 // Where a run's entries go (turbo-collection-core-spec.md,
 // the Logger contract), taken as `console` takes them:
-// `log` for an entry, and `error` for an error (R-LOG-12).
+// `log` for an entry, or for text, as a `message` entry
+// (R-LOG-17), and `error` for an error (R-LOG-12).
 export type Logger = {
-  log(entry: LogEntry): void;
+  log(entry: LogEntry | string): void;
   error(error: unknown): void;
+};
+
+// `entry`, or text as a `message` entry (R-LOG-17).
+export function logEntryOf(entry: LogEntry | string): LogEntry {
+  if (typeof entry !== "string") {
+    return entry;
+  }
+  return { event: "message", message: entry, toString: () => entry };
+}
+
+// `error` as an `error` entry (R-LOG-12).
+function errorEntryOf(error: unknown): LogEntry {
+  const fields = errorFieldsOf(error);
+  return {
+    event: "error",
+    outcome: "failure",
+    ...fields,
+    toString: () => fields.message,
+  };
+}
+
+// Shows what `entry`'s `toString` gives on the terminal
+// (R-LOG-9): on standard error for a failure, and on
+// standard output otherwise, a verbose entry only where
+// `verbose`, whether the command line holds --verbose.
+function show(entry: LogEntry, verbose: boolean): void {
+  if (entry.outcome === "failure") {
+    console.error(entry.toString());
+  } else if (entry.verbose !== true || verbose) {
+    console.log(entry.toString());
+  }
+}
+
+// Where entries go while no run's log is open: the
+// terminal alone, which shows no verbose entry.
+const terminalLogger: Logger = {
+  log: (entry) => show(logEntryOf(entry), false),
+  error: (error) => show(errorEntryOf(error), false),
+};
+
+// The run's log while one is open, and the terminal
+// alone otherwise.
+let currentLogger: Logger = terminalLogger;
+
+// What code logs to, as it would to `console`: a process
+// runs one run and keeps one log, so code imports this
+// rather than being handed a logger. A RunLog takes it
+// over from when it is created until it is disposed of.
+export const logger: Logger = {
+  log: (entry) => currentLogger.log(entry),
+  error: (error) => currentLogger.error(error),
 };
 
 // A run's log: a file holding every entry,
@@ -53,11 +106,15 @@ export class RunLog implements Logger, Disposable {
   // Private fields
   readonly #file: number;
   readonly #verbose: boolean;
+  readonly #previousLogger: Logger;
 
-  // Constructor, private so that a RunLog comes only from create
+  // Constructor, private so that a RunLog comes only from create.
+  // `logger` writes here from now on.
   private constructor(file: number, verbose: boolean) {
     this.#file = file;
     this.#verbose = verbose;
+    this.#previousLogger = currentLogger;
+    currentLogger = this;
   }
 
   // Creates a log at `file`, which must not exist yet.
@@ -67,36 +124,29 @@ export class RunLog implements Logger, Disposable {
     return new RunLog(openSync(file, "wx"), verbose);
   }
 
-  // Adds `entry` as the last line of the log, and shows
+  // Adds `entryOrText` as the last line of the log, and shows
   // what its `toString` gives on the terminal: on standard error
   // for a failure, and on standard output otherwise.
-  log(entry: LogEntry): void {
+  log(entryOrText: LogEntry | string): void {
+    const entry = logEntryOf(entryOrText);
     // `JSON.stringify` leaves out `toString`, a function
     writeSync(
       this.#file,
       `${JSON.stringify({ date: dateToString(new Date()), ...entry })}\n`,
     );
-    if (entry.outcome === "failure") {
-      console.error(entry.toString());
-    } else if (entry.verbose !== true || this.#verbose) {
-      console.log(entry.toString());
-    }
+    show(entry, this.#verbose);
   }
 
   // Adds `error` as an `error` entry (R-LOG-12).
   error(error: unknown): void {
-    const fields = errorFieldsOf(error);
-    this.log({
-      event: "error",
-      outcome: "failure",
-      ...fields,
-      toString: () => `error: ${fields.message}`,
-    });
+    this.log(errorEntryOf(error));
   }
 
-  // Closes the log file, through the Disposable mechanism
+  // Hands `logger` back to whatever it wrote to before, and
+  // closes the log file, through the Disposable mechanism
   // that `using` calls as its block ends
   [Symbol.dispose](): void {
+    currentLogger = this.#previousLogger;
     closeSync(this.#file);
   }
 }
@@ -164,41 +214,51 @@ function systemNameAndVersion(): string {
   return `${os.type()} ${os.release()}`;
 }
 
-// Run's first entry (R-LOG-11).
-// `args` is
-// command line, without the program's own path.
-export function logRunStart(logger: Logger, args: readonly string[]): void {
-  const runtime = `node ${process.versions.node}`;
-  const system = systemNameAndVersion();
-  logger.log({
-    event: "run-start",
-    verbose: true,
-    version: TurboCollectionVersion,
-    specifications: SpecificationVersionStamps,
-    arguments: args,
-    system,
-    runtime,
-    toString: () =>
-      `run-start: turbo-collection ${TurboCollectionVersion}, ${runtime}, ${system}`,
-  });
-}
+// A run's first and last entries (R-LOG-11):
+// run-start as it is made, and run-end as `using`
+// disposes of it. Where `error` was set, the error's
+// entry (R-LOG-12) comes before run-end, and run-end
+// is a failure.
+export class RunScope implements Disposable {
+  // The error that ended the run, where one did
+  error: unknown = undefined;
 
-// A run's last entry (R-LOG-11), whose outcome is
-// `failure` exactly where the run exits with a
-// non-zero status.
-export function logRunEnd(logger: Logger, failed: boolean): void {
-  if (failed) {
+  // Writes run-start. `args` is
+  // command line, without the program's own path.
+  constructor(args: readonly string[]) {
+    const runtime = `node ${process.versions.node}`;
+    const system = systemNameAndVersion();
     logger.log({
-      event: "run-end",
-      outcome: "failure",
-      toString: () => "run-end: failure",
-    });
-  } else {
-    logger.log({
-      event: "run-end",
+      event: "run-start",
       verbose: true,
-      toString: () => "run-end: success",
+      version: TurboCollectionVersion,
+      specifications: SpecificationVersionStamps,
+      arguments: args,
+      system,
+      runtime,
+      toString: () =>
+        `Turbo-Collection ${TurboCollectionVersion}, ${runtime}, ${system}`,
     });
+  }
+
+  // Writes the error's entry where `error` was set,
+  // then run-end, whose outcome is `failure` exactly
+  // where the run exits with a non-zero status.
+  [Symbol.dispose](): void {
+    if (this.error === undefined) {
+      logger.log({
+        event: "run-end",
+        verbose: true,
+        toString: () => "Done",
+      });
+    } else {
+      logger.error(this.error);
+      logger.log({
+        event: "run-end",
+        outcome: "failure",
+        toString: () => "Failed",
+      });
+    }
   }
 }
 

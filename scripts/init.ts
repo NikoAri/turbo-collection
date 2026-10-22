@@ -11,7 +11,7 @@ import path from "node:path";
 import { URL } from "node:url";
 
 import { TcError } from "./helpers/tc-error.ts";
-import type { Logger } from "./logger.ts";
+import { logger } from "./logger.ts";
 import {
   configurationFileOf,
   copyRootAtOrAbove,
@@ -20,8 +20,7 @@ import {
 import {
   compileIgnorePatterns,
   readIgnorePatterns,
-  type IgnorePattern,
-  type IgnoringPattern,
+  type IsIgnored,
 } from "./tcignore.ts";
 import { MetaFileSpecVersion } from "./versions.ts";
 
@@ -39,34 +38,31 @@ export function createDirectoryIfMissing(directory: string): void {
   mkdirSync(directory, { recursive: true });
 }
 
-// Looks through `directory` at every depth, adding each file that
-// `ignoringPattern` does not ignore to `filesNotIgnored`, and counting in
-// `counts` what each pattern ignores. A file is given as a path relative to the
-// directory looked through, with `/` between its segments.
+// Looks through `directory` at every depth, adding each file that `isIgnored`
+// does not ignore to `filesNotIgnored`. A file is given as a path relative to
+// the directory looked through, with `/` between its segments.
 //
-// Anything that is not a directory counts as a file. A directory that a pattern
-// ignores counts once for that pattern and is not looked into, and `pathPrefix`
-// is the path so far, for the directories below the first.
+// Anything that is not a directory counts as a file. A directory that is
+// ignored is not looked into, and `pathPrefix` is the path so far, for the
+// directories below the first.
 function lookThrough(
   directory: string,
-  ignoringPattern: IgnoringPattern,
-  counts: Map<IgnorePattern, number>,
+  isIgnored: IsIgnored,
   filesNotIgnored: string[],
   pathPrefix = "",
 ): void {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const entryPath = pathPrefix + entry.name;
     const isDirectory = entry.isDirectory();
-    const pattern = ignoringPattern(isDirectory ? `${entryPath}/` : entryPath);
-    if (pattern !== undefined) {
-      counts.set(pattern, (counts.get(pattern) ?? 0) + 1);
-    } else if (!isDirectory) {
+    if (isIgnored(isDirectory ? `${entryPath}/` : entryPath)) {
+      continue;
+    }
+    if (!isDirectory) {
       filesNotIgnored.push(entryPath);
     } else {
       lookThrough(
         path.join(directory, entry.name),
-        ignoringPattern,
-        counts,
+        isIgnored,
         filesNotIgnored,
         `${entryPath}/`,
       );
@@ -74,54 +70,15 @@ function lookThrough(
   }
 }
 
-// Logs how many entries of `directory` each of `patterns` ignored
-// (logging-spec.md R-LOG-14, meta-file-spec.md R-MFILE-21). The line of text
-// leaves out a pattern that matched nothing.
-function logIgnoreCounts(
-  logger: Logger,
-  directory: string,
-  patterns: readonly IgnorePattern[],
-  counts: ReadonlyMap<IgnorePattern, number>,
-): void {
-  const patternCounts = patterns.map((pattern) => ({
-    pattern: pattern.text,
-    count: counts.get(pattern) ?? 0,
-  }));
-  const matched = patternCounts
-    .filter(({ count }) => count > 0)
-    .map(({ pattern, count }) => `${pattern} ${count}`);
-  logger.log({
-    event: "ignore",
-    verbose: true,
-    path: directory,
-    patterns: patternCounts,
-    toString: () =>
-      `ignore ${directory}: ${matched.length > 0 ? matched.join(", ") : "no pattern matched"}`,
-  });
-}
-
 // Throws an error where `directory` holds a file, at any depth, that no starter
-// pattern ignores, after logging every such file (R-INIT-3). Before either,
-// logs how many entries each starter pattern ignored (logging-spec.md
-// R-LOG-14).
-export function ensureDirectoryHoldsNoFiles(
-  directory: string,
-  logger: Logger,
-): void {
+// pattern ignores, after logging every such file (R-INIT-3).
+export function ensureDirectoryHoldsNoFiles(directory: string): void {
   const directoryPath = path.resolve(directory);
-  const patterns = readIgnorePatterns(
-    readFileSync(StarterIgnoreFileUrl, "utf8"),
+  const isIgnored = compileIgnorePatterns(
+    readIgnorePatterns(readFileSync(StarterIgnoreFileUrl, "utf8")),
   );
-  const counts = new Map<IgnorePattern, number>();
   const filesNotIgnored: string[] = [];
-  lookThrough(
-    directoryPath,
-    compileIgnorePatterns(patterns),
-    counts,
-    filesNotIgnored,
-  );
-
-  logIgnoreCounts(logger, directoryPath, patterns, counts);
+  lookThrough(directoryPath, isIgnored, filesNotIgnored);
 
   for (const file of filesNotIgnored) {
     logger.log({
@@ -129,7 +86,7 @@ export function ensureDirectoryHoldsNoFiles(
       outcome: "failure",
       path: directoryPath,
       file,
-      toString: () => `file-not-ignored ${directoryPath}: ${file}`,
+      toString: () => path.join(directoryPath, file),
     });
   }
   if (filesNotIgnored.length > 0) {
@@ -241,7 +198,7 @@ export function writeConfigurationFile(
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === "EEXIST") {
       throw new TcError(
-        `"${configurationFile}" appeared after init found "${directory}" empty, so another run made it a copy first. Init wrote nothing more.`,
+        `Another run made "${directory}" a copy first. This init wrote no file there.`,
         { cause: e },
       );
     }
@@ -251,6 +208,17 @@ export function writeConfigurationFile(
   return configurationFile;
 }
 
+// What the command line gives init.
+export type InitArgs = {
+  // The directory to make the first copy: the current one where the command
+  // line names none (R-INIT-2)
+  directory: string;
+  // -n, --name: what the new collection is called (R-INIT-4)
+  collectionName?: string | undefined;
+  // --copy: what the new copy is called (R-INIT-4)
+  copyName?: string | undefined;
+};
+
 // Makes `directory` the first copy of a new collection, and returns the
 // configuration it writes there (R-INIT-1).
 //
@@ -259,19 +227,18 @@ export function writeConfigurationFile(
 // directory is checked before a file is written. The configuration file is
 // written first, since it is what makes a directory a copy, and the ignore file
 // after it (parallel-safety-spec.md R-PARALLEL-2).
-export function initializeTc(
-  directory: string,
-  givenCollectionName: string | undefined,
-  givenCopyName: string | undefined,
-  logger: Logger,
-): TcConfig {
+export function initializeTc({
+  directory,
+  collectionName: givenCollectionName,
+  copyName: givenCopyName,
+}: InitArgs): TcConfig {
   const collectionName = collectionNameFor(directory, givenCollectionName);
   const copyName = copyNameFor(givenCopyName);
   const directoryPath = path.resolve(directory);
   ensureNoLinkInPath(directoryPath);
   ensureNotInsideCopy(directoryPath);
   createDirectoryIfMissing(directoryPath);
-  ensureDirectoryHoldsNoFiles(directoryPath, logger);
+  ensureDirectoryHoldsNoFiles(directoryPath);
 
   // Init generates the collection's ID (R-INIT-4), which Node writes in
   // lower case.
@@ -287,8 +254,7 @@ export function initializeTc(
     verbose: true,
     path: configurationFile,
     configuration: tcConfig,
-    toString: () =>
-      `configuration ${configurationFile}: ${JSON.stringify(tcConfig)}`,
+    toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
   });
 
   // The starter ignore file is copied byte for byte, so what a copy holds does
@@ -300,15 +266,10 @@ export function initializeTc(
     constants.COPYFILE_EXCL,
   );
 
-  // What init made, in an entry that is not verbose, so that a plain init says
-  // what it did (logging-spec.md R-LOG-9).
-  logger.log({
-    event: "init",
-    path: directoryPath,
-    collectionName,
-    copyName,
-    toString: () =>
-      `init ${directoryPath}: made a copy named "${copyName}", of a new collection named "${collectionName}"`,
-  });
+  // What init made, so that a plain init says what it did (logging-spec.md
+  // R-LOG-17). The configuration entry above holds the same in fields.
+  logger.log(
+    `Made ${directoryPath} a copy named "${copyName}", of a new collection named "${collectionName}"`,
+  );
   return tcConfig;
 }

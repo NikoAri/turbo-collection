@@ -505,7 +505,7 @@ covers _what_ a copy is.
 
 | Aspect        | Contract                                                                                                                                              |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `log(event)`; `error(error)`                                                                                                                          |
+| Operations    | `log(event)`, or `log(text)` for a `message` event (R-LOG-17); `error(error)`                                                                         |
 | Postcondition | `log` leaves the event as the last line of this Run's log (R-LOG-7); `error` leaves an `error` event recording the error as that last line (R-LOG-12) |
 | MUST NOT      | Be load-bearing for correctness (R-LOG-2)                                                                                                             |
 
