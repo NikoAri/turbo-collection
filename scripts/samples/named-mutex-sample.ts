@@ -28,8 +28,8 @@ async function main(): Promise<void> {
   // Held while main runs, and let go as main returns or throws.
   await using mutex = await NamedMutex.take(name);
 
-  // Where another process holds the mutex, take returns undefined at once, and
-  // its caller writes the error, since only the caller knows what the name
+  // Where another process holds this mutex, `take` returns undefined at once,
+  // and its caller writes an error, since only that caller knows what a name
   // stands for. A run's error names its collection (parallel-safety-spec.md
   // R-PARALLEL-5).
   if (mutex === undefined) {

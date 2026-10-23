@@ -37,8 +37,8 @@ const CollectionIdPattern =
 // A SHA-256 checksum in lower-case hexadecimal (R-MFILE-10).
 const ChecksumPattern = /^[0-9a-f]{64}$/;
 
-// The `.turbo-collection/` directory that holds the meta files of
-// `directory` (R-MFILE-2).
+// `directory`'s `.turbo-collection/` directory, which holds its meta files
+// (R-MFILE-2).
 export function metaDirectoryOf(directory: string): string {
   return path.join(directory, ".turbo-collection");
 }
@@ -49,8 +49,8 @@ function jsonTextOf(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-// Writes `text` to `file`, opened with `flag`, and has the system put it on
-// its drive before returning, so that what is written after it is written
+// Writes `text` to `file`, opened with `flag`, and has it put on its drive
+// before returning, so that what is written after it is written
 // after a file that is complete (turbo-collection-spec.md R-TGT-13,
 // verify-spec.md R-REC-5).
 function writeFileToDrive(file: string, text: string, flag: string): void {
@@ -68,7 +68,7 @@ const isString = (value: unknown): value is string => typeof value === "string";
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-// The object a JSON meta file `file` holds. A file that is not a JSON
+// An object read from JSON meta file `file`. A file that is not a JSON
 // document holding an object, or that states a version this code does not
 // recognize, is an error naming it (R-MFILE-7).
 function readJsonMetaFile(file: string): Record<string, unknown> {
@@ -96,8 +96,8 @@ function readJsonMetaFile(file: string): Record<string, unknown> {
   return value;
 }
 
-// The field `field` of `object`, read from `file`, where `isType` holds of
-// it. Where it does not, the file lacks a field its requirement lists, which
+// `object`'s field `field`, read from `file`, where `isType` holds of it.
+// Where it does not, `file` lacks a field its requirement lists, which
 // is an error naming it (R-MFILE-7).
 function fieldOf<T>(
   file: string,
@@ -115,8 +115,7 @@ function fieldOf<T>(
   return value;
 }
 
-// Reads the configuration file of the copy whose root is `copyRoot`, and
-// checks each field (R-MFILE-18, R-MFILE-19). A field that is missing or not
+// Reads `copyRoot`'s configuration file, and checks each field (R-MFILE-18, R-MFILE-19). A field that is missing or not
 // valid is an error.
 export function readConfigurationFile(copyRoot: string): TcConfig {
   const file = configurationFileOf(copyRoot);
@@ -164,7 +163,7 @@ export function readConfigurationFile(copyRoot: string): TcConfig {
 }
 
 // What placed a directory's content: a layout or an import source, by the
-// identifier and the version its specification declares (R-MFILE-9).
+// identifier and version, as its specification declares them (R-MFILE-9).
 export type SpecificationStamp = {
   specId: string;
   version: string;
@@ -204,12 +203,12 @@ const isEntry = (value: unknown): value is ManifestEntry =>
 const isEntryList = (value: unknown): value is ManifestEntry[] =>
   Array.isArray(value) && value.every(isEntry);
 
-// The manifest of `directory`.
+// `directory`'s manifest.
 function manifestFileOf(directory: string): string {
   return path.join(metaDirectoryOf(directory), "manifest.json");
 }
 
-// Reads and checks the manifest of `directory`, or returns undefined where
+// Reads and checks `directory`'s manifest, or returns undefined where
 // that directory has none (R-MFILE-7, R-MFILE-9, R-MFILE-10).
 export function readManifest(directory: string): Manifest | undefined {
   const file = manifestFileOf(directory);
