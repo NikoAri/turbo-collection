@@ -8,7 +8,7 @@ out of the collection and is reported, every other file of that import comes in,
 and the run exits non-zero.
 
 **It is what mirroring already does.** Two copies holding different content at
-one path are reported and neither is overwritten (`R-MIRROR-1`). An import meets
+one path are reported and neither is overwritten (`R-BACKUP-4`). An import meets
 the same situation, most often when a file at an import source was edited after
 it was first imported, and one answer keeps the two operations alike.
 

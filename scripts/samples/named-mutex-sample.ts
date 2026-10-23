@@ -12,12 +12,13 @@ import { TcError } from "../helpers/tc-error.ts";
 //
 //   node samples/named-mutex-sample.ts [<name>]
 //
-// The second stops with an error while the first holds the mutex. End the first
-// however you like (Ctrl+C, closing its window, Stop-Process -Id <pid> -Force
-// on Windows, kill -9 <pid> on Linux and macOS), then run it again: it takes
-// the mutex, because the system let it go when the first process ended.
+// Whichever starts later stops with an error while an earlier one holds this
+// mutex. End that earlier one however you like (Ctrl+C, closing its window,
+// Stop-Process -Id <pid> -Force on Windows, kill -9 <pid> on Linux and macOS),
+// then run it again: it now takes this mutex, because an operating system
+// lets a mutex go when its holding process ends.
 
-// Two processes given the same name contend for one mutex. A run names its
+// Processes given one name contend for one mutex. A run names its
 // collection's lock with that collection's ID, which this stands for.
 const SampleName = "00000000-0000-4000-8000-000000000000";
 

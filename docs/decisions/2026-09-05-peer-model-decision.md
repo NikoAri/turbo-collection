@@ -18,9 +18,9 @@ Three renames carry the reframing:
   [the vocabulary decision](2026-10-06-spec-vocabulary-decision.md) later
   removed ports from the specification altogether.
 - The operation over copies is **symmetric and add-only, never one-way**
-  (`R-MIRROR-*`, IDs frozen), not a one-directional push from a privileged copy.
-  Its naming (the **mirror** mechanism, the **backup** operation) is settled in
-  [the backup-naming decision](2026-09-27-backup-naming-decision.md).
+  (`backup-spec.md` Section 7.1), not a one-directional push from a privileged
+  copy. Its naming (the **mirror** mechanism, the **backup** operation) is
+  settled in [the backup-naming decision](2026-10-22-backup-naming-decision.md).
 - `role` is withdrawn from configuration. A copy still declares its own identity
   (`R-MFILE-18`).
 
@@ -71,10 +71,10 @@ content under newer-date-wins, so the system stays add-only and peer-symmetric.
 - **`turbo-collection-spec.md`:** the glossary (**Collection**, **Copy**, and
   storage in place of **Target**), Section 1 scope and diagram, Section 2
   principles, `R-COL-4`, `R-INT-2/7/8`, `R-CFG-1`, `R-CLI-5/9/10`, `R-BACKUP-3`,
-  `R-LOG-1/2`, Section 7.1 (`R-MIRROR-*`, IDs frozen), the storage rules
-  (`R-TGT-*`, IDs frozen), and the Section 11 contracts (the mirror engine). The
-  operation's naming is settled in
-  [the backup-naming decision](2026-09-27-backup-naming-decision.md).
+  `R-LOG-1/2`, Section 7.1 (now `R-BACKUP-4` to `R-BACKUP-15`), the storage
+  rules (`R-TGT-*`, IDs frozen), and the Section 11 contracts (the mirror
+  engine). The operation's naming is settled in
+  [the backup-naming decision](2026-10-22-backup-naming-decision.md).
 - **`meta-file-spec.md`:** `R-MFILE-18` (a copy declares its own identity only;
   `role` and any roster of other copies withdrawn) and `R-MFILE-19` (a
   `copyName` collision refuses the whole run).

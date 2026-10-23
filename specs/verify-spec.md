@@ -95,7 +95,7 @@ Copies differ (R-INT-7).
 **R-INT-13.** A verify copies MUST report every Copy it acts on whose ignore
 file (`meta-file-spec.md` R-MFILE-20) does not hold the same patterns in the
 same order as the ignore file of some other Copy it acts on, as `backup-spec.md`
-R-MIRROR-12 compares them, where a Copy with no ignore file holds no pattern.
+R-BACKUP-15 compares them, where a Copy with no ignore file holds no pattern.
 
 **R-INT-14.** A Run in which a verify copies reports anything that R-INT-11,
 R-INT-12 or R-INT-13 requires it to report MUST exit with a non-zero status

@@ -11,8 +11,8 @@ import {
   parseCliArgs,
 } from "../helpers/package-json-npm-updater.ts";
 
-// A process.exit stand-in: throwing unwinds the call the way a real exit would
-// end the process, and carries the code for a test to assert on.
+// A process.exit stand-in: throwing it unwinds a call as a real exit would end
+// its process, and carries an exit code for a test to assert on.
 class ExitSignal extends Error {
   code: number;
   constructor(code: number) {

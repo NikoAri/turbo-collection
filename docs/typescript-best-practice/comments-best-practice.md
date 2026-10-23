@@ -1,9 +1,10 @@
 # TypeScript best practice: comments
 
-How TypeScript under [`scripts/`](../../scripts/) wraps a comment. This document
-binds nothing, and no code cites it.
+How TypeScript under [`scripts/`](../../scripts/) writes a comment: how wide its
+lines run, and where it uses _the_. This document binds nothing, and no code
+cites it.
 
-## The practice
+## Width
 
 **No line of a comment is longer than 80 characters, its indentation and its
 `//` counted.**
@@ -25,21 +26,50 @@ type TcCliArgs = {
 };
 ```
 
-## Why
+### Why
 
 Prettier formats code to 80 characters, its default width, and leaves a comment
 as it was written. A comment wider than that is the one text in a file that runs
 past its code, so a reader scrolls sideways for it, and a diff shown side by
 side cuts it off.
 
-## What it does not reach
+### What it does not reach
 
 - **A string**, such as an error's message or a test's name. Prettier leaves a
   long string on one line, and so does this practice.
 - **A URL or a path longer than the room on its line.** It is not broken, and
   stands on a line of its own.
 
-## What holds it
+### What holds it
 
 Nothing checks this mechanically: Prettier does not wrap a comment, and `tsc`
 does not read one. Whoever reads a change holds the practice.
+
+## Articles
+
+**A comment uses _the_ only where no more precise word serves.** Such a word is
+_each_, _every_, _this_, _its_, a possessive, or a thing's own name, such as a
+parameter's. A _the_ whose removal changes no meaning is dropped, and a sentence
+that still needs one is often better rewritten:
+
+```ts
+// Takes the lock of the collection `tcConfig` belongs to, without waiting.
+```
+
+reads, rewritten:
+
+```ts
+// Locks `tcConfig`'s collection, without waiting.
+```
+
+### Why
+
+_The_ promises a reader one thing they can identify. A comment mostly speaks of
+whatever value a function is given, or of one thing it could name outright, so
+that promise is usually false or vague. Specifications hold to this same rule,
+in [`language-requirement.md`](../../specs/language-requirement.md) R-LANG-18
+and R-LANG-19, so a comment reads like each specification it cites.
+
+### What holds it
+
+Nothing checks this mechanically. Whoever reads a change holds the practice.

@@ -21,16 +21,15 @@ import {
   copyNameFor,
   createDirectoryIfMissing,
   ensureDirectoryHoldsNoFiles,
-  ensureNotInsideCopy,
   initializeTc,
   writeConfigurationFile,
 } from "../init.ts";
 import { logEntryOf, logger, type LogEntry } from "../logger.ts";
+import { ensureNotInsideCopy } from "../paths.ts";
 
-// A new, empty directory under the system's temporary directory, removed when
-// the test ends. Its path is resolved, since on a Mac the temporary directory
-// lies behind a link, and a path through a link is an error
-// (turbo-collection-core-spec.md R-CLI-20).
+// A new, empty directory under `tmpdir()`, removed when test `t` ends. Its
+// path is resolved, since on a Mac `tmpdir()` lies behind a link, and a path
+// through a link is an error (turbo-collection-core-spec.md R-CLI-20).
 function temporaryDirectory(t: TestContext): string {
   const directory = realpathSync(
     mkdtempSync(path.join(tmpdir(), "turbo-collection-test-")),
@@ -39,8 +38,8 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// Writes a file at `relativePath` under `directory`, creating the directories
-// it needs.
+// Writes a file at `relativePath` under `directory`, creating any directory it
+// needs.
 function writeFileUnder(directory: string, relativePath: string): void {
   const file = path.join(directory, relativePath);
   mkdirSync(path.dirname(file), { recursive: true });
@@ -50,7 +49,7 @@ function writeFileUnder(directory: string, relativePath: string): void {
 // What these tests make init log is shown nowhere, unless a test collects it.
 mock.method(logger, "log", () => {});
 
-// The entries `logger` is given during the test `t`, in order.
+// Entries `logger` is given during test `t`, in order.
 function collectEntries(t: TestContext): LogEntry[] {
   const entries: LogEntry[] = [];
   t.mock.method(logger, "log", (entry: LogEntry | string) =>
@@ -59,7 +58,7 @@ function collectEntries(t: TestContext): LogEntry[] {
   return entries;
 }
 
-// The files that `entries` say stop init, in order.
+// Files that `entries` say stop init, in order.
 function filesNotIgnored(entries: LogEntry[]): unknown[] {
   return entries
     .filter((entry) => entry.event === "file-not-ignored")
@@ -282,7 +281,7 @@ function listUnder(directory: string): string[] {
     .sort();
 }
 
-// The path of the configuration file of a copy in `directory`
+// Where a copy in `directory` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(

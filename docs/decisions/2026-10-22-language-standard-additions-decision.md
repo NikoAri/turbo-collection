@@ -1,6 +1,10 @@
 # Four rules added to the authoring standard: language, articles, and identifiers
 
-**Status:** Accepted **Date:** 2026-08-01
+**Status:** Accepted **Date:** 2026-10-22
+
+**Replaces the record of 2026-08-01.** R-LANG-19 then asked only that prose omit
+a definite article whose removal changes no meaning; it now asks first for a
+more precise word in its place.
 
 Four rules were added to
 [`language-requirement.md`](../../specs/language-requirement.md).
@@ -13,12 +17,16 @@ naming the language first is what makes the rest of that document mean anything.
 one document language, and "English" alone does not identify one.
 
 **R-LANG-18 and R-LANG-19, on definite articles.** A definite article marks only
-a noun with exactly one identifiable referent, and prose omits an article whose
-removal changes no meaning. The first is binding, the second advisory. This is a
-precision rule rather than a matter of taste: "the" promises a reader a specific
-referent, and most statements in a specification are general, so the promise is
-usually false. It is the failure R-LANG-10 already catches for pronouns, caught
-one step earlier in the sentence.
+a noun with exactly one identifiable referent. Prose uses no definite article
+where a more precise word serves (_each_, _every_, _this_, _its_, a possessive,
+or a referent's own name), and omits one whose removal changes no meaning. The
+first is binding, the second advisory. This is a precision rule rather than a
+matter of taste: "the" promises a reader a specific referent, and most
+statements in a specification are general, so the promise is usually false. It
+is the failure R-LANG-10 already catches for pronouns, caught one step earlier
+in the sentence. Comments in code follow the same practice, stated for them in
+[`comments-best-practice.md`](../typescript-best-practice/comments-best-practice.md),
+because R-LANG-2 keeps code from citing these rules.
 
 **R-LANG-20, on requirement identifiers.** Stability after publication and
 prefix uniqueness, stated once. Three documents had each restated them. Unlike
@@ -40,6 +48,12 @@ rule a checker can enforce rather than only the em-dash rule.
 - **R-LANG-19 as binding rather than advisory.** English resists an absolute
   rule here, and enforcing it everywhere would cost more than it protects. Same
   reasoning R-LANG-7 already records for one-word-one-meaning.
+- **R-LANG-19 as omission alone**, its wording until 2026-10-22. Nearly every
+  "the" before a singular noun passes the test "does removal change meaning",
+  because deleting it leaves headline English, so the rule let almost every
+  article through. Text written under it used "the" as often as ordinary English
+  does. A word that says which referent is meant is what the rule wants, and
+  naming that word is what makes the rule bite.
 - **Following ASD-STE100 on articles.** Section 1 names it as an inspiration and
   it pushes the opposite way, preferring explicit articles, because a
   maintenance procedure written telegraphically is ambiguous about which
@@ -59,7 +73,8 @@ rule a checker can enforce rather than only the em-dash rule.
 Added: R-LANG-18, R-LANG-19, R-LANG-20, R-LANG-21. Section 0.1 gained a sentence
 recording that R-LANG-17 reaches beyond normative documents; Section 0.2 stopped
 restating identifier stability; Section 1 now names the language variant where
-it discusses language as a binding.
+it discusses language as a binding. On 2026-10-22, R-LANG-19 gained its first
+sentence, and `comments-best-practice.md` gained its Articles section.
 
 `turbo-collection-spec.md` Section 0.2 declares American English directly rather
 than by reference, because R-VER-8 scatters copies of it onto every drive while

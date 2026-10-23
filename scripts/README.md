@@ -82,30 +82,36 @@ being told, and what `package.json` deliberately leaves out:
 
 ## What this is today
 
-**The start of the implementation: `init` works, and nothing else does yet.**
+**`init` and `import` work, and nothing else does yet.**
 `node turbo-collection.ts init` makes a directory a copy, as `init-spec.md`
-describes. Import, backup, status and verify are not written.
+describes. `node turbo-collection.ts import local-folder <directory>` imports a
+directory's files into the copy it is run in, as `import-spec.md` and the
+local-folder specification describe. Backup, status and verify are not written.
 
 Every run, help and version among them, writes its log into
 `turbo-collection/logs/` in the directory for temporary files, or into the
 directory `--log-dir` names, as `logging-spec.md` describes.
 
-`NamedMutex`, which is to hold a collection's lock for every run other than init
-(`parallel-safety-spec.md` R-PARALLEL-4), is written, and nothing takes it yet.
+Import holds its collection's lock, a `NamedMutex`, while it reads and writes
+the copy (`parallel-safety-spec.md` R-PARALLEL-4).
 
-| File                                         | What it holds                                                                      |
-| -------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`turbo-collection.ts`](turbo-collection.ts) | Entry point: reads the command line, makes the run and its log, and runs init.     |
-| [`init.ts`](init.ts)                         | The init operation.                                                                |
-| [`logger.ts`](logger.ts)                     | A run's log: where it goes, what an entry holds, and the entries every run writes. |
-| [`paths.ts`](paths.ts)                       | Checks on a directory a run is given: a link in its path, and a copy above it.     |
-| [`versions.ts`](versions.ts)                 | The versions that a run's log records and the version report states.               |
-| [`tcignore.ts`](tcignore.ts)                 | Reads an ignore file, and says whether it ignores a path.                          |
-| [`templates/`](templates/)                   | The starter ignore file that init writes into a copy.                              |
-| [`helpers/`](helpers/)                       | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.    |
-| [`samples/`](samples/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it. |
-| [`test/`](test/)                             | Tests, each named for the requirement it exercises.                                |
-| [`package.json.md`](package.json.md)         | Why the manifest and the lint commands look as they do.                            |
+| File                                                   | What it holds                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| [`turbo-collection.ts`](turbo-collection.ts)           | Entry point: reads the command line, makes the run and its log, and runs a command.        |
+| [`init.ts`](init.ts)                                   | The init operation.                                                                        |
+| [`import.ts`](import.ts)                               | The import operation, which writes each file into the copy, and its manifest and receipts. |
+| [`local-folder-importer.ts`](local-folder-importer.ts) | The local-folder importer: which files of a directory it supplies, and their paths.        |
+| [`meta-files.ts`](meta-files.ts)                       | Reads and checks a configuration file and a manifest, and writes a manifest and receipts.  |
+| [`collection-lock.ts`](collection-lock.ts)             | Takes a collection's lock on this computer.                                                |
+| [`logger.ts`](logger.ts)                               | A run's log: where it goes, what an entry holds, and the entries every run writes.         |
+| [`paths.ts`](paths.ts)                                 | Checks on a directory a run is given: a link in its path, and a copy above it.             |
+| [`versions.ts`](versions.ts)                           | The versions that a run's log records and the version report states.                       |
+| [`tcignore.ts`](tcignore.ts)                           | Reads an ignore file, and says whether it ignores a path.                                  |
+| [`templates/`](templates/)                             | The starter ignore file that init writes into a copy.                                      |
+| [`helpers/`](helpers/)                                 | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.            |
+| [`samples/`](samples/)                                 | Code run by hand to show a helper in use. Nothing imports it, and no test runs it.         |
+| [`test/`](test/)                                       | Tests, each named for the requirement it exercises.                                        |
+| [`package.json.md`](package.json.md)                   | Why the manifest and the lint commands look as they do.                                    |
 
 ## Rules this code is held to
 
@@ -136,8 +142,7 @@ check time instead.
 the TypeScript here is written, one practice to a document. Read each document
 there before changing a `.ts` file.
 
-**Never delete.** `R-MIRROR-3` and `R-TGT-7` prohibit deleting a file in a copy,
-with one carve-out for Turbo-Collection's own temporary files (`R-MIRROR-8`).
+**Never delete.** `R-BACKUP-6` and `R-TGT-7` prohibit deleting a file in a copy.
 Section 13 requires a test asserting no code path deletes. That test is not
 written. A scan of the source for calls that delete was considered on 2026-10-13
 and set aside as too weak: it misses a delete done by a program this code runs,

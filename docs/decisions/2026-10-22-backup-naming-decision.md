@@ -1,6 +1,11 @@
 # The operation is backup; its mechanism is a mirror
 
-**Status:** Accepted **Date:** 2026-09-27
+**Status:** Accepted **Date:** 2026-10-22
+
+**Replaces the record of 2026-09-27.** The names are unchanged. What reversed is
+the requirement prefix: the mirroring requirements kept `R-MIRROR-*` then, and
+now carry the operation's prefix, `R-BACKUP-4` to `R-BACKUP-15`, so one prefix
+covers what a backup does, as `R-INIT-*` covers init.
 
 **Replaces the naming half of
 [the peer-model decision](2026-09-05-peer-model-decision.md).** That pass
@@ -30,7 +35,7 @@ backup _of_ X, the backup drive), which the peer model already retired.
 
 A second objection, that calling a symmetric operation "backup" would mislead an
 operator into expecting one-way protection, also falls: the operation is
-add-only and never deletes (`backup-spec.md` R-MIRROR-2, R-MIRROR-3), so any
+add-only and never deletes (`backup-spec.md` R-BACKUP-5, R-BACKUP-6), so any
 wrong expectation a familiar word invites is a _safe_ one. Expect a deletion and
 none happens; expect one direction and gain files in both. Safety lives in the
 mechanism, not the word.
@@ -40,14 +45,14 @@ mechanism, not the word.
 - **Operator layer, `backup`:** the operation list and dry-run mode (`R-CLI-5`),
   the no-network rule (`R-BACKUP-3`), the drift inspection (Section 8.4), and
   the operator's own steps in the procedures.
-- **Mechanism layer, `mirror`:** Section 7.1 (retitled _Mirroring_), the
-  `R-MIRROR-*` requirements and their commentary, the glossary, and the mirror
-  engine contract. In `meta-file-spec.md`, an arrival or error the mechanism
-  produces is a **mirror arrival** or **mirror error**, against an **import
-  arrival** or **import error**.
+- **Mechanism layer, `mirror`:** Section 7.1, titled _Mirroring_, and its
+  requirements' text and commentary, the glossary, and the mirror engine
+  contract. In `meta-file-spec.md`, an arrival or error the mechanism produces
+  is a **mirror arrival** or **mirror error**, against an **import arrival** or
+  **import error**.
 
-The `R-MIRROR-*` identifiers are unchanged and now re-align with the restored
-name.
+Requirement identifiers follow the document, not the layer: every requirement in
+`backup-spec.md` is `R-BACKUP-*`, those of Section 7.1 included.
 
 ## Rejected
 
@@ -61,6 +66,10 @@ name.
 - **A new CLI verb to signal symmetry** (for example `sync`). It buys accuracy
   the add-only mechanism already guarantees, at the cost of a word no one
   reaches for when they want their photographs safe.
+- **A prefix for each layer** (`R-MIRROR-*` beside `R-BACKUP-*`), the state from
+  2026-09-27 to 2026-10-22. Two prefixes in one operation's document split what
+  a reader looks up by operation, and a section title already names the
+  mechanism.
 
 ## Touches
 
@@ -68,13 +77,15 @@ No obligation changes; the renamed command would be a behavior change had any
 version been published, but every document is `0.1.0-draft`
 (`version-requirement.md` R-PUB-3). `turbo-collection-spec.md`: Section 15
 records the pass; `R-BACKUP-3`, `R-CLI-5`, Section 8.4, Section 7.1 (retitled),
-the `R-MIRROR-*` and receipt commentary, the glossary (a **Backup** term added,
-the **Reconcile** term replaced by **Mirror**), the `MirrorEngine` port, and
+the mirroring and receipt commentary, the glossary (a **Backup** term added, the
+**Reconcile** term replaced by **Mirror**), the `MirrorEngine` port, and
 Sections 12.1, 12.3 and 14 reworded. `meta-file-spec.md`: `R-MFILE-13`,
 `R-MFILE-15`, `R-MFILE-16` and commentary. The five procedures:
 `turbo-collection-backup-procedure.md` regains its title (the filename never
-changed), and operator prose across all five moves to _back up_. Requirement
-identifiers are not renumbered. The worked example and fixtures were renamed on
-2026-09-28 (the copies `main` and `off-site`, replacing the subordinate
-`backup1` and `sample-backup-1`); copy naming is settled in
+changed), and operator prose across all five moves to _back up_. Section 7.1's
+requirements were `R-MIRROR-1` to `R-MIRROR-12` until 2026-10-22, when they
+became `R-BACKUP-4` to `R-BACKUP-15` in the same order and every citation
+followed. The worked example and fixtures were renamed on 2026-09-28 (the copies
+`main` and `off-site`, replacing the subordinate `backup1` and
+`sample-backup-1`); copy naming is settled in
 [the collection-naming decision](2026-10-14-collection-naming-decision.md).

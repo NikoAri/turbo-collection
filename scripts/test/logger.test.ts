@@ -24,8 +24,7 @@ import {
   type LogEntry,
 } from "../logger.ts";
 
-// A new, empty directory under the system's temporary directory, removed when
-// the test ends.
+// A new, empty directory under `tmpdir()`, removed when test `t` ends.
 function temporaryDirectory(t: TestContext): string {
   const directory = realpathSync(
     mkdtempSync(path.join(tmpdir(), "turbo-collection-test-")),
@@ -34,8 +33,8 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// The entries `logger` is given during the test `t`, in order, an error as an
-// `error` entry holding its message.
+// Entries `logger` is given during test `t`, in order, an error as an `error`
+// entry holding its message.
 function collectEntries(t: TestContext): LogEntry[] {
   const entries: LogEntry[] = [];
   t.mock.method(logger, "log", (entry: LogEntry | string) =>
@@ -112,7 +111,7 @@ test("R-LOG-7, R-LOG-8: a log holds one JSON object to a line, each followed by 
   const file = path.join(temporaryDirectory(t), "tc-test.log.json");
 
   {
-    using logger = RunLog.create(file, false);
+    using logger = RunLog.create(file, false, "20261021T150000Z-0000");
     logger.log({ event: "first", verbose: true, toString: () => "first" });
     logger.log({
       event: "second",
@@ -143,7 +142,10 @@ test("R-LOG-7: a log is created only where nothing is at its path", (t) => {
   const file = path.join(temporaryDirectory(t), "tc-test.log.json");
   writeFileSync(file, "another run's");
 
-  assert.throws(() => RunLog.create(file, false), /EEXIST/);
+  assert.throws(
+    () => RunLog.create(file, false, "20261021T150000Z-0000"),
+    /EEXIST/,
+  );
   assert.equal(readFileSync(file, "utf8"), "another run's");
 });
 
@@ -196,7 +198,7 @@ test("logger writes into the open run's log, and to the terminal alone once it i
   const shown = t.mock.method(console, "log", () => {});
 
   {
-    using _runLog = RunLog.create(file, false);
+    using _runLog = RunLog.create(file, false, "20261021T150000Z-0000");
     logger.log("into the log");
   }
   logger.log("after the log");
@@ -214,7 +216,7 @@ test("R-LOG-17: text given to log is a message entry that is not verbose, shown 
   const text = "Usage:\n  turbo-collection init";
 
   {
-    using logger = RunLog.create(file, false);
+    using logger = RunLog.create(file, false, "20261021T150000Z-0000");
     logger.log(text);
   }
 
@@ -234,7 +236,7 @@ test("R-LOG-12: an error entry is a failure holding the error's message and stac
   const cause = new Error("the lower error");
 
   {
-    using logger = RunLog.create(file, false);
+    using logger = RunLog.create(file, false, "20261021T150000Z-0000");
     logger.error(new TcError("what went wrong", { cause }));
   }
 

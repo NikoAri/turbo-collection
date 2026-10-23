@@ -9,7 +9,7 @@ Deletion is an act a human performs with ordinary tools, on evidence
 Turbo-Collection supplies.
 
 This was already the specification's behavior in seven separate places
-(`R-COL-2`, `R-SRC-7`, `R-MIRROR-2`, `R-INT-6`, `R-INT-7`, `R-NAME-2`, and an
+(`R-COL-2`, `R-SRC-7`, `R-BACKUP-5`, `R-INT-6`, `R-INT-7`, `R-NAME-2`, and an
 `R-COL-5` since removed), none of which named the rule behind them.
 Mirror-delete was the single exception, and it is gone.
 
@@ -39,7 +39,7 @@ disconnected drive cannot be deleted from.
 
 ## What it cost, accepted knowingly
 
-- **A corrupt file in a copy is never healed automatically.** `R-MIRROR-1` used
+- **A corrupt file in a copy is never healed automatically.** `R-BACKUP-4` used
   to overwrite any file differing from another copy's, which treated one copy as
   authoritative and contradicted `R-INT-7`, where neither side is. `R-INT-7`
   won. Repair is now an action a human requests.
@@ -57,7 +57,7 @@ disconnected drive cannot be deleted from.
 - **Keeping mirror-delete, disabled by default.** The status quo. Rejected: a
   setting that must never be enabled is better expressed as a capability that
   does not exist.
-- **Withdrawing `R-MIRROR-3` outright**, leaving the prohibition to the guiding
+- **Withdrawing `R-BACKUP-6` outright**, leaving the prohibition to the guiding
   principle. Rejected: `language-requirement.md` R-LANG-3 means only an RFC 2119
   keyword states an obligation, and principles carry none. The ID keeps the
   prohibition in normative text; the configurable behavior is what was removed.
@@ -78,13 +78,14 @@ disconnected drive cannot be deleted from.
 ## Touches
 
 Core specification: guiding principle added in Section 2. Amended `R-COL-4`,
-`R-MIRROR-1`, `R-MIRROR-3`, `R-MIRROR-7`, `R-TGT-5`, `R-TGT-8`, `R-CFG-4`,
+`R-BACKUP-4`, `R-BACKUP-6`, `R-BACKUP-10`, `R-TGT-5`, `R-TGT-8`, `R-CFG-4`,
 `R-LOG-1`, `R-CLI-5`, `R-CLI-8`. Added `R-SRC-12`, `R-SRC-13`, `R-SRC-14`,
-`R-MIRROR-8`, `R-MIRROR-9`, `R-INT-8`. Section 3 dropped the _mirror-delete_
+`R-BACKUP-11`, `R-BACKUP-12`, `R-INT-8`. Section 3 dropped the _mirror-delete_
 term and gained _dry-run_ and _temporary file_. Section 8.4 grew to four
 inspections. Section 13 gained the no-deletion conformance test. Section 14 lost
 the collection-location question, answered by
 [`2026-08-10-storage-hardware-decision.md`](2026-08-10-storage-hardware-decision.md).
 
-`R-TGT-5` and `R-TGT-8` were removed on 2026-10-09. `R-MIRROR-3` and `R-TGT-7`
-still prohibit deleting a file in a copy.
+`R-TGT-5` and `R-TGT-8` were removed on 2026-10-09, and `R-BACKUP-11`, the
+temporary-file carve-out, on 2026-10-22. `R-BACKUP-6` and `R-TGT-7` still
+prohibit deleting a file in a copy.

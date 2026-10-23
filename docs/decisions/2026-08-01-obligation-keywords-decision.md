@@ -8,7 +8,7 @@
 A document that is not normative does not state obligations with RFC 2119
 keywords, and does not label paragraphs with identifiers shaped like requirement
 IDs. It may still describe a rule and cite it, as in "Turbo-Collection copies
-every file absent at a target (R-MIRROR-1)". This lands as a new requirement in
+every file absent at a target (R-BACKUP-4)". This lands as a new requirement in
 `language-requirement.md`, whose section 0.1 gains one sentence extending that
 single rule to documents which are not normative.
 

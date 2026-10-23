@@ -65,7 +65,8 @@ describes.
 
 `R-META-1` to `R-META-4` relocated with their IDs unchanged. `R-DUR-1` to
 `R-DUR-6` are new; `R-DUR-6` generalizes "only ever adds" and carries the
-temporary-file carve-out of `R-MIRROR-8` with it. `turbo-collection-spec.md`
-Section 0 became _Conventions_, Section 2 kept two principles, and Section 13
-became conformance procedure alone. `spec-guide.md` and `README.md` list both
-documents.
+temporary-file carve-out of `R-BACKUP-11` with it (`R-BACKUP-11` was removed on
+2026-10-22; `R-DUR-6` still lets a run remove its own incomplete work).
+`turbo-collection-spec.md` Section 0 became _Conventions_, Section 2 kept two
+principles, and Section 13 became conformance procedure alone. `spec-guide.md`
+and `README.md` list both documents.

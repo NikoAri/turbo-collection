@@ -8,6 +8,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -23,9 +24,8 @@ const entryPoint = fileURLToPath(
   new URL("../turbo-collection.ts", import.meta.url),
 );
 
-// A new, empty directory under the system's temporary directory, removed when
-// the test ends. Its path is resolved, since on a Mac the temporary directory
-// lies behind a link.
+// A new, empty directory under `tmpdir()`, removed when test `t` ends. Its
+// path is resolved, since on a Mac `tmpdir()` lies behind a link.
 function temporaryDirectory(t: TestContext): string {
   const directory = realpathSync(
     mkdtempSync(path.join(tmpdir(), "turbo-collection-test-")),
@@ -34,16 +34,16 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// The environment of a run whose directory for temporary files is `temporary`,
-// so that the run's log is made there (logging-spec.md R-LOG-6).
+// An environment for a run whose directory for temporary files is
+// `temporary`, so that its log is made there (logging-spec.md R-LOG-6).
 function environmentWithTemporaryDirectory(
   temporary: string,
 ): NodeJS.ProcessEnv {
   return { ...process.env, TEMP: temporary, TMP: temporary, TMPDIR: temporary };
 }
 
-// Runs the entry point as a person would, with its directory for temporary
-// files in `temporary`, and returns its exit status and what it printed.
+// Runs `entryPoint` as a person would, with its directory for temporary files
+// in `temporary`, and returns its exit status and what it printed.
 function runTurboCollection(temporary: string, args: string[], cwd?: string) {
   return spawnSync(process.execPath, [entryPoint, ...args], {
     encoding: "utf8",
@@ -52,13 +52,13 @@ function runTurboCollection(temporary: string, args: string[], cwd?: string) {
   });
 }
 
-// The logs of the runs whose directory for temporary files is `temporary`.
+// Logs of every run whose directory for temporary files is `temporary`.
 function logsIn(temporary: string): string[] {
   const logs = path.join(temporary, "turbo-collection", "logs");
   return readdirSync(logs).map((name) => path.join(logs, name));
 }
 
-// The entries of the log file `file`, one JSON object to a line.
+// Entries of log file `file`, one JSON object to a line.
 function entriesOf(file: string): Record<string, unknown>[] {
   return readFileSync(file, "utf8")
     .split("\n")
@@ -66,15 +66,15 @@ function entriesOf(file: string): Record<string, unknown>[] {
     .map((line) => JSON.parse(line));
 }
 
-// The entries of the log of the one run made with `temporary` as its directory
-// for temporary files, where that log is in the default log directory.
+// Entries in a log of a lone run made with `temporary` as its directory for
+// temporary files, where that log is in its default log directory.
 function onlyRunEntries(temporary: string): Record<string, unknown>[] {
   const [log, ...others] = logsIn(temporary);
   assert.equal(others.length, 0);
   return entriesOf(log!);
 }
 
-// The path of the configuration file of a copy in `directory`
+// Where a copy in `directory` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(
@@ -112,6 +112,7 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
       collectionName: undefined,
       copyName: undefined,
     },
+    import: undefined,
   });
 });
 
@@ -345,7 +346,7 @@ test("R-LOG-10: a log directory inside a copy is an error, and the run makes not
   assert.deepEqual(readdirSync(second), []);
 });
 
-// Runs the entry point without waiting for it, with its directory for temporary
+// Runs `entryPoint` without waiting for it, with its directory for temporary
 // files in `temporary`.
 function startTurboCollection(
   temporary: string,
@@ -400,4 +401,85 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
     ".turbo-collection/turbo-collection-config.json",
   ]);
   assert.equal(logsIn(temporary).length, InitsAtOnce);
+});
+
+test("R-SRC-25: import local-folder is given the directory to import, and the copy defaults to the current directory", () => {
+  assert.deepEqual(
+    parseCliArgs(["import", "local-folder", "D:\\old-laptop"]).import,
+    { directory: "D:\\old-laptop", copy: ".", dryRun: false },
+  );
+  assert.deepEqual(
+    parseCliArgs(["import", "local-folder", "D:\\old-laptop", "E:\\Photos"])
+      .import,
+    { directory: "D:\\old-laptop", copy: "E:\\Photos", dryRun: false },
+  );
+});
+
+test("R-SRC-14: --dry-run makes an import a dry run", () => {
+  assert.equal(
+    parseCliArgs(["import", "local-folder", "D:\\old-laptop", "--dry-run"])
+      .import?.dryRun,
+    true,
+  );
+});
+
+test("R-LOG-10: import given no import source, an unknown one, no directory, or a third path is an error", () => {
+  assert.throws(
+    () => parseCliArgs(["import"]),
+    /import takes an import source/,
+  );
+  assert.throws(
+    () => parseCliArgs(["import", "icloud", "D:\\x"]),
+    /Unknown import source: icloud/,
+  );
+  assert.throws(
+    () => parseCliArgs(["import", "local-folder"]),
+    /takes the directory to import/,
+  );
+  assert.throws(
+    () => parseCliArgs(["import", "local-folder", "a", "b", "c"]),
+    /was also given: c/,
+  );
+});
+
+test("R-SRC-25: given no copy, import imports into the current directory, says what it imported, and exits with status 0", (t) => {
+  const temporary = temporaryDirectory(t);
+  const copy = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const folder = path.join(temporary, "old-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+
+  const run = runTurboCollection(
+    temporary,
+    ["import", "local-folder", folder],
+    copy,
+  );
+
+  assert.equal(run.status, 0);
+  assert.match(run.stdout, /^Imported 1 file \(5 bytes\) from /m);
+  assert.equal(
+    readFileSync(
+      path.join(copy, "local-folder", "old-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
+  );
+});
+
+test("R-SRC-23, R-CLI-1: an import that leaves a file out exits with a non-zero status, and names the file on standard error", (t) => {
+  const temporary = temporaryDirectory(t);
+  const copy = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const folder = path.join(temporary, "old-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+  const args = ["import", "local-folder", folder, copy];
+  assert.equal(runTurboCollection(temporary, args).status, 0);
+  writeFileSync(path.join(folder, "notes.txt"), "notes, edited");
+
+  const run = runTurboCollection(temporary, args);
+
+  assert.notEqual(run.status, 0);
+  assert.match(run.stderr, /notes\.txt" is left out/);
 });

@@ -200,8 +200,9 @@ in place of the pronoun.
 has exactly one identifiable referent in context. A statement about any member
 of a class MUST use a bare noun or a plural noun instead.
 
-**R-LANG-19.** Prose SHOULD omit a definite article whose removal changes no
-meaning.
+**R-LANG-19.** Prose SHOULD NOT use a definite article where a more precise word
+serves: _each_, _every_, _this_, _its_, a possessive, or a referent's own name.
+Prose SHOULD omit a definite article whose removal changes no meaning.
 
 **R-LANG-22.** Prose SHOULD NOT state how many members a set has when these
 documents define that set and may change it. Prose SHOULD instead name the set

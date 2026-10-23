@@ -14,7 +14,7 @@ was rclone, with rsync as a fallback.
   the lock is there to prevent
   ([the parallel-safety decision](2026-10-20-parallel-safety-decision.md)).
 - **One read of each file.** Turbo-Collection already reads a file to check it
-  against its manifest before copying it (`R-MIRROR-9`). Copying in that same
+  against its manifest before copying it (`R-BACKUP-12`). Copying in that same
   read writes exactly the bytes that were checked, under a temporary name
   renamed into place only where they matched. A copying program would read every
   file a second time.

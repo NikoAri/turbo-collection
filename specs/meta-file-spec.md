@@ -108,11 +108,10 @@ whose name it does not recognize, and MUST report such a file instead.
 copy's root: `.tcignore` at the root; a `.turbo-collection/` subdirectory of the
 root holding the configuration file named `turbo-collection-config.json` and
 per-event location receipt files named
-`receipt-<runId>-<copyName>.location.json` (R-MFILE-26), and a `tmp/` directory
-for files a Run has not finished writing (`backup-spec.md` R-MIRROR-6); and, for
-each directory holding content, a `.turbo-collection/` subdirectory of that
-directory holding a manifest named `manifest.json` and per-event receipt files
-named `receipt-<runId>-<copyName>.arrival.json` and
+`receipt-<runId>-<copyName>.location.json` (R-MFILE-26); and, for each directory
+holding content, a `.turbo-collection/` subdirectory of that directory holding a
+manifest named `manifest.json` and per-event receipt files named
+`receipt-<runId>-<copyName>.arrival.json` and
 `receipt-<runId>-<copyName>.error.json`. A carried copy of a specification MUST
 be named for the document and the full version of the text it holds.
 

@@ -2,14 +2,14 @@ import ignore from "ignore";
 
 // A copy's ignore file, `.tcignore` (meta-file-spec.md R-MFILE-20).
 
-// One pattern of an ignore file: the number of its line, counted from 1, and
-// that line as written.
+// One pattern of an ignore file: its line's number, counted from 1, and that
+// line as written.
 export type IgnorePattern = {
   line: number;
   text: string;
 };
 
-// The patterns of an ignore file whose content is `text`: one pattern per line,
+// Patterns of an ignore file whose content is `text`: one pattern per line,
 // where a blank line is skipped and a line beginning with `#` is a comment
 // (R-MFILE-20).
 //
@@ -25,17 +25,17 @@ export function readIgnorePatterns(text: string): IgnorePattern[] {
   return patterns;
 }
 
-// Whether a path is ignored. Where more than one pattern matches, the last
-// decides, as in a `.gitignore`.
+// Whether a path is ignored. Where more than one pattern matches, whichever
+// comes last decides, as in a `.gitignore`.
 //
-// `path` is relative to the copy root, with `/` between its segments. The path
-// of a directory ends in `/`, which is how the `ignore` package tells one: a
+// `path` is relative to a copy's root, with `/` between its segments. A
+// directory's path ends in `/`, which is how npm package `ignore` tells one: a
 // pattern ending in `/` matches a directory and not a file.
 export type IsIgnored = (path: string) => boolean;
 
 // A test of whether `patterns` ignore a path. Pattern syntax and matching are
-// those of a `.gitignore` (R-MFILE-20), and are the work of the `ignore`
-// package, used as it comes (turbo-collection-spec.md Section 12).
+// those of a `.gitignore` (R-MFILE-20), and are done by npm package `ignore`,
+// used as it comes (turbo-collection-spec.md Section 12).
 export function compileIgnorePatterns(
   patterns: readonly IgnorePattern[],
 ): IsIgnored {

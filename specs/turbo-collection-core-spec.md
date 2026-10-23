@@ -58,7 +58,7 @@ combined run: **init**, **import**, **backup**, **status**, and **verify**
 inspections. Further subdivisions **verify copies** (R-INT-11), **verify
 fixity** (R-INT-2), **verify access** (R-VERIFY-2), and **verify names**
 (R-NAME-1). Dry-run MUST be a mode of **import** (R-SRC-14) and of **backup**
-(R-MIRROR-7), not a separate operation.
+(R-BACKUP-10), not a separate operation.
 
 **R-CLI-6.**  
 Turbo-Collection MUST be fully usable with **no scheduler installed or
@@ -143,7 +143,7 @@ different times.
 | Do the copies still hold every file their manifests list, and the same files? (agreement)   | **verify copies**        | R-INT-11    |
 | Do the bytes on this copy still match the manifest? (fixity)                                | **verify fixity**        | R-INT-2     |
 | Would any filename fail to survive a move to another filesystem? (name hazards)             | **verify names**         | R-NAME-1    |
-| What _would_ a backup transfer? (drift)                                                     | **backup**, dry-run mode | R-MIRROR-7  |
+| What _would_ a backup transfer? (drift)                                                     | **backup**, dry-run mode | R-BACKUP-10 |
 | What does this import source still hold that the collection lacks? (import-source coverage) | **import**, dry-run mode | R-SRC-14    |
 | How many copies hold this content, and when did each receive it? (propagation)              | **status**               | R-STATUS-1  |
 
@@ -190,7 +190,7 @@ distinguishes no failure by exit status (Section 8.5).
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Operations    | `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                     |
 | Precondition  | The copy is reachable, and writable when written                                                                                                                                                                                                                          |
-| Postcondition | The copy holds every content file the run added to it (R-MIRROR-1), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
+| Postcondition | The copy holds every content file the run added to it (R-BACKUP-4), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
 | MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds (R-TGT-7); store data other than as a plain tree (R-COL-4)                                                             |
 | Errors        | Copy unreachable, unmounted, or unwritable; transfer failure                                                                                                                                                                                                              |
 
@@ -201,14 +201,14 @@ contract keeps that mechanism a binding, which `turbo-collection-spec.md`
 Section 12 records, while storage layout (`turbo-collection-spec.md` Section 6)
 covers _what_ a copy is.
 
-| Aspect        | Contract                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operation     | `mirror(copyA, copyB, excludes, options) -> MirrorResult`                                                                                                                                                                                                                                                                                                                              |
-| Precondition  | Both copies readable; the copy being written is writable                                                                                                                                                                                                                                                                                                                               |
-| Postcondition | Each copy holds every content file the other holds (R-MIRROR-1); only absent files were transferred (R-MIRROR-4); each arrival is recorded in a receipt file and both copies' receipt files are brought to their union (R-REC-6)                                                                                                                                                       |
-| Result        | Files transferred, bytes transferred, content files present in both copies with differing content (R-MIRROR-1), arrivals recorded, per-file errors                                                                                                                                                                                                                                     |
-| MUST NOT      | Modify a content file already present in a copy (R-MIRROR-2); delete in a copy, apart from its own temporary files (R-MIRROR-3, R-MIRROR-8); overwrite a differing content file (R-MIRROR-1); record an arrival before its content is completely written (R-REC-5); delete or alter a receipt file (R-REC-7); leave a partial file that a later run mistakes for complete (R-MIRROR-6) |
-| Errors        | A copy unreadable; a copy unwritable; transfer failure                                                                                                                                                                                                                                                                                                                                 |
+| Aspect        | Contract                                                                                                                                                                                                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operation     | `mirror(copyA, copyB, excludes, options) -> MirrorResult`                                                                                                                                                                                                                                                                              |
+| Precondition  | Both copies readable; the copy being written is writable                                                                                                                                                                                                                                                                               |
+| Postcondition | Each copy holds every content file the other holds (R-BACKUP-4); only absent files were transferred (R-BACKUP-7); each arrival is recorded in a receipt file and both copies' receipt files are brought to their union (R-REC-6)                                                                                                       |
+| Result        | Files transferred, bytes transferred, content files present in both copies with differing content (R-BACKUP-4), arrivals recorded, per-file errors                                                                                                                                                                                     |
+| MUST NOT      | Modify a content file already present in a copy (R-BACKUP-5); delete in a copy (R-BACKUP-6); overwrite a differing content file (R-BACKUP-4); record an arrival before its content is completely written (R-REC-5); delete or alter a receipt file (R-REC-7); leave a partial file that a later run mistakes for complete (R-BACKUP-9) |
+| Errors        | A copy unreadable; a copy unwritable; transfer failure                                                                                                                                                                                                                                                                                 |
 
 ### Integrity
 

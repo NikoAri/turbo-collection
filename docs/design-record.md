@@ -197,12 +197,9 @@ satisfy are also stated as requirements, in
   Worth stating here as philosophy and not only as a requirement, because it
   explains an otherwise odd shape: every copy grows monotonically, so copies
   converge by each gaining what the others hold, never by one being overwritten
-  to match another. The single carve-out, removing a run's own incomplete work
-  (R-MIRROR-8), is bounded so it cannot reopen the guarantee: only a file
-  Turbo-Collection created, only one that never became complete at its final
-  path, and only one a human can recognize as temporary. Without it the
-  crash-safe write-to-temporary-then-rename that R-MIRROR-6 needs could not be
-  implemented.
+  to match another. A run's own incomplete work needs no carve-out: a file a run
+  stops writing stays at its path with no manifest listing it, so it is not in
+  the collection, and the next run writes over it (R-TGT-13).
 - **A record lives with the data it describes.** There is no central index of
   what is stored where. Every directory carries its own manifest and its own
   receipt; every copy carries its own configuration, and optionally its own copy
@@ -689,7 +686,7 @@ natural unit. No number is chosen yet.
 Append-only sharpens one edge of this. Never overwriting protects copies that
 already exist, and does nothing to stop bad bytes reaching new ones, so a
 collection file that corrupts silently would be faithfully copied to the next
-fresh copy. `R-MIRROR-9` closes that by verifying immediately before each copy,
+fresh copy. `R-BACKUP-12` closes that by verifying each file as it is copied,
 which is cheap because the file is being read anyway. It does not replace a
 cadence; it only stops corruption spreading at the one moment the tool is
 already looking.

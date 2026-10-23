@@ -103,6 +103,10 @@ export const logger: Logger = {
 // so whatever ends the run, the entries before it
 // are on disk.
 export class RunLog implements Logger, Disposable {
+  // The ID of the run this log is for, which the run's
+  // receipt files carry too (meta-file-spec.md R-MFILE-13)
+  readonly runId: string;
+
   // Private fields
   readonly #file: number;
   readonly #verbose: boolean;
@@ -110,18 +114,19 @@ export class RunLog implements Logger, Disposable {
 
   // Constructor, private so that a RunLog comes only from create.
   // `logger` writes here from now on.
-  private constructor(file: number, verbose: boolean) {
+  private constructor(file: number, verbose: boolean, runId: string) {
+    this.runId = runId;
     this.#file = file;
     this.#verbose = verbose;
     this.#previousLogger = currentLogger;
     currentLogger = this;
   }
 
-  // Creates a log at `file`, which must not exist yet.
-  // `verbose` is whether the command line holds
-  // --verbose.
-  static create(file: string, verbose: boolean): RunLog {
-    return new RunLog(openSync(file, "wx"), verbose);
+  // Creates the log of the run `runId` at `file`, which
+  // must not exist yet. `verbose` is whether the command
+  // line holds --verbose.
+  static create(file: string, verbose: boolean, runId: string): RunLog {
+    return new RunLog(openSync(file, "wx"), verbose, runId);
   }
 
   // Adds `entryOrText` as the last line of the log, and shows
@@ -196,6 +201,7 @@ export function createRunLog(
       return RunLog.create(
         path.join(logDirectory, logLeafFileName(runId)),
         verbose,
+        runId,
       );
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "EEXIST") {

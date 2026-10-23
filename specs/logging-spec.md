@@ -149,7 +149,7 @@ its length in bytes.
 record a `mirror` entry once it has finished copying into that Copy, holding
 `path`, that Copy's root, `copyName`, its name, `files`, how many files the
 backup copied into it, and `bytes`, their total length in bytes (R-LOG-1). A
-Dry-Run of a backup (`backup-spec.md` R-MIRROR-7) MUST record the entries of
+Dry-Run of a backup (`backup-spec.md` R-BACKUP-10) MUST record the entries of
 R-LOG-15 and of this requirement for what a real run would copy.
 
 > **Example.** A backup that copies 412 photographs to a Copy named `home`, and

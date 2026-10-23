@@ -12,9 +12,9 @@ import { TcError } from "../helpers/tc-error.ts";
 // Each test takes mutexes of names of its own, so that no test meets another's
 // mutex, nor a run's, which is named for a collection's ID.
 
-// Starts a process that takes the mutex named `name` and holds it until it is
-// ended, and returns that process once it holds the mutex. The test ends it,
-// where the test has not already.
+// Starts a process that takes a mutex named `name` and holds it until ended,
+// and returns that process once it holds that mutex. Test `t` ends that
+// process as it finishes, where `t` has not already.
 async function holdInAnotherProcess(
   t: TestContext,
   name: string,
@@ -26,7 +26,7 @@ async function holdInAnotherProcess(
     `import { NamedMutex } from ${JSON.stringify(namedMutexUrl.href)};`,
     `const mutex = await NamedMutex.take(${JSON.stringify(name)});`,
     `console.log(mutex === undefined ? "refused" : "held");`,
-    // Keeps the process running, which on macOS nothing else does.
+    // Keeps this process running, which on macOS nothing else does.
     `setInterval(() => {}, 60_000);`,
   ].join(" ");
 

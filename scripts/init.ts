@@ -12,10 +12,11 @@ import { URL } from "node:url";
 
 import { TcError } from "./helpers/tc-error.ts";
 import { logger } from "./logger.ts";
+import { CharacterNotInCopyName, type TcConfig } from "./meta-files.ts";
 import {
   configurationFileOf,
-  copyRootAtOrAbove,
   ensureNoLinkInPath,
+  ensureNotInsideCopy,
 } from "./paths.ts";
 import {
   compileIgnorePatterns,
@@ -100,23 +101,6 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
   }
 }
 
-// Throws an error where `directory` lies inside a copy
-// (turbo-collection-core-spec.md R-CLI-18). Where `directory` is a copy itself,
-// its configuration file stops init (R-INIT-3).
-export function ensureNotInsideCopy(directory: string): void {
-  const directoryPath = path.resolve(directory);
-  const parent = path.dirname(directoryPath);
-  if (parent === directoryPath) {
-    return;
-  }
-  const copyRoot = copyRootAtOrAbove(parent);
-  if (copyRoot !== undefined) {
-    throw new TcError(
-      `"${directoryPath}" lies inside a copy at "${copyRoot}", and a copy never lies inside another. Give a directory outside every copy.`,
-    );
-  }
-}
-
 // The name of the collection a copy in `directory` begins (R-INIT-4):
 // `givenName` as given where there is one, and otherwise the name of the
 // directory, unchanged. A collection's name is not empty (meta-file-spec.md
@@ -147,10 +131,6 @@ export function collectionNameFor(
 // The name a new copy takes where none is given (R-INIT-4).
 const DefaultCopyName = "main";
 
-// A character a copy's name cannot hold: a control character, or one that an
-// operating system refuses in a filename (meta-file-spec.md R-MFILE-19).
-const CharacterNotInCopyName = /[\p{Cc}<>:"\/\\|?*]/u;
-
 // The name of a new copy (R-INIT-4): `givenName` in Unicode Normalization Form
 // C where there is one, and otherwise `main`. A name that is empty or holds a
 // character it cannot hold is an error (meta-file-spec.md R-MFILE-18,
@@ -169,14 +149,6 @@ export function copyNameFor(givenName: string | undefined): string {
 
   return copyName;
 }
-
-// A copy's configuration file (meta-file-spec.md R-MFILE-18).
-export type TcConfig = {
-  version: string;
-  collectionId: string;
-  collectionName: string;
-  copyName: string;
-};
 
 // Writes `tcConfig` as the configuration file of a new copy in `directory`, and
 // returns the file's path. The file is written with `wx`, so only where nothing

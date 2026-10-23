@@ -71,7 +71,7 @@ by its `copyName`, not by which one an operator imports into.
   filename, says what is kept.
 - **_Backup_ as the word for a copy** (`backupName`, a "main backup"). _Backup_
   is already the operation and the noun for one run of it
-  ([the backup-naming decision](2026-09-27-backup-naming-decision.md)), it is a
+  ([the backup-naming decision](2026-10-22-backup-naming-decision.md)), it is a
   verb as well, and it labels every peer, the hub included, a backup of
   something.
 - **`tcName`.** It reads as the name of Turbo-Collection itself, whose `tc`

@@ -49,7 +49,7 @@ three candidate operations. _Restore_ is not an operation: recovery is an
 ordinary file copy, or init and backup for a whole lost copy, and a `restore`
 verb would suggest the tool is needed to get photographs back. _Repair_ is not
 an operation: delete the bad file by hand and run backup, which refills it from
-a copy it verifies first (`R-MIRROR-1`, `R-MIRROR-9`). _Rebuilding a manifest_
+a copy it verifies first (`R-BACKUP-4`, `R-BACKUP-12`). _Rebuilding a manifest_
 is deferred: its only trigger is a content file whose bytes changed, which is
 the non-goal itself.
 

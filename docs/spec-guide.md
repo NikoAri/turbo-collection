@@ -49,7 +49,6 @@ Every prefix resolves to exactly one document.
 | `R-SRC-*`         | `import-spec.md`                                            | import                                                                              |
 | `R-TGT-*`         | `turbo-collection-spec.md`                                  | storage layout (the prefix dates from when a copy was called a target)              |
 | `R-BACKUP-*`      | `backup-spec.md`                                            | backup                                                                              |
-| `R-MIRROR-*`      | `backup-spec.md`                                            | mirror semantics                                                                    |
 | `R-VERIFY-*`      | `verify-spec.md`                                            | verify                                                                              |
 | `R-INT-*`         | `verify-spec.md`                                            | integrity and fixity                                                                |
 | `R-NAME-*`        | `verify-spec.md`                                            | filename safety                                                                     |

@@ -41,7 +41,7 @@ no checksum.
   time.
 - **Comparing ignore files byte for byte.** A line ending would fail the check
   where a backup goes ahead
-  ([the backup-mirror decision](2026-10-19-backup-mirror-decision.md)).
+  ([the backup-mirror decision](2026-10-22-backup-mirror-decision.md)).
 
 ## Touches
 
