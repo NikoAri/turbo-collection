@@ -14,9 +14,9 @@ import {
 } from "./versions.ts";
 
 // A run's log (logging-spec.md): where it is written,
-// what an entry holds, and the entries every run makes
+// what an entry holds, and which entries every run makes
 
-// The name of a run's log (R-LOG-6, R-LOG-10).
+// What a run's log is named (R-LOG-6, R-LOG-10).
 export function logLeafFileName(runId: string): string {
   return `tc-${runId}.log.json`;
 }
@@ -24,8 +24,8 @@ export function logLeafFileName(runId: string): string {
 // An entry of a run's log, before its date (R-LOG-8).
 // `outcome` is `success` where absent, and
 // `verbose` is false where absent. Every entry defines
-// `toString`, the entry as a line a person can read,
-// for the terminal (R-LOG-9); the log's file leaves it out.
+// `toString`, that entry as a line a person can read,
+// for a terminal (R-LOG-9); a log's file leaves it out.
 export type LogEntry = {
   event: string; // event name
   outcome?: "success" | "failure";
@@ -35,7 +35,7 @@ export type LogEntry = {
 };
 
 // Where a run's entries go (turbo-collection-core-spec.md,
-// the Logger contract), taken as `console` takes them:
+// its Logger contract), taken as `console` takes them:
 // `log` for an entry, or for text, as a `message` entry
 // (R-LOG-17), and `error` for an error (R-LOG-12).
 export type Logger = {
@@ -62,10 +62,10 @@ function errorEntryOf(error: unknown): LogEntry {
   };
 }
 
-// Shows what `entry`'s `toString` gives on the terminal
+// Shows what `entry`'s `toString` gives on a terminal
 // (R-LOG-9): on standard error for a failure, and on
 // standard output otherwise, a verbose entry only where
-// `verbose`, whether the command line holds --verbose.
+// `verbose`, whether a command line holds --verbose.
 function show(entry: LogEntry, verbose: boolean): void {
   if (entry.outcome === "failure") {
     console.error(entry.toString());
@@ -74,14 +74,14 @@ function show(entry: LogEntry, verbose: boolean): void {
   }
 }
 
-// Where entries go while no run's log is open: the
+// Where entries go while no run's log is open: a
 // terminal alone, which shows no verbose entry.
 const terminalLogger: Logger = {
   log: (entry) => show(logEntryOf(entry), false),
   error: (error) => show(errorEntryOf(error), false),
 };
 
-// The run's log while one is open, and the terminal
+// A run's log while one is open, and a terminal
 // alone otherwise.
 let currentLogger: Logger = terminalLogger;
 
@@ -95,15 +95,15 @@ export const logger: Logger = {
 };
 
 // A run's log: a file holding every entry,
-// one JSON object to a line (R-LOG-7), and the terminal,
+// one JSON object to a line (R-LOG-7), and a terminal,
 // which shows each entry that is not verbose,
 // and a verbose one only under --verbose (R-LOG-9).
 //
-// Each entry is written to the file as it is made,
-// so whatever ends the run, the entries before it
-// are on disk.
+// Each entry is written to its file as it is made,
+// so whatever ends a run, every entry before it
+// is on disk.
 export class RunLog implements Logger, Disposable {
-  // The ID of the run this log is for, which the run's
+  // This log's run ID, which that run's
   // receipt files carry too (meta-file-spec.md R-MFILE-13)
   readonly runId: string;
 
@@ -122,15 +122,15 @@ export class RunLog implements Logger, Disposable {
     currentLogger = this;
   }
 
-  // Creates the log of the run `runId` at `file`, which
-  // must not exist yet. `verbose` is whether the command
+  // Creates run `runId`'s log at `file`, which
+  // must not exist yet. `verbose` is whether a command
   // line holds --verbose.
   static create(file: string, verbose: boolean, runId: string): RunLog {
     return new RunLog(openSync(file, "wx"), verbose, runId);
   }
 
-  // Adds `entryOrText` as the last line of the log, and shows
-  // what its `toString` gives on the terminal: on standard error
+  // Adds `entryOrText` as this log's last line, and shows
+  // what its `toString` gives on a terminal: on standard error
   // for a failure, and on standard output otherwise.
   log(entryOrText: LogEntry | string): void {
     const entry = logEntryOf(entryOrText);
@@ -148,8 +148,8 @@ export class RunLog implements Logger, Disposable {
   }
 
   // Hands `logger` back to whatever it wrote to before, and
-  // closes the log file, through the Disposable mechanism
-  // that `using` calls as its block ends
+  // closes this log's file, through `Symbol.dispose`,
+  // which `using` calls as its block ends
   [Symbol.dispose](): void {
     currentLogger = this.#previousLogger;
     closeSync(this.#file);
@@ -157,13 +157,13 @@ export class RunLog implements Logger, Disposable {
 }
 
 // Log directory of a run whose command line names none:
-// `turbo-collection/logs/` in the directory for
-// temporary files `temporaryDirectory` (R-LOG-6).
+// `turbo-collection/logs/` in `temporaryDirectory`,
+// a directory for temporary files (R-LOG-6).
 export function defaultLogDirectory(temporaryDirectory: string): string {
   return path.join(temporaryDirectory, "turbo-collection", "logs");
 }
 
-// Checks the directory --log-dir names, as any directory
+// Checks whichever directory --log-dir names, as any directory
 // a run is given (turbo-collection-core-spec.md
 // R-CLI-20), and that it does not lie inside a copy,
 // before anything is made there (R-LOG-10).
@@ -179,10 +179,10 @@ export function ensureUsableLogDirectory(logDirectory: string): void {
 }
 
 // Creates a run's log in `logDirectory`, under a new
-// run ID, making the directory, with every missing
+// run ID, making `logDirectory`, with every missing
 // directory above it, where it does not exist (R-LOG-6).
 //
-// The log is created only where nothing is at its path.
+// That log is created only where nothing is at its path.
 // Where something is, another run has that ID,
 // and this run takes another (parallel-safety-spec.md
 // R-PARALLEL-1).
@@ -214,7 +214,7 @@ export function createRunLog(
   }
 }
 
-// Name and Version of the operating system,
+// Name and Version of this operating system,
 // such as `Windows_NT 10.0.26200`.
 function systemNameAndVersion(): string {
   return `${os.type()} ${os.release()}`;
@@ -222,15 +222,15 @@ function systemNameAndVersion(): string {
 
 // A run's first and last entries (R-LOG-11):
 // run-start as it is made, and run-end as `using`
-// disposes of it. Where `error` was set, the error's
+// disposes of it. Where `error` was set, that error's
 // entry (R-LOG-12) comes before run-end, and run-end
 // is a failure.
 export class RunScope implements Disposable {
-  // The error that ended the run, where one did
+  // Whichever error ended this run, where one did
   error: unknown = undefined;
 
   // Writes run-start. `args` is
-  // command line, without the program's own path.
+  // command line, without this program's own path.
   constructor(args: readonly string[]) {
     const runtime = `node ${process.versions.node}`;
     const system = systemNameAndVersion();
@@ -247,9 +247,9 @@ export class RunScope implements Disposable {
     });
   }
 
-  // Writes the error's entry where `error` was set,
+  // Writes `error`'s entry where it was set,
   // then run-end, whose outcome is `failure` exactly
-  // where the run exits with a non-zero status.
+  // where this run exits with a non-zero status.
   [Symbol.dispose](): void {
     if (this.error === undefined) {
       logger.log({

@@ -5,48 +5,48 @@ import type { URL } from "node:url";
 import type { PackageName, VersionRange } from "./package-json-npm-updater.ts";
 import { TcError } from "./tc-error.ts";
 
-// The hold that keeps `@types/node` at or below the Node floor in package.json
-// `engines.node`, so the types never describe a newer Node than the one this
-// code has to run on.
+// A hold keeping `@types/node` at or below package.json's Node floor,
+// `engines.node`, so those types never describe a newer Node than this code
+// has to run on.
 //
 // package-json-npm-updater.ts holds a package only where
 // npm-version-exceptions.json says so. So this hold is written into that file
-// before each update, and the updater then reads it like any other entry.
-// Writing it every time keeps the floor recorded once: raising `engines.node`
-// is the single edit that moves both. It also means the entry for `@types/node`
-// belongs to this script, and a range put there by hand lasts only until the
-// next run.
+// before each update, and that updater then reads it like any other entry.
+// Writing it every time keeps this floor recorded once: raising `engines.node`
+// is a single edit that moves both. It also means `@types/node`'s entry
+// belongs to this script, and a range put there by hand lasts only until this
+// script's next run.
 
 const NodeTypesPackage: PackageName = "@types/node";
 
-// The range that keeps `@types/node` from describing a newer Node than the
-// floor in package.json `engines.node`. Past the floor, `tsc` would accept an
-// API that the floor cannot run.
+// A range keeping `@types/node` from describing a newer Node than
+// package.json's floor, `engines.node`. Past that floor, `tsc` would accept an
+// API that a Node at that floor cannot run.
 //
-// The rule: the lowest Node this code supports is the highest version the types
-// may carry. A floor of `>=24.19.0` becomes `>=24.0.0 <=24.19.0`, the newest
-// 24.x at or below the floor's own version. A floor with no types release of
-// that version lands on the nearest one beneath it.
+// Its rule: no version those types carry is higher than this code's lowest
+// supported Node. A floor of `>=24.19.0` becomes `>=24.0.0 <=24.19.0`, which
+// selects whichever 24.x is newest at or below that floor's own version. A
+// floor with no types release of that version lands on whichever release is
+// nearest beneath it.
 //
-// That is stricter than the numbering of the types requires, and deliberately
-// so. The MAJOR.MINOR of `@types/node` names the Node release it describes,
-// while its PATCH only counts revisions of the types, so `24.19.1` still
-// describes Node 24.19. A cap that followed that numbering would need this
-// paragraph to be understood. This one is a plain comparison of two versions,
-// and staying a few revisions of the types behind is the accepted price. A
-// floor with a patch above zero lets in only as many revisions as that patch
-// happens to count.
+// That is stricter than `@types/node`'s numbering requires, and deliberately
+// so. Its MAJOR.MINOR names which Node release it describes, while its PATCH
+// only counts revisions of those types, so `24.19.1` still describes Node
+// 24.19. A cap that followed that numbering would need this paragraph to be
+// understood. This one is a plain comparison of two versions, and staying a
+// few revisions behind is its accepted price. A floor with a patch above zero
+// lets in only as many revisions as that patch happens to count.
 //
-// The range is two comparators over whole versions, the form npm's
-// documentation uses for a bounded range (`>=1.0.2 <2.1.2`).
+// This range is two comparators over whole versions, as npm's documentation
+// writes a bounded range (`>=1.0.2 <2.1.2`).
 //
-// The lower bound is not redundant. `npm view` lists matches in publish order,
+// Its lower bound is not redundant. `npm view` lists matches in publish order,
 // not version order, so `<=24.19.0` alone ends on whichever older major was
 // patched last (22.20.5 when this was written), and getRequestedVersion would
-// take that for the newest.
+// take that as newest.
 //
-// Only the form `>=MAJOR.MINOR.PATCH` is read. Anything else throws rather than
-// guessing a floor.
+// Only a floor of form `>=MAJOR.MINOR.PATCH` is read. Anything else throws
+// rather than guessing a floor.
 export function nodeTypesRangeFromEngines(
   enginesNode: string | undefined,
 ): VersionRange {
@@ -61,15 +61,15 @@ export function nodeTypesRangeFromEngines(
   return `>=${major}.0.0 <=${floorVersion}`;
 }
 
-// `exceptions` with `@types/node` held to the Node floor in `enginesNode`,
+// `exceptions` with `@types/node` held to `enginesNode`'s Node floor,
 // replacing any range already recorded for it.
 //
 // Returns `exceptions` itself when there is nothing to change: its entry is
 // already right, or `@types/node` is not among `dependencies`, in which
-// case the floor is not read and no entry is added for the updater to
-// report as stale.
+// case that floor is not read and no entry is added for
+// package-json-npm-updater.ts to report as stale.
 //
-// Takes data and returns data, so it can be tested without the filesystem.
+// Takes data and returns data, so it can be tested without a filesystem.
 export function withNodeTypesException(
   exceptions: Record<PackageName, VersionRange>,
   dependencies: Record<PackageName, VersionRange>,
@@ -88,7 +88,7 @@ export function withNodeTypesException(
 type ExceptionsFile = { packages?: Record<PackageName, VersionRange> };
 
 // npm-version-exceptions.json as it stands. A file that is missing or incorrect
-// is read as one with no entry, and the run says so.
+// is read as one with no entry, and this script says so.
 function readExceptionsFile(npmVersionExceptionsUrl: URL): ExceptionsFile {
   try {
     return JSON.parse(
@@ -102,11 +102,11 @@ function readExceptionsFile(npmVersionExceptionsUrl: URL): ExceptionsFile {
   }
 }
 
-// Bring the entry for `@types/node` in npm-version-exceptions.json up to date,
-// and say so when it moved. A run that finds the entry right leaves the file
+// Bring `@types/node`'s entry in npm-version-exceptions.json up to date, and
+// say so when it moved. A run that finds that entry right leaves this file
 // alone. A dry run leaves it alone too, and says what it would have written.
-// Where the file is missing or incorrect, writing the entry writes the file
-// afresh, with that one entry.
+// Where this file is missing or incorrect, writing that entry writes
+// npm-version-exceptions.json afresh, holding that entry alone.
 export function writeNodeTypesException(
   npmVersionExceptionsUrl: URL,
   dependencies: Record<PackageName, VersionRange>,

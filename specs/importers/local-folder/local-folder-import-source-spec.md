@@ -2,7 +2,7 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
-> **Status:** Draft. No implementation exists yet.  
+> **Status:** Draft.  
 > **Layout:** [`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md)
 
 This document is normative over the **Local-folder Import Source**: a directory

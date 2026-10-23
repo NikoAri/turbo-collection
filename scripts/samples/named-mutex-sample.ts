@@ -5,7 +5,7 @@ import { setTimeout } from "node:timers/promises";
 import { NamedMutex } from "../helpers/named-mutex.ts";
 import { TcError } from "../helpers/tc-error.ts";
 
-// A sample of NamedMutex, held the way a run holds its collection's lock.
+// A sample of NamedMutex, held as a run holds its collection's lock.
 // Nothing imports it.
 //
 // Run it in two terminals, from scripts/:

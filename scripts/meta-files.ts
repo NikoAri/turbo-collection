@@ -115,8 +115,8 @@ function fieldOf<T>(
   return value;
 }
 
-// Reads `copyRoot`'s configuration file, and checks each field (R-MFILE-18, R-MFILE-19). A field that is missing or not
-// valid is an error.
+// Reads `copyRoot`'s configuration file, and checks each field (R-MFILE-18,
+// R-MFILE-19). A field that is missing or not valid is an error.
 export function readConfigurationFile(copyRoot: string): TcConfig {
   const file = configurationFileOf(copyRoot);
   const object = readJsonMetaFile(file);
@@ -162,7 +162,7 @@ export function readConfigurationFile(copyRoot: string): TcConfig {
   };
 }
 
-// What placed a directory's content: a layout or an import source, by the
+// What placed a directory's content: a layout or an import source, by
 // identifier and version, as its specification declares them (R-MFILE-9).
 export type SpecificationStamp = {
   specId: string;

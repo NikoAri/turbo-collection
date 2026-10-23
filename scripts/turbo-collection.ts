@@ -54,19 +54,19 @@ async function runTurboCollection(): Promise<void> {
 
 type TcCliArgs = {
   help: boolean;
-  // --version: report the versions (turbo-collection-core-spec.md R-CLI-16)
+  // --version: report versions (turbo-collection-core-spec.md R-CLI-16)
   version: boolean;
   // --verbose: show verbose log entries too (logging-spec.md R-LOG-9)
   verbose: boolean;
-  // --log-dir: where the run's log goes (logging-spec.md R-LOG-10)
+  // --log-dir: where this run's log goes (logging-spec.md R-LOG-10)
   logDir: string | undefined;
-  // What the command line gives init, where it names init
+  // What a command line gives init, where it names init
   init: InitArgs | undefined;
-  // What the command line gives import, where it names import
+  // What a command line gives import, where it names import
   import: ImportArgs | undefined;
 };
 
-// Reads the command line. An unknown option, command or import source, init
+// Reads command line `args`. An unknown option, command or import source, init
 // given more than one directory, and import given no directory or more than a
 // directory and a copy, are each an error.
 export function parseCliArgs(args: readonly string[]): TcCliArgs {
@@ -109,8 +109,8 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
   };
 }
 
-// The directory init is given in `commandArgs`, the arguments after init.
-// Given none, init acts on the current one (init-spec.md R-INIT-2).
+// Which directory init is given in `commandArgs`, every argument after init.
+// Given none, init acts on its working directory (init-spec.md R-INIT-2).
 function initDirectoryOf(commandArgs: readonly string[]): string {
   const [directory = ".", ...unexpected] = commandArgs;
   if (unexpected.length > 0) {
@@ -121,9 +121,9 @@ function initDirectoryOf(commandArgs: readonly string[]): string {
   return directory;
 }
 
-// What import is given in `commandArgs`, the arguments after import: the
-// import source, local-folder alone, then the directory and the copy. Given
-// no copy, import acts on the current directory (import-spec.md R-SRC-25).
+// What import is given in `commandArgs`, every argument after import: an
+// import source, local-folder alone, then a directory and a copy. Given no
+// copy, import acts on its working directory (import-spec.md R-SRC-25).
 function importArgsOf(
   commandArgs: readonly string[],
   dryRun: boolean,
@@ -149,7 +149,7 @@ function importArgsOf(
   return { directory, copy, dryRun };
 }
 
-// The version report (turbo-collection-core-spec.md R-CLI-16).
+// A version report (turbo-collection-core-spec.md R-CLI-16).
 function getVersionReportString(): string {
   return [
     `turbo-collection ${TurboCollectionVersion}`,
@@ -157,7 +157,7 @@ function getVersionReportString(): string {
   ].join("\n");
 }
 
-// Carries out what the command line asks, in the run `runId`.
+// Carries out what `tcCliArgs` asks, in run `runId`.
 async function runCommand(tcCliArgs: TcCliArgs, runId: string): Promise<void> {
   if (tcCliArgs.help) {
     logger.log(HELP_TEXT);
@@ -183,9 +183,9 @@ async function runCommand(tcCliArgs: TcCliArgs, runId: string): Promise<void> {
 }
 
 async function main(args: readonly string[]): Promise<void> {
-  // The command line is read before the log is opened, since --log-dir says
-  // where the log goes. A command line that cannot be read ends the run,
-  // after the usage text, with no log (logging-spec.md R-LOG-10).
+  // A command line is read before its run's log is opened, since --log-dir
+  // says where that log goes. A command line that cannot be read ends its
+  // run, after HELP_TEXT, with no log (logging-spec.md R-LOG-10).
   let tcCliArgs: TcCliArgs;
   try {
     tcCliArgs = parseCliArgs(args);
@@ -196,28 +196,28 @@ async function main(args: readonly string[]): Promise<void> {
 
   // Configure Logger
   // Every run, help and version among them,
-  // writes its log: into the directory --log-dir names,
-  // and otherwise into the default log directory
+  // writes its log: into whichever directory --log-dir names,
+  // and otherwise into its default log directory
   // (logging-spec.md R-LOG-6, R-LOG-10). A --log-dir
-  // the run cannot use ends it with an error,
+  // a run cannot use ends it with an error,
   // before it has a log.
   if (tcCliArgs.logDir !== undefined) {
     ensureUsableLogDirectory(tcCliArgs.logDir);
   }
   const logDirectory = tcCliArgs.logDir ?? defaultLogDirectory(os.tmpdir());
 
-  // `logger` writes into the run's log until it is disposed of
+  // `logger` writes into `runLog` until that is disposed of
   using runLog = createRunLog(logDirectory, /*verbose*/ tcCliArgs.verbose);
   // Disposed of before `_runLog`, being declared after it,
-  // so that run-end is the log's last entry.
+  // so that run-end is its log's last entry.
   using runScope = new RunScope(args);
 
   // Run Command
-  // The error that ends a run is written into its log, and thrown again,
+  // An error that ends a run is written into its log, and thrown again,
   // so that Node reports it
-  // and the run exits with a non-zero status
+  // and that run exits with a non-zero status
   // (logging-spec.md R-LOG-4, R-LOG-12). A person sees
-  // it twice on standard error: the error entry's line (R-LOG-9),
+  // it twice on standard error: its `error` entry's line (R-LOG-9),
   // then Node's report.
   try {
     await runCommand(tcCliArgs, runLog.runId);

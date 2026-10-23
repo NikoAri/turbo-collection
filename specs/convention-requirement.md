@@ -21,9 +21,9 @@ Prefixes cited by this document and defined elsewhere: `R-META-*` in
 reference matters, because R-VER-8 scatters copies of this document onto every
 copy, and `language-requirement.md` does not travel with them.
 
-**Writing rules.** The language discipline this document is written under
-(controlled vocabulary, one term per concept, the normative-text/commentary
-split) is defined in `language-requirement.md`, which binds every normative
+**Writing rules.** This document's language discipline (controlled vocabulary,
+one term per concept, a split between normative text and commentary) is defined
+in `language-requirement.md`, which binds every normative
 document in this project.
 
 ---

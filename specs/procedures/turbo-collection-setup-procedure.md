@@ -2,8 +2,8 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-08-08  
-> **Status:** Draft. Turbo-Collection is not built yet, so R-SET-15, R-SET-10
-> and R-SET-11 name work that does not exist.  
+> **Status:** Draft. Backup and verify are not built yet, so R-SET-10 and
+> R-SET-11 name work that does not exist.  
 > **Applies to:** a human operator, once, before a collection is protected.  
 > **Why any of this:**
 > [`../../docs/decisions/2026-08-10-storage-hardware-decision.md`](../../docs/decisions/2026-08-10-storage-hardware-decision.md)

@@ -2,8 +2,8 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-08-08  
-> **Status:** Draft. Turbo-Collection is not built yet, so R-IMP-2 names work
-> that does not exist.  
+> **Status:** Draft. Turbo-Collection imports only from a local folder so far,
+> so for any other import source R-IMP-2 names work that does not exist.  
 > **Applies to:** a human operator, every time photos come off an import
 > source.  
 > **Why any of this:**
@@ -17,17 +17,17 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 ---
 
-**R-IMP-1.** Plug in the working copy.
+**R-IMP-1.** Plug in your working copy.
 
-**R-IMP-2.** Run the Turbo-Collection import for the import source you are
+**R-IMP-2.** Run Turbo-Collection's import for whichever import source you are
 importing from.
 
-**R-IMP-3.** Read the report.
+**R-IMP-3.** Read that import's report.
 
-**R-IMP-4.** Leave these items in place at the import source until another copy
-holds them. What an import source holds does not count toward the three copies
-`turbo-collection-release-procedure.md` R-REL-1 requires, because those three
-are on drives you hold.
+**R-IMP-4.** Leave these items in place at their import source until another
+copy holds them. What an import source holds does not count toward
+`turbo-collection-release-procedure.md` R-REL-1's three copies, because those
+three are on drives you hold.
 
 **R-IMP-5.** Import in batches small enough to count, until export completeness
 at scale has been measured.

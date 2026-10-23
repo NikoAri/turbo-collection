@@ -43,14 +43,14 @@ import {
   SuppliedPathLayoutSpecVersion,
 } from "./versions.ts";
 
-// The import operation (import-spec.md), from the Local-folder Import Source,
-// under the supplied-path layout.
+// Import (import-spec.md) from Local-folder Import Source, under supplied-path
+// layout.
 
-// The identifier of the Local-folder Import Source
+// Local-folder Import Source's identifier
 // (local-folder-import-source-spec.md R-LOCALFOLDER-1).
 const LocalFolder = "local-folder";
 
-// What an import records of the import source and the layout that placed a
+// What an import records of whichever import source and layout placed a
 // directory's content (meta-file-spec.md R-MFILE-9, R-MFILE-15).
 const LocalFolderStamp = {
   specId: LocalFolder,
@@ -61,40 +61,40 @@ const SuppliedPathLayoutStamp = {
   version: SuppliedPathLayoutSpecVersion,
 };
 
-// What the command line gives import.
+// What a command line gives import.
 export type ImportArgs = {
-  // The Imported directory (local-folder-import-source-spec.md R-LOCALFOLDER-2)
+  // Imported directory (local-folder-import-source-spec.md R-LOCALFOLDER-2)
   directory: string;
-  // The Copy to import into: the current directory where the command line
-  // names none (R-SRC-25)
+  // Which Copy to import into: import's working directory where a command
+  // line names none (R-SRC-25)
   copy: string;
   // --dry-run: say what a real import would do, and change nothing (R-SRC-14)
   dryRun: boolean;
 };
 
-// What one import does, and the file it does it with.
+// What one import does, and which file it does it with.
 type ImportContext = {
   copyRoot: string;
   copyName: string;
   runId: string;
   dryRun: boolean;
-  // What the import has written so far, and how many files it left out
+  // What this import has written so far, and how many files it left out
   files: number;
   bytes: number;
   leftOut: number;
-  // The directories of the copy already checked for a link or a copy
+  // Each directory of this copy already checked for a link or a copy
   checkedDirectories: Set<string>;
 };
 
-// Imports the files of `directory` into the copy `copy` (R-SRC-25). `runId`
-// names the receipt files the import writes (meta-file-spec.md R-MFILE-13).
+// Imports `directory`'s files into copy `copy` (R-SRC-25). `runId` names
+// every receipt file this import writes (meta-file-spec.md R-MFILE-13).
 //
-// The paths given, the copy's configuration, the collection's lock and every
-// entry of the Imported directory are checked before a file is written. Then
-// each directory of the copy is filled in turn, and what stops a run in one,
-// such as a manifest that does not parse, stops it there. A file left out is
-// an error once the import has done all else, so the run exits with a
-// non-zero status (R-SRC-23, R-SRC-24, R-SRC-26).
+// Both paths given, `copy`'s configuration, its collection's lock and every
+// entry of `directory` are checked before a file is written. Then each
+// directory of `copy` is filled in turn, and what stops a run in one, such as
+// a manifest that does not parse, stops it there. A file left out is an error
+// once this import has done all else, so its run exits with a non-zero
+// status (R-SRC-23, R-SRC-24, R-SRC-26).
 export async function importIntoCopy(
   { directory, copy, dryRun }: ImportArgs,
   runId: string,
@@ -118,7 +118,7 @@ export async function importIntoCopy(
 
   await using _collectionLock = await takeCollectionLock(tcConfig);
 
-  // The copy's ignore file decides by a file's path in the copy
+  // A copy's ignore file decides by a file's path in that copy
   // (R-LOCALFOLDER-3).
   const isIgnored = readIgnoreFileOf(copyRoot);
   const listing = listLocalFolder(importedDirectory, (suppliedPath) =>
@@ -214,9 +214,9 @@ function ensureImportable(directory: string): void {
   }
 }
 
-// Throws where the Imported directory holds entries that are neither a
-// regular file nor a directory, after logging each, so that the import adds
-// nothing (import-spec.md R-SRC-22).
+// Throws where `importedDirectory` holds entries that are neither a regular
+// file nor a directory, after logging each, so that its import adds nothing
+// (import-spec.md R-SRC-22).
 function ensureRegularFilesOnly(
   importedDirectory: string,
   notRegular: readonly string[],
@@ -238,8 +238,8 @@ function ensureRegularFilesOnly(
   }
 }
 
-// The test of whether the ignore file of the copy at `copyRoot` ignores a
-// path, which ignores nothing where the copy has no ignore file
+// A test of whether `copyRoot`'s ignore file ignores a path, which ignores
+// nothing where that copy has no ignore file
 // (meta-file-spec.md R-MFILE-20, R-MFILE-21).
 function readIgnoreFileOf(copyRoot: string): IsIgnored {
   const file = path.join(copyRoot, ".tcignore");
@@ -250,13 +250,13 @@ function readIgnoreFileOf(copyRoot: string): IsIgnored {
   return compileIgnorePatterns(readIgnorePatterns(text));
 }
 
-// The path in the copy of a file whose Supplied path is `suppliedPath`:
+// Where in a copy a file whose Supplied path is `suppliedPath` goes:
 // `local-folder/<supplied path>` (supplied-path-layout-spec.md R-FOUND-3).
 function collectionPathOf(suppliedPath: string): string {
   return `${LocalFolder}/${suppliedPath}`;
 }
 
-// Whether `suppliedPath` is one the supplied-path layout places: relative,
+// Whether `suppliedPath` is one supplied-path layout places: relative,
 // not empty, and with no segment that is `.` or `..` (R-FOUND-4).
 function isPlaceable(suppliedPath: string): boolean {
   return (
@@ -268,8 +268,8 @@ function isPlaceable(suppliedPath: string): boolean {
   );
 }
 
-// `items` grouped by the Supplied path of the directory each is in, so that
-// each directory of the copy is filled once.
+// `items` grouped by their directories' Supplied paths, so that each
+// directory of a copy is filled once.
 function byDirectory(items: readonly Item[]): Map<string, Item[]> {
   const groups = new Map<string, Item[]>();
   for (const item of items) {
@@ -284,12 +284,12 @@ function byDirectory(items: readonly Item[]): Map<string, Item[]> {
   return groups;
 }
 
-// Looks at each directory of the copy on the way from its root to the
-// directory `segments` name, as far as the way exists. Throws where one is a
-// link or another entry that is neither a directory nor a file
-// (turbo-collection-core-spec.md R-CLI-19), or is the root of another copy
-// (R-CLI-18). Returns the path of a file that stands where a directory is to
-// go, or undefined where none does.
+// Looks at each directory of a copy, from its root down to whichever
+// directory `segments` name, as far as they exist. Throws where one is a link
+// or another entry that is neither a directory nor a file
+// (turbo-collection-core-spec.md R-CLI-19), or is another copy's root
+// (R-CLI-18). Where a file stands where a directory is to go, returns its
+// path, and otherwise undefined.
 function blockingFileOnTheWay(
   context: ImportContext,
   segments: readonly string[],
@@ -325,10 +325,10 @@ function blockingFileOnTheWay(
   return undefined;
 }
 
-// Imports `items`, each in the directory whose Supplied path is
-// `suppliedDirectory`, into that directory of the copy. A file is written
-// where the directory's manifest does not list it, and listed once it is
-// completely written (turbo-collection-spec.md R-TGT-13). Then the directory
+// Imports `items`, all from one directory whose Supplied path is
+// `suppliedDirectory`, into that directory of a copy. A file is written
+// where that directory's manifest does not list it, and listed once it is
+// completely written (turbo-collection-spec.md R-TGT-13). Then that directory
 // gets its arrival file (verify-spec.md R-REC-5), and an error file where a
 // file was left out (meta-file-spec.md R-MFILE-13, R-MFILE-16).
 function importIntoDirectory(
@@ -340,7 +340,7 @@ function importIntoDirectory(
   const directory = path.join(context.copyRoot, ...segments);
   const errors: string[] = [];
 
-  // Logs a file as left out of the collection, and keeps its message for the
+  // Logs a file as left out of its collection, and keeps its message for that
   // directory's error file.
   const leaveOut = (item: Item, reason: string): void => {
     const message = `"${item.readPath}" is left out: ${reason}`;
@@ -355,7 +355,7 @@ function importIntoDirectory(
     context.leftOut++;
   };
 
-  // A file where the directory is to go leaves every file out, with no
+  // A file where this directory is to go leaves every file out, with no
   // error file, which would need that directory (R-SRC-26).
   const blockingFile = blockingFileOnTheWay(context, segments);
   if (blockingFile !== undefined) {
@@ -386,7 +386,7 @@ function importIntoDirectory(
     return;
   }
 
-  // A directory filled under another MAJOR line of the import source's
+  // A directory filled under another MAJOR line of its import source's
   // specification is not reused (R-SRC-16).
   const majorOf = (version: string) => version.split(".")[0];
   if (
@@ -431,9 +431,9 @@ function importIntoDirectory(
   recordErrors(context, directory, errors);
 }
 
-// Writes the error file of `directory` where this import left a file out
-// that was to go there, making the directory where needed (R-SRC-26). A dry
-// run writes nothing.
+// Writes `directory`'s error file where this import left out a file that was
+// to go there, making `directory` where needed (R-SRC-26). A dry run writes
+// nothing.
 function recordErrors(
   context: ImportContext,
   directory: string,
@@ -447,12 +447,12 @@ function recordErrors(
   });
 }
 
-// Imports one file into `directory`, whose manifest's entries are `entries`,
-// and returns the entry it is to be listed with, or undefined where it wrote
-// nothing. A file already listed with the same content is in the collection
-// already (R-SRC-8); listed with other content, it is left out (R-SRC-23).
-// A file that cannot be read or written is left out, and one that the copy
-// cannot take at all, such as a full drive, ends the run (R-SRC-26).
+// Imports `item` into `directory`, whose manifest's entries are `entries`,
+// and returns an entry to list it with, or undefined where it wrote nothing.
+// A file already listed with identical content is in its collection already
+// (R-SRC-8); listed with other content, it is left out (R-SRC-23). A file
+// that cannot be read or written is left out, and one that a copy cannot
+// take at all, such as on a full drive, ends its run (R-SRC-26).
 function importFile(
   context: ImportContext,
   directory: string,
@@ -563,8 +563,8 @@ function logTransfer(
   });
 }
 
-// Whether `error` says the copy itself cannot be written: its drive gone,
-// read-only or full (R-SRC-26).
+// Whether `error` says copy `copyRoot` itself cannot be written: its drive
+// gone, read-only or full (R-SRC-26).
 function isCopyUnwritable(error: unknown, copyRoot: string): boolean {
   const code = (error as NodeJS.ErrnoException).code;
   if (code === "ENOSPC" || code === "EROFS") {
@@ -580,7 +580,7 @@ function isCopyUnwritable(error: unknown, copyRoot: string): boolean {
 // How much of a file is read and written at a time.
 const ChunkSize = 1024 * 1024;
 
-// The SHA-256 checksum of the file at `file`, in lower-case hexadecimal.
+// `file`'s SHA-256 checksum, in lower-case hexadecimal.
 function checksumOf(file: string): string {
   const hash = createHash("sha256");
   const descriptor = openSync(file, "r");
@@ -596,11 +596,11 @@ function checksumOf(file: string): string {
   return hash.digest("hex");
 }
 
-// Copies the file at `from` to `to`, writing over a file there, and returns
-// the length and the checksum of what it wrote, once the system has put it on
-// its drive. Returns undefined where the file at `from` changed in size or
-// modification time while it was read (R-SRC-26); what was written stays, a
-// file no manifest lists (turbo-collection-spec.md R-TGT-13).
+// Copies a file at `from` to `to`, writing over a file there, and returns a
+// length and a checksum of what it wrote, once that is on its drive. Returns
+// undefined where `from` changed in size or modification time while it was
+// read (R-SRC-26); what was written stays, a file no manifest lists
+// (turbo-collection-spec.md R-TGT-13).
 function copyAndChecksum(
   from: string,
   to: string,

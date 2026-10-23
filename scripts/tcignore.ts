@@ -13,7 +13,7 @@ export type IgnorePattern = {
 // where a blank line is skipped and a line beginning with `#` is a comment
 // (R-MFILE-20).
 //
-// Takes text and returns data, so it can be tested without the filesystem.
+// Takes text and returns data, so it can be tested without a filesystem.
 export function readIgnorePatterns(text: string): IgnorePattern[] {
   const patterns: IgnorePattern[] = [];
   for (const [index, lineText] of text.split(/\r?\n/).entries()) {

@@ -287,6 +287,17 @@ that its directory's manifest does not list.
 > file unlisted, so it is not in the Collection, and the next import writes it
 > again.
 
+**R-TGT-14.** Two paths in a Copy that differ only in letter case, or only in
+Unicode normalization (NFC versus NFD), are one path. Turbo-Collection MUST NOT
+make a file or a directory at a path that differs from a path a Copy already
+holds only in letter case or only in Unicode normalization. Where
+Turbo-Collection writes at such a path, Turbo-Collection MUST write to the path
+that Copy already holds, keeping that path's letter case and normalization.
+
+> **Example.** A Copy holds `Photos/IMG_1.jpg`. An Import bringing
+> `photos/img_1.jpg` compares content with `Photos/IMG_1.jpg` (`import-spec.md`
+> R-SRC-23), and makes nothing called `photos`.
+
 ---
 
 ## Status (`R-STATUS-*`)

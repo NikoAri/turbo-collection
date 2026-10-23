@@ -2,30 +2,30 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
-> **Status:** Draft. No implementation exists yet.
+> **Status:** Draft.
 
 This document is normative over one **Layout**: a content file is stored at the
-path its import source supplied for it, so a tree of files enters a copy in the
-shape it had at its import source. It states which items that Layout is able to
-place ([`import-spec.md`](../import-spec.md) R-SRC-15), and the path each file
-receives.
+path its import source supplied for it, so a tree of files enters a copy in
+whatever shape it had at its import source. It states which items that Layout is
+able to place ([`import-spec.md`](../import-spec.md) R-SRC-15), and which path
+each file receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
-configuration file sits is stated by the requirements that define each of those,
-never here.
+configuration file sits is stated by whichever requirements define each of
+those, never here.
 
 Requirement ID prefix: **`R-FOUND-*`**.
 
 > **Rationale.** Why this Layout sits beneath every other as a floor:
-> [the layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
+> [layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
 
 ---
 
 ## 0. Role and scope
 
-This document binds the implementation. It answers one question: given a file
-and the path its import source supplied for it, where in a copy does that file
-go.
+This document binds Turbo-Collection's implementation. It answers one question:
+given a file and a path its import source supplied for it, where in a copy does
+that file go.
 
 One rule serves each of these roles:
 
@@ -35,18 +35,18 @@ One rule serves each of these roles:
   to place, so no item is left out of a collection for want of a place
   (`import-spec.md` R-SRC-20).
 
-It does not decide what a file inside a directory is called, which the
-`R-NAME-*` family owns, and it does not decide which files a copy ignores, which
+It does not decide what a file inside a directory is called, which `R-NAME-*`
+requirements own, and it does not decide which files a copy ignores, which
 an ignore file does (`meta-file-spec.md` R-MFILE-20).
 
 ## 1. Terminology
 
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
-- **Collection.** The set of files this project preserves, held as one or more
+- **Collection.** A set of files this project preserves, held as one or more
   peer copies.
 
-- **Copy.** One physical instance of the collection, held on one storage medium;
+- **Copy.** One physical instance of a collection, held on one storage medium;
   copies are peers.
 
 - **Content file.** Any file a copy holds that is neither a meta file nor an
@@ -61,29 +61,29 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Item.** One logical thing supplied by an import source, which may comprise
   several content files.
 
-- **Import Source.** One way of getting files into the collection, such as a
+- **Import Source.** One way of getting files into a collection, such as a
   camera card or a directory of existing files. An import source is an instance,
-  named by the operator; a leaf manifest records which one placed a directory
+  named by an operator; a leaf manifest records which one placed a directory
   (`meta-file-spec.md` R-MFILE-9).
 
-- **Importer.** The component that brings files into the collection from one
-  import source.
+- **Importer.** A component that brings files into a collection from one import
+  source.
 
 - **Layout.** A rule that determines where in a copy a content file is stored,
   given that file's own bytes, the metadata its import source supplied with it,
   and that import source.
 
-- **Primary Layout.** The one Layout that an Import Source specification names
+- **Primary Layout.** A single Layout that an Import Source specification names
   to govern that Import Source's Items.
 
-- **Layout identifier.** The name by which this Layout is recorded in a copy:
+- **Layout identifier.** This Layout's name as recorded in a copy:
   **`supplied-path-layout`**.
 
 - **Supplied path.** The path a file has at its import source, relative to a
   root that import source's specification states. An importer supplies it with
   every file (`import-spec.md` R-SRC-21).
 
-- **Collection filename.** The name a content file carries inside a copy.
+- **Collection filename.** A name a content file carries inside a copy.
 
 ## 2. What this Layout places
 
@@ -94,7 +94,7 @@ its kind, or its filename extension.
 > **Example.** A spreadsheet, a PDF, and a file with no extension are all
 > placed, each at its supplied path.
 
-## 3. The path
+## 3. A file's path
 
 **R-FOUND-3.** For an Item from any Import Source, Turbo-Collection MUST store
 every Content file it places under this Layout at
@@ -103,29 +103,31 @@ every Content file it places under this Layout at
 `importSource.specId` in each manifest beneath that directory
 (`meta-file-spec.md` R-MFILE-9), and `<supplied path>` is that file's Supplied
 path. This rule applies alike to an Item whose Import Source names this Layout
-as its Primary Layout, and to an Item this Layout takes as the floor.
+as its Primary Layout, and to an Item this Layout takes in its role as floor.
 
-> **Example.** The local-folder Import Source reads a folder named `old-laptop`
-> and supplies `old-laptop/Woodwork/birdhouse/drawing.pdf` as one file's
-> Supplied path. That file is stored at
-> `local-folder/old-laptop/Woodwork/birdhouse/drawing.pdf`, so the trees of two
+> **Example.** Local-folder Import Source reads a folder named `old-laptop` and
+> supplies `old-laptop/Woodwork/birdhouse/drawing.pdf` as one file's Supplied
+> path. That file is stored at
+> `local-folder/old-laptop/Woodwork/birdhouse/drawing.pdf`, so trees from two
 > Import Sources never merge into one directory.
 
 **R-FOUND-4.** An importer MUST supply a relative path, and Turbo-Collection
 MUST write that path with segments joined by `/`. Turbo-Collection MUST NOT
-store a file outside the directory R-FOUND-3 names for it. Turbo-Collection MUST
+store a file outside whichever directory R-FOUND-3 names for it. Turbo-Collection MUST
 refuse an item holding a file whose supplied path is absolute, is empty, or
 contains a segment that is `.` or `..`, and MUST report every item refused this
 way.
 
 > **Example.** A supplied path of `../../Windows/notes.txt` is refused and
-> reported, never resolved to a place outside the copy.
+> reported, never resolved to a place outside its copy.
 
 ## 4. Filenames
 
 **R-FOUND-5.** Turbo-Collection MUST preserve every segment of a supplied path
-exactly as supplied, including its letter case. This Layout MUST NOT alter a
-collection filename, which is governed by the `R-NAME-*` family in
+exactly as supplied, including its letter case, except where a Copy already
+holds that segment in another letter case or another Unicode normalization
+(`turbo-collection-spec.md` R-TGT-14). This Layout MUST NOT alter a collection
+filename, which is governed by the `R-NAME-*` family in
 [`verify-spec.md`](../verify-spec.md).
 
 ## 5. Recording this Layout
@@ -143,6 +145,6 @@ in a copy.
 
 | Level     | Test                                                                                                                                                                                                                                                                                           |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **MAJOR** | A file this Layout places would receive a different path than it received under the previous version; or this Layout stops placing an item it placed; or an obligation is withdrawn or narrowed; or the document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). |
-| **MINOR** | Additions only. Every file placed under the previous version keeps its path, and every file already placed stays validly placed.                                                                                                                                                               |
+| **MAJOR** | A file this Layout places would receive a different path than it received under this document's previous version; or this Layout stops placing an item it placed; or an obligation is withdrawn or narrowed; or its document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). |
+| **MINOR** | Additions only. Every file placed under this document's previous version keeps its path, and every file already placed stays validly placed.                                                                                                                                                               |
 | **PATCH** | Prose improvement that changes no obligation and moves no file.                                                                                                                                                                                                                                |

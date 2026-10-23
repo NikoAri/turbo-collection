@@ -2,7 +2,7 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-08-08  
-> **Status:** Draft. The safe-to-delete report is not built yet, so R-REL-2
+> **Status:** Draft. A safe-to-delete report is not built yet, so R-REL-2
 > names work that does not exist.  
 > **Applies to:** a human operator, before destroying any copy held outside a
 > collection.  
@@ -13,7 +13,7 @@
 ends your access to it: deleting from a cloud account, formatting a memory card,
 erasing a phone, selling a device, letting a subscription lapse.
 
-This is the only procedure here that can lose photographs.
+No other procedure here can lose photographs.
 
 Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 `turbo-collection-spec.md` Section 3. Prefix: `R-REL-*`.
@@ -27,9 +27,9 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 specific items** were counted, verified on the working copy, and verified on at
 least one other copy.
 
-**R-REL-6.** Run the **status** report (`turbo-collection-spec.md` R-STATUS-1)
-and read the date of each arrival it lists. Treat an arrival as evidence of
-where content was placed, never as evidence that the copy still exists; R-REL-1
+**R-REL-6.** Run a **status** report (`turbo-collection-spec.md` R-STATUS-1)
+and read each listed arrival's date. Treat an arrival as evidence of where
+content was placed, never as evidence that a copy holding it still exists; R-REL-1
 and R-REL-2 are what establish that, and this report only tells you where to
 look.
 
@@ -39,7 +39,7 @@ shortfall.
 **R-REL-4.** Release only what that report covers.
 
 **R-REL-5.** Do not release anything while fewer than three copies exist, or
-while the off-site copy is not off-site.
+while your off-site copy is not off-site.
 
 ---
 

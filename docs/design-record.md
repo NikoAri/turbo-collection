@@ -545,9 +545,11 @@ browsable mirror?_ (Yes ⇒ filesystem/engine swaps are trivial.)
 **The filename gotcha (the real filesystem-migration risk):** a plain copy
 across ReFS↔NTFS↔APFS is lossless _except_ filenames: reserved characters,
 case-sensitivity collisions, and macOS's NFD vs. everyone else's NFC Unicode
-normalization. Mitigation: the **name-hazard check (`R-NAME-1`)**, run as verify
-names before a move, flags risky names, and the **SHA-256 manifest** verifies
-every file arrived intact after any move.
+normalization. Mitigation: Turbo-Collection never makes two paths in a copy that
+differ only in letter case or normalization (`R-TGT-14`); the **name-hazard
+check (`R-NAME-1`)**, run as verify names before a move, flags other risky names
+and any such pair made by hand; and the **SHA-256 manifest** verifies every file
+arrived intact after any move.
 
 ### Substrate layer (the environment beneath the stack)
 

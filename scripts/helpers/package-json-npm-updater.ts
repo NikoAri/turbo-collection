@@ -11,31 +11,31 @@ import { TcError } from "./tc-error.ts";
 // package.json and package-lock.json, then report what moved.
 //
 // * Uses `@latest` for most packages. * Any package listed in
-// npm-version-exceptions.json is held to the range recorded there instead. A
-// file that is missing or incorrect holds no package, and the run that writes
-// an entry writes the file afresh. * `@types/node` always has an entry there.
-// Each run starts by writing it, derived from the Node floor that package.json
-// records in `engines.node`, so the types never describe a newer Node than the
-// one this code has to run on. See node-types-version-exception.ts. * A run
-// writes that entry, then updates the dependencies. Each step is on by default:
-// `--no-types-node` leaves out the first and `--no-dependencies` the second. A
+// npm-version-exceptions.json is held to whichever range is recorded there
+// instead. A file that is missing or incorrect holds no package, and a run
+// that writes an entry writes that file afresh. * `@types/node` always has an
+// entry there. Each run starts by writing it, derived from package.json's Node
+// floor, `engines.node`, so those types never describe a newer Node than this
+// code has to run on. See node-types-version-exception.ts. * A run writes that
+// entry, then updates every dependency. Each step is on by default:
+// `--no-types-node` leaves out step one and `--no-dependencies` step two. A
 // dry run reports what each step would do and changes no file.
 //
 // Held or not, a package resolves to a concrete version first, then `npm
 // install` pins it and writes into package-lock.json. Resolving first is what
 // makes package.json move: `npm install pkg@^24` leaves an existing `^24.1.0`
-// range untouched, so the floor would never rise. `npm install pkg@24.13.3`
+// range untouched, so its floor would never rise. `npm install pkg@24.13.3`
 // rewrites it to `^24.13.3`.
 //
 // A range keeps its form: whatever stands in front of its version (`^`, `~`,
-// `>=`, `=`, or nothing) stays in front of the new one. npm would otherwise
-// write the form its configuration names, so each install passes the
+// `>=`, `=`, or nothing) stays in front of its new one. npm would otherwise
+// write whichever form its configuration names, so each install passes those
 // settings that fix it, and packages whose ranges share a form install
 // together. See getSaveSettings.
 
 // This script lives in scripts/helpers/. package.json and package-lock.json
 // live one level up in scripts/, which is also where npm must run so it edits
-// the right manifest and lockfile. npm-version-exceptions.json sits next to
+// those two files. npm-version-exceptions.json sits next to
 // this script.
 const packageJsonDir = new URL("../", import.meta.url);
 const packageJsonUrl = new URL("package.json", packageJsonDir);
@@ -47,11 +47,11 @@ const npmVersionExceptionsUrl = new URL(
 const npmCwd: string = fileURLToPath(packageJsonDir);
 
 // Three kinds of string that this script keeps apart. Each is a plain string
-// when the script runs: `__distinctStringType` is never set, and exists so
+// when this script runs: `__distinctStringType` is never set, and exists so
 // `tsc` rejects one kind where another is expected, such as a range passed as a
-// resolved version. The tag is optional so that a plain string is accepted as
+// resolved version. This tag is optional so that a plain string is accepted as
 // any kind, which lets parsed JSON and command-line arguments in without a
-// cast. The price is that a value held in a plain `string` loses its kind.
+// cast. Its price is that a value held in a plain `string` loses its kind.
 type DistinctStringType<T extends string> = string & {
   readonly __distinctStringType?: T | undefined;
 };
@@ -74,10 +74,11 @@ export function getAllDependencies(
   return { ...packageJsonObj.dependencies, ...packageJsonObj.devDependencies };
 }
 
-// Run npm through shell: cmd.exe resolves `npm` to `npm.cmd`, and the shell
-// avoids the `.cmd` spawn restriction that execFile hits on Windows. The shell
-// reads `npmArgs` as written, so a caller double-quotes any argument carrying a
-// character a shell acts on. Returns output of command if requested.
+// Run npm through shell: cmd.exe resolves `npm` to `npm.cmd`, and a shell
+// avoids Node's `.cmd` spawn restriction that execFile hits on Windows. That
+// shell reads `npmArgs` as written, so a caller double-quotes any argument
+// carrying a character a shell acts on. Returns output of command if
+// requested.
 function execNpm(npmArgs: string, captureOutput: boolean): string {
   return execSync(`npm ${npmArgs}`, {
     cwd: npmCwd,
@@ -113,11 +114,11 @@ function EnsureObj<T>(obj: T | undefined): T {
   return obj;
 }
 
-// Parse output down to the newest version: the string itself, or the last array
-// element. The last element is the newest only where publish order follows
+// Parse output down to its newest version: a string itself, or an array's last
+// element. That last element is newest only where publish order follows
 // version order, which is why nodeTypesRangeFromEngines confines its range to
 // one major. An empty output (nothing matched) or an empty array throws. Kept
-// separate from the shell call so it can be tested directly.
+// separate from its shell call so it can be tested directly.
 export function getRequestedVersion(
   npmViewOutputJson: string,
   packageName: PackageName,
@@ -146,10 +147,10 @@ export function getRequestedVersion(
 // Newest published version satisfying `requestedRange` (a range like "^24", or
 // a dist-tag like "latest" in a range's place).
 //
-// The spec is double-quoted because a range is made of characters a shell acts
-// on: `^` is the cmd.exe escape, `*` globs under a POSIX shell, and `>=24.0.0
+// A spec is double-quoted because a range is made of characters a shell acts
+// on: `^` is cmd.exe's escape, `*` globs under a POSIX shell, and `>=24.0.0
 // <=24.19.0` adds a space and two redirects. npm forbids a quote inside a
-// package name or a range, so the wrapping is unambiguous.
+// package name or a range, so this wrapping is unambiguous.
 function queryRequestedNpmVersion(
   packageName: PackageName,
   requestedRange: VersionRange,
@@ -162,7 +163,7 @@ function queryRequestedNpmVersion(
   return getRequestedVersion(npmViewOutputJson, packageName, requestedRange);
 }
 
-// A dependency to update, and the range it is held to, if any.
+// A dependency to update, and whichever range it is held to, if any.
 type PackageToUpdate = {
   packageName: PackageName;
   requestedRange: VersionRange | undefined;
@@ -172,11 +173,11 @@ type PackageToUpdate = {
 // named in `packages` when it is not empty. A name in `packages` or in
 // `exceptions` that is not a dependency selects nothing.
 //
-// An entry in `exceptions` is the only thing that holds a package. No
-// package is treated specially here: the hold on `@types/node` arrives as
+// An entry in `exceptions` alone holds a package. No package is treated
+// specially here: a hold on `@types/node` arrives as
 // one more entry.
 //
-// Takes data and returns data, so it can be tested without the filesystem, the
+// Takes data and returns data, so it can be tested without a filesystem, a
 // network, or npm.
 export function getPackagesToUpdate(
   packageJsonObj: PackageJsonType,
@@ -193,7 +194,7 @@ export function getPackagesToUpdate(
 }
 
 // Holds recorded in npm-version-exceptions.json, by package name. A file that
-// is missing or incorrect holds no package, and the run says so.
+// is missing or incorrect holds no package, and this script says so.
 function findPackageExceptions(): Record<PackageName, VersionRange> {
   try {
     return (
@@ -209,8 +210,8 @@ function findPackageExceptions(): Record<PackageName, VersionRange> {
   }
 }
 
-// package-lock.json, read for the version it has installed of each package. Its
-// `packages` are keyed by where a package sits, `node_modules/<name>` for a
+// package-lock.json, read for which version of each package it has installed.
+// Its `packages` are keyed by where a package sits, `node_modules/<name>` for a
 // direct dependency. A lockfile that is missing or incorrect reads as one with
 // no package, so every package is then installed.
 type PackageLockType = {
@@ -225,20 +226,21 @@ function findPackageLock(): PackageLockType {
   }
 }
 
-// The npm settings that make `npm install name@version` write a range of the
-// same form as `origRange`: whatever stands in front of its version stays in
-// front of the new one. That is `^`, `~`, `>=`, `=`, or nothing for an exact
-// version. Left alone, npm writes the form its own configuration names, a caret
-// by default, whatever the range was. Both settings are always passed, so the
-// form written does not depend on how npm is configured on the machine.
+// npm settings that make `npm install name@version` write a range in
+// `origRange`'s form: whatever stands in front of its version stays in front
+// of its new one. That is `^`, `~`, `>=`, `=`, or nothing for an exact
+// version. Left alone, npm writes whichever form its own configuration names,
+// a caret by default, whatever that range was. Both settings are always
+// passed, so a form written does not depend on how npm is configured on a
+// given machine.
 //
-// The prefix setting is double-quoted because a shell acts on these characters:
-// `^` is the cmd.exe escape, `~` expands under a POSIX shell, and `>` redirects
+// Its prefix setting is double-quoted because a shell acts on these characters:
+// `^` is cmd.exe's escape, `~` expands under a POSIX shell, and `>` redirects
 // under both.
 //
 // A range that is not one version with one of those in front throws rather than
 // being rewritten: an upper bound such as `<2.0.0`, a range in parts such as
-// `>=1.0.0 <2.0.0`, `1.x`, a tag. None of them has a single version that the
+// `>=1.0.0 <2.0.0`, `1.x`, a tag. None of them has a single version that a
 // newest release could replace.
 export function getSaveSettings(
   packageName: PackageName,
@@ -263,7 +265,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
   const packageExceptions = findPackageExceptions();
 
   // An exception naming a package that is not a dependency is a stale
-  // entry. Report it rather than letting `npm install` add the package as a
+  // entry. Report it rather than letting `npm install` add that package as a
   // side effect.
   for (const packageException of Object.keys(packageExceptions)) {
     if (!(packageException in origAllDependencies)) {
@@ -273,7 +275,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     }
   }
 
-  // An unrecognized CLI package name on the command line is a typo worth
+  // An unrecognized CLI package name on a command line is a typo worth
   // stopping for, not a package to silently add.
   const unrecognizedCliPackage = npmUpdaterCliArgs.packages.filter(
     (name) => !(name in origAllDependencies),
@@ -295,7 +297,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
   console.log("Resolving newest versions:");
   // npm takes its save settings once for a whole command, so packages are
-  // installed together only where their ranges have the same form. Keyed by
+  // installed together only where their ranges have one form. Keyed by
   // those settings.
   const nameVersionStringsBySaveSettings: Record<string, string[]> = {};
   const packageLock = findPackageLock();
@@ -308,13 +310,13 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
       requestedRange ?? "latest",
     );
 
-    // A package is left out of the install only where both files already have
-    // this version: the range in package.json and the version package-lock.json
-    // has installed. The range can allow more than a hold does, so the lockfile
-    // is what shows a package that drifted.
+    // A package is left out of this install only where both files already have
+    // this version: its range in package.json and whichever version
+    // package-lock.json has installed. A range can allow more than a hold does,
+    // so package-lock.json is what shows a package that drifted.
     //
-    // getSaveSettings has checked that the range is one version with at most a
-    // prefix in front, so the version starts at the first digit.
+    // getSaveSettings has checked that this range is one version with at most a
+    // prefix in front, so its version starts at its first digit.
     const origVersionNumber = origVersion.slice(origVersion.search(/\d/));
     const lockedVersion =
       packageLock.packages?.[`node_modules/${packageName}`]?.version;
@@ -378,13 +380,13 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     execNpm(npmInstallArgs, /*captureOutput*/ false);
   }
 
-  // Verify changes in package.json package.json is read a second time so the
-  // report can see what the install moved.
+  // Verify changes in package.json package.json is read a second time so its
+  // report can see what that install moved.
   const newAllDependencies = getAllDependencies(
     EnsureJsonParseUrl<PackageJsonType>(packageJsonUrl),
   );
 
-  // The two readings are compared directly, over every name in either, so the
+  // Both readings are compared directly, over every name in either, so this
   // report states what package.json shows and not what this run meant to do: a
   // range that changed, a dependency that appeared, or one that went.
   const allPackageNames = Object.keys({
@@ -419,9 +421,9 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
 type NpmUpdaterCliArgs = {
   dryRun: boolean;
-  // Write the `@types/node` entry first. On unless --no-types-node
+  // Write `@types/node`'s entry first. On unless --no-types-node
   typesNode: boolean;
-  // Update the dependencies. On unless --no-dependencies
+  // Update every dependency. On unless --no-dependencies
   dependencies: boolean;
   // Empty means every dependency in package.json
   packages: PackageName[];
@@ -501,7 +503,7 @@ function main(): void {
   updatePackageJson(npmUpdaterCliArgs);
 }
 
-// Run only when executed directly, so a test can import the functions above
+// Run only when executed directly, so a test can import every function above
 // without triggering a real npm run.
 if (import.meta.main) {
   main();

@@ -11,7 +11,7 @@ cites it.
 
 ```ts
 // Creates a run's log in `logDirectory`, under a new
-// run ID, making the directory, with every missing
+// run ID, making `logDirectory`, with every missing
 // directory above it, where it does not exist (R-LOG-6).
 ```
 
@@ -21,7 +21,7 @@ one goes on its own line above the code:
 
 ```ts
 type TcCliArgs = {
-  // --log-dir: where the run's log goes (logging-spec.md R-LOG-10)
+  // --log-dir: where this run's log goes (logging-spec.md R-LOG-10)
   logDir: string | undefined;
 };
 ```
