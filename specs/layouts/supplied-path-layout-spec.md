@@ -1,14 +1,14 @@
-# Turbo-Collection: As-Found Path Layout Specification
+# Turbo-Collection: Supplied-Path Layout Specification
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
 > **Status:** Draft. No implementation exists yet.
 
 This document is normative over one **Layout**: a content file is stored at the
-path its import source supplied for it, so a tree of files enters a copy shaped
-as it was found. It states which items that Layout is able to place
-([`turbo-collection-core-spec.md`](../turbo-collection-core-spec.md) R-SRC-15),
-and the path each file receives.
+path its import source supplied for it, so a tree of files enters a copy in the
+shape it had at its import source. It states which items that Layout is able to
+place ([`import-spec.md`](../import-spec.md) R-SRC-15), and the path each file
+receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
 configuration file sits is stated by the requirements that define each of those,
@@ -30,10 +30,10 @@ go.
 One rule serves each of these roles:
 
 - **Primary Layout.** An Import Source specification names this Layout to govern
-  its Items (`turbo-collection-core-spec.md` R-SRC-15).
+  its Items (`import-spec.md` R-SRC-15).
 - **Floor.** This Layout takes an item that another primary layout is not able
   to place, so no item is left out of a collection for want of a place
-  (`turbo-collection-core-spec.md` R-SRC-20).
+  (`import-spec.md` R-SRC-20).
 
 It does not decide what a file inside a directory is called, which the
 `R-NAME-*` family owns, and it does not decide which files a copy ignores, which
@@ -77,11 +77,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   to govern that Import Source's Items.
 
 - **Layout identifier.** The name by which this Layout is recorded in a copy:
-  **`as-found-path-layout`**.
+  **`supplied-path-layout`**.
 
 - **Supplied path.** The path a file has at its import source, relative to a
   root that import source's specification states. An importer supplies it with
-  every file (`turbo-collection-core-spec.md` R-SRC-21).
+  every file (`import-spec.md` R-SRC-21).
 
 - **Collection filename.** The name a content file carries inside a copy.
 
@@ -131,7 +131,7 @@ collection filename, which is governed by the `R-NAME-*` family in
 ## 5. Recording this Layout
 
 **R-FOUND-6.** Turbo-Collection MUST record the Layout identifier
-`as-found-path-layout`, together with this document's version, for every
+`supplied-path-layout`, together with this document's version, for every
 directory it fills under this Layout. Which file carries that record, and under
 which field name, is stated by the requirements that define that file.
 

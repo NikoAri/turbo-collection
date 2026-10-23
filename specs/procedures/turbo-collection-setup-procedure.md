@@ -37,8 +37,8 @@ what you do with each and where it sits:
 > the copies are peers. _Working_, _home_ and _off-site_ name what a copy is for
 > and where it rests, not a rank. Which drive becomes the working copy is a
 > convention you adopt, not a property Turbo-Collection depends on: it
-> identifies a copy by its `copyName` in configuration, not by which one
-> you import into.
+> identifies a copy by its `copyName` in configuration, not by which one you
+> import into.
 
 ## 2. Get three drives
 
@@ -108,11 +108,11 @@ import (`turbo-collection-import-procedure.md`).
 
 > **Why init comes before anything else.** Until init runs, nothing on a drive
 > says it is a copy, and an import or a backup into it is refused
-> (`turbo-collection-core-spec.md` R-CLI-14). Init writes what makes a directory
-> a copy, and refuses a directory that already holds files, so a folder picked
-> by mistake is left as it was (`init-spec.md` R-INIT-1, R-INIT-3). Give init
-> a different name only if `main` is already the name of another copy you
-> connect.
+> (`turbo-collection-core-spec.md` R-CLI-14, `backup-spec.md` R-BACKUP-1). Init
+> writes what makes a directory a copy, and refuses a directory that already
+> holds files, so a folder picked by mistake is left as it was (`init-spec.md`
+> R-INIT-1, R-INIT-3). Give init a different name only if `main` is already the
+> name of another copy you connect.
 
 > **The starter ignore file.** Init writes a `.tcignore` listing files that
 > operating systems create on their own, so an import does not take them in as
@@ -144,9 +144,9 @@ manifests.
 
 > **Why a backup, and why a name.** A backup given an empty directory creates a
 > new copy there and fills it, and refuses to do so without a name
-> (`turbo-collection-core-spec.md` R-CLI-13). A copy is named for where it
-> permanently rests, so a drive in the wrong place is plainly wrong. A drive
-> that replaces a dead one takes the dead copy's name.
+> (`backup-spec.md` R-BACKUP-1). A copy is named for where it permanently rests,
+> so a drive in the wrong place is plainly wrong. A drive that replaces a dead
+> one takes the dead copy's name.
 
 ## 5. Done when
 

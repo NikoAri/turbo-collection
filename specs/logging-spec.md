@@ -140,10 +140,10 @@ file's path, and `configuration`, the configuration it read or wrote.
 > {"date":"2026-10-18T14:22:06Z","event":"configuration","verbose":true,"path":"D:\\Photos\\.turbo-collection\\turbo-collection-config.json","configuration":{"version":"0.1.0-draft","collectionId":"3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30","collectionName":"Family Photos","copyName":"main"}}
 > ```
 
-**R-LOG-15.** For each Content File a backup copies, Turbo-Collection MUST
-record a verbose `transfer` entry holding `from`, that file's path in the Copy
-it is copied from, `to`, its path in the Copy it is copied to, and `size`, its
-length in bytes.
+**R-LOG-15.** For each Content File a backup copies or an Import writes,
+Turbo-Collection MUST record a verbose `transfer` entry holding `from`, the path
+that file is read from, `to`, its path in the Copy it is written to, and `size`,
+its length in bytes.
 
 **R-LOG-16.** For each of the two Copies a backup mirrors, Turbo-Collection MUST
 record a `mirror` entry once it has finished copying into that Copy, holding
@@ -159,4 +159,23 @@ R-LOG-15 and of this requirement for what a real run would copy.
 > {"date":"2026-10-19T20:14:03Z","event":"transfer","verbose":true,"from":"D:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","to":"E:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","size":4718592}
 > {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"E:\\Photos","copyName":"home","files":412,"bytes":1932735283}
 > {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"D:\\Photos","copyName":"main","files":0,"bytes":0}
+> ```
+
+**R-LOG-18.** For each directory an Import passes over as a `.turbo-collection`
+directory (`local-folder-import-source-spec.md` R-LOCALFOLDER-3),
+Turbo-Collection MUST record a verbose `passed-over` entry holding `path`, that
+directory's path. Once an Import has finished, Turbo-Collection MUST record an
+`import` entry holding `importSource`, that Import Source's identifier, `from`,
+the path it read the files from, `to`, the root of the Copy it wrote them to,
+`files`, how many files it wrote, `bytes`, their total length in bytes, and
+`leftOut`, how many files it left out of the Collection. A Dry-Run of an import
+(`import-spec.md` R-SRC-14) MUST record these entries and those of R-LOG-15 for
+what a real Import would do.
+
+> **Example.** An import of `D:\old-laptop` into the Copy at `E:\Photos` records
+> lines such as these, the first of them once per file:
+>
+> ```text
+> {"date":"2026-10-21T15:02:11Z","event":"transfer","verbose":true,"from":"D:\\old-laptop\\Woodwork\\birdhouse\\drawing.pdf","to":"E:\\Photos\\local-folder\\old-laptop\\Woodwork\\birdhouse\\drawing.pdf","size":48211}
+> {"date":"2026-10-21T15:02:12Z","event":"import","importSource":"local-folder","from":"D:\\old-laptop","to":"E:\\Photos","files":212,"bytes":1048576000,"leftOut":0}
 > ```

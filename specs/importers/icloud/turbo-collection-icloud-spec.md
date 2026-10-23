@@ -14,8 +14,7 @@ so every claim here is a dated observation with an expiry, never a promise
 anyone has given.
 
 Requirement ID prefix: **not yet assigned.** It MUST NOT be `R-SRC-*`, which
-[`turbo-collection-core-spec.md`](../../turbo-collection-core-spec.md) already
-owns for import.
+[`import-spec.md`](../../import-spec.md) already owns for import.
 
 ---
 
@@ -71,11 +70,11 @@ when each claim expires.
 
 This import source's primary layout is the photo layout,
 [`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md), as
-[`turbo-collection-core-spec.md`](../../turbo-collection-core-spec.md) R-SRC-15
-requires each import source specification to name one. An item that layout is
-not able to place goes to the as-found layout (R-SRC-20).
+[`import-spec.md`](../../import-spec.md) R-SRC-15 requires each import source
+specification to name one. An item that layout is not able to place goes to the
+supplied-path layout (R-SRC-20).
 
 Placeholder for the supplied path R-SRC-21 requires: the root it is relative to,
 and whether that path is the same when one item is exported twice. A path that
-changes between exports risks a duplicate of an item the as-found layout placed,
-so this must be verified, not assumed.
+changes between exports risks a duplicate of an item the supplied-path layout
+placed, so this must be verified, not assumed.

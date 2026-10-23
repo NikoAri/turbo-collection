@@ -6,8 +6,8 @@
 
 This document is normative over one **Layout**: where a photograph or a video is
 stored inside a copy. It states which items that Layout is able to place
-([`turbo-collection-core-spec.md`](../turbo-collection-core-spec.md) R-SRC-15),
-and the directory each such item receives.
+([`import-spec.md`](../import-spec.md) R-SRC-15), and the directory each such
+item receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
 configuration file sits is stated by the requirements that define each of those,
@@ -34,10 +34,10 @@ It does not decide what a collection holds, which is scope
 ([`turbo-collection-spec.md`](../turbo-collection-spec.md) Section 1), and it
 does not decide what a file inside a directory is called, which the `R-NAME-*`
 family owns. It also does not decide which items are sent to it: an import
-source specification names its primary layout (`turbo-collection-core-spec.md`
-R-SRC-15), and this document states only what this Layout is able to place once
-an item arrives. A second Layout, for a kind of content this one does not place,
-is a second document and changes nothing here.
+source specification names its primary layout (`import-spec.md` R-SRC-15), and
+this document states only what this Layout is able to place once an item
+arrives. A second Layout, for a kind of content this one does not place, is a
+second document and changes nothing here.
 
 ## 1. Terminology
 
@@ -110,7 +110,7 @@ and MUST NOT decide it from a filename extension.
 
 > **Example.** A file renamed `.txt` is still placed as the still image its
 > bytes show it to be. An item this Layout is not able to place is not skipped:
-> it goes to the as-found layout (`turbo-collection-core-spec.md` R-SRC-20).
+> it goes to the supplied-path layout (`import-spec.md` R-SRC-20).
 
 **R-PHOTO-2.** Turbo-Collection MUST take as an item's primary file: that item's
 only content file, where that item holds one; otherwise that item's still image;

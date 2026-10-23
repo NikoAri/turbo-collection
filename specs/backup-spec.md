@@ -1,7 +1,48 @@
 > **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
 > of which this file is a part.
 
-## 7. Backup
+## 7. Backup (`R-BACKUP-*`)
+
+**R-BACKUP-1.**  
+**Backup Operation**  
+Turbo-Collection MUST refuse a **backup** unless that backup is given exactly
+two directories, at least one of them a Copy, and MUST mirror the two (Section
+7.1). Turbo-Collection MUST refuse a backup of two Copies unless both state the
+same `collectionId`, comparing the values character for character
+(`meta-file-spec.md` R-MFILE-18). On that refusal, Turbo-Collection MUST report
+the `collectionId` and `collectionName` of both Copies. Where one of the two
+directories is not a Copy, Turbo-Collection MUST, before mirroring, create a new
+Copy there if that directory does not exist or holds no file at any depth except
+files matching a pattern in the ignore file of the other directory, the existing
+Copy. Turbo-Collection MUST refuse to create a new Copy unless a name for the
+new Copy is given on the command line; that name becomes the new Copy's
+`copyName`. Turbo-Collection MUST refuse a name that is not valid, or that is
+the existing Copy's `copyName` without regard to letter case
+(`meta-file-spec.md` R-MFILE-19), before it makes a directory or writes a file.
+Turbo-Collection MUST refuse a backup given a name for a new Copy where that
+backup creates no Copy. To create a new Copy, Turbo-Collection MUST write into
+its directory a configuration file (`meta-file-spec.md` R-MFILE-17, R-MFILE-19)
+and, where the existing Copy has an ignore file, a duplicate of that ignore file
+(R-MFILE-20). Turbo-Collection MUST refuse to act on a directory given to a
+backup that is not a Copy and that holds any file not matching such a pattern,
+and MUST report every such file.
+
+> **Example.** A backup creates a copy only in an empty directory, so files
+> already there are not pulled into the collection by the two-way mirror. Two
+> folders named `Photos`, each made a Copy by its own init, belong to different
+> Collections, so a backup given both refuses and copies nothing, although both
+> state the `collectionName` `Photos`. A backup given the working Copy `main`
+> and an empty directory makes that directory a Copy named `home` when given
+> that name, and refuses the name `MAIN` before it makes anything.
+
+**R-BACKUP-2.** Where backup creates a directory, Turbo-Collection MUST also
+create every directory above it that does not exist.
+
+> **Example.** A backup given `archive/photos`, where `archive` does not exist,
+> creates both directories.
+
+**R-BACKUP-3.** Turbo-Collection MUST NOT require network access to back up to a
+locally-attached copy.
 
 ### 7.1 Mirroring (`R-MIRROR-*`)
 
@@ -32,7 +73,7 @@ one. Mirroring MUST record each arrival it makes in that directory's receipt
   Copy holds that this Copy lacks (`meta-file-spec.md` R-MFILE-13,
   `verify-spec.md` R-REC-6, R-REC-9);
 - in a Copy that the backup creates, its configuration file and its ignore file
-  (`turbo-collection-core-spec.md` R-CLI-13);
+  (R-BACKUP-1);
 - a file it has not finished writing, in the `.turbo-collection/tmp/` directory
   of that Copy (R-MIRROR-6).
 

@@ -136,8 +136,8 @@ good evidence, but it is not a vendor promise and may change.
 They are different numbers for different things, and they should be free to
 diverge.
 
-`logging-spec.md` R-LOG-3 requires a run's log to record **both**
-the Turbo-Collection version and the specification version it conforms to. That
+`logging-spec.md` R-LOG-3 requires a run's log to record **both** the
+Turbo-Collection version and the specification version it conforms to. That
 obligation only means something if the two are separate. Their bump tests differ
 as well: the specification's is artifact-driven (R-VER-1, MAJOR when an artifact
 written under the previous version would parse differently), while this one

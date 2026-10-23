@@ -1,7 +1,35 @@
 > **Version:** that of [`turbo-collection-spec.md`](turbo-collection-spec.md),
 > of which this file is a part.
 
-## Verify
+## Verify (`R-VERIFY-*`)
+
+**R-VERIFY-1.**  
+**Verify Arg**  
+A **verify** invoked with no inspection named MUST run every verify inspection
+except **verify fixity**, against every connected copy, and MUST also run
+**verify fixity** where it is given `--deep`. Where a receipt on a connected
+copy names a copy that is not connected, verify MUST report that copy as not
+connected, and that absence alone MUST NOT cause a non-zero exit status.
+Turbo-Collection MUST end a Run that runs **verify copies** with an error,
+before that inspection reports anything, unless every Copy that inspection acts
+on states the same `collectionId`, comparing the values character for character
+(`meta-file-spec.md` R-MFILE-18). On that error, Turbo-Collection MUST report
+the `collectionId` and `collectionName` of every Copy that inspection acts on.
+
+> **Example.** `verify` run while the off-site copy is away reports it as not
+> connected and still exits 0, so a routine check does not fail by design every
+> time.
+
+> **Example.** `verify` after a Backup checks every file of each Copy by name
+> and size, and compares the Copies' manifests, reading no photo's content.
+> `verify --deep` also reads every byte against its manifest, as **verify
+> fixity** does (R-INT-2).
+
+**R-VERIFY-2.**  
+**Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
+**verify access** inspection that transfers and modifies nothing, and that
+reports, for every import source and copy a run would act on: whether it is
+reachable and authorized; and whether the configuration would be refused.
 
 ### 7.2 Integrity (`R-INT-*`)
 
@@ -66,9 +94,8 @@ Copies differ (R-INT-7).
 
 **R-INT-13.** A verify copies MUST report every Copy it acts on whose ignore
 file (`meta-file-spec.md` R-MFILE-20) does not hold the same patterns in the
-same order as the ignore file of some other Copy it acts on, as
-`backup-spec.md` R-MIRROR-12 compares them, where a Copy with no ignore file
-holds no pattern.
+same order as the ignore file of some other Copy it acts on, as `backup-spec.md`
+R-MIRROR-12 compares them, where a Copy with no ignore file holds no pattern.
 
 **R-INT-14.** A Run in which a verify copies reports anything that R-INT-11,
 R-INT-12 or R-INT-13 requires it to report MUST exit with a non-zero status
@@ -173,4 +200,3 @@ copy was **observed**, not where it **remains** (R-REC-8).
 > [the location-receipt decision](../docs/decisions/2026-09-10-location-receipt-decision.md).
 > The receipt file format, with a worked example, lives in
 > [`meta-file-spec.md`](meta-file-spec.md) (R-MFILE-13).
-

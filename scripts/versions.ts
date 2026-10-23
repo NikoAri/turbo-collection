@@ -18,6 +18,6 @@ export const SpecificationVersionStamps: readonly string[] = [
   "turbo-collection-spec 0.1.0-draft",
   `meta-file-spec ${MetaFileSpecVersion}`,
   "photo-path-layout-spec 0.1.0-draft",
-  "as-found-path-layout-spec 0.1.0-draft",
+  "supplied-path-layout-spec 0.1.0-draft",
   "local-folder-import-source-spec 0.1.0-draft",
 ];

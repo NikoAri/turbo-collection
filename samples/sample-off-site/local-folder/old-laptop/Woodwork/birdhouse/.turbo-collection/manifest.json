@@ -1,6 +1,6 @@
 {
   "version": "0.1.0-draft",
-  "layout": { "specId": "as-found-path-layout", "version": "0.1.0-draft" },
+  "layout": { "specId": "supplied-path-layout", "version": "0.1.0-draft" },
   "importSource": { "specId": "local-folder", "version": "0.1.0-draft" },
   "checksumAlgorithm": "SHA-256",
   "files": [

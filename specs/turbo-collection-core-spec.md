@@ -3,191 +3,10 @@
 
 Turbo Collection Core does following:
 
-Init
-Import
-Backup
-Verify
+Init Import Backup Verify
 
-This is implementation details to help with particular implementation like in Node.js.
-Actual general instructions should be in turbo-collection-spec.md
-
-## 5. Import (`R-SRC-*`)
-
-The Core must be indifferent to whether a photo arrived by cable, from iCloud,
-through a OneDrive sync folder, or from something not yet invented.
-
-This contract is specified completely enough (R-META-1) that **anyone can write
-an Importer from this document alone, without modifying Turbo-Collection's
-core.** That is the extensibility that matters. How importers are loaded is a
-binding (`turbo-collection-spec.md` Section 12), not a requirement.
-
-**R-SRC-1.** Files MUST enter the collection only by Import. The Core MUST
-contain no logic specific to any individual import source, device, vendor, or
-service.
-
-**R-SRC-2.** Adding support for a new Import Source MUST require writing only a
-new Importer. It MUST NOT require changing the Core, this specification's
-requirements, or any existing importer.
-
-**R-SRC-3.** Which import sources a run draws from, and their settings, MUST be
-supplied to Turbo-Collection as data rather than hardcoded in code. An import
-source MUST be able to be added or removed without a code change.
-
-**R-SRC-4.** Multiple import sources MUST be able to coexist and MUST be
-importable independently. The failure of one import source MUST NOT prevent
-import from another, and MUST still be reported.
-
-**R-SRC-5.** An Importer MUST supply each item as plain files. An Importer
-SHOULD supply every file unaltered, without transcoding, recompressing, or
-stripping metadata, and where an Import Source offers a file in more than one
-version SHOULD take the unaltered one. This is a best effort: Turbo-Collection
-guarantees nothing about what an Import Source delivers, and preserves exactly
-what an Importer supplies (R-COL-2). A vendor tool MAY be required to perform an
-Import. A vendor tool MUST NOT be required to read a stored file. Where an
-Import Source delivers content only inside a proprietary container, the Importer
-MUST unpack it to plain files within the Import, and MUST refuse where it
-cannot.
-
-**R-SRC-7.** In an Import, Turbo-Collection MUST NOT delete, modify, move, or
-rename a file at an Import Source that Turbo-Collection did not itself create.
-An Importer MAY create files and directories of its own at an Import Source, and
-MAY remove what it created.
-
-> **Example.** An Importer may create an export folder and remove it afterward.
-> It may not rename a folder a camera wrote, because that moves every file in
-> it.
-
-**R-SRC-8.** Import MUST be idempotent. Importing the same item twice MUST NOT
-produce a duplicate in the Collection, and re-running an interrupted import MUST
-converge rather than accumulate.
-
-**R-SRC-9.** An item consisting of multiple files that are semantically one
-thing (for example, a still image and its paired motion clip) MUST be imported
-atomically: either all of its parts arrive, or none do. An importer MUST NOT
-split such an item silently.
-
-**R-SRC-10.** The Collection path of an item MUST be a pure function of the
-item's own bytes, the metadata the import source supplies with it, and that
-import source, under the layout that governs that item (R-SRC-15, R-SRC-20).
-
-> **Example.** No `-2` suffix to disambiguate import order, and no directory
-> named for a label a person adds after import.
-
-**R-SRC-12.**  
-**Import is additive.**  
-Import MUST add files to the collection, and MUST NOT delete, move, rename, or
-modify a file already in the collection. If an import source no longer holds an
-item the collection already holds, Turbo-Collection MUST take no action and MUST
-NOT report a discrepancy.
-
-**R-SRC-13.** Turbo-Collection MUST NOT compute, record, or report which items
-an import source no longer supplies. Turbo-Collection MUST hold no record of an
-import source's contents between runs, and MUST establish that an item is
-already imported by inspecting the collection rather than by comparing against a
-previous state of the import source.
-
-**R-SRC-14.** Turbo-Collection MUST support a Dry-Run Mode for import that
-reports every item a real import would add to the collection, and mutates
-nothing.
-
-> **Example.** Before freeing space at an import source, an import dry-run that
-> reports zero pending items shows everything there has already reached the
-> collection.
-
-**R-SRC-15.** Every import source specification MUST name exactly one Layout as
-the primary layout of that import source. A layout specification MUST state
-which items its layout is able to place, as a condition on an item's own bytes
-and the metadata its import source supplies with it. Turbo-Collection MUST
-determine an item's collection path under the primary layout of that item's
-import source, wherever that layout is able to place the item. R-SRC-20 governs
-an item that layout is not able to place.
-
-> **Example.** Identical photo bytes are filed by date when imported from an
-> import source whose primary layout is the photo layout, and keep their place
-> in their folder when that folder is imported as a local folder, where the
-> layout is as-found. Bytes decide where an item goes within a layout, never
-> which layout.
-
-**R-SRC-16.** On importing into an existing import-source directory,
-Turbo-Collection MUST compare the running import source's version against the
-`importSource.version` that directory's manifest records (`meta-file-spec.md`
-R-MFILE-9). If they share the same MAJOR line (`version-requirement.md`
-R-PUB-1), Turbo-Collection MAY reuse the directory, and where it writes to it
-MUST re-stamp `importSource.version` to the running version. If the running
-version begins a new MAJOR line, Turbo-Collection MUST NOT reuse the directory,
-and MUST place the imported content under a different import-source `specId`.
-What compatibility an import source guarantees within a MAJOR line is stated by
-that import source's own specification; the core does not adjudicate it.
-
-**R-SRC-17.** An importer MUST NOT write into a copy of the collection, and MUST
-NOT create, modify, or delete any meta file. Turbo-Collection alone writes
-collection content and meta files: an importer supplies an item's content, and
-Turbo-Collection reads it, determines the item's collection path (R-SRC-10), and
-performs the write.
-
-**R-SRC-18.** An importer MAY declare the number of items it expects to supply
-in a run. Where it does, Turbo-Collection MUST compare that count against the
-number of items it actually received from the importer, and MUST report any
-mismatch.
-
-**R-SRC-20.**  
-**The floor.**  
-Where the primary layout of an item's import source is not able to place that
-item, Turbo-Collection MUST place the item under the as-found layout
-(`as-found-path-layout-spec.md`), and MUST report every item placed this way.
-Turbo-Collection MUST NOT leave an item out of the collection because a layout
-is not able to place it.
-
-> **Example.** A PDF on a camera card is not a photograph, so the photo layout
-> cannot place it; it is stored under the as-found layout and reported, never
-> skipped.
-
-**R-SRC-21.** An importer MUST supply, with every file of every item, the path
-that file has at its import source, relative to a root that import source's
-specification states. This path is metadata the import source supplies
-(R-SRC-10).
-
-> **Example.** A supplied path is what lets the as-found layout place any item,
-> so no item is ever without a place to go.
-
-**R-SRC-22.** **Regular files only.** Where an Import would read a directory
-entry that is neither a regular file nor a directory, such as a symbolic link, a
-junction, a device, a socket, or a named pipe, Turbo-Collection MUST fail that
-Import, MUST add no file to the Collection in that Import, and MUST report every
-such entry. Turbo-Collection MUST NOT follow such an entry. Turbo-Collection
-MUST pass over an entry that matches a pattern in the ignore file of the Copy
-being imported into (`meta-file-spec.md` R-MFILE-21), and MUST NOT fail an
-Import on account of such an entry.
-
-> **Example.** A folder holds a symbolic link named `latest` that points at
-> another folder. An Import of that folder fails, names `latest`, and adds
-> nothing. Once a pattern matching `latest` is in the Copy's ignore file, the
-> next Import passes over it and takes in everything else.
-
-**R-SRC-23.** **Import never overwrites.** Where an Import would store a file at
-a path at which the Copy being imported into already holds a Content File with
-differing content, Turbo-Collection MUST NOT overwrite that Content File
-(R-SRC-12), MUST leave the arriving file out of the Collection, and MUST report
-every such file. Turbo-Collection MUST still import every other file of that
-Import. A Run in which an Import reports such a file MUST exit with a non-zero
-status.
-
-> **Example.** A folder is imported, a document in it is then edited, and the
-> folder is imported again. The Collection keeps the first version at that path,
-> the edited file is reported and stays out, and every new file in the folder is
-> still taken in. No second name is invented for the edited file (R-SRC-10).
-
-**R-SRC-24.** **One directory, one provenance.** Where an Import would add a
-file to a directory whose manifest names another Import Source or another Layout
-(`meta-file-spec.md` R-MFILE-9), Turbo-Collection MUST NOT add that file to that
-directory, MUST NOT change what that manifest names, MUST leave that file out of
-the Collection, and MUST report every such file. Turbo-Collection MUST still
-import every other file of that Import. A Run in which an Import reports such a
-file MUST exit with a non-zero status.
-
----
-
-
+This is implementation details to help with particular implementation like in
+Node.js. Actual general instructions should be in turbo-collection-spec.md
 
 ## 8. Operation: configuration and the Command Line
 
@@ -233,17 +52,13 @@ Turbo-Collection MUST be fully operable from a Command Line, with no graphical
 interface required. A graphical interface, if one is ever built, MUST be a
 consumer of this Core and MUST NOT be a dependency of it.
 
-**R-CLI-4.**  
-Turbo-Collection MUST NOT require network access to back up to a
-locally-attached copy.
-
 **R-CLI-5.**  
 Every operation MUST be independently invocable on demand, not only as part of a
 combined run: **init**, **import**, **backup**, **status**, and **verify**
 inspections. Further subdivisions **verify copies** (R-INT-11), **verify
-fixity** (R-INT-2), **verify access** (R-CLI-9), and **verify names**
-(R-NAME-1). Dry-run MUST be a mode of **import**
-(R-SRC-14) and of **backup** (R-MIRROR-7), not a separate operation.
+fixity** (R-INT-2), **verify access** (R-VERIFY-2), and **verify names**
+(R-NAME-1). Dry-run MUST be a mode of **import** (R-SRC-14) and of **backup**
+(R-MIRROR-7), not a separate operation.
 
 **R-CLI-6.**  
 Turbo-Collection MUST be fully usable with **no scheduler installed or
@@ -259,80 +74,16 @@ An operation MUST NOT require an interactive prompt to complete, because a
 scheduled run cannot answer one. Every option that changes what a run does MUST
 be settable in configuration or by a command-line flag.
 
-**R-CLI-9.**  
-**Dry-Run Access Verification** Turbo-Collection MUST provide a read-only
-**verify access** inspection that transfers and modifies nothing, and that
-reports, for every import source and copy a run would act on: whether it is
-reachable and authorized; and whether the configuration would be refused.
-
-**R-CLI-10.**  
-**Status Operation**  
-Turbo-Collection MUST provide a read-only **status** operation that reports,
-from receipts alone and with no other copy connected, which copies each
-directory's content has reached, the date of each arrival, and the content
-present that has reached no other copy. It MUST report every arrival's date
-(R-REC-8), and MUST NOT state or imply that a copy still exists or is still
-intact. A status MUST also report each connected Copy's `collectionName` and
-`copyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
-itself cause a non-zero exit status.
-
-**R-CLI-21.**  
-**Import Operation**  
-In an **import**, Turbo-Collection MUST import into the Copy given to that
-import. Where an import is given no Copy, Turbo-Collection MUST treat the
-current working directory as the Copy given to that import.
-
-> **Example.** An import from `D:\old-laptop`, given no Copy and run in
-> `E:\photos`, imports into the Copy at `E:\photos`. The same import run in a
-> directory that is not a Copy is refused, and imports nothing (R-CLI-14).
-
-**R-CLI-13.**  
-**Backup Operation**  
-Turbo-Collection MUST refuse a **backup** unless that backup is given exactly
-two directories, at least one of them a Copy, and MUST mirror the two
-(`backup-spec.md` Section 7.1). Turbo-Collection MUST refuse a backup of two
-Copies unless both state the same `collectionId`, comparing the values character
-for character (`meta-file-spec.md` R-MFILE-18). On that refusal,
-Turbo-Collection MUST report the `collectionId` and `collectionName` of both
-Copies. Where one of the two directories is not a Copy, Turbo-Collection MUST,
-before mirroring, create a new Copy there if that directory does not exist or
-holds no file at any depth except files matching a pattern in the ignore file of
-the other directory, the existing Copy. Turbo-Collection MUST refuse to create a
-new Copy unless a name for the new Copy is given on the command line; that name
-becomes the new Copy's `copyName`. Turbo-Collection MUST refuse a name that is
-not valid, or that is the existing Copy's `copyName` without regard to letter
-case (`meta-file-spec.md` R-MFILE-19), before it makes a directory or writes a
-file. Turbo-Collection MUST refuse a backup given a name for a new Copy where
-that backup creates no Copy. To create a new Copy, Turbo-Collection MUST write
-into its directory a configuration file (`meta-file-spec.md` R-MFILE-17,
-R-MFILE-19) and, where the existing Copy has an ignore file, a duplicate of that
-ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a directory
-given to a backup that is not a Copy and that holds any file not matching such a
-pattern, and MUST report every such file.
-
-> **Example.** A backup creates a copy only in an empty directory, so files
-> already there are not pulled into the collection by the two-way mirror. Two
-> folders named `Photos`, each made a Copy by its own init, belong to different
-> Collections, so a backup given both refuses and copies nothing, although both
-> state the `collectionName` `Photos`. A backup given the working Copy `main`
-> and an empty directory makes that directory a Copy named `home` when given
-> that name, and refuses the name `MAIN` before it makes anything.
-
 **R-CLI-14.** Turbo-Collection MUST NOT create a copy in any operation other
 than **init** and **backup**, and in every other operation MUST refuse to act on
-a directory given as a copy that is not a copy. Where backup creates a
-directory, Turbo-Collection MUST also create every directory above it that does
-not exist.
-
-> **Example.** A backup given `archive/photos`, where `archive` does not exist,
-> creates both directories.
+a directory given as a copy that is not a copy.
 
 **R-CLI-18.** A Copy MUST NOT lie inside another Copy. Where a Copy that a Run
 acts on, or a directory that a Run is to make a Copy, lies inside a Copy,
 Turbo-Collection MUST end that Run with an error before that Run makes a
 directory or writes a file inside any Copy. Where a Run finds a configuration
-file (`meta-file-spec.md` R-MFILE-17) below the root of a Copy that Run acts
-on, Turbo-Collection MUST end that Run with an error, and MUST NOT let that Run
+file (`meta-file-spec.md` R-MFILE-17) below the root of a Copy that Run acts on,
+Turbo-Collection MUST end that Run with an error, and MUST NOT let that Run
 write into the Copy that configuration file describes.
 
 > **Example.** An init given `photos/2024`, where `photos` is a Copy, fails and
@@ -380,28 +131,6 @@ In answering, Turbo-Collection MUST NOT act on a Copy or on an Import Source.
 > and one such line for `meta-file-spec.md`, for each Layout specification, and
 > for each Import Source specification the code conforms to.
 
-**R-CLI-17.**  
-**Verify Arg**  
- A **verify** invoked with no inspection named MUST run every verify inspection
-except **verify fixity**, against every connected copy, and MUST also run
-**verify fixity** where it is given `--deep`. Where a receipt on a connected
-copy names a copy that is not connected, verify MUST report that copy as not
-connected, and that absence alone MUST NOT cause a non-zero exit status.
-Turbo-Collection MUST end a Run that runs **verify copies** with an error,
-before that inspection reports anything, unless every Copy that inspection acts
-on states the same `collectionId`, comparing the values character for character
-(`meta-file-spec.md` R-MFILE-18). On that error, Turbo-Collection MUST report
-the `collectionId` and `collectionName` of every Copy that inspection acts on.
-
-> **Example.** `verify` run while the off-site copy is away reports it as not
-> connected and still exits 0, so a routine check does not fail by design every
-> time.
-
-> **Example.** `verify` after a Backup checks every file of each Copy by name
-> and size, and compares the Copies' manifests, reading no photo's content.
-> `verify --deep` also reads every byte against its manifest, as **verify
-> fixity** does (R-INT-2).
-
 ### 8.4 Distinct read-only inspections
 
 "Verify my collection" sounds like one request, but it is several. Each MUST be
@@ -410,13 +139,13 @@ different times.
 
 | Question                                                                                    | Operation                | Requirement |
 | ------------------------------------------------------------------------------------------- | ------------------------ | ----------- |
-| Are my import sources and copies reachable and authorized?                                  | **verify access**        | R-CLI-9     |
+| Are my import sources and copies reachable and authorized?                                  | **verify access**        | R-VERIFY-2  |
 | Do the copies still hold every file their manifests list, and the same files? (agreement)   | **verify copies**        | R-INT-11    |
 | Do the bytes on this copy still match the manifest? (fixity)                                | **verify fixity**        | R-INT-2     |
 | Would any filename fail to survive a move to another filesystem? (name hazards)             | **verify names**         | R-NAME-1    |
 | What _would_ a backup transfer? (drift)                                                     | **backup**, dry-run mode | R-MIRROR-7  |
 | What does this import source still hold that the collection lacks? (import-source coverage) | **import**, dry-run mode | R-SRC-14    |
-| How many copies hold this content, and when did each receive it? (propagation)              | **status**               | R-CLI-10    |
+| How many copies hold this content, and when did each receive it? (propagation)              | **status**               | R-STATUS-1  |
 
 > **Example.** `status` reads receipts, not bytes, so it reports which copies
 > received content and when with no other drive connected; it never claims a
@@ -432,7 +161,7 @@ and the report and the log say what happened (R-LOG-4).
 > **Example.** An Import that leaves one differing file out and takes in every
 > other file exits non-zero (R-SRC-23), as does a verify that finds one extra
 > file (R-INT-8). A verify run while the off-site Copy is away exits 0
-> (R-CLI-17), and so does an Import that places a file under the floor and
+> (R-VERIFY-1), and so does an Import that places a file under the floor and
 > reports it (R-SRC-20): each did everything it was asked to do and found
 > nothing wrong.
 
@@ -510,4 +239,3 @@ covers _what_ a copy is.
 | MUST NOT      | Be load-bearing for correctness (R-LOG-2)                                                                                                             |
 
 ---
-

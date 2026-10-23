@@ -17,10 +17,11 @@ documents exist, and what each one governs, is mapped in `docs/spec-guide.md`,
 which is navigation and binds nothing, so no obligation here depends on it.
 
 This document is written across several files: this one,
-`turbo-collection-core-spec.md`, `init-spec.md`, `backup-spec.md`,
-`verify-spec.md`, `logging-spec.md` and `parallel-safety-spec.md`. Each of the
-others is a part of this document. Its version is this document's version,
-decided under Section 9.2, and its section numbers continue this document's.
+`turbo-collection-core-spec.md`, `init-spec.md`, `import-spec.md`,
+`backup-spec.md`, `verify-spec.md`, `logging-spec.md` and
+`parallel-safety-spec.md`. Each of the others is a part of this document. Its
+version is this document's version, decided under Section 9.2, and its section
+numbers continue this document's.
 
 ---
 
@@ -142,8 +143,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Init** v  
   The operation that creates a directory for a new copy with no other copy
-  present, which is how a collection's first copy comes to exist
-  (`init-spec.md` R-INIT-1).
+  present, which is how a collection's first copy comes to exist (`init-spec.md`
+  R-INIT-1).
 
 - **Import** v  
   Bringing files into the collection Copy from an import source, performed by an
@@ -168,9 +169,9 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Content File**  
   Any file a copy holds outside its `.turbo-collection/` directories that is
-  neither a Meta file nor an Ignored file.
-  Photographs and videos are one kind of content file; where each kind is placed
-  is decided by layout specifications (R-SRC-15).
+  neither a Meta file nor an Ignored file. Photographs and videos are one kind
+  of content file; where each kind is placed is decided by layout specifications
+  (R-SRC-15).
 
 - **Meta File**  
   A file Turbo-Collection writes into a copy that describes that copy or what
@@ -199,7 +200,7 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   mechanism is a non-destructive, symmetric mirror across those copies
   (`backup-spec.md` Section 7.1); recovering data from a copy is _restore_. A
   backup given an empty directory, or one that does not exist, creates a new
-  copy there (R-CLI-13); every copy after the first comes to exist this way.
+  copy there (R-BACKUP-1); every copy after the first comes to exist this way.
 
 - **Mirror** v  
   Additive only. The mirror is the mechanism the **backup** operation performs.
@@ -262,8 +263,9 @@ independently. The failure against one copy MUST NOT prevent the attempt against
 another, and MUST still be reported.
 
 **R-TGT-7.** A copy's storage MUST NOT modify, rename, move, or delete a file
-already present in that copy, meta files included. Writing a copy's receipt is
-the core's responsibility, never its storage's (R-REC-6).
+already present in that copy, meta files included, except as R-TGT-13 states.
+Writing a copy's receipt is the core's responsibility, never its storage's
+(R-REC-6).
 
 **R-TGT-9.** Each copy MUST carry, in each of its directories, a manifest
 covering **that directory's own** contents (R-MFILE-8), so that the copy is
@@ -276,11 +278,29 @@ Turbo-Collection software.
 > **Example.** With Turbo-Collection gone, a finder restores a copy by copying
 > its files off the drive with any file manager.
 
+**R-TGT-13.** A Content File is in the Collection only once its directory's
+manifest lists it. Turbo-Collection MUST add a Content File to that manifest
+only once that file is completely written, and MAY write over a Content File
+that its directory's manifest does not list.
+
+> **Example.** An import stopped while it writes `IMG_0412.HEIC` leaves that
+> file unlisted, so it is not in the Collection, and the next import writes it
+> again.
+
 ---
 
-## Status
+## Status (`R-STATUS-*`)
 
-TODO add stuff about Status operation
+**R-STATUS-1.**  
+**Status Operation**  
+Turbo-Collection MUST provide a read-only **status** operation that reports,
+from receipts alone and with no other copy connected, which copies each
+directory's content has reached, the date of each arrival, and the content
+present that has reached no other copy. It MUST report every arrival's date
+(R-REC-8), and MUST NOT state or imply that a copy still exists or is still
+intact. A status MUST also report each connected Copy's `collectionName` and
+`copyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
+itself cause a non-zero exit status.
 
 ---
 
@@ -431,8 +451,8 @@ change to the specification (Section 10).
 system and names none, so which ones are named here is a **binding, not a
 requirement**. Adding another changes this section and
 `turbo-collection-setup-procedure.md` R-SET-1, which names them for a person
-choosing a computer. It changes no requirement of a specification, and adds
-one more operating system under which conformance is checked (Section 13).
+choosing a computer. It changes no requirement of a specification, and adds one
+more operating system under which conformance is checked (Section 13).
 
 Changing a binding is expected to require changing one module and no data. **If
 a proposed change to a binding would require rewriting the contents of a copy,
@@ -456,9 +476,9 @@ unauthorized behavior.
 Periodically re-validate the bindings in Section 12, and the dated assumptions
 behind them in the assumptions register of `docs/design-record.md`. Is each
 third-party dependency still maintained and permissively licensed? Has a better
-one appeared? Is SHA-256 still adequate? Have filesystem or hardware norms shifted?
-And, most importantly: **has an import source's behavior changed underneath
-us?** OS, File System, etc
+one appeared? Is SHA-256 still adequate? Have filesystem or hardware norms
+shifted? And, most importantly: **has an import source's behavior changed
+underneath us?** OS, File System, etc
 
 **External: Specification against World Best Practices** TODO
 
@@ -473,11 +493,11 @@ to (R-VER-9).
 **no-deletion test.**  
 Conformance MUST include a test asserting that no code path deletes a file in
 any copy of the collection, other than a file in a copy's
-`.turbo-collection/tmp/` directory (R-MIRROR-8). This is checked as a property of the code rather
-than only as a behavior of a run, because a deletion path that exists but is not
-reached today is a defect that a later change activates silently. Under
-R-META-3, a delete call traceable to no requirement is unauthorized behavior and
-is removed.
+`.turbo-collection/tmp/` directory (R-MIRROR-8). This is checked as a property
+of the code rather than only as a behavior of a run, because a deletion path
+that exists but is not reached today is a defect that a later change activates
+silently. Under R-META-3, a delete call traceable to no requirement is
+unauthorized behavior and is removed.
 
 **Receipt-immutability test.** Conformance MUST include a test asserting that no
 code path alters or deletes a receipt file once it is written (R-REC-7). This is

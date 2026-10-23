@@ -15,16 +15,15 @@ the Run's log under the new ID.
 > `turbo-collection/logs/tc-20261015T215020Z-3b52.log.json` first keeps that ID.
 > The other Run takes a new ID and creates its log under that one.
 
-**R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy (`init-spec.md`
-R-INIT-1, `turbo-collection-core-spec.md` R-CLI-13), Turbo-Collection MUST
-write that Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before
-any other file it writes into that directory. Turbo-Collection MUST write that
+**R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy
+(`init-spec.md` R-INIT-1, `backup-spec.md` R-BACKUP-1), Turbo-Collection MUST
+write that Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before any
+other file it writes into that directory. Turbo-Collection MUST write that
 configuration file only where nothing exists at its path.
 
-**R-PARALLEL-3.** Where a Run is making a directory a Copy and something
-already exists at the path of that Copy's configuration file, Turbo-Collection
-MUST end that Run with an error, and MUST NOT write any other file into that
-directory.
+**R-PARALLEL-3.** Where a Run is making a directory a Copy and something already
+exists at the path of that Copy's configuration file, Turbo-Collection MUST end
+that Run with an error, and MUST NOT write any other file into that directory.
 
 > **Example.** An init and a backup are each given the empty directory
 > `archive/photos` at one moment, and each finds it empty. The init writes its
@@ -55,9 +54,9 @@ state that the process ID is not known.
 the computer releases when the Run holding that lock ends, however that Run
 ends.
 
-> **Example.** A backup is ended partway through by a person closing its
-> window. The next backup of that Collection on that computer takes the lock at
-> once, with nothing for a person to do first.
+> **Example.** A backup is ended partway through by a person closing its window.
+> The next backup of that Collection on that computer takes the lock at once,
+> with nothing for a person to do first.
 
 **R-PARALLEL-7.** Turbo-Collection MUST confirm that a Run holds its
 Collection's lock before that Run reads or writes a Copy of that Collection,

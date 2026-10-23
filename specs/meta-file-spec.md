@@ -11,7 +11,7 @@ one is called, where it sits, and what is inside it.
 It governs meta files entirely and content files not at all. Where a content
 file goes is stated by a layout specification, such as
 [`photo-path-layout-spec.md`](layouts/photo-path-layout-spec.md) or
-[`as-found-path-layout-spec.md`](layouts/as-found-path-layout-spec.md).
+[`supplied-path-layout-spec.md`](layouts/supplied-path-layout-spec.md).
 
 **This document's version is the format version.** Every meta file states it,
 and a MAJOR version of this document is a change of meta file format by
@@ -108,14 +108,13 @@ whose name it does not recognize, and MUST report such a file instead.
 copy's root: `.tcignore` at the root; a `.turbo-collection/` subdirectory of the
 root holding the configuration file named `turbo-collection-config.json` and
 per-event location receipt files named
-`receipt-<runId>-<copyName>.location.json` (R-MFILE-26), and a `tmp/`
-directory for files a Run has not finished writing (`backup-spec.md`
-R-MIRROR-6); and, for each
-directory holding content, a `.turbo-collection/` subdirectory of that directory
-holding a manifest named `manifest.json` and per-event receipt files named
-`receipt-<runId>-<copyName>.arrival.json` and
-`receipt-<runId>-<copyName>.error.json`. A carried copy of a specification
-MUST be named for the document and the full version of the text it holds.
+`receipt-<runId>-<copyName>.location.json` (R-MFILE-26), and a `tmp/` directory
+for files a Run has not finished writing (`backup-spec.md` R-MIRROR-6); and, for
+each directory holding content, a `.turbo-collection/` subdirectory of that
+directory holding a manifest named `manifest.json` and per-event receipt files
+named `receipt-<runId>-<copyName>.arrival.json` and
+`receipt-<runId>-<copyName>.error.json`. A carried copy of a specification MUST
+be named for the document and the full version of the text it holds.
 
 ## 3. Rules for every JSON meta file
 
@@ -140,8 +139,12 @@ disambiguator, and MUST NOT be the only key to decoding a meta file.
 > able to figure a meta file out by looking at it.
 
 **R-MFILE-7.** Turbo-Collection MUST NOT reinterpret a meta file whose stated
-version it does not recognize. An unrecognized version MUST be an explicit
-failure, never a guess.
+version it does not recognize, a JSON meta file that is not a JSON document
+(R-MFILE-3), or a meta file that lacks a field this document requires of it. A
+Run that reads such a meta file MUST end with an error, and MUST NOT guess.
+
+> **Example.** A manifest cut short by a drive pulled out mid-write is not JSON,
+> so the next run that reads it ends with an error naming it.
 
 **R-MFILE-27.** A JSON meta file MUST be written across multiple lines rather
 than minified, placing each field and each array element on its own line, so a
@@ -201,26 +204,25 @@ implementation writes the same manifest.
 which it writes a content file, and in every directory in which it recorded an
 error affecting that directory's content. A receipt is a set of per-event files,
 each stored in that directory's `.turbo-collection/` subdirectory: one file per
-arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run
-that recorded any error for the directory, one file named
-`receipt-<runId>-<copyName>.error.json`. `<runId>` identifies the run and
-MUST be an ISO 8601 basic-format instant in UTC, to the second (for example
+arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run that
+recorded any error for the directory, one file named
+`receipt-<runId>-<copyName>.error.json`. `<runId>` identifies the run and MUST
+be an ISO 8601 basic-format instant in UTC, to the second (for example
 `20260814T180422Z`), followed by `-` and four lower-case hexadecimal digits
 chosen at random, so it contains no character illegal in a filename and orders
 files by the time the run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses
-the same basic format).
-`<copyName>` names the copy the run wrote to, or attempted to write to,
-for that event (R-MFILE-19), and appears in the filename so that files two
-copies author in one run cannot collide; R-MFILE-19 limits `copyName`, for this
-reason, to characters that common filesystems accept in a filename. The copy an event names is
-not always the copy its file resides on: propagation places a copy's receipt
-files on other copies (`verify-spec.md` R-REC-6), and a mirror error names a
-destination copy that failed, which often cannot hold the file, so
-Turbo-Collection MUST record a mirror error in an error file on the copy it is
-mirroring from, beside the content the failed transfer was driving from. A
-receipt MUST record every arrival of that directory's content at a copy and
-every error. Turbo-Collection MUST NOT modify or delete a receipt file after
-writing it.
+the same basic format). `<copyName>` names the copy the run wrote to, or
+attempted to write to, for that event (R-MFILE-19), and appears in the filename
+so that files two copies author in one run cannot collide; R-MFILE-19 limits
+`copyName`, for this reason, to characters that common filesystems accept in a
+filename. The copy an event names is not always the copy its file resides on:
+propagation places a copy's receipt files on other copies (`verify-spec.md`
+R-REC-6), and a mirror error names a destination copy that failed, which often
+cannot hold the file, so Turbo-Collection MUST record a mirror error in an error
+file on the copy it is mirroring from, beside the content the failed transfer
+was driving from. A receipt MUST record every arrival of that directory's
+content at a copy and every error. Turbo-Collection MUST NOT modify or delete a
+receipt file after writing it.
 
 **R-MFILE-14.** An arrival file MUST contain one arrival. Its fields MUST be:
 
@@ -326,7 +328,7 @@ errors show what is needed.
 >   "copyName": "main",
 >   "importErrors": [
 >     {
->       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (turbo-collection-core-spec.md R-SRC-5)"
+>       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (import-spec.md R-SRC-5)"
 >     }
 >   ]
 > }
@@ -336,8 +338,8 @@ errors show what is needed.
 finding it, and states that copy's own location, never another's.
 Turbo-Collection MUST store it in the `.turbo-collection/` subdirectory of the
 copy root (R-MFILE-2), one file per observation named
-`receipt-<runId>-<copyName>.location.json`, and MUST NOT modify or delete
-it once written, as with every receipt file (R-MFILE-13). Its fields MUST be:
+`receipt-<runId>-<copyName>.location.json`, and MUST NOT modify or delete it
+once written, as with every receipt file (R-MFILE-13). Its fields MUST be:
 
 - `version` (R-MFILE-4)
 - `tcSpecVersion`
@@ -392,20 +394,19 @@ discovered at run time.
 **R-MFILE-19.** Every Copy MUST declare its own identity in its own
 configuration file. When **init** or **backup** creates a Copy, Turbo-Collection
 MUST set that Copy's `collectionId`, `collectionName` and `copyName` once, at
-creation, as `init-spec.md` R-INIT-4 and `turbo-collection-core-spec.md`
-R-CLI-13 state, and
-MUST write them into that Copy's configuration file. Turbo-Collection
-MUST give a Copy that a backup creates the `collectionId` and `collectionName`
-of the backup's existing Copy, so that all Copies of a Collection hold the same
+creation, as `init-spec.md` R-INIT-4 and `backup-spec.md` R-BACKUP-1 state, and
+MUST write them into that Copy's configuration file. Turbo-Collection MUST give
+a Copy that a backup creates the `collectionId` and `collectionName` of the
+backup's existing Copy, so that all Copies of a Collection hold the same
 `collectionId` and `collectionName`. Thereafter Turbo-Collection MUST determine
 a Copy's identity by reading that declaration, and MUST NOT infer it from a
 volume label, a mount path, a drive letter, or a command-line argument.
 `copyName` MUST be in Unicode Normalization Form C (NFC), and MUST NOT contain a
 control character (Unicode general category Cc) or any of `< > : " / \ | ? *`,
-because it appears verbatim in Receipt filenames (R-MFILE-13).
-Turbo-Collection MUST refuse the whole Run when two connected Copies state one
-`copyName`, comparing names without regard to letter case, since a difference of
-case alone names a single file on a case-insensitive filesystem (R-MFILE-13).
+because it appears verbatim in Receipt filenames (R-MFILE-13). Turbo-Collection
+MUST refuse the whole Run when two connected Copies state one `copyName`,
+comparing names without regard to letter case, since a difference of case alone
+names a single file on a case-insensitive filesystem (R-MFILE-13).
 
 > **Example.** On every computer, whatever its language, `MAIN` and `main` are
 > one name, and so are `ΦΩΤΟΣ` and `φωτος`.
@@ -415,15 +416,14 @@ It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines
 skipped and a line beginning with `#` treated as a comment. Pattern syntax and
 matching MUST follow `gitignore(5)`, evaluated relative to the copy root. The
 starter ignore file Turbo-Collection writes into a copy that has none
-(`init-spec.md` R-INIT-1) holds patterns for files that an
-operating system and its file managers create on their own; the reference
-implementation ships that list at `scripts/templates/default.tcignore`.
+(`init-spec.md` R-INIT-1) holds patterns for files that an operating system and
+its file managers create on their own; the reference implementation ships that
+list at `scripts/templates/default.tcignore`.
 
 **R-MFILE-21.** Turbo-Collection MUST exclude an ignored file from every
 manifest and MUST NOT copy one to another copy. A file that matches a copy's
-ignore patterns MUST NOT enter that copy by an Import. Every run MUST report,
-per pattern, how many files that pattern matched. Turbo-Collection MUST report a
-pattern it cannot evaluate and MUST NOT apply it.
+ignore patterns MUST NOT enter that copy by an Import. Turbo-Collection MUST
+report a pattern it cannot evaluate and MUST NOT apply it.
 
 > **Example.** A mistyped `*.mov` shows up as thousands of files matched, not as
 > silently empty video backups.
