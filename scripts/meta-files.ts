@@ -241,8 +241,8 @@ export function readManifest(directory: string): Manifest | undefined {
   return object as Manifest;
 }
 
-// Writes `manifest` as the manifest of `directory`, its entries in the order
-// R-MFILE-12 gives, making the directory for its meta files where needed.
+// Writes `manifest` as `directory`'s manifest, its entries in R-MFILE-12's
+// order, making a directory for its meta files where needed.
 export function writeManifest(directory: string, manifest: Manifest): void {
   const files = [...manifest.files].sort((a, b) =>
     compareManifestNames(a.file, b.file),
@@ -255,7 +255,7 @@ export function writeManifest(directory: string, manifest: Manifest): void {
   );
 }
 
-// Orders two names in a manifest (R-MFILE-12): with the letters A to Z folded
+// Orders two names in a manifest (R-MFILE-12): with letters A to Z folded
 // to lower case, then, where they are equal so, as they are, each by Unicode
 // code point and by no computer's language.
 export function compareManifestNames(a: string, b: string): number {
@@ -278,16 +278,16 @@ function compareByCodePoint(a: string, b: string): number {
   return aCodePoints.length - bCodePoints.length;
 }
 
-// The content digest over files whose checksums are `checksums` (R-MFILE-15).
+// A content digest over files whose checksums are `checksums` (R-MFILE-15).
 export function contentDigestOf(checksums: readonly string[]): string {
   return createHash("sha256")
     .update([...checksums].sort().join("\n"))
     .digest("hex");
 }
 
-// Writes a receipt file of `directory` for the run `runId` and the copy
-// `copyName`: an arrival file or an error file holding `fields` after the
-// fields every receipt file holds (R-MFILE-13, R-MFILE-14, R-MFILE-16). A
+// Writes a receipt file of `directory` for run `runId` and copy `copyName`:
+// an arrival file or an error file holding `fields` after those every
+// receipt file holds (R-MFILE-13, R-MFILE-14, R-MFILE-16). A
 // receipt file is never written over, so one already at its path is an error.
 export function writeReceiptFile(
   directory: string,
