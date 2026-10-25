@@ -116,4 +116,5 @@ the postconditions of the Config and Logger contracts.
 [`design-record.md`](../design-record.md): Section 2, "The computer is
 equipment, not infrastructure", does not say logs are written to the drives, its
 architecture diagram names the log directory, and its table of pieces names the
-format. `samples/logs/` holds the log of the init run that made `sample-main`.
+format. `samples/logs/` holds the log of the init run that made
+`tc-sample-main`.

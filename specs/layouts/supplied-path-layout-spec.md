@@ -105,10 +105,10 @@ every Content file it places under this Layout at
 path. This rule applies alike to an Item whose Import Source names this Layout
 as its Primary Layout, and to an Item this Layout takes in its role as floor.
 
-> **Example.** Local-folder Import Source reads a folder named `old-laptop` and
-> supplies `old-laptop/Woodwork/birdhouse/drawing.pdf` as one file's Supplied
+> **Example.** Local-folder Import Source reads a folder named `moon-laptop` and
+> supplies `moon-laptop/Woodwork/birdhouse/drawing.pdf` as one file's Supplied
 > path. That file is stored at
-> `local-folder/old-laptop/Woodwork/birdhouse/drawing.pdf`, so trees from two
+> `local-folder/moon-laptop/Woodwork/birdhouse/drawing.pdf`, so trees from two
 > Import Sources never merge into one directory.
 
 **R-FOUND-4.** An importer MUST supply a relative path, and Turbo-Collection

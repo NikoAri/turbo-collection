@@ -10,7 +10,7 @@ import { TcError } from "../helpers/tc-error.ts";
 //
 // Run it in two terminals, from scripts/:
 //
-//   node samples/named-mutex-sample.ts [<name>]
+//   node sample-usage/named-mutex-sample.ts [<name>]
 //
 // Whichever starts later stops with an error while an earlier one holds this
 // mutex. End that earlier one however you like (Ctrl+C, closing its window,

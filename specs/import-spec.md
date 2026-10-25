@@ -7,31 +7,37 @@ Turbo-Collection's Core must be indifferent to whether a photo arrived by cable,
 from iCloud, through a OneDrive sync folder, or from something not yet invented.
 
 This contract is specified completely enough (R-META-1) that **anyone can write
-an Importer from this document alone, without modifying Turbo-Collection's
-core.** That is what extensibility means here. How importers are loaded is a
-binding (`turbo-collection-spec.md` Section 12), not a requirement.
+an Importer from this document alone, without modifying any other Importer.**
+That is what extensibility means here. How importers are loaded is a binding
+(`turbo-collection-spec.md` Section 12), not a requirement.
 
 **R-SRC-25.**  
 **Import Operation**  
-In an **import**, Turbo-Collection MUST import into whichever Copy that import
-is given. Where an import is given no Copy, Turbo-Collection MUST treat its
-current working directory as that import's given Copy.
+In an **import**, Turbo-Collection MUST take two directories from that import's
+command line: first a directory to import from, then a Copy to import into.
+Turbo-Collection MUST import into that Copy, drawing from Import Source
+`local-folder`
+([`local-folder-import-source-spec.md`](importers/local-folder/local-folder-import-source-spec.md))
+with that directory to import from as that Import Source's setting (R-SRC-3).
+Turbo-Collection MUST end an import not given exactly two directories with an
+error, before that import writes anything.
 
-> **Example.** An import from `D:\old-laptop`, given no Copy and run in
-> `E:\photos`, imports into a Copy at `E:\photos`. That import run in a
-> directory that is not a Copy is refused, and imports nothing (R-CLI-14).
+> **Example.** `turbo-collection import D:\moon-laptop E:\photos` imports from
+> `D:\moon-laptop` into a Copy at `E:\photos`, and where `E:\photos` is not a
+> Copy, is refused and imports nothing (R-CLI-14). Given `D:\moon-laptop` alone,
+> an import ends with an error and imports nothing.
 
 **R-SRC-1.** Files MUST enter a collection only by Import. Turbo-Collection's
 Core MUST contain no logic specific to any individual import source, device,
-vendor, or service.
+vendor, or service, other than which Import Source an import draws from
+(R-SRC-25).
 
 **R-SRC-2.** Adding support for a new Import Source MUST require writing only a
-new Importer. It MUST NOT require changing Turbo-Collection's Core, this
-specification's requirements, or any existing importer.
+new Importer and a way for a Run to name that Import Source (R-SRC-25). Adding
+an Import Source MUST NOT require changing any existing Importer.
 
-**R-SRC-3.** Which import sources a run draws from, and their settings, MUST be
-supplied to Turbo-Collection as data rather than hardcoded in code. An import
-source MUST be able to be added or removed without a code change.
+**R-SRC-3.** An Import Source's settings, such as a directory to import from,
+MUST be supplied to Turbo-Collection as data rather than hardcoded in code.
 
 **R-SRC-4.** Multiple import sources MUST be able to coexist and MUST be
 importable independently. One import source's failure MUST NOT prevent import

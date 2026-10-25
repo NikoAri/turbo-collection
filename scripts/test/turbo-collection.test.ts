@@ -406,19 +406,19 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
 
 test("R-SRC-25: import local-folder is given the directory to import, and the copy defaults to the current directory", () => {
   assert.deepEqual(
-    parseCliArgs(["import", "local-folder", "D:\\old-laptop"]).import,
-    { directory: "D:\\old-laptop", copy: ".", dryRun: false },
+    parseCliArgs(["import", "local-folder", "D:\\moon-laptop"]).import,
+    { directory: "D:\\moon-laptop", copy: ".", dryRun: false },
   );
   assert.deepEqual(
-    parseCliArgs(["import", "local-folder", "D:\\old-laptop", "E:\\Photos"])
+    parseCliArgs(["import", "local-folder", "D:\\moon-laptop", "E:\\Photos"])
       .import,
-    { directory: "D:\\old-laptop", copy: "E:\\Photos", dryRun: false },
+    { directory: "D:\\moon-laptop", copy: "E:\\Photos", dryRun: false },
   );
 });
 
 test("R-SRC-14: --dry-run makes an import a dry run", () => {
   assert.equal(
-    parseCliArgs(["import", "local-folder", "D:\\old-laptop", "--dry-run"])
+    parseCliArgs(["import", "local-folder", "D:\\moon-laptop", "--dry-run"])
       .import?.dryRun,
     true,
   );
@@ -447,7 +447,7 @@ test("R-SRC-25: given no copy, import imports into the current directory, says w
   const temporary = temporaryDirectory(t);
   const copy = path.join(temporary, "photos");
   assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
-  const folder = path.join(temporary, "old-laptop");
+  const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
 
@@ -461,7 +461,7 @@ test("R-SRC-25: given no copy, import imports into the current directory, says w
   assert.match(run.stdout, /^Imported 1 file \(5 bytes\) from /m);
   assert.equal(
     readFileSync(
-      path.join(copy, "local-folder", "old-laptop", "notes.txt"),
+      path.join(copy, "local-folder", "moon-laptop", "notes.txt"),
       "utf8",
     ),
     "notes",
@@ -472,7 +472,7 @@ test("R-SRC-23, R-CLI-1: an import that leaves a file out exits with a non-zero 
   const temporary = temporaryDirectory(t);
   const copy = path.join(temporary, "photos");
   assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
-  const folder = path.join(temporary, "old-laptop");
+  const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
   const args = ["import", "local-folder", folder, copy];
@@ -526,7 +526,7 @@ test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into 
   const temporary = temporaryDirectory(t);
   const copy = path.join(temporary, "photos");
   assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
-  const folder = path.join(temporary, "old-laptop");
+  const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
   assert.equal(
@@ -545,7 +545,7 @@ test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into 
   assert.match(run.stdout, /^Copied 0 files \(0 bytes\) into "main" at /m);
   assert.equal(
     readFileSync(
-      path.join(home, "local-folder", "old-laptop", "notes.txt"),
+      path.join(home, "local-folder", "moon-laptop", "notes.txt"),
       "utf8",
     ),
     "notes",

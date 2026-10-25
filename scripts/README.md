@@ -116,7 +116,7 @@ and write a copy (`parallel-safety-spec.md` R-PARALLEL-4).
 | [`tcignore.ts`](tcignore.ts)                           | Reads an ignore file, and says whether it ignores a path.                                    |
 | [`templates/`](templates/)                             | The starter ignore file that init writes into a copy.                                        |
 | [`helpers/`](helpers/)                                 | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.              |
-| [`samples/`](samples/)                                 | Code run by hand to show a helper in use. Nothing imports it, and no test runs it.           |
+| [`sample-usage/`](sample-usage/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it.           |
 | [`test/`](test/)                                       | Tests, each named for the requirement it exercises.                                          |
 | [`package.json.md`](package.json.md)                   | Why the manifest and the lint commands look as they do.                                      |
 

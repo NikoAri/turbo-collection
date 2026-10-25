@@ -122,13 +122,13 @@ are specific to Turbo-Collection's own architecture.
 Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Turbo-Collection**  
-  This system: its orchestrator, its importers, its copies' storage, and its
+  This system: its orchestrator, its importers, its TC Copies' storage, and its
   mirror engine.
 
 - **Collection**  
   A set of files this project preserves: photographs and videos, and any other
   file an import brings in (R-SRC-20). It is one logical dataset, held as one or
-  more **peer copies**, each a plain tree (R-COL-1). This is what
+  more peer **TC Copies**, each a plain tree (R-COL-1). This is what
   Turbo-Collection exists to protect. ("Library" is deliberately avoided,
   because it collides with "code library".)
 
@@ -143,13 +143,13 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   Turbo-Collection's implementation (R-META-4).
 
 - **Init** v  
-  An operation that creates a directory for a new copy with no other copy
-  present, which is how a collection's first copy comes to exist (`init-spec.md`
-  R-INIT-1).
+  An operation that creates a TC Directory for a new TC Copy with no other TC
+  Copy present, which is how a collection's first TC Copy comes to exist
+  (`init-spec.md` R-INIT-1).
 
 - **Import** v  
-  Bringing files into a collection's Copy from an import source, performed by an
-  importer.
+  Bringing files into a collection's TC Copy from an import source, performed by
+  an importer.
 
 - **Import Source**  
   One way of getting files into a Collection, such as iCloud or a camera card.
@@ -162,22 +162,26 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   importer is internal to Turbo-Collection and reaches exactly one import
   source; an import source is an outside origin files are imported from.
 
-- **Copy** n  
-  One physical instance of a collection, held on one storage medium. Copies are
-  **peers**: no copy is privileged, each carries its own manifest and is
-  verifiable against it independently (R-TGT-9), and mirroring is symmetric
-  among them.
+- **TC Copy**  
+  One physical instance of a collection, held on one storage medium; TC stands
+  for Turbo-Collection. TC Copies are **peers**: no TC Copy is privileged, each
+  carries its own manifest and is verifiable against it independently (R-TGT-9),
+  and mirroring is symmetric among them.
+
+- **TC Directory**  
+  A TC Copy's root directory, which holds every file of that TC Copy, and which
+  a command line names to act on that TC Copy.
 
 - **Content File**  
-  Any file a copy holds outside its `.turbo-collection/` directories that is
+  Any file a TC Copy holds outside its `.turbo-collection/` directories that is
   neither a Meta file nor an Ignored file. Photographs and videos are one kind
   of content file; where each kind is placed is decided by layout specifications
   (R-SRC-15).
 
 - **Meta File**  
-  A file Turbo-Collection writes into a copy that describes that copy or what
-  happened to it: a configuration file, an ignore file, a manifest, a receipt,
-  and any copy of a specification carried on a drive.
+  A file Turbo-Collection writes into a TC Copy that describes that TC Copy or
+  what happened to it: a configuration file, an ignore file, a manifest, a
+  receipt, and any copy of a specification carried on a drive.
 
 - **Manifest File**  
   A JSON file recording a checksum for each file in one directory, together with
@@ -186,30 +190,30 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Receipt File**  
   A per-directory record of arrivals of that directory's content: where it came
-  from, and its dated arrival at each copy (R-MFILE-13). A manifest states what
-  is present now and can be rebuilt by rescanning; a receipt states what
+  from, and its dated arrival at each TC Copy (R-MFILE-13). A manifest states
+  what is present now and can be rebuilt by rescanning; a receipt states what
   happened and can be rebuilt from nothing.
 
 - **Ignored File**  
-  A file in a copy that matches a pattern in that copy's ignore file,
+  A file in a TC Copy that matches a pattern in that TC Copy's ignore file,
   `.tcignore` (`meta-file-spec.md` R-MFILE-20). Turbo-Collection records no
-  ignored file in a manifest and mirrors none to another copy (R-MFILE-21).
+  ignored file in a manifest and mirrors none to another TC Copy (R-MFILE-21).
 
 - **Backup** v  
-  An operation an operator runs to bring a collection's peer copies into
-  agreement, so that collection survives losing any one copy (R-CLI-5). Its
-  mechanism is a non-destructive, symmetric mirror across those copies
-  (`backup-spec.md` Section 7.1); recovering data from a copy is _restore_. A
-  backup given an empty directory, or one that does not exist, creates a new
-  copy there (R-BACKUP-1); every copy after a collection's first comes to exist
-  this way.
+  An operation an operator runs to bring a collection's peer TC Copies into
+  agreement, so that collection survives losing any one TC Copy (R-CLI-5). Its
+  mechanism is a non-destructive, symmetric mirror across those TC Copies
+  (`backup-spec.md` Section 7.1); recovering data from a TC Copy is _restore_. A
+  backup given an empty directory, or one that does not exist, creates a new TC
+  Copy there (R-BACKUP-1); every TC Copy after a collection's first comes to
+  exist this way.
 
 - **Mirror** v  
   Additive only. A mirror is a **backup**'s mechanism.
 
 - **Status**  
-  Quick statement about each Copy for a collection. Not, each file, just each
-  full copy statement.
+  Quick statement about each TC Copy for a collection. Not, each file, just each
+  full TC Copy statement.
 
 - **Verify**  
   Allows per file info about collection correctness.

@@ -151,7 +151,7 @@ test("R-BACKUP-1, R-BACKUP-2, R-MFILE-19: a backup makes a directory that does n
   const temporary = temporaryDirectory(t);
   const main = path.join(temporary, "main");
   const mainConfig = initializeTc({ directory: main });
-  await importFolder(temporary, main, "old-laptop", { "a.txt": "a" });
+  await importFolder(temporary, main, "moon-laptop", { "a.txt": "a" });
   const home = path.join(temporary, "drive", "photos");
 
   await backUpCopies(main, home, { copyName: "home" });
@@ -164,7 +164,7 @@ test("R-BACKUP-1, R-BACKUP-2, R-MFILE-19: a backup makes a directory that does n
     readFileSync(path.join(home, ".tcignore"), "utf8"),
     readFileSync(path.join(main, ".tcignore"), "utf8"),
   );
-  assert.equal(readFileSync(stored(home, "old-laptop", "a.txt"), "utf8"), "a");
+  assert.equal(readFileSync(stored(home, "moon-laptop", "a.txt"), "utf8"), "a");
 });
 
 test("R-BACKUP-4, R-BACKUP-13, R-REC-6: a backup copies into each copy what the other holds, with the same manifest entries, and both copies end with every receipt file", async (t) => {

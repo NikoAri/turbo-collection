@@ -172,10 +172,10 @@ which path it read files from, `to`, which Copy's root it wrote them to,
 (`import-spec.md` R-SRC-14) MUST record these entries and R-LOG-15's for what a
 real Import would do.
 
-> **Example.** An import of `D:\old-laptop` into a Copy at `E:\Photos` records
+> **Example.** An import of `D:\moon-laptop` into a Copy at `E:\Photos` records
 > lines such as these, a `transfer` line once per file:
 >
 > ```text
-> {"date":"2026-10-21T15:02:11Z","event":"transfer","verbose":true,"from":"D:\\old-laptop\\Woodwork\\birdhouse\\drawing.pdf","to":"E:\\Photos\\local-folder\\old-laptop\\Woodwork\\birdhouse\\drawing.pdf","size":48211}
-> {"date":"2026-10-21T15:02:12Z","event":"import","importSource":"local-folder","from":"D:\\old-laptop","to":"E:\\Photos","files":212,"bytes":1048576000,"leftOut":0}
+> {"date":"2026-10-21T15:02:11Z","event":"transfer","verbose":true,"from":"D:\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","to":"E:\\Photos\\local-folder\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","size":48211}
+> {"date":"2026-10-21T15:02:12Z","event":"import","importSource":"local-folder","from":"D:\\moon-laptop","to":"E:\\Photos","files":212,"bytes":1048576000,"leftOut":0}
 > ```

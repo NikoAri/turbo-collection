@@ -4,8 +4,8 @@
 
 A file imported from a local folder is stored at
 `local-folder/<folder name>/<path inside the folder>`: the imported folder's own
-name leads every supplied path. A folder named `old-laptop` is stored as
-`local-folder/old-laptop/`, with its own shape beneath.
+name leads every supplied path. A folder named `moon-laptop` is stored as
+`local-folder/moon-laptop/`, with its own shape beneath.
 
 **The simplest rule that works goes first.** One segment, taken from the folder
 itself, with no setting and nothing to resolve. It is enough for a first

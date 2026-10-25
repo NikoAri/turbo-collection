@@ -63,10 +63,10 @@ function makeCopy(parent: string): { copyRoot: string; tcConfig: TcConfig } {
   return { copyRoot, tcConfig: initializeTc({ directory: copyRoot }) };
 }
 
-// A directory named `old-laptop` in `parent`, holding `files`, each a path
+// A directory named `moon-laptop` in `parent`, holding `files`, each a path
 // relative to it with its content.
 function makeFolder(parent: string, files: Record<string, string>): string {
-  const folder = path.join(parent, "old-laptop");
+  const folder = path.join(parent, "moon-laptop");
   mkdirSync(folder, { recursive: true });
   for (const [relativePath, content] of Object.entries(files)) {
     writeFileUnder(folder, relativePath, content);
@@ -95,9 +95,9 @@ async function importFolder(
 }
 
 // Where a copy at `copyRoot` holds what an import of a directory named
-// `old-laptop` stores at `relativePath` under it.
+// `moon-laptop` stores at `relativePath` under it.
 function storedDirectory(copyRoot: string, relativePath = ""): string {
-  return path.join(copyRoot, "local-folder", "old-laptop", relativePath);
+  return path.join(copyRoot, "local-folder", "moon-laptop", relativePath);
 }
 
 // `directory`'s manifest, parsed.

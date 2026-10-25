@@ -144,11 +144,11 @@ each file's Supplied path (`import-spec.md` R-SRC-21), that file's path relative
 to its Imported directory's parent, so that this Imported directory's own name
 is every Supplied path's first segment.
 
-> **Example.** An Imported directory named `old-laptop` is stored as
-> `local-folder/old-laptop/`, with its own shape beneath. Its file
+> **Example.** An Imported directory named `moon-laptop` is stored as
+> `local-folder/moon-laptop/`, with its own shape beneath. Its file
 > `Woodwork/birdhouse/drawing.pdf` has
-> `old-laptop/Woodwork/birdhouse/drawing.pdf` as its Supplied path and is stored
-> at `local-folder/old-laptop/Woodwork/birdhouse/drawing.pdf`
+> `moon-laptop/Woodwork/birdhouse/drawing.pdf` as its Supplied path and is
+> stored at `local-folder/moon-laptop/Woodwork/birdhouse/drawing.pdf`
 > (`supplied-path-layout-spec.md` R-FOUND-3).
 
 > **Example.** Two Imported directories that share a name share a place in a
