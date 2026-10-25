@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
 import { readManifest, type Manifest } from "./meta-files.ts";
+import { pathKeyOf } from "./paths.ts";
 import type { IsIgnored } from "./tcignore.ts";
 
 // What a copy holds, read from its directories and their meta files, as a
@@ -66,6 +67,29 @@ export function readCopy(copyRoot: string, isIgnored: IsIgnored): CopyContents {
   return reading.contents;
 }
 
+// Throws where `name`, of an entry at `file`, is `spelling`, a name
+// Turbo-Collection gives a meta file or their directory, in another letter
+// case or normalization, or is not `isDirectory` as that name's entry is.
+// Such a name is that one (turbo-collection-spec.md R-TGT-14), and a run
+// writing at its spelling would make a second entry beside it on a drive
+// that tells case apart.
+function ensureSpelledAs(
+  file: string,
+  name: string,
+  spelling: string,
+  isDirectory: boolean,
+  entry: Dirent,
+): void {
+  if (
+    pathKeyOf(name) === pathKeyOf(spelling) &&
+    (name !== spelling || entry.isDirectory() !== isDirectory)
+  ) {
+    throw new TcError(
+      `"${file}" stands where Turbo-Collection keeps ${isDirectory ? "a directory" : "a file"} named "${spelling}". Rename it, so that it is not taken for one.`,
+    );
+  }
+}
+
 // Whether `isIgnored` ignores `entry`, at `entryPath` in its copy. For that
 // test, a directory's path ends in `/` (tcignore.ts).
 function ignores(
@@ -90,7 +114,14 @@ function readDirectory(reading: Reading, relativePath: string): void {
 
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const entryPath = `${prefix}${entry.name}`;
-    if (entry.name === ".turbo-collection" && entry.isDirectory()) {
+    ensureSpelledAs(
+      path.join(directory, entry.name),
+      entry.name,
+      ".turbo-collection",
+      true,
+      entry,
+    );
+    if (entry.name === ".turbo-collection") {
       readMetaDirectory(reading, relativePath, here);
     } else if (ignores(reading.isIgnored, entryPath, entry)) {
       continue;
@@ -123,6 +154,9 @@ function readMetaDirectory(
   for (const entry of readdirSync(metaDirectory, { withFileTypes: true })) {
     const entryPath = `${prefix}.turbo-collection/${entry.name}`;
     const file = path.join(metaDirectory, entry.name);
+    for (const spelling of ["manifest.json", "turbo-collection-config.json"]) {
+      ensureSpelledAs(file, entry.name, spelling, false, entry);
+    }
     if (entry.name === "turbo-collection-config.json") {
       // A copy's own configuration file is read before its copy is
       if (!isRoot) {

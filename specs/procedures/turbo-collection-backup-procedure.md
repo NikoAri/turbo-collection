@@ -2,8 +2,7 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-08-08  
-> **Status:** Draft. Backup is not built yet, so R-BAK-2 names work that does
-> not exist. R-BAK-4 was withdrawn on 2026-08-10 and its number is not
+> **Status:** Draft. R-BAK-4 was withdrawn on 2026-08-10 and its number is not
 > reused.  
 > **Applies to:** a human operator, every time your home copy is brought up to
 > date.  

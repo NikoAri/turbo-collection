@@ -113,6 +113,7 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
       copyName: undefined,
     },
     import: undefined,
+    backup: undefined,
   });
 });
 
@@ -482,4 +483,96 @@ test("R-SRC-23, R-CLI-1: an import that leaves a file out exits with a non-zero 
 
   assert.notEqual(run.status, 0);
   assert.match(run.stderr, /notes\.txt" is left out/);
+});
+
+test("R-BACKUP-1, R-BACKUP-10: backup is given two directories, --copy names a copy it makes, and --dry-run makes it a dry run", () => {
+  assert.deepEqual(
+    parseCliArgs(["backup", "D:\\Photos", "E:\\Photos"]).backup,
+    {
+      directories: ["D:\\Photos", "E:\\Photos"],
+      copyName: undefined,
+      dryRun: false,
+    },
+  );
+  assert.deepEqual(
+    parseCliArgs([
+      "backup",
+      "D:\\Photos",
+      "E:\\Photos",
+      "--copy",
+      "home",
+      "--dry-run",
+    ]).backup,
+    {
+      directories: ["D:\\Photos", "E:\\Photos"],
+      copyName: "home",
+      dryRun: true,
+    },
+  );
+});
+
+test("R-BACKUP-1, R-LOG-10: backup given one directory, or three, is an error", () => {
+  assert.throws(
+    () => parseCliArgs(["backup", "D:\\Photos"]),
+    /backup takes two directories, and was given 1/,
+  );
+  assert.throws(
+    () => parseCliArgs(["backup", "a", "b", "c"]),
+    /backup takes two directories, and was given 3/,
+  );
+});
+
+test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into each copy, and exits with status 0; the next copies nothing", (t) => {
+  const temporary = temporaryDirectory(t);
+  const copy = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const folder = path.join(temporary, "old-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+  assert.equal(
+    runTurboCollection(temporary, ["import", "local-folder", folder, copy])
+      .status,
+    0,
+  );
+  const home = path.join(temporary, "backup", "photos");
+  const args = ["backup", copy, home, "--copy", "home"];
+
+  const run = runTurboCollection(temporary, args);
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /a copy named "home"/);
+  assert.match(run.stdout, /^Copied 1 file \(5 bytes\) into "home" at /m);
+  assert.match(run.stdout, /^Copied 0 files \(0 bytes\) into "main" at /m);
+  assert.equal(
+    readFileSync(
+      path.join(home, "local-folder", "old-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
+  );
+
+  const again = runTurboCollection(temporary, ["backup", copy, home]);
+
+  assert.equal(again.status, 0, again.stderr);
+  assert.match(again.stdout, /^Copied 0 files \(0 bytes\) into "home" at /m);
+});
+
+test("R-BACKUP-12, R-CLI-1: a backup that finds a file no manifest lists exits with a non-zero status, and names the file on standard error", (t) => {
+  const temporary = temporaryDirectory(t);
+  const copy = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  writeFileSync(path.join(copy, "by-hand.txt"), "by hand");
+  const home = path.join(temporary, "home");
+
+  const run = runTurboCollection(temporary, [
+    "backup",
+    copy,
+    home,
+    "--copy",
+    "home",
+  ]);
+
+  assert.notEqual(run.status, 0);
+  assert.match(run.stderr, /by-hand\.txt" is listed in no manifest/);
+  assert.equal(existsSync(path.join(home, "by-hand.txt")), false);
 });

@@ -1,8 +1,8 @@
-import { lstatSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
-import { configurationFileOf } from "./paths.ts";
+import { isCopyRoot, pathKeyOf } from "./paths.ts";
 
 // Local-folder Import Source's Importer
 // (local-folder-import-source-spec.md): which files of an Imported directory
@@ -20,7 +20,9 @@ export type Item = {
 export type LocalFolderListing = {
   // Files to import (R-LOCALFOLDER-3)
   items: Item[];
-  // Each directory named `.turbo-collection` passed over (R-LOCALFOLDER-3)
+  // Each directory named `.turbo-collection` passed over (R-LOCALFOLDER-3),
+  // in any spelling a copy holds as one path with its meta files'
+  // directory (turbo-collection-spec.md R-TGT-14)
   passedOver: string[];
   // Each entry that is neither a regular file nor a directory, such as a
   // link, any of which fails its import (import-spec.md R-SRC-22)
@@ -69,11 +71,11 @@ function lookThrough(
     const entryPath = path.join(directory, entry.name);
     const suppliedPath = `${suppliedPrefix}${entry.name}`;
 
-    if (entry.name === ".turbo-collection" && entry.isDirectory()) {
-      if (
-        lstatSync(configurationFileOf(directory), { throwIfNoEntry: false }) !==
-        undefined
-      ) {
+    if (
+      entry.isDirectory() &&
+      pathKeyOf(entry.name) === pathKeyOf(".turbo-collection")
+    ) {
+      if (isCopyRoot(directory)) {
         throw new TcError(
           `"${importedDirectory}" holds a copy at "${directory}", and a directory that holds a copy is not imported. Give a directory that holds none.`,
         );

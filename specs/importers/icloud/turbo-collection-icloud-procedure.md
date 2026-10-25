@@ -5,9 +5,9 @@
 > **Status:** Stub. No steps written yet.  
 > **Satisfies:** [`turbo-collection-icloud-spec.md`](turbo-collection-icloud-spec.md)
 
-This document is a **human execution path** for importing photos from iCloud,
-an import source. It binds a human operator, not Turbo-Collection's
-implementation, and no code cites it. It is iCloud's counterpart of
+This document is a **human execution path** for importing photos from iCloud, an
+import source. It binds a human operator, not Turbo-Collection's implementation,
+and no code cites it. It is iCloud's counterpart of
 [`../../procedures/turbo-collection-import-procedure.md`](../../procedures/turbo-collection-import-procedure.md),
 which states steps common to every import source.
 

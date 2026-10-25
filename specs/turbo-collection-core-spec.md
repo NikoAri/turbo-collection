@@ -8,14 +8,14 @@ Init Import Backup Verify
 This is implementation details to help with particular implementation like in
 Node.js. Actual general instructions should be in turbo-collection-spec.md
 
-## 8. Operation: configuration and the Command Line
+## 8. Operation: configuration and Command Line
 
 ### 8.1 General Configuration (`R-CFG-*`)
 
 **R-CFG-1.** Turbo-Collection MUST read a copy's own identity and any persisted
 option from an external configuration file, whose contents `meta-file-spec.md`
 states, rather than hardcoding them. It MUST NOT hardcode any path, and MUST NOT
-require a copy to declare the other copies expected to exist, which are
+require a copy to declare which other copies are expected to exist, which are
 discovered at run time.
 
 **R-CFG-3.** In a Run, Turbo-Collection MUST validate configuration **before**
@@ -29,9 +29,9 @@ or unparseable setting MUST NOT be silently defaulted into a behavior that loses
 data.
 
 **R-CFG-5.** Turbo-Collection MUST be fully operable with configuration supplied
-from the collection's own storage or on the command line, and MUST NOT require
-configuration held on the host computer. A host-specific location MAY be
-searched as a convenience; it MUST NOT be the only place configuration can live.
+from a collection's own storage or on a command line, and MUST NOT require
+configuration held on a host computer. A host-specific location MAY be searched
+as a convenience; configuration MUST NOT be able to live there alone.
 
 ### 8.3 Command Line (`R-CLI-*`)
 
@@ -45,7 +45,7 @@ refused to do, or found wrong, MUST NOT by itself cause a non-zero exit status
 **R-CLI-2.**  
 **One-shot.**  
 Turbo-Collection MUST perform one run and exit. It MUST NOT daemonize, poll, or
-schedule itself. _When_ it runs is the responsibility of whatever invokes it.
+schedule itself. _When_ it runs is for whatever invokes it to decide.
 
 **R-CLI-3.**  
 Turbo-Collection MUST be fully operable from a Command Line, with no graphical
@@ -81,10 +81,10 @@ a directory given as a copy that is not a copy.
 **R-CLI-18.** A Copy MUST NOT lie inside another Copy. Where a Copy that a Run
 acts on, or a directory that a Run is to make a Copy, lies inside a Copy,
 Turbo-Collection MUST end that Run with an error before that Run makes a
-directory or writes a file inside any Copy. Where a Run finds a configuration
-file (`meta-file-spec.md` R-MFILE-17) below the root of a Copy that Run acts on,
+directory or writes a file inside any Copy. Where a Run, acting on a Copy, finds
+a configuration file (`meta-file-spec.md` R-MFILE-17) below that Copy's root,
 Turbo-Collection MUST end that Run with an error, and MUST NOT let that Run
-write into the Copy that configuration file describes.
+write into whichever Copy that configuration file describes.
 
 > **Example.** An init given `photos/2024`, where `photos` is a Copy, fails and
 > makes no directory. A backup given a Copy that a person moved into another
@@ -99,37 +99,37 @@ entry. Turbo-Collection MUST pass over an entry that matches a pattern in that
 Copy's ignore file (`meta-file-spec.md` R-MFILE-21), and MUST NOT end a Run with
 an error on account of such an entry.
 
-> **Example.** A person puts a symbolic link named `latest` into a Copy. The
-> next backup of that Copy fails, names `latest`, and copies nothing from where
+> **Example.** A person puts a symbolic link named `latest` into a Copy. That
+> Copy's next backup fails, names `latest`, and copies nothing from where
 > `latest` points.
 
-**R-CLI-20.** Where the path of a directory given to a Run passes through a
+**R-CLI-20.** Where a directory given to a Run has a path that passes through a
 symbolic link or a junction, Turbo-Collection MUST end that Run with an error,
-and MUST report the directory that path leads to. Turbo-Collection MUST end that
-Run before that Run makes a directory or writes a file, other than that Run's
-log and its log directory (`logging-spec.md` R-LOG-6).
+and MUST report which directory that path leads to. Turbo-Collection MUST end
+that Run before that Run makes a directory or writes a file, other than that
+Run's log and its log directory (`logging-spec.md` R-LOG-6).
 
 > **Example.** An init given `D:\photos`, where `photos` is a junction to
 > `E:\archive`, fails and names `E:\archive`, which can be given instead.
 
 **R-CLI-15.** Turbo-Collection MUST be operable under more than one operating
-system. The name and content of every file a Run writes into a Copy MUST NOT
-depend on the operating system that Run is performed under. Turbo-Collection
-MUST perform every operation on a Copy whichever operating system each earlier
-Run that wrote to that Copy was performed under.
+system. A file a Run writes into a Copy MUST NOT have a name or content that
+depends on whichever operating system that Run is performed under.
+Turbo-Collection MUST perform every operation on a Copy whichever operating
+system each earlier Run that wrote to that Copy was performed under.
 
 > **Example.** A Copy written to from a Mac is backed up on a borrowed Windows
 > computer, and a later verify on that Mac finds nothing wrong.
 
 **R-CLI-16.**  
 **Version Arg**  
-When asked for its version, Turbo-Collection MUST report the Turbo-Collection
+When asked for its version, Turbo-Collection MUST report Turbo-Collection's
 version and a version stamp (R-VER-18) for every specification it conforms to.
 In answering, Turbo-Collection MUST NOT act on a Copy or on an Import Source.
 
 > **Example.** A version report lists `turbo-collection-spec 1.2.0 (2027-03-01)`
 > and one such line for `meta-file-spec.md`, for each Layout specification, and
-> for each Import Source specification the code conforms to.
+> for each Import Source specification Turbo-Collection conforms to.
 
 ### 8.4 Distinct read-only inspections
 
@@ -140,11 +140,11 @@ different times.
 | Question                                                                                    | Operation                | Requirement |
 | ------------------------------------------------------------------------------------------- | ------------------------ | ----------- |
 | Are my import sources and copies reachable and authorized?                                  | **verify access**        | R-VERIFY-2  |
-| Do the copies still hold every file their manifests list, and the same files? (agreement)   | **verify copies**        | R-INT-11    |
-| Do the bytes on this copy still match the manifest? (fixity)                                | **verify fixity**        | R-INT-2     |
+| Do copies still hold every file their manifests list, and agree on which files? (agreement) | **verify copies**        | R-INT-11    |
+| Do bytes on this copy still match its manifests? (fixity)                                   | **verify fixity**        | R-INT-2     |
 | Would any filename fail to survive a move to another filesystem? (name hazards)             | **verify names**         | R-NAME-1    |
 | What _would_ a backup transfer? (drift)                                                     | **backup**, dry-run mode | R-BACKUP-10 |
-| What does this import source still hold that the collection lacks? (import-source coverage) | **import**, dry-run mode | R-SRC-14    |
+| What does this import source still hold that my collection lacks? (import-source coverage)  | **import**, dry-run mode | R-SRC-14    |
 | How many copies hold this content, and when did each receive it? (propagation)              | **status**               | R-STATUS-1  |
 
 > **Example.** `status` reads receipts, not bytes, so it reports which copies
@@ -156,47 +156,47 @@ different times.
 A Run exits with status **0** only where it was fully successful, and with a
 non-zero status otherwise (R-CLI-1). This specification distinguishes no failure
 by exit status: a non-zero status says only that a Run was not fully successful,
-and the report and the log say what happened (R-LOG-4).
+and its report and log say what happened (R-LOG-4).
 
 > **Example.** An Import that leaves one differing file out and takes in every
 > other file exits non-zero (R-SRC-23), as does a verify that finds one extra
-> file (R-INT-8). A verify run while the off-site Copy is away exits 0
-> (R-VERIFY-1), and so does an Import that places a file under the floor and
-> reports it (R-SRC-20): each did everything it was asked to do and found
-> nothing wrong.
+> file (R-INT-8). A verify run while an off-site Copy is away exits 0
+> (R-VERIFY-1), and so does an Import that places a file under supplied-path
+> layout, its floor, and reports it (R-SRC-20): each did everything it was asked
+> to do and found nothing wrong.
 
 ---
 
 ## 11. Contracts
 
-The core depends on these contracts, never on the tools or vendors behind them.
-Error conditions are **named, not numbered**, because this specification
-distinguishes no failure by exit status (Section 8.5).
+Turbo-Collection's core depends on these contracts, never on tools or vendors
+behind them. Error conditions are **named, not numbered**, because this
+specification distinguishes no failure by exit status (Section 8.5).
 
 ### Importer
 
-| Aspect        | Contract                                                                                                                                                                                                                                                                                                                                     |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `list() -> Item[]`                                                                                                                                                                                                                                                                                                                           |
-| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with the metadata its import source supplies and, for each file, the path at which the core reads that file and the path that file has at its import source (R-SRC-21)                                                                                                  |
-| Precondition  | The import source is reachable and authorized                                                                                                                                                                                                                                                                                                |
-| Postcondition | Every returned item is supplied as plain files, unaltered as far as the Importer is able (R-SRC-5)                                                                                                                                                                                                                                           |
-| MUST NOT      | Delete, modify, move, or rename a file at an Import Source that it did not create (R-SRC-7); split a multi-file item (R-SRC-9); let anything but the item, the metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items the import source no longer supplies (R-SRC-13) |
-| Errors        | Import source unreachable or unauthorized; content delivered only inside a proprietary container that the Importer cannot unpack (R-SRC-5); a directory entry that is neither a regular file nor a directory (R-SRC-22)                                                                                                                      |
+| Aspect        | Contract                                                                                                                                                                                                                                                                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `list() -> Item[]`                                                                                                                                                                                                                                                                                                                            |
+| Item          | A logical item, which MAY comprise several files (R-SRC-9), together with any metadata its import source supplies and, for each file, where Turbo-Collection's core reads it and which path it has at its import source (R-SRC-21)                                                                                                            |
+| Precondition  | Its import source is reachable and authorized                                                                                                                                                                                                                                                                                                 |
+| Postcondition | Every returned item is supplied as plain files, unaltered as far as that Importer is able (R-SRC-5)                                                                                                                                                                                                                                           |
+| MUST NOT      | Delete, modify, move, or rename a file at an Import Source that it did not create (R-SRC-7); split a multi-file item (R-SRC-9); let anything but that item, any metadata its import source supplies, and that import source decide a collection path (R-SRC-10); report or retain which items its import source no longer supplies (R-SRC-13) |
+| Errors        | Import source unreachable or unauthorized; content delivered only inside a proprietary container that its Importer cannot unpack (R-SRC-5); a directory entry that is neither a regular file nor a directory (R-SRC-22)                                                                                                                       |
 
 ### Storage layout
 
-| Aspect        | Contract                                                                                                                                                                                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                     |
-| Precondition  | The copy is reachable, and writable when written                                                                                                                                                                                                                          |
-| Postcondition | The copy holds every content file the run added to it (R-BACKUP-4), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
-| MUST NOT      | Modify a content file already present in the copy (R-TGT-7); write a receipt, which is the core's responsibility (R-REC-6); delete a file it holds (R-TGT-7); store data other than as a plain tree (R-COL-4)                                                             |
-| Errors        | Copy unreachable, unmounted, or unwritable; transfer failure                                                                                                                                                                                                              |
+| Aspect        | Contract                                                                                                                                                                                                                                                              |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `read(copy) -> Contents`; `write(copy, files, options) -> Result`; `verify(manifest) -> VerifyReport`                                                                                                                                                                 |
+| Precondition  | `copy` is reachable, and writable when written                                                                                                                                                                                                                        |
+| Postcondition | `copy` holds every content file a run added to it (R-BACKUP-4), plus a manifest in each of its directories (R-TGT-9), and a receipt in each directory holding content **or recording an error** (R-MFILE-13). It MAY lack a content file another copy holds (R-COL-4) |
+| MUST NOT      | Modify a content file already present in `copy` (R-TGT-7); write a receipt, which is for Turbo-Collection's core to write (R-REC-6); delete a file it holds (R-TGT-7); store data other than as a plain tree (R-COL-4)                                                |
+| Errors        | Copy unreachable, unmounted, or unwritable; transfer failure                                                                                                                                                                                                          |
 
 ### Mirror engine
 
-Scoped as _the mechanism by which two copies are brought into agreement_. This
+Scoped as _a mechanism by which two copies are brought into agreement_. This
 contract keeps that mechanism a binding, which `turbo-collection-spec.md`
 Section 12 records, while storage layout (`turbo-collection-spec.md` Section 6)
 covers _what_ a copy is.
@@ -204,8 +204,8 @@ covers _what_ a copy is.
 | Aspect        | Contract                                                                                                                                                                                                                                                                                                                               |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Operation     | `mirror(copyA, copyB, excludes, options) -> MirrorResult`                                                                                                                                                                                                                                                                              |
-| Precondition  | Both copies readable; the copy being written is writable                                                                                                                                                                                                                                                                               |
-| Postcondition | Each copy holds every content file the other holds (R-BACKUP-4); only absent files were transferred (R-BACKUP-7); each arrival is recorded in a receipt file and both copies' receipt files are brought to their union (R-REC-6)                                                                                                       |
+| Precondition  | Both copies readable; whichever copy is being written is writable                                                                                                                                                                                                                                                                      |
+| Postcondition | Each copy holds every content file either copy holds (R-BACKUP-4); only absent files were transferred (R-BACKUP-7); each arrival is recorded in a receipt file and both copies' receipt files are brought to their union (R-REC-6)                                                                                                     |
 | Result        | Files transferred, bytes transferred, content files present in both copies with differing content (R-BACKUP-4), arrivals recorded, per-file errors                                                                                                                                                                                     |
 | MUST NOT      | Modify a content file already present in a copy (R-BACKUP-5); delete in a copy (R-BACKUP-6); overwrite a differing content file (R-BACKUP-4); record an arrival before its content is completely written (R-REC-5); delete or alter a receipt file (R-REC-7); leave a partial file that a later run mistakes for complete (R-BACKUP-9) |
 | Errors        | A copy unreadable; a copy unwritable; transfer failure                                                                                                                                                                                                                                                                                 |
@@ -215,7 +215,7 @@ covers _what_ a copy is.
 | Aspect        | Contract                                                                                                                                                                                |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Operations    | `build(directory) -> Manifest`; `verify(directory, manifest) -> VerifyReport`                                                                                                           |
-| Precondition  | Directory readable; for verify, the manifest exists and names its algorithm (R-INT-5)                                                                                                   |
+| Precondition  | Directory readable; for verify, `manifest` exists and names its algorithm (R-INT-5)                                                                                                     |
 | Postcondition | `build` writes a JSON manifest covering that directory alone (R-MFILE-8, R-MFILE-9), having verified against any existing manifest first (R-INT-10); `verify` mutates nothing (R-INT-6) |
 | Result        | Per file: ok, missing, corrupt, or extra (R-INT-3)                                                                                                                                      |
 | MUST NOT      | Repair, overwrite, or delete (R-INT-6); declare either side authoritative on a mismatch (R-INT-7)                                                                                       |
@@ -226,16 +226,16 @@ covers _what_ a copy is.
 | Aspect        | Contract                                                                                       |
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | Operation     | `load(path) -> Config`                                                                         |
-| Postcondition | Returns a fully validated Config, or fails before any mutation besides the Run's log (R-CFG-3) |
+| Postcondition | Returns a fully validated Config, or fails before any mutation besides its Run's log (R-CFG-3) |
 | MUST NOT      | Apply a destructive default for an absent setting (R-CFG-4)                                    |
 | Errors        | Missing, unparseable, or invalid configuration                                                 |
 
 ### Logger
 
-| Aspect        | Contract                                                                                                                                              |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Operations    | `log(event)`, or `log(text)` for a `message` event (R-LOG-17); `error(error)`                                                                         |
-| Postcondition | `log` leaves the event as the last line of this Run's log (R-LOG-7); `error` leaves an `error` event recording the error as that last line (R-LOG-12) |
-| MUST NOT      | Be load-bearing for correctness (R-LOG-2)                                                                                                             |
+| Aspect        | Contract                                                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Operations    | `log(event)`, or `log(text)` for a `message` event (R-LOG-17); `error(error)`                                                                |
+| Postcondition | `log` leaves `event` as this Run's log's last line (R-LOG-7); `error` leaves an `error` event recording `error` as that last line (R-LOG-12) |
+| MUST NOT      | Be load-bearing for correctness (R-LOG-2)                                                                                                    |
 
 ---

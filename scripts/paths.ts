@@ -3,8 +3,16 @@ import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
 
-// Checks on a directory a run is given, and where a copy keeps
-// its configuration.
+// Checks on a directory a run is given, where a copy keeps
+// its configuration, and when two paths in a copy are one.
+
+// A key under which two paths in a copy that differ only in letter case, or
+// only in Unicode normalization, are one path (turbo-collection-spec.md
+// R-TGT-14): `relativePath` in NFC, then in upper case, by no computer's
+// language.
+export function pathKeyOf(relativePath: string): string {
+  return relativePath.normalize("NFC").toUpperCase();
+}
 
 // Where a copy whose root is `copyRoot` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17). Something at this path is what makes a
@@ -17,16 +25,31 @@ export function configurationFileOf(copyRoot: string): string {
   );
 }
 
+// Whether `directory` is a copy's root: whether something is at its
+// configuration file's path. A file standing where a directory on that path
+// would be, such as a file named `.turbo-collection`, means nothing is there,
+// which Linux and macOS report as ENOTDIR, not as ENOENT.
+export function isCopyRoot(directory: string): boolean {
+  try {
+    return (
+      lstatSync(configurationFileOf(directory), { throwIfNoEntry: false }) !==
+      undefined
+    );
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOTDIR") {
+      return false;
+    }
+    throw e;
+  }
+}
+
 // Root of whichever copy `directory` is or lies inside, or undefined where
 // there is none (turbo-collection-core-spec.md R-CLI-18). `directory` is looked
 // at first, then each directory above it.
 export function copyRootAtOrAbove(directory: string): string | undefined {
   let current = path.resolve(directory);
   for (;;) {
-    if (
-      lstatSync(configurationFileOf(current), { throwIfNoEntry: false }) !==
-      undefined
-    ) {
+    if (isCopyRoot(current)) {
       return current;
     }
     const parent = path.dirname(current);

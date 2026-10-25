@@ -6,6 +6,7 @@ import {
   lstatSync,
   mkdirSync,
   openSync,
+  readdirSync,
   readFileSync,
   readSync,
   statSync,
@@ -19,7 +20,9 @@ import { TcError } from "./helpers/tc-error.ts";
 import { listLocalFolder, type Item } from "./local-folder-importer.ts";
 import { logger } from "./logger.ts";
 import {
+  compareManifestNames,
   contentDigestOf,
+  metaDirectoryOf,
   readConfigurationFile,
   readManifest,
   writeManifest,
@@ -31,6 +34,8 @@ import {
   copyRootAtOrAbove,
   ensureNoLinkInPath,
   ensureNotInsideCopy,
+  isCopyRoot,
+  pathKeyOf,
 } from "./paths.ts";
 import {
   compileIgnorePatterns,
@@ -82,8 +87,12 @@ type ImportContext = {
   files: number;
   bytes: number;
   leftOut: number;
-  // Each directory of this copy already checked for a link or a copy
-  checkedDirectories: Set<string>;
+  // Where each directory of this copy that this import has placed goes,
+  // under its path's key (turbo-collection-spec.md R-TGT-14)
+  placed: Map<string, string>;
+  // Names each directory of this copy holds, under each one's key, as read
+  // once and added to as this import writes
+  held: Map<string, Map<string, string[]>>;
 };
 
 // Imports `directory`'s files into copy `copy` (R-SRC-25). `runId` names
@@ -142,7 +151,8 @@ export async function importIntoCopy(
     files: 0,
     bytes: 0,
     leftOut: 0,
-    checkedDirectories: new Set(),
+    placed: new Map(),
+    held: new Map(),
   };
   for (const [suppliedDirectory, items] of byDirectory(listing.items)) {
     importIntoDirectory(context, suppliedDirectory, items);
@@ -174,10 +184,7 @@ function countOfFiles(count: number): string {
 // Throws where `copyRoot` is not a copy (turbo-collection-core-spec.md
 // R-CLI-14), or lies inside one (R-CLI-18).
 function ensureCopy(copyRoot: string): void {
-  if (
-    lstatSync(configurationFileOf(copyRoot), { throwIfNoEntry: false }) ===
-    undefined
-  ) {
+  if (!isCopyRoot(copyRoot)) {
     throw new TcError(
       `"${copyRoot}" is not a copy, so nothing is imported into it. Give a copy, or run import in one.`,
     );
@@ -269,60 +276,147 @@ function isPlaceable(suppliedPath: string): boolean {
 }
 
 // `items` grouped by their directories' Supplied paths, so that each
-// directory of a copy is filled once.
+// directory of a copy is filled once, whichever spelling of its path an item
+// gives (turbo-collection-spec.md R-TGT-14). Each group is under its first
+// item's spelling. Items are taken in manifest order (meta-file-spec.md
+// R-MFILE-12), which no operating system decides, so that of two spellings of
+// one path, one and the same arrives first on every computer.
 function byDirectory(items: readonly Item[]): Map<string, Item[]> {
   const groups = new Map<string, Item[]>();
-  for (const item of items) {
+  const spellings = new Map<string, string>();
+  const sorted = [...items].sort((a, b) =>
+    compareManifestNames(a.suppliedPath, b.suppliedPath),
+  );
+  for (const item of sorted) {
     const suppliedDirectory = item.suppliedPath.slice(
       0,
       item.suppliedPath.lastIndexOf("/"),
     );
-    const group = groups.get(suppliedDirectory) ?? [];
+    const key = pathKeyOf(suppliedDirectory);
+    const spelling = spellings.get(key) ?? suppliedDirectory;
+    spellings.set(key, spelling);
+    const group = groups.get(spelling) ?? [];
     group.push(item);
-    groups.set(suppliedDirectory, group);
+    groups.set(spelling, group);
   }
   return groups;
 }
 
-// Looks at each directory of a copy, from its root down to whichever
-// directory `segments` name, as far as they exist. Throws where one is a link
-// or another entry that is neither a directory nor a file
-// (turbo-collection-core-spec.md R-CLI-19), or is another copy's root
-// (R-CLI-18). Where a file stands where a directory is to go, returns its
-// path, and otherwise undefined.
-function blockingFileOnTheWay(
+// Where a directory goes in a copy, as `placeDirectory` finds it: at
+// `directory`, which exists or is to be made; nowhere, since a file stands at
+// `blockedBy`, where it or a directory above it is to go; or nowhere, since
+// that copy holds its path in each spelling `heldAs` names (R-TGT-14).
+type Placement =
+  { directory: string } | { blockedBy: string } | { heldAs: string[] };
+
+// Places a directory whose path in this copy is `relativePath`, its segments
+// joined by `/`: each segment at whichever spelling of it this copy already
+// holds, and at its own where this copy holds that one or none
+// (turbo-collection-spec.md R-TGT-14). Each place given is kept, so that two
+// spellings of one path go to one place, made yet or not.
+//
+// Throws where a directory on its way is a link or another entry that is
+// neither a directory nor a file (turbo-collection-core-spec.md R-CLI-19), or
+// is another copy's root (R-CLI-18).
+function placeDirectory(
   context: ImportContext,
-  segments: readonly string[],
-): string | undefined {
-  let current = context.copyRoot;
-  for (const segment of segments) {
-    current = path.join(current, segment);
-    if (context.checkedDirectories.has(current)) {
-      continue;
-    }
-    const stats = lstatSync(current, { throwIfNoEntry: false });
-    if (stats === undefined) {
-      return undefined;
-    }
-    if (stats.isFile()) {
-      return current;
-    }
-    if (!stats.isDirectory()) {
-      throw new TcError(
-        `"${current}" in the copy is neither a file nor a directory, such as a link, which Turbo-Collection does not follow.`,
-      );
-    }
-    if (
-      lstatSync(configurationFileOf(current), { throwIfNoEntry: false }) !==
-      undefined
-    ) {
-      throw new TcError(
-        `"${current}" is a copy inside the copy at "${context.copyRoot}", and a copy never lies inside another.`,
-      );
-    }
-    context.checkedDirectories.add(current);
+  relativePath: string,
+): Placement {
+  const key = pathKeyOf(relativePath);
+  const placed = context.placed.get(key);
+  if (placed !== undefined) {
+    return { directory: placed };
   }
-  return undefined;
+  const slash = relativePath.lastIndexOf("/");
+  const parent =
+    slash === -1
+      ? { directory: context.copyRoot }
+      : placeDirectory(context, relativePath.slice(0, slash));
+  if (!("directory" in parent)) {
+    return parent;
+  }
+  const spelling = spellingIn(
+    context,
+    parent.directory,
+    relativePath.slice(slash + 1),
+  );
+  if (typeof spelling !== "string") {
+    return {
+      heldAs: spelling.map((name) => path.join(parent.directory, name)),
+    };
+  }
+  const directory = path.join(parent.directory, spelling);
+  const stats = lstatSync(directory, { throwIfNoEntry: false });
+  if (stats?.isFile()) {
+    return { blockedBy: directory };
+  }
+  if (stats !== undefined && !stats.isDirectory()) {
+    throw new TcError(
+      `"${directory}" in the copy is neither a file nor a directory, such as a link, which Turbo-Collection does not follow.`,
+    );
+  }
+  if (stats !== undefined && isCopyRoot(directory)) {
+    throw new TcError(
+      `"${directory}" is a copy inside the copy at "${context.copyRoot}", and a copy never lies inside another.`,
+    );
+  }
+  context.placed.set(key, directory);
+  return { directory };
+}
+
+// Names `directory` holds, under each one's key (R-TGT-14), read when this
+// import first looks into it. A directory that does not exist holds none.
+function heldIn(
+  context: ImportContext,
+  directory: string,
+): Map<string, string[]> {
+  let held = context.held.get(directory);
+  if (held === undefined) {
+    held = new Map();
+    const names = lstatSync(directory, { throwIfNoEntry: false })?.isDirectory()
+      ? readdirSync(directory)
+      : [];
+    for (const name of names) {
+      const key = pathKeyOf(name);
+      held.set(key, [...(held.get(key) ?? []), name]);
+    }
+    context.held.set(directory, held);
+  }
+  return held;
+}
+
+// Records that `directory` holds `name`, which this import has written there.
+function holdName(
+  context: ImportContext,
+  directory: string,
+  name: string,
+): void {
+  const held = heldIn(context, directory);
+  const key = pathKeyOf(name);
+  const spellings = held.get(key) ?? [];
+  if (!spellings.includes(name)) {
+    held.set(key, [...spellings, name]);
+  }
+}
+
+// `name`'s spelling in `directory` (R-TGT-14): `name` itself where
+// `directory` holds that spelling or none, whichever one it holds where it
+// holds one, and every one where it holds several and none is `name`.
+function spellingIn(
+  context: ImportContext,
+  directory: string,
+  name: string,
+): string | string[] {
+  const held = heldIn(context, directory).get(pathKeyOf(name)) ?? [];
+  if (held.length === 0 || held.includes(name)) {
+    return name;
+  }
+  return held.length === 1 ? held[0]! : held;
+}
+
+// `names`, each in quotes, joined by "and".
+function quoted(names: readonly string[]): string {
+  return names.map((name) => `"${name}"`).join(" and ");
 }
 
 // Imports `items`, all from one directory whose Supplied path is
@@ -336,8 +430,6 @@ function importIntoDirectory(
   suppliedDirectory: string,
   items: readonly Item[],
 ): void {
-  const segments = collectionPathOf(suppliedDirectory).split("/");
-  const directory = path.join(context.copyRoot, ...segments);
   const errors: string[] = [];
 
   // Logs a file as left out of its collection, and keeps its message for that
@@ -355,18 +447,23 @@ function importIntoDirectory(
     context.leftOut++;
   };
 
-  // A file where this directory is to go leaves every file out, with no
-  // error file, which would need that directory (R-SRC-26).
-  const blockingFile = blockingFileOnTheWay(context, segments);
-  if (blockingFile !== undefined) {
+  // A directory with no place leaves every file for it out, with no error
+  // file, which would need that directory (R-SRC-26, R-TGT-14).
+  const placement = placeDirectory(
+    context,
+    collectionPathOf(suppliedDirectory),
+  );
+  if (!("directory" in placement)) {
+    const reason =
+      "blockedBy" in placement
+        ? `"${placement.blockedBy}" in the copy is a file, where a directory is to go.`
+        : `the copy holds its directory as ${quoted(placement.heldAs)}, which are one path.`;
     for (const item of items) {
-      leaveOut(
-        item,
-        `"${blockingFile}" in the copy is a file, where a directory is to go.`,
-      );
+      leaveOut(item, reason);
     }
     return;
   }
+  const { directory } = placement;
 
   const manifest = readManifest(directory);
 
@@ -398,14 +495,30 @@ function importIntoDirectory(
     );
   }
 
-  const entries = new Map<string, ManifestEntry>(
-    (manifest?.files ?? []).map((entry) => [entry.file, entry]),
-  );
+  // Every entry under its name, and under its name's key (R-TGT-14).
+  const entries = new Map<string, ManifestEntry>();
+  const listed = new Map<string, ManifestEntry[]>();
+  const list = (entry: ManifestEntry): void => {
+    entries.set(entry.file, entry);
+    const key = pathKeyOf(entry.file);
+    listed.set(key, [...(listed.get(key) ?? []), entry]);
+  };
+  for (const entry of manifest?.files ?? []) {
+    list(entry);
+  }
+  const wouldWrite = new Map<string, Arrival>();
   let wrote = false;
   for (const item of items) {
-    const entry = importFile(context, directory, item, entries, leaveOut);
+    const entry = importFile(
+      context,
+      directory,
+      item,
+      listed,
+      wouldWrite,
+      leaveOut,
+    );
     if (entry !== undefined) {
-      entries.set(entry.file, entry);
+      list(entry);
       wrote = true;
     }
   }
@@ -447,17 +560,25 @@ function recordErrors(
   });
 }
 
-// Imports `item` into `directory`, whose manifest's entries are `entries`,
-// and returns an entry to list it with, or undefined where it wrote nothing.
-// A file already listed with identical content is in its collection already
-// (R-SRC-8); listed with other content, it is left out (R-SRC-23). A file
-// that cannot be read or written is left out, and one that a copy cannot
-// take at all, such as on a full drive, ends its run (R-SRC-26).
+// A file a dry run would write: where it is read from, and where it would go.
+type Arrival = { readPath: string; target: string };
+
+// Imports `item` into `directory`, whose manifest's entries are `listed`,
+// each under its name's key, and returns an entry to list it with, or
+// undefined where it wrote nothing. A file listed under any spelling of its
+// name is that file (turbo-collection-spec.md R-TGT-14): with identical
+// content it is in its collection already (R-SRC-8), and with other content
+// it is left out (R-SRC-23). A dry run lists nothing, so it keeps each file
+// it would write in `wouldWrite`, and compares a later spelling of that name
+// with it, as a real import would. A file that cannot be read or written is
+// left out, and one that a copy cannot take at all, such as on a full drive,
+// ends its run (R-SRC-26).
 function importFile(
   context: ImportContext,
   directory: string,
   item: Item,
-  entries: ReadonlyMap<string, ManifestEntry>,
+  listed: ReadonlyMap<string, readonly ManifestEntry[]>,
+  wouldWrite: Map<string, Arrival>,
   leaveOut: (item: Item, reason: string) => void,
 ): ManifestEntry | undefined {
   if (!isPlaceable(item.suppliedPath)) {
@@ -467,7 +588,41 @@ function importFile(
     );
     return undefined;
   }
-  const name = item.suppliedPath.slice(item.suppliedPath.lastIndexOf("/") + 1);
+  const suppliedName = item.suppliedPath.slice(
+    item.suppliedPath.lastIndexOf("/") + 1,
+  );
+  const key = pathKeyOf(suppliedName);
+
+  // A directory's meta files are where a file of this name would go
+  // (meta-file-spec.md R-MFILE-2), so it cannot be written (R-SRC-26).
+  const metaDirectory = metaDirectoryOf(directory);
+  if (key === pathKeyOf(path.basename(metaDirectory))) {
+    leaveOut(
+      item,
+      `"${metaDirectory}" holds that directory's meta files, so no file is written there.`,
+    );
+    return undefined;
+  }
+
+  const listedAs = listed.get(key) ?? [];
+  const entry =
+    listedAs.find((listedEntry) => listedEntry.file === suppliedName) ??
+    (listedAs.length === 1 ? listedAs[0] : undefined);
+  if (entry === undefined && listedAs.length > 1) {
+    leaveOut(
+      item,
+      `"${directory}" lists it as ${quoted(listedAs.map((listedEntry) => listedEntry.file))}, which are one name.`,
+    );
+    return undefined;
+  }
+  const name = entry?.file ?? spellingIn(context, directory, suppliedName);
+  if (typeof name !== "string") {
+    leaveOut(
+      item,
+      `"${directory}" holds it as ${quoted(name)}, which are one name.`,
+    );
+    return undefined;
+  }
   const target = path.join(directory, name);
 
   const targetStats = lstatSync(target, { throwIfNoEntry: false });
@@ -489,19 +644,36 @@ function importFile(
     return undefined;
   }
 
-  const listed = entries.get(name);
-  if (listed !== undefined) {
+  if (entry !== undefined) {
     let checksum: string | undefined;
     try {
-      checksum = listed.size === size ? checksumOf(item.readPath) : undefined;
+      checksum = entry.size === size ? checksumOf(item.readPath) : undefined;
     } catch (e) {
       leaveOut(item, `it cannot be read (${(e as Error).message}).`);
       return undefined;
     }
-    if (checksum !== listed.checksum) {
+    if (checksum !== entry.checksum) {
       leaveOut(
         item,
         `"${target}" in the collection holds other content, and an import never writes over it.`,
+      );
+    }
+    return undefined;
+  }
+
+  const earlier = wouldWrite.get(key);
+  if (earlier !== undefined) {
+    let same: boolean;
+    try {
+      same = checksumOf(earlier.readPath) === checksumOf(item.readPath);
+    } catch (e) {
+      leaveOut(item, `it cannot be read (${(e as Error).message}).`);
+      return undefined;
+    }
+    if (!same) {
+      leaveOut(
+        item,
+        `"${earlier.target}" in the collection holds other content, and an import never writes over it.`,
       );
     }
     return undefined;
@@ -514,6 +686,7 @@ function importFile(
 
   if (context.dryRun) {
     logTransfer(context, item.readPath, target, size);
+    wouldWrite.set(key, { readPath: item.readPath, target });
     return undefined;
   }
 
@@ -534,6 +707,7 @@ function importFile(
     );
     return undefined;
   }
+  holdName(context, directory, name);
   if (written === undefined) {
     leaveOut(item, "it changed while it was read.");
     return undefined;

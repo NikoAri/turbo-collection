@@ -6,9 +6,9 @@
 ### 8.6 Parallel safety (`R-PARALLEL-*`)
 
 **R-PARALLEL-1.** Turbo-Collection MUST create a Run's log (`logging-spec.md`
-R-LOG-6) only where nothing exists at that log's path. Where something exists
-at that path, Turbo-Collection MUST give that Run another ID, and create that
-Run's log under its new ID.
+R-LOG-6) only where nothing exists at that log's path. Where something exists at
+that path, Turbo-Collection MUST give that Run another ID, and create that Run's
+log under its new ID.
 
 > **Example.** Two Runs started in one second draw one ID,
 > `20261015T215020Z-3b52`. Whichever Run creates
@@ -32,7 +32,7 @@ Run with an error, and MUST NOT write any other file into that directory.
 > `archive/photos`.
 
 **R-PARALLEL-4.** Every Run other than an init MUST hold its Collection's lock
-on the computer that Run is performed on, for as long as that Run reads or
+on whichever computer that Run is performed on, for as long as that Run reads or
 writes a Copy of that Collection. Before holding that lock, a Run MAY read a
 Copy's configuration file, to learn which Collection that Copy belongs to.
 
@@ -46,9 +46,9 @@ process ID. Where Turbo-Collection cannot learn that process ID, that error MUST
 state that it is not known.
 
 > **Example.** While a backup of a Collection runs, a status of that Collection
-> started on that computer ends at once with an error that names that
-> Collection and that backup's process ID. Started again once that backup has
-> ended, that status reports.
+> started on that computer ends at once with an error that names that Collection
+> and that backup's process ID. Started again once that backup has ended, that
+> status reports.
 
 **R-PARALLEL-6.** Turbo-Collection MUST hold a Collection's lock in a form that
 a computer releases when whichever Run holds that lock ends, however that Run
@@ -68,5 +68,5 @@ Copy.
 
 > **Example.** A backup writes files into a Copy of a Collection itself, rather
 > than handing them to a copying program. Where that backup ends with an error
-> partway through, nothing is left writing into that Copy, so whichever Run
-> next takes that Collection's lock is alone in writing there.
+> partway through, nothing is left writing into that Copy, so whichever Run next
+> takes that Collection's lock is alone in writing there.

@@ -558,3 +558,181 @@ test("R-LOG-13: an import logs the configuration it read, and where, as a verbos
   assert.equal(configuration.verbose, true);
   assert.deepEqual(configuration.configuration, tcConfig);
 });
+
+// Names `directory` holds, other than its meta files' directory, in order.
+function contentNamesOf(directory: string): string[] {
+  return readdirSync(directory)
+    .filter((name) => name !== ".turbo-collection")
+    .sort();
+}
+
+// Names `directory`'s manifest lists, in its order.
+function listedNamesOf(directory: string): string[] {
+  return (manifestOf(directory).files as { file: string }[]).map(
+    (entry) => entry.file,
+  );
+}
+
+test("R-TGT-14, R-SRC-23: a file whose name differs from a listed file's only in letter case is that file, and is left out where its content differs", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  await importFolder(
+    makeFolder(path.join(temporary, "first"), { "Photo.jpg": "first" }),
+    copyRoot,
+  );
+
+  await assert.rejects(
+    importFolder(
+      makeFolder(path.join(temporary, "second"), { "photo.jpg": "second" }),
+      copyRoot,
+    ),
+    /1 file left out of the collection/,
+  );
+
+  const stored = storedDirectory(copyRoot);
+  assert.deepEqual(contentNamesOf(stored), ["Photo.jpg"]);
+  assert.equal(readFileSync(path.join(stored, "Photo.jpg"), "utf8"), "first");
+  assert.deepEqual(listedNamesOf(stored), ["Photo.jpg"]);
+});
+
+test("R-TGT-14, R-SRC-8: a file whose name differs from a listed file's only in letter case, with identical content, is in the collection already", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  await importFolder(
+    makeFolder(path.join(temporary, "first"), { "Photo.jpg": "same" }),
+    copyRoot,
+  );
+
+  await importFolder(
+    makeFolder(path.join(temporary, "second"), { "PHOTO.JPG": "same" }),
+    copyRoot,
+  );
+
+  const stored = storedDirectory(copyRoot);
+  assert.deepEqual(contentNamesOf(stored), ["Photo.jpg"]);
+  assert.deepEqual(listedNamesOf(stored), ["Photo.jpg"]);
+  assert.equal(receiptsOf(stored, ".arrival.json").length, 1);
+});
+
+test("R-TGT-14: a file whose name differs from a listed file's only in Unicode normalization is that file", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  const composed = "café.txt";
+  const decomposed = "café.txt";
+  await importFolder(
+    makeFolder(path.join(temporary, "first"), { [composed]: "first" }),
+    copyRoot,
+  );
+
+  await assert.rejects(
+    importFolder(
+      makeFolder(path.join(temporary, "second"), { [decomposed]: "second" }),
+      copyRoot,
+    ),
+    /1 file left out of the collection/,
+  );
+
+  const stored = storedDirectory(copyRoot);
+  assert.deepEqual(contentNamesOf(stored), [composed]);
+  assert.equal(readFileSync(path.join(stored, composed), "utf8"), "first");
+});
+
+test("R-TGT-14: an import writes into a directory a copy holds under another spelling of its name, and makes no second one", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  await importFolder(
+    makeFolder(path.join(temporary, "first"), { "Photos/one.jpg": "one" }),
+    copyRoot,
+  );
+
+  await importFolder(
+    makeFolder(path.join(temporary, "second"), { "photos/two.jpg": "two" }),
+    copyRoot,
+  );
+
+  assert.deepEqual(contentNamesOf(storedDirectory(copyRoot)), ["Photos"]);
+  const photos = storedDirectory(copyRoot, "Photos");
+  assert.deepEqual(contentNamesOf(photos), ["one.jpg", "two.jpg"]);
+  assert.deepEqual(listedNamesOf(photos), ["one.jpg", "two.jpg"]);
+});
+
+test("R-TGT-14, R-SRC-14: of two spellings of one name in an Imported directory, one is imported and the other compared with it, in a dry run as in a real one", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  const folder = makeFolder(temporary, { "a.txt": "lower", "A.txt": "upper" });
+  if (readdirSync(folder).length < 2) {
+    t.skip("this drive holds one file for both spellings");
+    return;
+  }
+
+  await assert.rejects(
+    importFolder(folder, copyRoot, true),
+    /1 file left out of the collection/,
+  );
+  assert.equal(existsSync(storedDirectory(copyRoot)), false);
+
+  await assert.rejects(
+    importFolder(folder, copyRoot),
+    /1 file left out of the collection/,
+  );
+  assert.deepEqual(contentNamesOf(storedDirectory(copyRoot)), ["A.txt"]);
+  assert.equal(
+    readFileSync(storedDirectory(copyRoot, "A.txt"), "utf8"),
+    "upper",
+  );
+});
+
+test("R-SRC-26, R-MFILE-2: a file named .turbo-collection is left out and recorded, since its directory's meta files go there, and every other file is imported", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  const folder = makeFolder(temporary, {
+    ".turbo-collection": "a plain file",
+    "todo.txt": "todo",
+  });
+
+  await assert.rejects(
+    importFolder(folder, copyRoot),
+    /1 file left out of the collection/,
+  );
+
+  const stored = storedDirectory(copyRoot);
+  assert.deepEqual(listedNamesOf(stored), ["todo.txt"]);
+  const errorFile = onlyReceiptOf(stored, "-main.error.json");
+  assert.match(
+    (errorFile.importErrors as { message: string }[])[0]!.message,
+    /\.turbo-collection" is left out: .* holds that directory's meta files/,
+  );
+
+  // A later import leaves it out the same way, and fails no other way.
+  await assert.rejects(
+    importFolder(folder, copyRoot),
+    /1 file left out of the collection/,
+  );
+  assert.deepEqual(listedNamesOf(stored), ["todo.txt"]);
+});
+
+test("R-LOCALFOLDER-3, R-TGT-14: a directory whose name differs from .turbo-collection only in letter case is passed over too", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { copyRoot } = makeCopy(temporary);
+  const folder = makeFolder(temporary, {
+    ".Turbo-Collection/notes.txt": "notes",
+    "photo.jpg": "photo",
+  });
+  const entries = collectEntries(t);
+
+  await importFolder(folder, copyRoot);
+
+  const stored = storedDirectory(copyRoot);
+  assert.deepEqual(listedNamesOf(stored), ["photo.jpg"]);
+  assert.equal(
+    existsSync(path.join(stored, ".turbo-collection", "notes.txt")),
+    false,
+  );
+  assert.ok(
+    entries.some(
+      (entry) =>
+        entry.event === "passed-over" &&
+        String(entry.path).endsWith(".Turbo-Collection"),
+    ),
+  );
+});

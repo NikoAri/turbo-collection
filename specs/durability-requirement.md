@@ -3,11 +3,11 @@
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-05  
 > **Status:** Draft.  
-> **Applies to:** every specification in this project, and the design decisions
-> behind them.
+> **Applies to:** every specification in this project, and every design decision
+> behind one.
 
-This document states durability requirements that every specification and
-design decision in this project MUST satisfy. They exist because this is a
+This document states durability requirements that every specification and design
+decision in this project MUST satisfy. They exist because this is a
 decades-horizon preservation project: a design that is clever today but rests on
 a living tool, a silent assumption, or a single copy becomes a liability once
 that tool dies, that assumption lapses, or that copy is lost. Each requirement
@@ -43,8 +43,8 @@ not this document.
 **Requirement keywords** (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY) are used as
 defined in **RFC 2119**.
 
-**Requirement IDs** in this document carry the prefix `R-DUR-*`, which no other
-normative document in this project uses. Their stability is governed by
+**Requirement IDs** in this document carry `R-DUR-*` as their prefix, which no
+other normative document in this project uses. Their stability is governed by
 [`language-requirement.md`](language-requirement.md) R-LANG-20.
 
 ---
@@ -54,7 +54,7 @@ normative document in this project uses. Their stability is governed by
 Storage is cheap and reliability is not, and what this project most needs to
 survive is a quiet failure: a format no surviving tool can open, a vendor
 guarantee withdrawn without notice, a lone copy lost. None of these announces
-itself. The requirements here remove each as a possibility at design time rather
+itself. Requirements here remove each as a possibility at design time rather
 than leaving it to be caught at recovery time, when it is too late.
 
 They are a general form of a bias that this project's behavioral requirements
@@ -69,8 +69,8 @@ reintroducing fragility this project was built to avoid.
 Self-contained, per [`language-requirement.md`](language-requirement.md)
 R-LANG-5.
 
-- **Preserved data.** Data this project exists to keep safe, as distinct
-  from an intermediate work product that a run creates and is free to discard.
+- **Preserved data.** Data this project exists to keep safe, as distinct from an
+  intermediate work product that a run creates and is free to discard.
 
 - **Contract.** An interface a specification defines between this project and
   something outside it, such as an origin of data, a place where data is kept,
@@ -84,14 +84,15 @@ R-LANG-5.
 ## 3. Durability requirements
 
 **R-DUR-1.** Data this project stores MUST be plain and self-describing,
-readable by ordinary tools without the software that wrote it, and MUST NOT be
+readable by ordinary tools without whichever software wrote it, and MUST NOT be
 locked inside a database, container, or archive format. A tool from that data's
 origin MAY be required to import data, but MUST NOT be required to read it once
 stored.
 
 **R-DUR-2.** Given a choice between storing an independent, self-sufficient copy
 and a space-saving mechanism that makes one datum depend on another (a link, a
-shared block, an in-place transform), this project MUST store the copy.
+shared block, an in-place transform), this project MUST store that independent
+copy.
 
 **R-DUR-3.** A capability or guarantee this project relies on MUST be
 re-verified each time it is relied on, and MUST NOT be assumed from an earlier
@@ -117,8 +118,8 @@ work product, which is not preserved data.
 Required of every normative document by
 [`version-requirement.md`](version-requirement.md) R-PUB-1.
 
-| Level     | Test                                                                                                                                                                                                                 |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Level     | Test                                                                                                                                                                                                                             |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MAJOR** | An obligation stated here is withdrawn or narrowed, so that a specification or design conforming under this document's previous version no longer conforms; or its document language or obligation vocabulary changes (R-PUB-9). |
 | **MINOR** | Additions only. Everything conforming under this document's previous version still conforms.                                                                                                                                     |
-| **PATCH** | Prose improvement that changes no obligation.                                                                                                                                                                        |
+| **PATCH** | Prose improvement that changes no obligation.                                                                                                                                                                                    |

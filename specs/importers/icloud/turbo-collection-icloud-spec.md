@@ -20,8 +20,9 @@ Requirement ID prefix: **not yet assigned.** It MUST NOT be `R-SRC-*`, which
 
 ## 0. Role and scope
 
-Placeholder. Must state: this document binds **Turbo-Collection**, never Apple. Every
-claim here is an observation with a date, not a guarantee anyone has given.
+Placeholder. Must state: this document binds **Turbo-Collection**, never Apple.
+Every claim here is an observation with a date, not a guarantee anyone has
+given.
 
 ## 1. Terminology
 
@@ -58,8 +59,7 @@ than assume.
 ## 4. Output facts
 
 Placeholder. Verified properties of what is produced, dated. Includes collision
-suffix behavior, structure flattening, and pairing of stills with
-motion clips.
+suffix behavior, structure flattening, and pairing of stills with motion clips.
 
 ## 5. Validity and re-validation
 
@@ -71,8 +71,8 @@ when each claim expires.
 This import source names
 [`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md) as its
 primary layout, as [`import-spec.md`](../../import-spec.md) R-SRC-15 requires
-each import source specification to name one. An item that layout is not able
-to place goes to supplied-path layout (R-SRC-20).
+each import source specification to name one. An item that layout is not able to
+place goes to supplied-path layout (R-SRC-20).
 
 Placeholder for a supplied path as R-SRC-21 requires: which root it is relative
 to, and whether that path stays unchanged when one item is exported twice. A

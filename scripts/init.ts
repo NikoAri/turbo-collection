@@ -71,6 +71,18 @@ function lookThrough(
   }
 }
 
+// Path of each file at any depth in `directory` that `isIgnored` does not
+// ignore, relative to `directory`, with `/` between its segments. Anything
+// that is not a directory counts as a file.
+export function filesNotIgnoredIn(
+  directory: string,
+  isIgnored: IsIgnored,
+): string[] {
+  const filesNotIgnored: string[] = [];
+  lookThrough(directory, isIgnored, filesNotIgnored);
+  return filesNotIgnored;
+}
+
 // Throws an error where `directory` holds a file, at any depth, that no starter
 // pattern ignores, after logging every such file (R-INIT-3).
 export function ensureDirectoryHoldsNoFiles(directory: string): void {
@@ -78,8 +90,7 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
   const isIgnored = compileIgnorePatterns(
     readIgnorePatterns(readFileSync(StarterIgnoreFileUrl, "utf8")),
   );
-  const filesNotIgnored: string[] = [];
-  lookThrough(directoryPath, isIgnored, filesNotIgnored);
+  const filesNotIgnored = filesNotIgnoredIn(directoryPath, isIgnored);
 
   for (const file of filesNotIgnored) {
     logger.log({
@@ -153,8 +164,8 @@ export function copyNameFor(givenName: string | undefined): string {
 // Writes `tcConfig` as a new copy's configuration file in `directory`, and
 // returns that file's path. It is written with `wx`, so only where nothing is
 // at its path (parallel-safety-spec.md R-PARALLEL-2). Where something is,
-// another run made `directory` a copy after init found it empty, and this is
-// an error (R-PARALLEL-3).
+// another run made `directory` a copy after this run found it empty, and this
+// is an error (R-PARALLEL-3). Init and backup both make a copy this way.
 export function writeConfigurationFile(
   directory: string,
   tcConfig: TcConfig,
@@ -170,7 +181,7 @@ export function writeConfigurationFile(
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === "EEXIST") {
       throw new TcError(
-        `Another run made "${directory}" a copy first. This init wrote no file there.`,
+        `Another run made "${directory}" a copy first. This run wrote no file there.`,
         { cause: e },
       );
     }

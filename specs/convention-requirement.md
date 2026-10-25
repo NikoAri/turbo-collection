@@ -23,7 +23,7 @@ copy, and `language-requirement.md` does not travel with them.
 
 **Writing rules.** This document's language discipline (controlled vocabulary,
 one term per concept, a split between normative text and commentary) is defined
-in `language-requirement.md`, which binds every normative
-document in this project.
+in `language-requirement.md`, which binds every normative document in this
+project.
 
 ---

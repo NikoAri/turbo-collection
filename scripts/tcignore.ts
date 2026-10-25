@@ -1,6 +1,24 @@
+import { lstatSync, readFileSync } from "node:fs";
+import path from "node:path";
+
 import ignore from "ignore";
 
 // A copy's ignore file, `.tcignore` (meta-file-spec.md R-MFILE-20).
+
+// Where a copy whose root is `copyRoot` keeps its ignore file (R-MFILE-2).
+export function ignoreFileOf(copyRoot: string): string {
+  return path.join(copyRoot, ".tcignore");
+}
+
+// Patterns of an ignore file of a copy at `copyRoot`: none where that copy
+// has no ignore file (R-MFILE-20).
+export function readIgnoreFile(copyRoot: string): IgnorePattern[] {
+  const file = ignoreFileOf(copyRoot);
+  if (lstatSync(file, { throwIfNoEntry: false }) === undefined) {
+    return [];
+  }
+  return readIgnorePatterns(readFileSync(file, "utf8"));
+}
 
 // One pattern of an ignore file: its line's number, counted from 1, and that
 // line as written.

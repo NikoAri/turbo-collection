@@ -3,6 +3,7 @@ import os from "node:os";
 import process from "node:process";
 import { parseArgs } from "node:util";
 
+import { backUp, type BackupArgs } from "./backup.ts";
 import { TcError } from "./helpers/tc-error.ts";
 import { importIntoCopy, type ImportArgs } from "./import.ts";
 import { initializeTc, type InitArgs } from "./init.ts";
@@ -23,6 +24,7 @@ const HELP_TEXT = `Turbo-Collection
 Usage:
   turbo-collection init [<directory>] [-n <name>] [--copy <name>]
   turbo-collection import local-folder <directory> [<copy>] [--dry-run]
+  turbo-collection backup <directory> <directory> [--copy <name>] [--dry-run]
 
 Commands:
   init [<directory>]  Make <directory> the first copy of a new collection,
@@ -33,13 +35,19 @@ Commands:
                       <copy>, under local-folder/<name of directory>/, each
                       at its path there. Without <copy>, the current
                       directory.
+  backup <directory> <directory>
+                      Copy into each of two copies every file the other
+                      holds and it lacks. Where one directory is not a copy
+                      yet, and holds no file, make it one, named with
+                      --copy.
 
 Options:
   -n, --name <name>      Name the new collection. Without it, the collection
                          takes the name of its directory.
-      --copy <name>      Name the new copy. Without it, the copy is "main".
-      --dry-run          With import, say what it would import, and change
-                         nothing.
+      --copy <name>      Name the new copy. With init, without it, the copy
+                         is "main"; a backup that makes a copy needs it.
+      --dry-run          With import or backup, say what it would copy, and
+                         change nothing.
       --verbose          Also show the details that the run's log holds.
       --log-dir <dir>    Write the run's log into <dir>. Without it, the log
                          is in the directory for temporary files.
@@ -64,11 +72,14 @@ type TcCliArgs = {
   init: InitArgs | undefined;
   // What a command line gives import, where it names import
   import: ImportArgs | undefined;
+  // What a command line gives backup, where it names backup
+  backup: BackupArgs | undefined;
 };
 
 // Reads command line `args`. An unknown option, command or import source, init
-// given more than one directory, and import given no directory or more than a
-// directory and a copy, are each an error.
+// given more than one directory, import given no directory or more than a
+// directory and a copy, and backup given other than two directories, are each
+// an error.
 export function parseCliArgs(args: readonly string[]): TcCliArgs {
   const { values, positionals } = parseArgs({
     args: [...args],
@@ -85,7 +96,12 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
   });
   const [command, ...commandArgs] = positionals;
 
-  if (command !== undefined && command !== "init" && command !== "import") {
+  if (
+    command !== undefined &&
+    command !== "init" &&
+    command !== "import" &&
+    command !== "backup"
+  ) {
     throw new TcError(`Unknown command: ${command}`);
   }
 
@@ -106,7 +122,29 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
       command === "import"
         ? importArgsOf(commandArgs, values["dry-run"])
         : undefined,
+    backup:
+      command === "backup"
+        ? {
+            directories: backupDirectoriesOf(commandArgs),
+            copyName: values.copy,
+            dryRun: values["dry-run"],
+          }
+        : undefined,
   };
+}
+
+// Which two directories backup is given in `commandArgs`, every argument
+// after backup (backup-spec.md R-BACKUP-1).
+function backupDirectoriesOf(
+  commandArgs: readonly string[],
+): readonly [string, string] {
+  const [first, second, ...unexpected] = commandArgs;
+  if (first === undefined || second === undefined || unexpected.length > 0) {
+    throw new TcError(
+      `backup takes two directories, and was given ${commandArgs.length}: backup <directory> <directory>\nA path that holds a space needs quotes around it.`,
+    );
+  }
+  return [first, second];
 }
 
 // Which directory init is given in `commandArgs`, every argument after init.
@@ -179,6 +217,11 @@ async function runCommand(tcCliArgs: TcCliArgs, runId: string): Promise<void> {
     return;
   }
 
+  if (tcCliArgs.backup !== undefined) {
+    await backUp(tcCliArgs.backup, runId);
+    return;
+  }
+
   await runTurboCollection();
 }
 
@@ -208,7 +251,7 @@ async function main(args: readonly string[]): Promise<void> {
 
   // `logger` writes into `runLog` until that is disposed of
   using runLog = createRunLog(logDirectory, /*verbose*/ tcCliArgs.verbose);
-  // Disposed of before `_runLog`, being declared after it,
+  // Disposed of before `runLog`, being declared after it,
   // so that run-end is its log's last entry.
   using runScope = new RunScope(args);
 

@@ -129,4 +129,4 @@ groupings by area once there is more than one area to group.
 | 2026-10-22 | [The operation is backup; its mechanism is a mirror](2026-10-22-backup-naming-decision.md)                                                                            | Accepted |
 | 2026-10-22 | [A backup mirrors two copies and leaves their meta files consistent](2026-10-22-backup-mirror-decision.md)                                                            | Accepted |
 | 2026-10-22 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-10-22-language-standard-additions-decision.md)                                 | Accepted |
-| 2026-10-22 | [Paths that differ only in letter case or normalization are one path in a copy](2026-10-22-letter-case-decision.md) | Accepted |
+| 2026-10-22 | [Paths that differ only in letter case or normalization are one path in a copy](2026-10-22-letter-case-decision.md)                                                   | Accepted |

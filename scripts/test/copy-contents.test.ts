@@ -3,6 +3,7 @@ import {
   mkdirSync,
   mkdtempSync,
   realpathSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -227,5 +228,40 @@ test("R-MFILE-7: readCopy ends with an error at a manifest that is not a JSON do
   assert.throws(
     () => readCopy(copyRoot, ignoring("")),
     /manifest\.json" is not a JSON document/,
+  );
+});
+
+test("R-TGT-14: readCopy ends with an error at a meta directory or a manifest spelled in another letter case, or at a file named .turbo-collection", async (t) => {
+  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
+    "a.txt": "a",
+  });
+  // Through another name, since a drive that ignores case takes a rename
+  // to a new letter case alone as no change on some systems
+  const renameTo = (from: string, to: string) => {
+    renameSync(from, `${from}.renaming`);
+    renameSync(`${from}.renaming`, to);
+  };
+  const metaDirectory = path.join(stored, ".turbo-collection");
+
+  renameTo(
+    path.join(metaDirectory, "manifest.json"),
+    path.join(metaDirectory, "Manifest.json"),
+  );
+  assert.throws(
+    () => readCopy(copyRoot, ignoring("")),
+    /Manifest\.json" stands where Turbo-Collection keeps a file named "manifest\.json"/,
+  );
+
+  renameTo(metaDirectory, path.join(stored, ".Turbo-Collection"));
+  assert.throws(
+    () => readCopy(copyRoot, ignoring("")),
+    /Turbo-Collection" stands where Turbo-Collection keeps a directory named "\.turbo-collection"/,
+  );
+
+  rmSync(path.join(stored, ".Turbo-Collection"), { recursive: true });
+  writeFileUnder(stored, ".turbo-collection");
+  assert.throws(
+    () => readCopy(copyRoot, ignoring("")),
+    /keeps a directory named "\.turbo-collection"/,
   );
 });

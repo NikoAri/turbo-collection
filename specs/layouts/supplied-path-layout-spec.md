@@ -4,11 +4,11 @@
 > **Created:** 2026-10-06  
 > **Status:** Draft.
 
-This document is normative over one **Layout**: a content file is stored at the
-path its import source supplied for it, so a tree of files enters a copy in
-whatever shape it had at its import source. It states which items that Layout is
-able to place ([`import-spec.md`](../import-spec.md) R-SRC-15), and which path
-each file receives.
+This document is normative over one **Layout**: a content file is stored at
+whichever path its import source supplied for it, so a tree of files enters a
+copy in whatever shape it had at its import source. It states which items that
+Layout is able to place ([`import-spec.md`](../import-spec.md) R-SRC-15), and
+which path each file receives.
 
 It governs **content files** and nothing else. Where a manifest, a receipt, or a
 configuration file sits is stated by whichever requirements define each of
@@ -36,8 +36,8 @@ One rule serves each of these roles:
   (`import-spec.md` R-SRC-20).
 
 It does not decide what a file inside a directory is called, which `R-NAME-*`
-requirements own, and it does not decide which files a copy ignores, which
-an ignore file does (`meta-file-spec.md` R-MFILE-20).
+requirements own, and it does not decide which files a copy ignores, which an
+ignore file does (`meta-file-spec.md` R-MFILE-20).
 
 ## 1. Terminology
 
@@ -70,7 +70,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   source.
 
 - **Layout.** A rule that determines where in a copy a content file is stored,
-  given that file's own bytes, the metadata its import source supplied with it,
+  given that file's own bytes, any metadata its import source supplied with it,
   and that import source.
 
 - **Primary Layout.** A single Layout that an Import Source specification names
@@ -79,9 +79,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Layout identifier.** This Layout's name as recorded in a copy:
   **`supplied-path-layout`**.
 
-- **Supplied path.** The path a file has at its import source, relative to a
-  root that import source's specification states. An importer supplies it with
-  every file (`import-spec.md` R-SRC-21).
+- **Supplied path.** A path a file has at its import source, relative to a root
+  that import source's specification states. An importer supplies it with every
+  file (`import-spec.md` R-SRC-21).
 
 - **Collection filename.** A name a content file carries inside a copy.
 
@@ -113,10 +113,10 @@ as its Primary Layout, and to an Item this Layout takes in its role as floor.
 
 **R-FOUND-4.** An importer MUST supply a relative path, and Turbo-Collection
 MUST write that path with segments joined by `/`. Turbo-Collection MUST NOT
-store a file outside whichever directory R-FOUND-3 names for it. Turbo-Collection MUST
-refuse an item holding a file whose supplied path is absolute, is empty, or
-contains a segment that is `.` or `..`, and MUST report every item refused this
-way.
+store a file outside whichever directory R-FOUND-3 names for it.
+Turbo-Collection MUST refuse an item holding a file whose supplied path is
+absolute, is empty, or contains a segment that is `.` or `..`, and MUST report
+every item refused this way.
 
 > **Example.** A supplied path of `../../Windows/notes.txt` is refused and
 > reported, never resolved to a place outside its copy.
@@ -127,15 +127,15 @@ way.
 exactly as supplied, including its letter case, except where a Copy already
 holds that segment in another letter case or another Unicode normalization
 (`turbo-collection-spec.md` R-TGT-14). This Layout MUST NOT alter a collection
-filename, which is governed by the `R-NAME-*` family in
+filename, which is governed by `R-NAME-*` requirements in
 [`verify-spec.md`](../verify-spec.md).
 
 ## 5. Recording this Layout
 
-**R-FOUND-6.** Turbo-Collection MUST record the Layout identifier
-`supplied-path-layout`, together with this document's version, for every
-directory it fills under this Layout. Which file carries that record, and under
-which field name, is stated by the requirements that define that file.
+**R-FOUND-6.** Turbo-Collection MUST record `supplied-path-layout`, this
+Layout's identifier, together with this document's version, for every directory
+it fills under this Layout. Which file carries that record, and under which
+field name, is stated by whichever requirements define that file.
 
 ## 6. This document's bump test
 
@@ -143,8 +143,8 @@ Required of every normative document by `version-requirement.md` R-PUB-1. This
 test is measured on **paths**, because a path is what this document gives a file
 in a copy.
 
-| Level     | Test                                                                                                                                                                                                                                                                                           |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Level     | Test                                                                                                                                                                                                                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MAJOR** | A file this Layout places would receive a different path than it received under this document's previous version; or this Layout stops placing an item it placed; or an obligation is withdrawn or narrowed; or its document language or obligation vocabulary changes (`version-requirement.md` R-PUB-9). |
 | **MINOR** | Additions only. Every file placed under this document's previous version keeps its path, and every file already placed stays validly placed.                                                                                                                                                               |
-| **PATCH** | Prose improvement that changes no obligation and moves no file.                                                                                                                                                                                                                                |
+| **PATCH** | Prose improvement that changes no obligation and moves no file.                                                                                                                                                                                                                                            |
