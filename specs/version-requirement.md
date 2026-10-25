@@ -81,8 +81,11 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   (R-PUB-13). A citation that only directs a reader to related or explanatory
   material is informative, not a normative dependency.
 
-- **Meta file.** A file Turbo-Collection writes into a copy of a collection that
-  describes that copy or what happened to it, including any copy of a normative
+- **TC Copy.** One physical instance of a collection, held on one storage
+  medium; TC stands for Turbo-Collection.
+
+- **Meta file.** A file Turbo-Collection writes into a TC Copy that describes
+  that TC Copy or what happened to it, including any copy of a normative
   document carried there.
 
 - **Published.** Issued under a version number carrying no `-draft` suffix, and
@@ -262,9 +265,9 @@ archived terminal text by its full version stamp.
 > record. Intermediate versions live in version control, best effort; nothing
 > load-bearing depends on them (R-PUB-2). What travels with a carried copy is
 > its document's current text and version stamp, which is what
-> `turbo-collection-spec.md` R-VER-8 scatters onto every copy of a collection,
-> so whichever version actually governs data on real drives rides with that
-> data.
+> `turbo-collection-spec.md` R-VER-8 scatters onto every TC Copy of a
+> collection, so whichever version actually governs data on real drives rides
+> with that data.
 
 > **Why a normative dependency is declared, and why against a MAJOR line
 > (R-PUB-13).** A document is self-contained for its own subject (R-PUB-4),

@@ -36,18 +36,18 @@ outside Turbo-Collection entirely.
 flowchart LR
     IN["Import sources<br/>iPhone, iCloud, OneDrive,<br/>SD card, existing archive<br/>(specs/importers/)"]
 
-    subgraph COLL["A collection: one dataset, many peer copies"]
-        C["Peer copies<br/>each a plain tree + manifest"]
+    subgraph COLL["A collection: one dataset, many peer TC Copies"]
+        C["Peer TC Copies<br/>each a plain tree + manifest"]
         C <-->|mirror| C
     end
 
     IN -->|import| COLL
 ```
 
-Every Copy is a plain tree carrying its own manifest, verifiable against it
-independently and reachable as files on its medium (R-TGT-9). **Copies are
-peers: no copy is privileged.** Mirroring is symmetric and add-only, filling
-whichever copy lacks a file another holds, in whichever direction each file
+Every TC Copy is a plain tree carrying its own manifest, verifiable against it
+independently and reachable as files on its medium (R-TGT-9). **TC Copies are
+peers: no TC Copy is privileged.** Mirroring is symmetric and add-only, filling
+whichever TC Copy lacks a file another holds, in whichever direction each file
 needs; on a mismatch neither side is authoritative (R-INT-7). Fixity (checksum),
 not location, is what establishes that data is intact.
 
@@ -107,12 +107,12 @@ are specific to Turbo-Collection's own architecture.
 
 - **A Record lives with whatever data it describes, never in a separate index.**
   There is no central database of what is stored where. A directory carries its
-  own manifest (R-MFILE-8) and its own receipt (R-MFILE-13); every copy carries
-  its own configuration stating what it is (R-MFILE-19), and optionally its own
-  copy of this document (R-VER-8); no memory of an import source is kept between
-  runs (R-SRC-13). A separated directory therefore stays interpretable, and
-  there is no index whose loss makes surviving media unreadable. This cost is
-  accepted deliberately: records are repeated across copies rather than
+  own manifest (R-MFILE-8) and its own receipt (R-MFILE-13); every TC Copy
+  carries its own configuration stating what it is (R-MFILE-19), and optionally
+  its own copy of this document (R-VER-8); no memory of an import source is kept
+  between runs (R-SRC-13). A separated directory therefore stays interpretable,
+  and there is no index whose loss makes surviving media unreadable. This cost
+  is accepted deliberately: records are repeated across TC Copies rather than
   centralized, which is redundancy (`R-DUR-2`) applied to metadata.
 
 ---
@@ -241,48 +241,49 @@ or strip metadata from a Content file, under any circumstance.
 ordinary file manager or file-copy tool MUST be sufficient to browse it and
 recover its contents.
 
-**R-COL-4.** Every Copy MUST be a plain tree, laid out under identical layouts,
-so that a Content file's path is derived identically in every Copy. A Copy MAY
-lack a Content file that another Copy holds: a file imported into one Copy and
-not yet mirrored, or a file a person removed from one Copy. Turbo-Collection
-resolves such a difference only by adding that file where it is absent
-(R-BACKUP-4), never by deleting it where it is present (R-BACKUP-6).
+**R-COL-4.** Every TC Copy MUST be a plain tree, laid out under identical
+layouts, so that a Content file's path is derived identically in every TC Copy.
+A TC Copy MAY lack a Content file that another TC Copy holds: a file imported
+into one TC Copy and not yet mirrored, or a file a person removed from one TC
+Copy. Turbo-Collection resolves such a difference only by adding that file where
+it is absent (R-BACKUP-4), never by deleting it where it is present
+(R-BACKUP-6).
 
-> **Example.** A photo deleted by hand from one Copy is still in every other,
+> **Example.** A photo deleted by hand from one TC Copy is still in every other,
 > and whichever backup runs next copies it back.
 
 ---
 
 ## 6. Layout (`R-TGT-*`)
 
-What must hold of whatever Storage a copy sits on.
+What must hold of whatever Storage a TC Copy sits on.
 
-**R-TGT-1.** Turbo-Collection MUST read and write a Collection Copy as plain
-files on that copy's medium. Turbo-Collection's Core MUST contain no logic
-specific to any individual storage medium, vendor, or service.
+**R-TGT-1.** Turbo-Collection MUST read and write a TC Copy as plain files on
+that TC Copy's medium. Turbo-Collection's Core MUST contain no logic specific to
+any individual storage medium, vendor, or service.
 
-**R-TGT-3.** Which copies a run acts on, and whatever storage settings each
+**R-TGT-3.** Which TC Copies a run acts on, and whatever storage settings each
 needs, MUST be supplied to Turbo-Collection as data rather than hardcoded in
 code.
 
-**R-TGT-4.** Multiple copies MUST be able to coexist and MUST be acted on
-independently. A failure against one copy MUST NOT prevent an attempt against
+**R-TGT-4.** Multiple TC Copies MUST be able to coexist and MUST be acted on
+independently. A failure against one TC Copy MUST NOT prevent an attempt against
 another, and MUST still be reported.
 
-**R-TGT-7.** A copy's storage MUST NOT modify, rename, move, or delete a file
-already present in that copy, meta files included, except as R-TGT-13 states.
-Turbo-Collection's core writes a copy's receipt, never its storage (R-REC-6).
+**R-TGT-7.** A TC Copy's storage MUST NOT modify, rename, move, or delete a file
+already present in that TC Copy, meta files included, except as R-TGT-13 states.
+Turbo-Collection's core writes a TC Copy's receipt, never its storage (R-REC-6).
 
-**R-TGT-9.** Each copy MUST carry, in each of its directories, a manifest
-covering **that directory's own** contents (R-MFILE-8), so that each copy is
-self-verifying without any other copy and without Turbo-Collection, and so that
-any single directory remains verifiable when separated from all others.
+**R-TGT-9.** Each TC Copy MUST carry, in each of its directories, a manifest
+covering **that directory's own** contents (R-MFILE-8), so that each TC Copy is
+self-verifying without any other TC Copy and without Turbo-Collection, and so
+that any single directory remains verifiable when separated from all others.
 
-**R-TGT-11.** Every copy MUST be restorable by ordinary file copy, using no
+**R-TGT-11.** Every TC Copy MUST be restorable by ordinary file copy, using no
 Turbo-Collection software.
 
-> **Example.** With Turbo-Collection gone, a finder restores a copy by copying
-> its files off its drive with any file manager.
+> **Example.** With Turbo-Collection gone, a finder restores a TC Copy by
+> copying its files off its drive with any file manager.
 
 **R-TGT-13.** A Content File is in its Collection only once its directory's
 manifest lists it. Turbo-Collection MUST add a Content File to that manifest
@@ -293,14 +294,15 @@ that its directory's manifest does not list.
 > file unlisted, so it is not in its Collection, and whichever import runs next
 > writes it again.
 
-**R-TGT-14.** Two paths in a Copy that differ only in letter case, or only in
+**R-TGT-14.** Two paths in a TC Copy that differ only in letter case, or only in
 Unicode normalization (NFC versus NFD), are one path. Turbo-Collection MUST NOT
-make a file or a directory at a path that differs from a path a Copy already
+make a file or a directory at a path that differs from a path a TC Copy already
 holds only in letter case or only in Unicode normalization. Where
 Turbo-Collection writes at such a path, Turbo-Collection MUST write to whichever
-path that Copy already holds, keeping that path's letter case and normalization.
+path that TC Copy already holds, keeping that path's letter case and
+normalization.
 
-> **Example.** A Copy holds `Photos/IMG_1.jpg`. An Import bringing
+> **Example.** A TC Copy holds `Photos/IMG_1.jpg`. An Import bringing
 > `photos/img_1.jpg` compares content with `Photos/IMG_1.jpg` (`import-spec.md`
 > R-SRC-23), and makes nothing called `photos`.
 
@@ -311,12 +313,12 @@ path that Copy already holds, keeping that path's letter case and normalization.
 **R-STATUS-1.**  
 **Status Operation**  
 Turbo-Collection MUST provide a read-only **status** operation that reports,
-from receipts alone and with no other copy connected, which copies each
+from receipts alone and with no other TC Copy connected, which TC Copies each
 directory's content has reached, each arrival's date, and whatever content
-present has reached no other copy. It MUST report every arrival's date
-(R-REC-8), and MUST NOT state or imply that a copy still exists or is still
-intact. A status MUST also report each connected Copy's `collectionName` and
-`copyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
+present has reached no other TC Copy. It MUST report every arrival's date
+(R-REC-8), and MUST NOT state or imply that a TC Copy still exists or is still
+intact. A status MUST also report each connected TC Copy's `collectionName` and
+`tcCopyName` (`meta-file-spec.md` R-MFILE-18). What a status reports MUST NOT by
 itself cause a non-zero exit status.
 
 ---
@@ -341,12 +343,12 @@ rather than solve it: now we must know which version a meta file was written
 under, and we must preserve this specification itself. That is a real objection,
 and it is answered in three moves.
 
-1. **This specification is a meta file, and it travels with its data.** Every
-   copy carries whichever version it was written under (R-VER-8). It is a few
+1. **This specification is a meta file, and it travels with its data.** Every TC
+   Copy carries whichever version it was written under (R-VER-8). It is a few
    tens of kilobytes against terabytes; redundancy (`R-DUR-2`) authorizes this
    without argument. This specification cannot float away into abstraction, and
-   it cannot die with a code-hosting service: it survives as long as any copy of
-   its collection survives.
+   it cannot die with a code-hosting service: it survives as long as any TC Copy
+   of its collection survives.
 
 2. **Meta files are self-_evident_, not merely self-_described_** (R-MFILE-6). A
    version stamp tells a reader _which rules applied_; it MUST NOT be a _key to
@@ -381,8 +383,8 @@ specification it belongs to, under each one's own bump test.
 
 ### 9.3 Stamps and self-evidence
 
-**R-VER-8.** Every copy MUST record which version of every specification
-governed writing its content. Every copy SHOULD additionally carry each such
+**R-VER-8.** Every TC Copy MUST record which version of every specification
+governed writing its content. Every TC Copy SHOULD additionally carry each such
 specification's text, so that whichever rules govern its data survive alongside
 that data; where carried, each MUST be named for its document and for its text's
 full version, as `turbo-collection-spec-<version>.md`.
@@ -418,11 +420,11 @@ would cost is worth something.
 | **Albums and tags** (groupings)                                 | A grouping is a plain-text list of members. **R-COL-2 already pre-decides its hard part**: membership can never live inside a photo's own metadata, because Content files are immutable, so it must be an external plain file. A manifest's format (R-MFILE-9) already has exactly a membership list's shape, so a grouping is a _subset of a manifest_: there is no new format to invent, and a JSON manifest has room for whatever fields a grouping needs beyond membership, such as curated order. R-MFILE-8's per-file SHA-256 supplies a stable identity that survives renames and reorganization. Grouping files are ordinary files in a collection, so they are mirrored, checksummed, and verified by machinery that already exists. | R-COL-2, R-MFILE-8, R-MFILE-9, R-BACKUP-4 | **None in its core.** One extension to `turbo-collection-core-spec.md` Section 11's import contract, so importers can report groupings. R-SRC-2 already anticipates exactly this.                                     |
 | **Captions, ratings, faces**                                    | That same shape: per-photo metadata in sidecar files beside that photo, never inside it (R-COL-2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | R-COL-2                                   | None. Sidecars are ordinary files.                                                                                                                                                                                    |
 | **Open-format conversions, and format-risk reporting**          | Proprietary formats (HEIC, HEVC, CR3, NEF, ARW) are a genuine long-term readability risk. A conversion step would write an open-format file rendered from each at-risk Content file, stored in addition to that file and never in place of it (R-COL-2), and a read-only report lists which formats in a collection are proprietary or single-vendor.                                                                                                                                                                                                                                                                                                                                                                                         | R-COL-2, R-MFILE-8                        | **One design, not yet made:** where a rendered file is stored, how it is identified as rendered, and whether it is mirrored or regenerated. That report needs no core change; it only reads data that already exists. |
-| **Versioning and snapshots of a collection**                    | A copy using a repository format (restic, Borg, Kopia). **No other deferred goal requires amending a requirement rather than merely adding storage support for a medium:** R-COL-4 would change from "every copy MUST be a plain tree" to "at least one copy MUST be", and a check that at least one copy is a plain tree would be added with that storage support.                                                                                                                                                                                                                                                                                                                                                                           | R-TGT-1                                   | **One requirement amended (R-COL-4), one check added, storage support for one medium added.** No structural change.                                                                                                   |
-| **Cloud off-site**                                              | A copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | R-TGT-1                                   | None. Storage support for one more medium.                                                                                                                                                                            |
+| **Versioning and snapshots of a collection**                    | A TC Copy using a repository format (restic, Borg, Kopia). **No other deferred goal requires amending a requirement rather than merely adding storage support for a medium:** R-COL-4 would change from "every TC Copy MUST be a plain tree" to "at least one TC Copy MUST be", and a check that at least one TC Copy is a plain tree would be added with that storage support.                                                                                                                                                                                                                                                                                                                                                               | R-TGT-1                                   | **One requirement amended (R-COL-4), one check added, storage support for one medium added.** No structural change.                                                                                                   |
+| **Cloud off-site**                                              | A TC Copy whose medium happens to be remote. It still stores one object per file, so it is a plain tree and satisfies R-COL-4 **today**, with no amendment at all.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | R-TGT-1                                   | None. Storage support for one more medium.                                                                                                                                                                            |
 | **Deduplication**                                               | A manifest already holds a content hash for every file, so duplicate detection is a read-only report over data that already exists. Deliberately deferred: redundancy (`R-DUR-2`) holds that duplicates are cheap and often desirable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | R-MFILE-8                                 | None.                                                                                                                                                                                                                 |
-| **Restore, repair, and manifest rebuild**                       | Each would modify or replace a file already in a copy, which no operation does today (R-BACKUP-5, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix what shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10).                                                                                                                                                                                                                                                    | R-INT-6, R-INT-7, R-INT-10, R-TGT-11      | None to a plain tree. One operation added; whether it may overwrite a content file is a decision deferred with it.                                                                                                    |
-| **Symbolic links and other non-regular files**                  | A symbolic link holds no content of its own: what it points at lives elsewhere, possibly outside whichever directory is being imported. Taking one in means first deciding what is preserved, whatever bytes it points at or a plain record of where it pointed, and neither is needed to preserve a regular file. Until that is decided an Import that meets one fails, adds nothing, and names it (R-SRC-22), a Run that meets one inside a Copy fails and names it (R-CLI-19), a Run given a path that passes through one fails and names where that path leads (R-CLI-20), and a pattern in an ignore file passes over an entry an operator does not want taken in (R-MFILE-21).                                                          | R-SRC-22, R-CLI-19, R-CLI-20, R-MFILE-21  | **One design, not yet made:** whether a link is followed or recorded. R-SRC-22, R-CLI-19 and R-CLI-20 amended.                                                                                                        |
+| **Restore, repair, and manifest rebuild**                       | Each would modify or replace a file already in a TC Copy, which no operation does today (R-BACKUP-5, R-TGT-7). Until one is built, recovery is an ordinary file copy with any file manager (R-TGT-11), and choosing which TC Copy survives a mismatch is a human decision (R-INT-7). Existing requirements already fix what shape such an operation would take: a separate action a human explicitly requests (R-INT-6), reporting every difference rather than overwriting silently (R-INT-10).                                                                                                                                                                                                                                              | R-INT-6, R-INT-7, R-INT-10, R-TGT-11      | None to a plain tree. One operation added; whether it may overwrite a content file is a decision deferred with it.                                                                                                    |
+| **Symbolic links and other non-regular files**                  | A symbolic link holds no content of its own: what it points at lives elsewhere, possibly outside whichever directory is being imported. Taking one in means first deciding what is preserved, whatever bytes it points at or a plain record of where it pointed, and neither is needed to preserve a regular file. Until that is decided an Import that meets one fails, adds nothing, and names it (R-SRC-22), a Run that meets one inside a TC Copy fails and names it (R-CLI-19), a Run given a path that passes through one fails and names where that path leads (R-CLI-20), and a pattern in an ignore file passes over an entry an operator does not want taken in (R-MFILE-21).                                                       | R-SRC-22, R-CLI-19, R-CLI-20, R-MFILE-21  | **One design, not yet made:** whether a link is followed or recorded. R-SRC-22, R-CLI-19 and R-CLI-20 amended.                                                                                                        |
 | **Third-party importers and storage support loaded as plugins** | Import and storage layout contracts are already specified completely enough for anyone to implement either (R-META-1). Making them _dynamically discoverable at runtime_ is purely a loading mechanism: a registry, a discovery path, contract versioning. It is deferred because running third-party code against a collection is a trust decision, and because such machinery cuts against keeping Turbo-Collection's orchestrator thin.                                                                                                                                                                                                                                                                                                    | R-SRC-2, R-META-1                         | **None. This specification never says how an importer or storage support is loaded**, so this is a change to Section 12 and nothing more.                                                                             |
 | **Browsing GUI, AI search, face recognition**                   | Any such tool is a **consumer** of a plain file tree. It reads a collection; Turbo-Collection's core never learns it exists. Any index it builds is derived and disposable.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | R-COL-1, R-COL-3, R-CLI-3                 | **None, ever.** This is plain files' entire payoff.                                                                                                                                                                   |
 
@@ -439,15 +441,15 @@ would cost is worth something.
 
 SL stands for Standard Library
 
-| Concern           | Utility                  | Today's Dependency                                                                    |
-| ----------------- | ------------------------ | ------------------------------------------------------------------------------------- |
-| Operating systems | Windows, macOS and Linux | Supported operating systems (R-CLI-15)                                                |
-| File Manipulation | SL                       | Under every supported operating system (R-CLI-15)                                     |
-| Mirror Engine     | SL                       | Standard Library; a run writes every file into a copy itself (R-PARALLEL-8)           |
-| Integrity         | SL                       | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                         |
-| Meta Files        | SL                       | JSON, parsed by its runtime's standard library, with no third-party dependency        |
-| Logger            | SL                       | Standard Library; a JSON object per line (R-LOG-7), a file per run outside every copy |
-| .tcignore         | `ignore`                 | (MIT) <https://www.npmjs.com/package/ignore>, for gitignore pattern semantics         |
+| Concern           | Utility                  | Today's Dependency                                                                       |
+| ----------------- | ------------------------ | ---------------------------------------------------------------------------------------- |
+| Operating systems | Windows, macOS and Linux | Supported operating systems (R-CLI-15)                                                   |
+| File Manipulation | SL                       | Under every supported operating system (R-CLI-15)                                        |
+| Mirror Engine     | SL                       | Standard Library; a run writes every file into a TC Copy itself (R-PARALLEL-8)           |
+| Integrity         | SL                       | SHA-256 runtime's standard library; JSON manifest (R-MFILE-9)                            |
+| Meta Files        | SL                       | JSON, parsed by its runtime's standard library, with no third-party dependency           |
+| Logger            | SL                       | Standard Library; a JSON object per line (R-LOG-7), a file per run outside every TC Copy |
+| .tcignore         | `ignore`                 | (MIT) <https://www.npmjs.com/package/ignore>, for gitignore pattern semantics            |
 
 **Minimal third-party dependencies, and a test one must pass.**
 
@@ -472,7 +474,7 @@ choosing a computer. It changes no requirement of a specification, and adds one
 more operating system under which conformance is checked (Section 13).
 
 Changing a binding is expected to require changing one module and no data. **If
-a proposed change to a binding would require rewriting a copy's contents, it
+a proposed change to a binding would require rewriting a TC Copy's contents, it
 violates R-COL-4 and that proposal is wrong.**
 
 ---
@@ -509,16 +511,17 @@ conforms to (R-VER-9).
 
 **no-deletion test.**  
 Conformance MUST include a test asserting that no code path deletes a file in
-any copy of a collection. This is checked as a property of code rather than only
-as a behavior of a run, because a deletion path that exists but is not reached
-today is a defect that a later change activates silently. Under R-META-3, a
-delete call traceable to no requirement is unauthorized behavior and is removed.
+any TC Copy of a collection. This is checked as a property of code rather than
+only as a behavior of a run, because a deletion path that exists but is not
+reached today is a defect that a later change activates silently. Under
+R-META-3, a delete call traceable to no requirement is unauthorized behavior and
+is removed.
 
 **Receipt-immutability test.** Conformance MUST include a test asserting that no
 code path alters or deletes a receipt file once it is written (R-REC-7). Like a
 no-deletion test, it checks a property of code: arrival history is a record in a
-copy that nothing else can rebuild, so an overwrite is unrecoverable rather than
-merely expensive.
+TC Copy that nothing else can rebuild, so an overwrite is unrecoverable rather
+than merely expensive.
 
 **Testing.** Every **MUST** in this document MUST map to at least one test.
 Tests are deterministic but bound to an implementation language; this

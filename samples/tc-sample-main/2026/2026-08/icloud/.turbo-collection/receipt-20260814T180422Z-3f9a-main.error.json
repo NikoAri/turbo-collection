@@ -2,7 +2,7 @@
   "version": "0.1.0-draft",
   "tcSpecVersion": "0.1.0-draft",
   "runId": "20260814T180422Z-3f9a",
-  "copyName": "main",
+  "tcCopyName": "main",
   "importErrors": [
     {
       "message": "icloud delivered IMG_4109.HEIC only inside a container that could not be unpacked; refused (R-SRC-5)"

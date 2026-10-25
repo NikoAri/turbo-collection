@@ -3,8 +3,8 @@
 **Status:** Accepted **Date:** 2026-10-08
 
 Asked for its version, Turbo-Collection reports its own version and one version
-stamp for each specification it conforms to, and acts on no copy and no import
-source while doing so.
+stamp for each specification it conforms to, and acts on no TC Copy and no
+import source while doing so.
 
 **It needed a requirement to exist at all.** Behavior that traces to no
 requirement is either a gap in a specification or code to remove (`R-META-3`),
@@ -13,7 +13,7 @@ declaration `R-VER-9` asks of code also had no stated form outside a log.
 
 **A log answers too late.** Every log records these versions (`R-LOG-3`), and a
 log exists only after a run. On a borrowed computer the question comes first:
-whether this program follows the rules a copy was written under.
+whether this program follows the rules a TC Copy was written under.
 
 **The list is every specification, with no fixed length.** Code conforms to the
 core specification, to the meta file specification, and to one specification per

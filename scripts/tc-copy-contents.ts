@@ -6,10 +6,10 @@ import { readManifest, type Manifest } from "./meta-files.ts";
 import { pathKeyOf } from "./paths.ts";
 import type { IsIgnored } from "./tcignore.ts";
 
-// What a copy holds, read from its directories and their meta files, as a
-// backup reads each of its two copies before it writes to either.
+// What a TC Copy holds, read from its directories and their meta files, as a
+// backup reads each of its two TC Copies before it writes to either.
 
-// What one directory of a copy holds.
+// What one directory of a TC Copy holds.
 export type DirectoryContents = {
   // Each content file at its path here, by name: a regular file that is not
   // ignored (meta-file-spec.md R-MFILE-21), whether or not a manifest
@@ -22,9 +22,9 @@ export type DirectoryContents = {
   receiptFiles: string[];
 };
 
-// What a copy holds.
-export type CopyContents = {
-  // Each directory that is not ignored, by its path from its copy's root,
+// What a TC Copy holds.
+export type TcCopyContents = {
+  // Each directory that is not ignored, by its path from its TC Directory,
   // with `/` between segments: "" is that root
   directories: Map<string, DirectoryContents>;
   // Each entry that is neither a regular file nor a directory, such as a
@@ -35,31 +35,34 @@ export type CopyContents = {
   unrecognized: string[];
 };
 
-// A receipt file's name, `receipt-<runId>-<copyName>.<kind>.json`, a run ID
+// A receipt file's name, `receipt-<runId>-<tcCopyName>.<kind>.json`, a run ID
 // being a UTC instant to the second, `-` and four hexadecimal digits
 // (meta-file-spec.md R-MFILE-13, R-MFILE-26).
 const ReceiptFileName =
   /^receipt-\d{8}T\d{6}Z-[0-9a-f]{4}-.+\.(arrival|error|location)\.json$/;
 
-// What a read of one copy needs as it goes, and what it has found so far.
+// What a read of one TC Copy needs as it goes, and what it has found so far.
 type Reading = {
-  copyRoot: string;
+  tcDirectory: string;
   isIgnored: IsIgnored;
-  contents: CopyContents;
+  contents: TcCopyContents;
 };
 
-// Reads what a copy at `copyRoot` holds, at every depth. `isIgnored` is its
-// ignore file's test (meta-file-spec.md R-MFILE-20): a directory it ignores
-// is not looked into, and an entry it ignores is passed over, whatever its
-// kind (turbo-collection-core-spec.md R-CLI-19). A meta file is read
-// whatever that test says of its name.
+// Reads what a TC Copy at `tcDirectory` holds, at every depth. `isIgnored` is
+// its ignore file's test (meta-file-spec.md R-MFILE-20): a directory it ignores
+// is not looked into, and an entry it ignores is passed over, whatever its kind
+// (turbo-collection-core-spec.md R-CLI-19). A meta file is read whatever that
+// test says of its name.
 //
-// A configuration file below `copyRoot` is an error, since a copy never lies
-// inside another (R-CLI-18), and so is a manifest that cannot be read
+// A configuration file below `tcDirectory` is an error, since a TC Copy never
+// lies inside another (R-CLI-18), and so is a manifest that cannot be read
 // (meta-file-spec.md R-MFILE-7).
-export function readCopy(copyRoot: string, isIgnored: IsIgnored): CopyContents {
+export function readTcCopy(
+  tcDirectory: string,
+  isIgnored: IsIgnored,
+): TcCopyContents {
   const reading: Reading = {
-    copyRoot,
+    tcDirectory,
     isIgnored,
     contents: { directories: new Map(), notRegular: [], unrecognized: [] },
   };
@@ -90,7 +93,7 @@ function ensureSpelledAs(
   }
 }
 
-// Whether `isIgnored` ignores `entry`, at `entryPath` in its copy. For that
+// Whether `isIgnored` ignores `entry`, at `entryPath` in its TC Copy. For that
 // test, a directory's path ends in `/` (tcignore.ts).
 function ignores(
   isIgnored: IsIgnored,
@@ -103,7 +106,7 @@ function ignores(
 // Adds what a directory at `relativePath` holds, then each directory it
 // holds, in turn.
 function readDirectory(reading: Reading, relativePath: string): void {
-  const directory = path.join(reading.copyRoot, relativePath);
+  const directory = path.join(reading.tcDirectory, relativePath);
   const here: DirectoryContents = {
     files: new Set(),
     manifest: undefined,
@@ -130,7 +133,7 @@ function readDirectory(reading: Reading, relativePath: string): void {
     } else if (!entry.isFile()) {
       reading.contents.notRegular.push(path.join(directory, entry.name));
     } else if (entryPath !== ".tcignore") {
-      // At a copy's root, `.tcignore` is its ignore file, a meta file
+      // At a TC Directory, `.tcignore` is its ignore file, a meta file
       // (R-MFILE-2), and anywhere else it is a content file
       here.files.add(entry.name);
     }
@@ -138,7 +141,7 @@ function readDirectory(reading: Reading, relativePath: string): void {
 }
 
 // Adds what `.turbo-collection` holds in a directory at `relativePath` to
-// `here`: its manifest, and its receipt files' names. Only a copy's root
+// `here`: its manifest, and its receipt files' names. Only a TC Directory
 // holds a configuration file and location receipt files (meta-file-spec.md
 // R-MFILE-2).
 function readMetaDirectory(
@@ -146,7 +149,7 @@ function readMetaDirectory(
   relativePath: string,
   here: DirectoryContents,
 ): void {
-  const directory = path.join(reading.copyRoot, relativePath);
+  const directory = path.join(reading.tcDirectory, relativePath);
   const metaDirectory = path.join(directory, ".turbo-collection");
   const isRoot = relativePath === "";
   const prefix = isRoot ? "" : `${relativePath}/`;
@@ -158,10 +161,10 @@ function readMetaDirectory(
       ensureSpelledAs(file, entry.name, spelling, false, entry);
     }
     if (entry.name === "turbo-collection-config.json") {
-      // A copy's own configuration file is read before its copy is
+      // A TC Copy's own configuration file is read before its TC Copy is
       if (!isRoot) {
         throw new TcError(
-          `"${directory}" is a copy inside the copy at "${reading.copyRoot}", and a copy never lies inside another.`,
+          `"${directory}" is a TC Directory inside the TC Copy at "${reading.tcDirectory}", and a TC Copy never lies inside another.`,
         );
       }
     } else if (entry.isFile() && entry.name === "manifest.json") {
@@ -180,7 +183,7 @@ function readMetaDirectory(
 
 // Whether `name` is a receipt file's name in a `.turbo-collection`: an
 // arrival file's or an error file's anywhere, and a location receipt file's
-// at a copy's root alone, which `isRoot` says it is (R-MFILE-2).
+// at a TC Directory alone, which `isRoot` says it is (R-MFILE-2).
 function isReceiptFileName(name: string, isRoot: boolean): boolean {
   const kind = ReceiptFileName.exec(name)?.[1];
   return (

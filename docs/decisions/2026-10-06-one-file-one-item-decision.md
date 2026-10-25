@@ -20,9 +20,9 @@ side whether or not anything calls them one item. What `R-SRC-9` adds for an
 item of several files is that all of them arrive or none do. An interrupted
 import already converges when it is run again (`R-SRC-8`).
 
-The cost is a window. After an interrupted local-folder import a copy can hold a
-still image without its clip, and a backup in that window carries the still
-alone. Running the import again closes it.
+The cost is a window. After an interrupted local-folder import a TC Copy can
+hold a still image without its clip, and a backup in that window carries the
+still alone. Running the import again closes it.
 
 This says nothing about an import source whose layout places by item, such as
 one that files photographs by date: its own specification states its items.

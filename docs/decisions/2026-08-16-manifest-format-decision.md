@@ -61,8 +61,8 @@ convenience was removed; the self-description was not.
 - **JSON Lines, one object per line.** Proposed for corruption locality, then
   withdrawn: a byte flip inside a string value damages one entry either way, and
   a flip that breaks the parse leaves readable text a person repairs by hand.
-  `R-TGT-9` is the real protection, putting an independent manifest on every
-  copy, so three drives means three manifests and a corrupt one is found by
+  `R-TGT-9` is the real protection, putting an independent manifest on every TC
+  Copy, so three drives means three manifests and a corrupt one is found by
   comparison.
 - **Keeping the companion anyway, on the grounds that it is cheap.** It is cheap
   in bytes and not free in obligation: a second file that can disagree with the

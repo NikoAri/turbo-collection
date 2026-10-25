@@ -10,7 +10,7 @@ each kind records is left until real errors show what is needed.
 **The two kinds mean different things for the safety of data, so structure
 carries the difference.** An import error is content that never entered the
 collection, so its import source may hold the only copy of it. A mirror error is
-content one copy already holds that failed to reach another, so the content
+content one TC Copy already holds that failed to reach another, so the content
 itself is safe. A `message` is best effort and may be incomplete, so a fact this
 important cannot live only in it.
 
@@ -30,6 +30,6 @@ important cannot live only in it.
 
 `meta-file-spec.md`: `R-MFILE-16` rewritten to `importErrors` and
 `mirrorErrors`, each error object requiring `message` alone, and `R-MFILE-13`
-reworded so that a mirror error is recorded in an error file on the copy
+reworded so that a mirror error is recorded in an error file on the TC Copy
 mirrored from. The error example in that document and the sample error receipts
 follow.

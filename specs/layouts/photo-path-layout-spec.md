@@ -5,7 +5,7 @@
 > **Status:** Draft. No implementation exists yet.
 
 This document is normative over one **Layout**: where a photograph or a video is
-stored inside a copy. It states which items that Layout is able to place
+stored inside a TC Copy. It states which items that Layout is able to place
 ([`import-spec.md`](../import-spec.md) R-SRC-15), and which directory each such
 item receives.
 
@@ -44,18 +44,21 @@ second document and changes nothing here.
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Collection.** A set of files this project preserves, held as one or more
-  peer copies.
+  peer TC Copies.
 
-- **Copy.** One physical instance of a collection, held on one storage medium;
-  copies are peers.
+- **TC Copy.** One physical instance of a collection, held on one storage
+  medium; TC stands for Turbo-Collection. TC Copies are peers.
 
-- **Content file.** Any file a copy holds that is neither a meta file nor an
+- **TC Directory.** A TC Copy's root directory, which holds every file of that
+  TC Copy.
+
+- **Content file.** Any file a TC Copy holds that is neither a meta file nor an
   ignored file. This Layout places photographs and videos (R-PHOTO-1).
 
-- **Meta file.** A file that describes a copy or what happened to it, such as a
-  manifest or a receipt.
+- **Meta file.** A file that describes a TC Copy or what happened to it, such as
+  a manifest or a receipt.
 
-- **Ignored file.** A file in a copy that matches a pattern in that copy's
+- **Ignored file.** A file in a TC Copy that matches a pattern in that TC Copy's
   ignore file.
 
 - **Still image.** A content file encoding one photographic image.
@@ -77,11 +80,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Run.** A single invocation of Turbo-Collection, which performs its work once
   and exits.
 
-- **Layout.** A rule that determines where in a copy a content file is stored,
-  given that file's own bytes, any metadata its import source supplied with it,
-  and that import source.
+- **Layout.** A rule that determines where in a TC Copy a content file is
+  stored, given that file's own bytes, any metadata its import source supplied
+  with it, and that import source.
 
-- **Layout identifier.** This Layout's name as recorded in a copy:
+- **Layout identifier.** This Layout's name as recorded in a TC Copy:
   **`photo-path-layout`**.
 
 - **Governing timestamp.** A single local wall-clock date and time this document
@@ -99,7 +102,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Uncertain date.** An item's state where its governing timestamp was not read
   from a capture timestamp that item itself states (R-PHOTO-8).
 
-- **Collection filename.** A name a content file carries inside a copy.
+- **Collection filename.** A name a content file carries inside a TC Copy.
 
 ## 2. What this Layout places
 
@@ -121,8 +124,8 @@ one's SHA-256 checksum is lowest.
 ## 3. An item's directory
 
 **R-PHOTO-3.** Turbo-Collection MUST store every content file of an item this
-Layout places in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a copy's
-root, where `<YYYY>` and `<MM>` state in which year and month that item's
+Layout places in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a TC
+Directory, where `<YYYY>` and `<MM>` state in which year and month that item's
 governing timestamp falls, and `<import source>` is that import source's
 identifier, recorded as `importSource.specId` in that directory's manifest
 (`meta-file-spec.md` R-MFILE-9).
@@ -178,7 +181,7 @@ is stated by whichever requirements define that file.
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This
 test is measured on **directories**, because a directory is what this document
-puts into a copy.
+puts into a TC Copy.
 
 | Level     | Test                                                                                                                                                                                                                                                                                                             |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

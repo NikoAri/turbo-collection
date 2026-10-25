@@ -3,10 +3,10 @@ import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
 
-// Checks on a directory a run is given, where a copy keeps
-// its configuration, and when two paths in a copy are one.
+// Checks on a directory a run is given, where a TC Copy keeps
+// its configuration, and when two paths in a TC Copy are one.
 
-// A key under which two paths in a copy that differ only in letter case, or
+// A key under which two paths in a TC Copy that differ only in letter case, or
 // only in Unicode normalization, are one path (turbo-collection-spec.md
 // R-TGT-14): `relativePath` in NFC, then in upper case, by no computer's
 // language.
@@ -14,22 +14,22 @@ export function pathKeyOf(relativePath: string): string {
   return relativePath.normalize("NFC").toUpperCase();
 }
 
-// Where a copy whose root is `copyRoot` keeps its configuration file
+// Where a TC Copy whose root is `tcDirectory` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17). Something at this path is what makes a
-// directory a copy.
-export function configurationFileOf(copyRoot: string): string {
+// directory a TC Directory.
+export function configurationFileOf(tcDirectory: string): string {
   return path.join(
-    copyRoot,
+    tcDirectory,
     ".turbo-collection",
     "turbo-collection-config.json",
   );
 }
 
-// Whether `directory` is a copy's root: whether something is at its
+// Whether `directory` is a TC Directory: whether something is at its
 // configuration file's path. A file standing where a directory on that path
 // would be, such as a file named `.turbo-collection`, means nothing is there,
 // which Linux and macOS report as ENOTDIR, not as ENOENT.
-export function isCopyRoot(directory: string): boolean {
+export function isTcDirectory(directory: string): boolean {
   try {
     return (
       lstatSync(configurationFileOf(directory), { throwIfNoEntry: false }) !==
@@ -43,13 +43,13 @@ export function isCopyRoot(directory: string): boolean {
   }
 }
 
-// Root of whichever copy `directory` is or lies inside, or undefined where
+// Whichever TC Directory `directory` is or lies inside, or undefined where
 // there is none (turbo-collection-core-spec.md R-CLI-18). `directory` is looked
 // at first, then each directory above it.
-export function copyRootAtOrAbove(directory: string): string | undefined {
+export function tcDirectoryAtOrAbove(directory: string): string | undefined {
   let current = path.resolve(directory);
   for (;;) {
-    if (isCopyRoot(current)) {
+    if (isTcDirectory(current)) {
       return current;
     }
     const parent = path.dirname(current);
@@ -60,19 +60,19 @@ export function copyRootAtOrAbove(directory: string): string | undefined {
   }
 }
 
-// Throws an error where `directory` lies inside a copy
-// (turbo-collection-core-spec.md R-CLI-18). A copy at `directory` itself does
-// not lie inside one.
-export function ensureNotInsideCopy(directory: string): void {
+// Throws an error where `directory` lies inside a TC Copy
+// (turbo-collection-core-spec.md R-CLI-18). A TC Copy at `directory` itself
+// does not lie inside one.
+export function ensureNotInsideTcCopy(directory: string): void {
   const directoryPath = path.resolve(directory);
   const parent = path.dirname(directoryPath);
   if (parent === directoryPath) {
     return;
   }
-  const copyRoot = copyRootAtOrAbove(parent);
-  if (copyRoot !== undefined) {
+  const tcDirectory = tcDirectoryAtOrAbove(parent);
+  if (tcDirectory !== undefined) {
     throw new TcError(
-      `"${directoryPath}" lies inside a copy at "${copyRoot}", and a copy never lies inside another. Give a directory outside every copy.`,
+      `"${directoryPath}" lies inside a TC Copy at "${tcDirectory}", and a TC Copy never lies inside another. Give a directory outside every TC Copy.`,
     );
   }
 }

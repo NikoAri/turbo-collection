@@ -2,7 +2,7 @@ import { readdirSync } from "node:fs";
 import path from "node:path";
 
 import { TcError } from "./helpers/tc-error.ts";
-import { isCopyRoot, pathKeyOf } from "./paths.ts";
+import { isTcDirectory, pathKeyOf } from "./paths.ts";
 
 // Local-folder Import Source's Importer
 // (local-folder-import-source-spec.md): which files of an Imported directory
@@ -21,7 +21,7 @@ export type LocalFolderListing = {
   // Files to import (R-LOCALFOLDER-3)
   items: Item[];
   // Each directory named `.turbo-collection` passed over (R-LOCALFOLDER-3),
-  // in any spelling a copy holds as one path with its meta files'
+  // in any spelling a TC Copy holds as one path with its meta files'
   // directory (turbo-collection-spec.md R-TGT-14)
   passedOver: string[];
   // Each entry that is neither a regular file nor a directory, such as a
@@ -29,15 +29,15 @@ export type LocalFolderListing = {
   notRegular: string[];
 };
 
-// Looks through `importedDirectory` at every depth, and lists what it finds.
-// A Supplied path starts with `importedDirectory`'s name (R-LOCALFOLDER-6).
-// `isIgnored` says whether a receiving copy's ignore file ignores a Supplied
-// path, which ends in `/` for a directory; an ignored entry of any
-// kind is passed over, and an ignored directory is not looked into
-// (R-LOCALFOLDER-3, import-spec.md R-SRC-22).
+// Looks through `importedDirectory` at every depth, and lists what it finds. A
+// Supplied path starts with `importedDirectory`'s name (R-LOCALFOLDER-6).
+// `isIgnored` says whether a receiving TC Copy's ignore file ignores a Supplied
+// path, which ends in `/` for a directory; an ignored entry of any kind is
+// passed over, and an ignored directory is not looked into (R-LOCALFOLDER-3,
+// import-spec.md R-SRC-22).
 //
-// A directory below `importedDirectory` that is a copy is an error, since an
-// Imported directory holds no copy (R-LOCALFOLDER-2).
+// A directory below `importedDirectory` that is a TC Directory is an error,
+// since an Imported directory holds no TC Copy (R-LOCALFOLDER-2).
 export function listLocalFolder(
   importedDirectory: string,
   isIgnored: (suppliedPath: string) => boolean,
@@ -75,9 +75,9 @@ function lookThrough(
       entry.isDirectory() &&
       pathKeyOf(entry.name) === pathKeyOf(".turbo-collection")
     ) {
-      if (isCopyRoot(directory)) {
+      if (isTcDirectory(directory)) {
         throw new TcError(
-          `"${importedDirectory}" holds a copy at "${directory}", and a directory that holds a copy is not imported. Give a directory that holds none.`,
+          `"${importedDirectory}" holds a TC Copy at "${directory}", and a directory that holds a TC Copy is not imported. Give a directory that holds none.`,
         );
       }
       listing.passedOver.push(entryPath);

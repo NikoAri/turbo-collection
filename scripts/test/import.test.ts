@@ -16,7 +16,7 @@ import path from "node:path";
 import { mock, test, type TestContext } from "node:test";
 
 import { NamedMutex } from "../helpers/named-mutex.ts";
-import { importIntoCopy } from "../import.ts";
+import { importIntoTcCopy } from "../import.ts";
 import { initializeTc } from "../init.ts";
 import { logEntryOf, logger, type LogEntry } from "../logger.ts";
 import type { TcConfig } from "../meta-files.ts";
@@ -57,10 +57,13 @@ function writeFileUnder(
   writeFileSync(file, content);
 }
 
-// A new copy named `photos` in `parent`, made by init.
-function makeCopy(parent: string): { copyRoot: string; tcConfig: TcConfig } {
-  const copyRoot = path.join(parent, "photos");
-  return { copyRoot, tcConfig: initializeTc({ directory: copyRoot }) };
+// A new TC Copy named `photos` in `parent`, made by init.
+function makeTcCopy(parent: string): {
+  tcDirectory: string;
+  tcConfig: TcConfig;
+} {
+  const tcDirectory = path.join(parent, "photos");
+  return { tcDirectory, tcConfig: initializeTc({ directory: tcDirectory }) };
 }
 
 // A directory named `moon-laptop` in `parent`, holding `files`, each a path
@@ -82,22 +85,22 @@ function nextRunId(): string {
   return `20261021T150000Z-${runCount.toString(16).padStart(4, "0")}`;
 }
 
-// Imports `folder` into `copyRoot`.
+// Imports `folder` into `tcDirectory`.
 async function importFolder(
   folder: string,
-  copyRoot: string,
+  tcDirectory: string,
   dryRun = false,
 ): Promise<void> {
-  await importIntoCopy(
-    { directory: folder, copy: copyRoot, dryRun },
+  await importIntoTcCopy(
+    { importDirectory: folder, tcDirectory, dryRun },
     nextRunId(),
   );
 }
 
-// Where a copy at `copyRoot` holds what an import of a directory named
+// Where a TC Copy at `tcDirectory` holds what an import of a directory named
 // `moon-laptop` stores at `relativePath` under it.
-function storedDirectory(copyRoot: string, relativePath = ""): string {
-  return path.join(copyRoot, "local-folder", "moon-laptop", relativePath);
+function storedDirectory(tcDirectory: string, relativePath = ""): string {
+  return path.join(tcDirectory, "local-folder", "moon-laptop", relativePath);
 }
 
 // `directory`'s manifest, parsed.
@@ -139,38 +142,38 @@ function checksumOf(text: string): string {
 
 test("R-SRC-25, R-FOUND-3, R-LOCALFOLDER-6: an import stores each file at local-folder/ and its Supplied path, which starts with the directory's name", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
     "Woodwork/birdhouse/drawing.pdf": "plan",
     "notes.txt": "notes",
   });
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   assert.equal(
     readFileSync(
-      storedDirectory(copyRoot, "Woodwork/birdhouse/drawing.pdf"),
+      storedDirectory(tcDirectory, "Woodwork/birdhouse/drawing.pdf"),
       "utf8",
     ),
     "plan",
   );
   assert.equal(
-    readFileSync(storedDirectory(copyRoot, "notes.txt"), "utf8"),
+    readFileSync(storedDirectory(tcDirectory, "notes.txt"), "utf8"),
     "notes",
   );
 });
 
 test("R-MFILE-9, R-MFILE-10, R-MFILE-12: a manifest names the layout and the import source, and lists each file with its size and checksum, without regard to case", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
     "Soup.txt": "soup",
     "bread.txt": "bread",
   });
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
-  assert.deepEqual(manifestOf(storedDirectory(copyRoot)), {
+  assert.deepEqual(manifestOf(storedDirectory(tcDirectory)), {
     version: "0.1.0-draft",
     layout: { specId: "supplied-path-layout", version: "0.1.0-draft" },
     importSource: { specId: "local-folder", version: "0.1.0-draft" },
@@ -184,13 +187,13 @@ test("R-MFILE-9, R-MFILE-10, R-MFILE-12: a manifest names the layout and the imp
 
 test("R-MFILE-14, R-MFILE-15, R-REC-5: each directory an import writes into gets an arrival file whose digest covers its files", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a", "b.txt": "b" });
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   const arrival = onlyReceiptOf(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     "-main.arrival.json",
   );
   const digest = createHash("sha256")
@@ -198,7 +201,7 @@ test("R-MFILE-14, R-MFILE-15, R-REC-5: each directory an import writes into gets
     .digest("hex");
   assert.equal(arrival.version, "0.1.0-draft");
   assert.equal(arrival.tcSpecVersion, "0.1.0-draft");
-  assert.equal(arrival.copyName, "main");
+  assert.equal(arrival.tcCopyName, "main");
   assert.match(arrival.date as string, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/);
   assert.equal(arrival.fileCount, 2);
   assert.equal(arrival.contentDigest, digest);
@@ -214,18 +217,21 @@ test("R-MFILE-14, R-MFILE-15, R-REC-5: each directory an import writes into gets
 
 test("R-SRC-8: importing a directory again adds nothing, and writes no receipt file", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   assert.equal(
-    receiptsOf(storedDirectory(copyRoot), ".arrival.json").length,
+    receiptsOf(storedDirectory(tcDirectory), ".arrival.json").length,
     1,
   );
-  assert.equal(receiptsOf(storedDirectory(copyRoot), ".error.json").length, 0);
+  assert.equal(
+    receiptsOf(storedDirectory(tcDirectory), ".error.json").length,
+    0,
+  );
   const importEntry = entries.find((entry) => entry.event === "import")!;
   assert.equal(importEntry.files, 0);
   assert.equal(importEntry.leftOut, 0);
@@ -233,28 +239,28 @@ test("R-SRC-8: importing a directory again adds nothing, and writes no receipt f
 
 test("R-SRC-23, R-SRC-26: a file whose content differs from the one at its path in the collection is left out and recorded, and every other file is imported before the run ends with an error", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "soup.txt": "soup" });
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
   writeFileUnder(folder, "soup.txt", "soup, edited");
   writeFileUnder(folder, "cake.txt", "cake");
   const entries = collectEntries(t);
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     /1 file left out of the collection/,
   );
 
   assert.equal(
-    readFileSync(storedDirectory(copyRoot, "soup.txt"), "utf8"),
+    readFileSync(storedDirectory(tcDirectory, "soup.txt"), "utf8"),
     "soup",
   );
   assert.equal(
-    readFileSync(storedDirectory(copyRoot, "cake.txt"), "utf8"),
+    readFileSync(storedDirectory(tcDirectory, "cake.txt"), "utf8"),
     "cake",
   );
   const errorFile = onlyReceiptOf(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     "-main.error.json",
   );
   assert.match(
@@ -270,20 +276,20 @@ test("R-SRC-23, R-SRC-26: a file whose content differs from the one at its path 
 
 test("R-TGT-13: a file the manifest does not list is not in the collection, and an import writes over it and lists it", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a", "b.txt": "b" });
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
   // What an import stopped as it wrote c.txt would leave
-  writeFileUnder(storedDirectory(copyRoot), "c.txt", "c, cut sh");
+  writeFileUnder(storedDirectory(tcDirectory), "c.txt", "c, cut sh");
   writeFileUnder(folder, "c.txt", "c, complete");
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   assert.equal(
-    readFileSync(storedDirectory(copyRoot, "c.txt"), "utf8"),
+    readFileSync(storedDirectory(tcDirectory, "c.txt"), "utf8"),
     "c, complete",
   );
-  const files = manifestOf(storedDirectory(copyRoot)).files as {
+  const files = manifestOf(storedDirectory(tcDirectory)).files as {
     file: string;
   }[];
   assert.deepEqual(
@@ -294,7 +300,7 @@ test("R-TGT-13: a file the manifest does not list is not in the collection, and 
 
 test("R-SRC-24: a file for a directory whose manifest names another import source is left out, and that manifest is left as it is", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   const manifest = {
     version: "0.1.0-draft",
@@ -304,65 +310,71 @@ test("R-SRC-24: a file for a directory whose manifest names another import sourc
     files: [],
   };
   writeFileUnder(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     ".turbo-collection/manifest.json",
     JSON.stringify(manifest),
   );
 
-  await assert.rejects(importFolder(folder, copyRoot), /1 file left out/);
+  await assert.rejects(importFolder(folder, tcDirectory), /1 file left out/);
 
-  assert.equal(existsSync(storedDirectory(copyRoot, "a.txt")), false);
-  assert.deepEqual(manifestOf(storedDirectory(copyRoot)), manifest);
-  assert.equal(receiptsOf(storedDirectory(copyRoot), ".error.json").length, 1);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "a.txt")), false);
+  assert.deepEqual(manifestOf(storedDirectory(tcDirectory)), manifest);
+  assert.equal(
+    receiptsOf(storedDirectory(tcDirectory), ".error.json").length,
+    1,
+  );
 });
 
 test("R-MFILE-7: a manifest that is not JSON ends the run with an error naming it", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   writeFileUnder(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     ".turbo-collection/manifest.json",
     '{"vers',
   );
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     /manifest\.json" is not a JSON document/,
   );
 
-  assert.equal(existsSync(storedDirectory(copyRoot, "a.txt")), false);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "a.txt")), false);
 });
 
-test("R-LOCALFOLDER-3: a file the copy's ignore file ignores is not imported, and an ignored directory is not looked into", async (t) => {
+test("R-LOCALFOLDER-3: a file the TC Copy's ignore file ignores is not imported, and an ignored directory is not looked into", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
-  writeFileSync(path.join(copyRoot, ".tcignore"), "*.tmp\ncache/\n");
+  const { tcDirectory } = makeTcCopy(temporary);
+  writeFileSync(path.join(tcDirectory, ".tcignore"), "*.tmp\ncache/\n");
   const folder = makeFolder(temporary, {
     "keep.txt": "keep",
     "draft.tmp": "draft",
     "cache/thumbnail.jpg": "thumbnail",
   });
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
-  assert.equal(existsSync(storedDirectory(copyRoot, "keep.txt")), true);
-  assert.equal(existsSync(storedDirectory(copyRoot, "draft.tmp")), false);
-  assert.equal(existsSync(storedDirectory(copyRoot, "cache")), false);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "keep.txt")), true);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "draft.tmp")), false);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "cache")), false);
 });
 
 test("R-LOCALFOLDER-3, R-LOG-18: a .turbo-collection directory is passed over, logged, and the files beside it are imported", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
     "Recipes/soup.txt": "soup",
     "Recipes/.turbo-collection/manifest.json": "{}",
   });
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
-  assert.equal(existsSync(storedDirectory(copyRoot, "Recipes/soup.txt")), true);
+  assert.equal(
+    existsSync(storedDirectory(tcDirectory, "Recipes/soup.txt")),
+    true,
+  );
   const passedOver = entries.filter((entry) => entry.event === "passed-over");
   assert.equal(passedOver.length, 1);
   assert.equal(passedOver[0]!.verbose, true);
@@ -372,54 +384,60 @@ test("R-LOCALFOLDER-3, R-LOG-18: a .turbo-collection directory is passed over, l
   );
 });
 
-test("R-LOCALFOLDER-2: a directory that holds a copy is not imported, and nothing is written", async (t) => {
+test("R-LOCALFOLDER-2: a directory that holds a TC Copy is not imported, and nothing is written", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   initializeTc({ directory: path.join(folder, "inner") });
 
-  await assert.rejects(importFolder(folder, copyRoot), /holds a copy at/);
+  await assert.rejects(importFolder(folder, tcDirectory), /holds a TC Copy at/);
 
-  assert.equal(existsSync(path.join(copyRoot, "local-folder")), false);
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
 });
 
-test("R-LOCALFOLDER-2: a directory that is a copy, or lies inside one, is not imported", async (t) => {
+test("R-LOCALFOLDER-2: a directory that is a TC Directory, or lies inside a TC Copy, is not imported", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
-  const other = makeCopy(path.join(temporary, "other")).copyRoot;
+  const { tcDirectory } = makeTcCopy(temporary);
+  const other = makeTcCopy(path.join(temporary, "other")).tcDirectory;
   writeFileUnder(other, "inside/a.txt", "a");
 
   await assert.rejects(
-    importFolder(other, copyRoot),
-    /is a copy, and a copy is not imported/,
+    importFolder(other, tcDirectory),
+    /is a TC Directory, and a TC Copy is not imported/,
   );
   await assert.rejects(
-    importFolder(path.join(other, "inside"), copyRoot),
-    /lies inside a copy at/,
+    importFolder(path.join(other, "inside"), tcDirectory),
+    /lies inside a TC Copy at/,
   );
 });
 
 test("R-LOCALFOLDER-2: a directory with no name of its own, such as a drive's root, is not imported", async (t) => {
-  const { copyRoot } = makeCopy(temporaryDirectory(t));
-  const root = path.parse(copyRoot).root;
+  const { tcDirectory } = makeTcCopy(temporaryDirectory(t));
+  const root = path.parse(tcDirectory).root;
 
-  await assert.rejects(importFolder(root, copyRoot), /has no name of its own/);
+  await assert.rejects(
+    importFolder(root, tcDirectory),
+    /has no name of its own/,
+  );
 });
 
-test("R-CLI-14: an import into a directory that is not a copy is an error, and writes nothing", async (t) => {
+test("R-CLI-14: an import into a directory that is not a TC Copy is an error, and writes nothing", async (t) => {
   const temporary = temporaryDirectory(t);
   const folder = makeFolder(temporary, { "a.txt": "a" });
-  const notACopy = path.join(temporary, "photos");
-  mkdirSync(notACopy);
+  const notATcDirectory = path.join(temporary, "photos");
+  mkdirSync(notATcDirectory);
 
-  await assert.rejects(importFolder(folder, notACopy), /is not a copy/);
+  await assert.rejects(
+    importFolder(folder, notATcDirectory),
+    /is not a TC Directory/,
+  );
 
-  assert.deepEqual(readdirSync(notACopy), []);
+  assert.deepEqual(readdirSync(notATcDirectory), []);
 });
 
 test("R-SRC-22: a directory holding a link imports nothing, and the link is named", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   const target = path.join(temporary, "elsewhere");
   mkdirSync(target);
@@ -428,9 +446,9 @@ test("R-SRC-22: a directory holding a link imports nothing, and the link is name
   symlinkSync(target, path.join(folder, "latest"), "junction");
   const entries = collectEntries(t);
 
-  await assert.rejects(importFolder(folder, copyRoot), /imports nothing/);
+  await assert.rejects(importFolder(folder, tcDirectory), /imports nothing/);
 
-  assert.equal(existsSync(path.join(copyRoot, "local-folder")), false);
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
   assert.ok(
     entries.some(
       (entry) =>
@@ -439,29 +457,29 @@ test("R-SRC-22: a directory holding a link imports nothing, and the link is name
   );
 });
 
-test("R-SRC-22: a link that the copy's ignore file ignores is passed over", async (t) => {
+test("R-SRC-22: a link that the TC Copy's ignore file ignores is passed over", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
-  writeFileSync(path.join(copyRoot, ".tcignore"), "latest\n");
+  const { tcDirectory } = makeTcCopy(temporary);
+  writeFileSync(path.join(tcDirectory, ".tcignore"), "latest\n");
   const folder = makeFolder(temporary, { "a.txt": "a" });
   const target = path.join(temporary, "elsewhere");
   mkdirSync(target);
   symlinkSync(target, path.join(folder, "latest"), "junction");
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
-  assert.equal(existsSync(storedDirectory(copyRoot, "a.txt")), true);
+  assert.equal(existsSync(storedDirectory(tcDirectory, "a.txt")), true);
 });
 
 test("R-SRC-14, R-LOG-15, R-LOG-18: a dry run writes nothing, and logs what a real import would write", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a", "b/c.txt": "cc" });
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot, /*dryRun*/ true);
+  await importFolder(folder, tcDirectory, /*dryRun*/ true);
 
-  assert.equal(existsSync(path.join(copyRoot, "local-folder")), false);
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
   const transfers = entries.filter((entry) => entry.event === "transfer");
   assert.equal(transfers.length, 2);
   const importEntry = entries.find((entry) => entry.event === "import")!;
@@ -471,39 +489,42 @@ test("R-SRC-14, R-LOG-15, R-LOG-18: a dry run writes nothing, and logs what a re
 
 test("R-LOG-15, R-LOG-18: an import logs a verbose transfer for each file it writes, and an import entry at the end", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "abc" });
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   const transfer = entries.find((entry) => entry.event === "transfer")!;
   assert.equal(transfer.verbose, true);
   assert.equal(transfer.from, path.join(folder, "a.txt"));
-  assert.equal(transfer.to, storedDirectory(copyRoot, "a.txt"));
+  assert.equal(transfer.to, storedDirectory(tcDirectory, "a.txt"));
   assert.equal(transfer.size, 3);
   const importEntry = entries.at(-1)!;
   assert.equal(importEntry.event, "import");
   assert.equal(importEntry.importSource, "local-folder");
   assert.equal(importEntry.from, folder);
-  assert.equal(importEntry.to, copyRoot);
+  assert.equal(importEntry.to, tcDirectory);
   assert.equal(importEntry.files, 1);
   assert.equal(importEntry.bytes, 3);
   assert.equal(importEntry.leftOut, 0);
 });
 
-test("R-SRC-26: a file that cannot be written into the copy is left out and recorded in its directory's error file, and every other file is imported", async (t) => {
+test("R-SRC-26: a file that cannot be written into the TC Copy is left out and recorded in its directory's error file, and every other file is imported", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a", "b.txt": "b" });
   // A directory where a.txt is to go
-  mkdirSync(storedDirectory(copyRoot, "a.txt"), { recursive: true });
+  mkdirSync(storedDirectory(tcDirectory, "a.txt"), { recursive: true });
 
-  await assert.rejects(importFolder(folder, copyRoot), /1 file left out/);
+  await assert.rejects(importFolder(folder, tcDirectory), /1 file left out/);
 
-  assert.equal(readFileSync(storedDirectory(copyRoot, "b.txt"), "utf8"), "b");
+  assert.equal(
+    readFileSync(storedDirectory(tcDirectory, "b.txt"), "utf8"),
+    "b",
+  );
   const errorFile = onlyReceiptOf(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     "-main.error.json",
   );
   assert.match(
@@ -512,45 +533,45 @@ test("R-SRC-26: a file that cannot be written into the copy is left out and reco
   );
 });
 
-test("R-CLI-18: a copy inside the copy, on the way to a directory an import fills, is an error", async (t) => {
+test("R-CLI-18: a TC Copy inside the TC Copy, on the way to a directory an import fills, is an error", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   writeFileUnder(
-    storedDirectory(copyRoot),
+    storedDirectory(tcDirectory),
     ".turbo-collection/turbo-collection-config.json",
     "{}",
   );
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
-    /a copy never lies inside another/,
+    importFolder(folder, tcDirectory),
+    /a TC Copy never lies inside another/,
   );
 });
 
 test("R-PARALLEL-5: an import while another run holds the collection's lock is an error naming the collection", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot, tcConfig } = makeCopy(temporary);
+  const { tcDirectory, tcConfig } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   await using _held = await NamedMutex.take(tcConfig.collectionId);
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     new RegExp(
       `"photos" \\(${tcConfig.collectionId}\\); its process ID is not known`,
     ),
   );
 
-  assert.equal(existsSync(path.join(copyRoot, "local-folder")), false);
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
 });
 
 test("R-LOG-13: an import logs the configuration it read, and where, as a verbose entry", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot, tcConfig } = makeCopy(temporary);
+  const { tcDirectory, tcConfig } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
   const configuration = entries.find(
     (entry) => entry.event === "configuration",
@@ -575,21 +596,21 @@ function listedNamesOf(directory: string): string[] {
 
 test("R-TGT-14, R-SRC-23: a file whose name differs from a listed file's only in letter case is that file, and is left out where its content differs", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   await importFolder(
     makeFolder(path.join(temporary, "first"), { "Photo.jpg": "first" }),
-    copyRoot,
+    tcDirectory,
   );
 
   await assert.rejects(
     importFolder(
       makeFolder(path.join(temporary, "second"), { "photo.jpg": "second" }),
-      copyRoot,
+      tcDirectory,
     ),
     /1 file left out of the collection/,
   );
 
-  const stored = storedDirectory(copyRoot);
+  const stored = storedDirectory(tcDirectory);
   assert.deepEqual(contentNamesOf(stored), ["Photo.jpg"]);
   assert.equal(readFileSync(path.join(stored, "Photo.jpg"), "utf8"), "first");
   assert.deepEqual(listedNamesOf(stored), ["Photo.jpg"]);
@@ -597,18 +618,18 @@ test("R-TGT-14, R-SRC-23: a file whose name differs from a listed file's only in
 
 test("R-TGT-14, R-SRC-8: a file whose name differs from a listed file's only in letter case, with identical content, is in the collection already", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   await importFolder(
     makeFolder(path.join(temporary, "first"), { "Photo.jpg": "same" }),
-    copyRoot,
+    tcDirectory,
   );
 
   await importFolder(
     makeFolder(path.join(temporary, "second"), { "PHOTO.JPG": "same" }),
-    copyRoot,
+    tcDirectory,
   );
 
-  const stored = storedDirectory(copyRoot);
+  const stored = storedDirectory(tcDirectory);
   assert.deepEqual(contentNamesOf(stored), ["Photo.jpg"]);
   assert.deepEqual(listedNamesOf(stored), ["Photo.jpg"]);
   assert.equal(receiptsOf(stored, ".arrival.json").length, 1);
@@ -616,49 +637,49 @@ test("R-TGT-14, R-SRC-8: a file whose name differs from a listed file's only in 
 
 test("R-TGT-14: a file whose name differs from a listed file's only in Unicode normalization is that file", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const composed = "café.txt";
   const decomposed = "café.txt";
   await importFolder(
     makeFolder(path.join(temporary, "first"), { [composed]: "first" }),
-    copyRoot,
+    tcDirectory,
   );
 
   await assert.rejects(
     importFolder(
       makeFolder(path.join(temporary, "second"), { [decomposed]: "second" }),
-      copyRoot,
+      tcDirectory,
     ),
     /1 file left out of the collection/,
   );
 
-  const stored = storedDirectory(copyRoot);
+  const stored = storedDirectory(tcDirectory);
   assert.deepEqual(contentNamesOf(stored), [composed]);
   assert.equal(readFileSync(path.join(stored, composed), "utf8"), "first");
 });
 
-test("R-TGT-14: an import writes into a directory a copy holds under another spelling of its name, and makes no second one", async (t) => {
+test("R-TGT-14: an import writes into a directory a TC Copy holds under another spelling of its name, and makes no second one", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   await importFolder(
     makeFolder(path.join(temporary, "first"), { "Photos/one.jpg": "one" }),
-    copyRoot,
+    tcDirectory,
   );
 
   await importFolder(
     makeFolder(path.join(temporary, "second"), { "photos/two.jpg": "two" }),
-    copyRoot,
+    tcDirectory,
   );
 
-  assert.deepEqual(contentNamesOf(storedDirectory(copyRoot)), ["Photos"]);
-  const photos = storedDirectory(copyRoot, "Photos");
+  assert.deepEqual(contentNamesOf(storedDirectory(tcDirectory)), ["Photos"]);
+  const photos = storedDirectory(tcDirectory, "Photos");
   assert.deepEqual(contentNamesOf(photos), ["one.jpg", "two.jpg"]);
   assert.deepEqual(listedNamesOf(photos), ["one.jpg", "two.jpg"]);
 });
 
 test("R-TGT-14, R-SRC-14: of two spellings of one name in an Imported directory, one is imported and the other compared with it, in a dry run as in a real one", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, { "a.txt": "lower", "A.txt": "upper" });
   if (readdirSync(folder).length < 2) {
     t.skip("this drive holds one file for both spellings");
@@ -666,36 +687,36 @@ test("R-TGT-14, R-SRC-14: of two spellings of one name in an Imported directory,
   }
 
   await assert.rejects(
-    importFolder(folder, copyRoot, true),
+    importFolder(folder, tcDirectory, true),
     /1 file left out of the collection/,
   );
-  assert.equal(existsSync(storedDirectory(copyRoot)), false);
+  assert.equal(existsSync(storedDirectory(tcDirectory)), false);
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     /1 file left out of the collection/,
   );
-  assert.deepEqual(contentNamesOf(storedDirectory(copyRoot)), ["A.txt"]);
+  assert.deepEqual(contentNamesOf(storedDirectory(tcDirectory)), ["A.txt"]);
   assert.equal(
-    readFileSync(storedDirectory(copyRoot, "A.txt"), "utf8"),
+    readFileSync(storedDirectory(tcDirectory, "A.txt"), "utf8"),
     "upper",
   );
 });
 
 test("R-SRC-26, R-MFILE-2: a file named .turbo-collection is left out and recorded, since its directory's meta files go there, and every other file is imported", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
     ".turbo-collection": "a plain file",
     "todo.txt": "todo",
   });
 
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     /1 file left out of the collection/,
   );
 
-  const stored = storedDirectory(copyRoot);
+  const stored = storedDirectory(tcDirectory);
   assert.deepEqual(listedNamesOf(stored), ["todo.txt"]);
   const errorFile = onlyReceiptOf(stored, "-main.error.json");
   assert.match(
@@ -705,7 +726,7 @@ test("R-SRC-26, R-MFILE-2: a file named .turbo-collection is left out and record
 
   // A later import leaves it out the same way, and fails no other way.
   await assert.rejects(
-    importFolder(folder, copyRoot),
+    importFolder(folder, tcDirectory),
     /1 file left out of the collection/,
   );
   assert.deepEqual(listedNamesOf(stored), ["todo.txt"]);
@@ -713,16 +734,16 @@ test("R-SRC-26, R-MFILE-2: a file named .turbo-collection is left out and record
 
 test("R-LOCALFOLDER-3, R-TGT-14: a directory whose name differs from .turbo-collection only in letter case is passed over too", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot } = makeCopy(temporary);
+  const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
     ".Turbo-Collection/notes.txt": "notes",
     "photo.jpg": "photo",
   });
   const entries = collectEntries(t);
 
-  await importFolder(folder, copyRoot);
+  await importFolder(folder, tcDirectory);
 
-  const stored = storedDirectory(copyRoot);
+  const stored = storedDirectory(tcDirectory);
   assert.deepEqual(listedNamesOf(stored), ["photo.jpg"]);
   assert.equal(
     existsSync(path.join(stored, ".turbo-collection", "notes.txt")),

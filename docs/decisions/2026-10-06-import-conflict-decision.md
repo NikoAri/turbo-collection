@@ -7,10 +7,10 @@ with different content, the file already there is kept, the arriving file stays
 out of the collection and is reported, every other file of that import comes in,
 and the run exits non-zero.
 
-**It is what mirroring already does.** Two copies holding different content at
-one path are reported and neither is overwritten (`R-BACKUP-4`). An import meets
-the same situation, most often when a file at an import source was edited after
-it was first imported, and one answer keeps the two operations alike.
+**It is what mirroring already does.** Two TC Copies holding different content
+at one path are reported and neither is overwritten (`R-BACKUP-4`). An import
+meets the same situation, most often when a file at an import source was edited
+after it was first imported, and one answer keeps the two operations alike.
 
 **The collection keeps the first version it saw.** Import only adds
 (`R-SRC-12`), so newer content has no way in at that path, and the report

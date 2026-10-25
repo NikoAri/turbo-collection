@@ -14,18 +14,18 @@ That is what extensibility means here. How importers are loaded is a binding
 **R-SRC-25.**  
 **Import Operation**  
 In an **import**, Turbo-Collection MUST take two directories from that import's
-command line: first a directory to import from, then a Copy to import into.
-Turbo-Collection MUST import into that Copy, drawing from Import Source
-`local-folder`
+command line: first a directory to import from, then a TC Directory, naming
+which TC Copy to import into. Turbo-Collection MUST import into that TC Copy,
+drawing from Import Source `local-folder`
 ([`local-folder-import-source-spec.md`](importers/local-folder/local-folder-import-source-spec.md))
 with that directory to import from as that Import Source's setting (R-SRC-3).
 Turbo-Collection MUST end an import not given exactly two directories with an
 error, before that import writes anything.
 
 > **Example.** `turbo-collection import D:\moon-laptop E:\photos` imports from
-> `D:\moon-laptop` into a Copy at `E:\photos`, and where `E:\photos` is not a
-> Copy, is refused and imports nothing (R-CLI-14). Given `D:\moon-laptop` alone,
-> an import ends with an error and imports nothing.
+> `D:\moon-laptop` into a TC Copy at `E:\photos`, and where `E:\photos` is not a
+> TC Directory, is refused and imports nothing (R-CLI-14). Given
+> `D:\moon-laptop` alone, an import ends with an error and imports nothing.
 
 **R-SRC-1.** Files MUST enter a collection only by Import. Turbo-Collection's
 Core MUST contain no logic specific to any individual import source, device,
@@ -126,8 +126,8 @@ import-source `specId`. What compatibility an import source guarantees within a
 MAJOR line is stated by that import source's own specification;
 Turbo-Collection's core does not adjudicate it.
 
-**R-SRC-17.** An importer MUST NOT write into a copy of a collection, and MUST
-NOT create, modify, or delete any meta file. Turbo-Collection alone writes
+**R-SRC-17.** An importer MUST NOT write into a TC Copy of a collection, and
+MUST NOT create, modify, or delete any meta file. Turbo-Collection alone writes
 collection content and meta files: an importer supplies an item's content, and
 Turbo-Collection reads it, determines that item's collection path (R-SRC-10),
 and writes it.
@@ -161,18 +161,18 @@ entry that is neither a regular file nor a directory, such as a symbolic link, a
 junction, a device, a socket, or a named pipe, Turbo-Collection MUST fail that
 Import, MUST add no file to its Collection in that Import, and MUST report every
 such entry. Turbo-Collection MUST NOT follow such an entry. Turbo-Collection
-MUST pass over an entry that matches a pattern in an ignore file of whichever
+MUST pass over an entry that matches a pattern in an ignore file of whichever TC
 Copy is being imported into (`meta-file-spec.md` R-MFILE-21), and MUST NOT fail
 an Import on account of such an entry.
 
 > **Example.** A folder holds a symbolic link named `latest` that points at
 > another folder. An Import of that folder fails, names `latest`, and adds
-> nothing. Once a pattern matching `latest` is in a receiving Copy's ignore
-> file, that Copy's next Import passes over it and takes in everything else.
+> nothing. Once a pattern matching `latest` is in a receiving TC Copy's ignore
+> file, that TC Copy's next Import passes over it and takes in everything else.
 
 **R-SRC-23.** **Import never overwrites.** Where an Import would store a file at
-a path at which a Copy being imported into already holds a Content File in its
-Collection (R-TGT-13) with differing content, Turbo-Collection MUST NOT
+a path at which a TC Copy being imported into already holds a Content File in
+its Collection (R-TGT-13) with differing content, Turbo-Collection MUST NOT
 overwrite that Content File (R-SRC-12), MUST leave that arriving file out of
 that Collection, and MUST report every such file. Turbo-Collection MUST still
 import every other file of that Import. A Run in which an Import reports such a
@@ -193,12 +193,12 @@ import every other file of that Import. A Run in which an Import reports such a
 file MUST exit with a non-zero status.
 
 **R-SRC-26.** **A file that cannot be read or written.** Where Turbo-Collection
-cannot read a file an Importer supplies, or cannot write it into its Copy,
+cannot read a file an Importer supplies, or cannot write it into its TC Copy,
 Turbo-Collection MUST leave that file out of its Collection, MUST report it, and
 MUST record it in an error file (`meta-file-spec.md` R-MFILE-16) in whichever
 directory that file was to go to, making that directory where needed. A file
 whose size or modification time changes while Turbo-Collection reads it counts
 as one it cannot read. Turbo-Collection MUST still import every other file of
 that Import, and a Run in which an Import leaves such a file out MUST exit with
-a non-zero status. Where that Copy is unreachable, read-only or full,
+a non-zero status. Where that TC Copy is unreachable, read-only or full,
 Turbo-Collection MUST end that Run with an error.

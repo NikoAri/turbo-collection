@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 
 import { backUp, type BackupArgs } from "./backup.ts";
 import { TcError } from "./helpers/tc-error.ts";
-import { importIntoCopy, type ImportArgs } from "./import.ts";
+import { importIntoTcCopy, type ImportArgs } from "./import.ts";
 import { initializeTc, type InitArgs } from "./init.ts";
 import {
   createRunLog,
@@ -22,30 +22,33 @@ import {
 const HELP_TEXT = `Turbo-Collection
 
 Usage:
-  turbo-collection init [<directory>] [-n <name>] [--copy <name>]
-  turbo-collection import local-folder <directory> [<copy>] [--dry-run]
-  turbo-collection backup <directory> <directory> [--copy <name>] [--dry-run]
+  turbo-collection init [<tc-directory>] [-n <name>] [--tc-copy <name>]
+  turbo-collection import <import-directory> <tc-directory> [--dry-run]
+  turbo-collection backup <tc-directory> <tc-directory> [--tc-copy <name>]
+                          [--dry-run]
 
 Commands:
-  init [<directory>]  Make <directory> the first copy of a new collection,
-                      creating it where it does not exist. Without
-                      <directory>, the current directory.
-  import local-folder <directory> [<copy>]
-                      Import every file in <directory> into the copy
-                      <copy>, under local-folder/<name of directory>/, each
-                      at its path there. Without <copy>, the current
-                      directory.
-  backup <directory> <directory>
-                      Copy into each of two copies every file the other
-                      holds and it lacks. Where one directory is not a copy
-                      yet, and holds no file, make it one, named with
-                      --copy.
+  init [<tc-directory>]
+                      Make the first TC Copy of a new collection in
+                      <tc-directory>, creating it where it does not exist.
+                      Without <tc-directory>, the current directory.
+  import <import-directory> <tc-directory>
+                      Import every file in <import-directory> into the TC
+                      Copy in <tc-directory>, under
+                      local-folder/<name of import-directory>/, each at its
+                      path there.
+  backup <tc-directory> <tc-directory>
+                      Copy into each of two TC Copies every file the other
+                      holds and it lacks. Where one directory is not a TC
+                      Directory yet, and holds no file, make a TC Copy
+                      there, named with --tc-copy.
 
 Options:
   -n, --name <name>      Name the new collection. Without it, the collection
                          takes the name of its directory.
-      --copy <name>      Name the new copy. With init, without it, the copy
-                         is "main"; a backup that makes a copy needs it.
+      --tc-copy <name>   Name the new TC Copy. With init, without it, the TC
+                         Copy is "main"; a backup that makes a TC Copy needs
+                         it.
       --dry-run          With import or backup, say what it would copy, and
                          change nothing.
       --verbose          Also show the details that the run's log holds.
@@ -76,10 +79,9 @@ type TcCliArgs = {
   backup: BackupArgs | undefined;
 };
 
-// Reads command line `args`. An unknown option, command or import source, init
-// given more than one directory, import given no directory or more than a
-// directory and a copy, and backup given other than two directories, are each
-// an error.
+// Reads command line `args`. An unknown option or command, init given more
+// than one directory, and import or backup given other than two directories,
+// are each an error.
 export function parseCliArgs(args: readonly string[]): TcCliArgs {
   const { values, positionals } = parseArgs({
     args: [...args],
@@ -89,7 +91,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
       verbose: { type: "boolean", default: false },
       "log-dir": { type: "string" },
       name: { type: "string", short: "n" },
-      copy: { type: "string" },
+      "tc-copy": { type: "string" },
       "dry-run": { type: "boolean", default: false },
     },
     allowPositionals: true,
@@ -115,7 +117,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
         ? {
             directory: initDirectoryOf(commandArgs),
             collectionName: values.name,
-            copyName: values.copy,
+            tcCopyName: values["tc-copy"],
           }
         : undefined,
     import:
@@ -126,7 +128,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
       command === "backup"
         ? {
             directories: backupDirectoriesOf(commandArgs),
-            copyName: values.copy,
+            tcCopyName: values["tc-copy"],
             dryRun: values["dry-run"],
           }
         : undefined,
@@ -159,32 +161,23 @@ function initDirectoryOf(commandArgs: readonly string[]): string {
   return directory;
 }
 
-// What import is given in `commandArgs`, every argument after import: an
-// import source, local-folder alone, then a directory and a copy. Given no
-// copy, import acts on its working directory (import-spec.md R-SRC-25).
+// What import is given in `commandArgs`, every argument after import: a
+// directory to import from, then a TC Directory (import-spec.md R-SRC-25).
 function importArgsOf(
   commandArgs: readonly string[],
   dryRun: boolean,
 ): ImportArgs {
-  const [importSource, directory, copy = ".", ...unexpected] = commandArgs;
-  if (importSource !== "local-folder") {
+  const [importDirectory, tcDirectory, ...unexpected] = commandArgs;
+  if (
+    importDirectory === undefined ||
+    tcDirectory === undefined ||
+    unexpected.length > 0
+  ) {
     throw new TcError(
-      importSource === undefined
-        ? "import takes an import source: import local-folder <directory> [<copy>]"
-        : `Unknown import source: ${importSource}. The one there is: local-folder.`,
+      `import takes two directories, and was given ${commandArgs.length}: import <import-directory> <tc-directory>\nA path that holds a space needs quotes around it.`,
     );
   }
-  if (directory === undefined) {
-    throw new TcError(
-      "import local-folder takes the directory to import: import local-folder <directory> [<copy>]",
-    );
-  }
-  if (unexpected.length > 0) {
-    throw new TcError(
-      `import local-folder takes a directory and a copy, and was also given: ${unexpected.join(" ")}\nA path that holds a space needs quotes around it.`,
-    );
-  }
-  return { directory, copy, dryRun };
+  return { importDirectory, tcDirectory, dryRun };
 }
 
 // A version report (turbo-collection-core-spec.md R-CLI-16).
@@ -213,7 +206,7 @@ async function runCommand(tcCliArgs: TcCliArgs, runId: string): Promise<void> {
   }
 
   if (tcCliArgs.import !== undefined) {
-    await importIntoCopy(tcCliArgs.import, runId);
+    await importIntoTcCopy(tcCliArgs.import, runId);
     return;
   }
 

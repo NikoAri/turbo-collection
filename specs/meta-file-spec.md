@@ -4,9 +4,9 @@
 > **Created:** 2026-08-27  
 > **Status:** Draft.
 
-This document is normative over **meta files**: files a copy holds that describe
-it or what happened to it, rather than content it preserves. It states what each
-one is called, where it sits, and what is inside it.
+This document is normative over **meta files**: files a TC Copy holds that
+describe it or what happened to it, rather than content it preserves. It states
+what each one is called, where it sits, and what is inside it.
 
 It governs meta files entirely and content files not at all. Where a content
 file goes is stated by a layout specification, such as
@@ -24,7 +24,7 @@ Requirement ID prefix: **`R-MFILE-*`**.
 > [receipts decision](../docs/decisions/2026-09-07-receipts-decision.md),
 > [location-receipt decision](../docs/decisions/2026-09-10-location-receipt-decision.md),
 > [config-placement decision](../docs/decisions/2026-09-27-config-placement-decision.md),
-> [collection-naming decision](../docs/decisions/2026-10-14-collection-naming-decision.md),
+> [collection-naming decision](../docs/decisions/2026-10-25-collection-naming-decision.md),
 > and [design-record](../docs/design-record.md).
 
 ---
@@ -37,7 +37,7 @@ given something Turbo-Collection must write down, what does that file look like.
 It does not state **when** Turbo-Collection writes one, or what it may do
 afterward. Writing an arrival only after its content is written, never altering
 a receipt file once it is written, and refusing to treat a receipt as evidence a
-copy still exists are behavior, and they stay in
+TC Copy still exists are behavior, and they stay in
 [`verify-spec.md`](verify-spec.md).
 
 ## 1. Terminology
@@ -45,16 +45,20 @@ copy still exists are behavior, and they stay in
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Collection.** A set of files this project preserves, held as one or more
-  peer copies.
+  peer TC Copies.
 
-- **Copy.** One physical instance of a collection, held on one storage medium.
-  Copies are peers; none is privileged.
+- **TC Copy.** One physical instance of a collection, held on one storage
+  medium; TC stands for Turbo-Collection. TC Copies are peers; none is
+  privileged.
 
-- **Content file.** Any file a copy holds outside its `.turbo-collection/`
+- **TC Directory.** A TC Copy's root directory, which holds every file of that
+  TC Copy.
+
+- **Content file.** Any file a TC Copy holds outside its `.turbo-collection/`
   directories that is neither a meta file nor an ignored file, preserved
   untouched.
 
-- **Meta file.** A file that describes a copy or what happened to it: a
+- **Meta file.** A file that describes a TC Copy or what happened to it: a
   manifest, a receipt, a configuration file, an ignore file, and any copy of a
   specification carried on a drive.
 
@@ -66,21 +70,21 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   (`icloud-personal`); a leaf manifest records which one placed a directory
   (R-MFILE-9).
 
-- **Layout.** A rule that determines where in a copy a content file is stored.
-  Each layout is defined by its own specification, which declares that layout's
-  identifier and carries a version (R-MFILE-9).
+- **Layout.** A rule that determines where in a TC Copy a content file is
+  stored. Each layout is defined by its own specification, which declares that
+  layout's identifier and carries a version (R-MFILE-9).
 
 - **Manifest.** A meta file recording a checksum for each file in one directory
   (R-MFILE-8).
 
-- **Receipt.** A record of every arrival of a directory's content at a copy and
-  every error affecting it, written as one file per event (R-MFILE-13).
+- **Receipt.** A record of every arrival of a directory's content at a TC Copy
+  and every error affecting it, written as one file per event (R-MFILE-13).
 
-- **Arrival.** One event of a directory's content reaching one copy.
+- **Arrival.** One event of a directory's content reaching one TC Copy.
 
-- **Error.** One event of content a run handled failing to reach a copy: an item
-  an import source offered that Turbo-Collection did not take, or a content file
-  that failed to reach a copy it was being mirrored into.
+- **Error.** One event of content a run handled failing to reach a TC Copy: an
+  item an import source offered that Turbo-Collection did not take, or a content
+  file that failed to reach a TC Copy it was being mirrored into.
 
 - **Fixity.** Evidence that data has not changed, established by comparing
   checksums.
@@ -91,7 +95,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Format version.** This document's version, which every meta file states
   (R-MFILE-4).
 
-- **Ignored file.** A file in a copy that matches a pattern in that copy's
+- **Ignored file.** A file in a TC Copy that matches a pattern in that TC Copy's
   ignore file (R-MFILE-20).
 
 - **Run.** A single invocation of Turbo-Collection, which performs its work once
@@ -104,15 +108,15 @@ alone, without reading its content. Turbo-Collection MUST NOT read a meta file
 whose name it does not recognize, and MUST report such a file instead.
 
 **R-MFILE-2.** Turbo-Collection MUST use these names and places, relative to a
-copy's root: `.tcignore` at that root; a `.turbo-collection/` subdirectory of
-that root holding a configuration file named `turbo-collection-config.json` and
-per-event location receipt files named
-`receipt-<runId>-<copyName>.location.json` (R-MFILE-26); and, for each directory
-holding content, a `.turbo-collection/` subdirectory of that directory holding a
-manifest named `manifest.json` and per-event receipt files named
-`receipt-<runId>-<copyName>.arrival.json` and
-`receipt-<runId>-<copyName>.error.json`. A carried copy of a specification MUST
-be named for its document and for its text's full version.
+TC Directory: `.tcignore` in that TC Directory; a `.turbo-collection/`
+subdirectory of that TC Directory holding a configuration file named
+`turbo-collection-config.json` and per-event location receipt files named
+`receipt-<runId>-<tcCopyName>.location.json` (R-MFILE-26); and, for each
+directory holding content, a `.turbo-collection/` subdirectory of that directory
+holding a manifest named `manifest.json` and per-event receipt files named
+`receipt-<runId>-<tcCopyName>.arrival.json` and
+`receipt-<runId>-<tcCopyName>.error.json`. A carried copy of a specification
+MUST be named for its document and for its text's full version.
 
 ## 3. Rules for every JSON meta file
 
@@ -202,25 +206,26 @@ writes an identical manifest.
 which it writes a content file, and in every directory in which it recorded an
 error affecting that directory's content. A receipt is a set of per-event files,
 each stored in that directory's `.turbo-collection/` subdirectory: one file per
-arrival, named `receipt-<runId>-<copyName>.arrival.json`, and, per run that
+arrival, named `receipt-<runId>-<tcCopyName>.arrival.json`, and, per run that
 recorded any error for that directory, one file named
-`receipt-<runId>-<copyName>.error.json`. `<runId>` identifies its run and MUST
+`receipt-<runId>-<tcCopyName>.error.json`. `<runId>` identifies its run and MUST
 be an ISO 8601 basic-format instant in UTC and whole seconds (for example
 `20260814T180422Z`), followed by `-` and four lower-case hexadecimal digits
 chosen at random, so it contains no character illegal in a filename and orders
 files by when their run occurred (`photo-path-layout-spec.md` R-PHOTO-4 uses
-that basic format too). `<copyName>` names whichever copy its run wrote to, or
-attempted to write to, for that event (R-MFILE-19), and appears in a receipt
-file's name so that files two copies author in one run cannot collide;
-R-MFILE-19 limits `copyName`, for this reason, to characters that common
-filesystems accept in a filename. An event's named copy is not always where its
-file resides: propagation places a copy's receipt files on other copies
-(`verify-spec.md` R-REC-6), and a mirror error names a destination copy that
-failed, which often cannot hold that file, so Turbo-Collection MUST record a
-mirror error in an error file on whichever copy it is mirroring from, beside
-whatever content that failed transfer was driving from. A receipt MUST record
-every arrival of that directory's content at a copy and every error.
-Turbo-Collection MUST NOT modify or delete a receipt file after writing it.
+that basic format too). `<tcCopyName>` names whichever TC Copy its run wrote to,
+or attempted to write to, for that event (R-MFILE-19), and appears in a receipt
+file's name so that files two TC Copies author in one run cannot collide;
+R-MFILE-19 limits `tcCopyName`, for this reason, to characters that common
+filesystems accept in a filename. An event's named TC Copy is not always where
+its file resides: propagation places a TC Copy's receipt files on other TC
+Copies (`verify-spec.md` R-REC-6), and a mirror error names a destination TC
+Copy that failed, which often cannot hold that file, so Turbo-Collection MUST
+record a mirror error in an error file on whichever TC Copy it is mirroring
+from, beside whatever content that failed transfer was driving from. A receipt
+MUST record every arrival of that directory's content at a TC Copy and every
+error. Turbo-Collection MUST NOT modify or delete a receipt file after writing
+it.
 
 **R-MFILE-14.** An arrival file MUST contain one arrival. Its fields MUST be:
 
@@ -228,7 +233,7 @@ Turbo-Collection MUST NOT modify or delete a receipt file after writing it.
 - `tcSpecVersion`, stating which version of `turbo-collection-spec.md` its run
   conformed to
 - `runId`, identifying whichever run wrote that file
-- `copyName`, naming whichever copy that content reached
+- `tcCopyName`, naming whichever TC Copy that content reached
 - `date`, a date and time at which it was reached
 - `fileCount`, how many content files were present in that directory at that
   moment
@@ -241,24 +246,24 @@ carrying a time-zone offset (`Z` for UTC, or `±hh:mm`); Turbo-Collection record
 it from its run's own clock, so unlike an import source's `date` (R-MFILE-11)
 its offset is never omitted.
 
-**R-MFILE-15.** An arrival records how content reached a copy, and its two ways
-differ. An arrival that newly acquired content from an import source (an import)
-MUST carry `layout` and `importSource`, and MAY carry `importSourceDetails`. An
-arrival that propagated content already held by another copy (a mirror) MUST
-carry neither `layout` nor `importSource`, because it acquired nothing from
-outside and applied no layout; its provenance is whichever import arrival placed
-that content, which travels to it (`verify-spec.md` R-REC-6). `layout` MUST be
-an object stating that layout's identifier (`specId`) and its specification's
-`version`; `importSource` MUST be an object stating its import source
-specification's identifier (`specId`) and whichever `version` of that
-specification its run conformed to. An `importSourceDetails` value MUST be a
-JSON object whose contents that import source's own specification states, and
-Turbo-Collection MUST NOT depend on its contents. A content digest MUST cover
-content files only, so that no meta file contributes to it. A `contentDigest`
-MUST be computed as SHA-256 of a text formed by taking each content file's
-SHA-256 checksum as lowercase hexadecimal, ordering those checksums in ascending
-Unicode code point order, and joining them with a single newline (`U+000A`)
-between each.
+**R-MFILE-15.** An arrival records how content reached a TC Copy, and its two
+ways differ. An arrival that newly acquired content from an import source (an
+import) MUST carry `layout` and `importSource`, and MAY carry
+`importSourceDetails`. An arrival that propagated content already held by
+another TC Copy (a mirror) MUST carry neither `layout` nor `importSource`,
+because it acquired nothing from outside and applied no layout; its provenance
+is whichever import arrival placed that content, which travels to it
+(`verify-spec.md` R-REC-6). `layout` MUST be an object stating that layout's
+identifier (`specId`) and its specification's `version`; `importSource` MUST be
+an object stating its import source specification's identifier (`specId`) and
+whichever `version` of that specification its run conformed to. An
+`importSourceDetails` value MUST be a JSON object whose contents that import
+source's own specification states, and Turbo-Collection MUST NOT depend on its
+contents. A content digest MUST cover content files only, so that no meta file
+contributes to it. A `contentDigest` MUST be computed as SHA-256 of a text
+formed by taking each content file's SHA-256 checksum as lowercase hexadecimal,
+ordering those checksums in ascending Unicode code point order, and joining them
+with a single newline (`U+000A`) between each.
 
 **R-MFILE-16.** An error file MUST contain every error a run recorded for its
 directory. Its fields MUST be:
@@ -266,11 +271,12 @@ directory. Its fields MUST be:
 - `version` (R-MFILE-4)
 - `tcSpecVersion`
 - `runId`
-- `copyName`, naming whichever copy its run wrote to or attempted to write to
+- `tcCopyName`, naming whichever TC Copy its run wrote to or attempted to write
+  to
 - `importErrors`, an array holding one object per import error: content that run
   could not place in its collection
 - `mirrorErrors`, an array holding one object per mirror error: content already
-  in its collection that run could not propagate to another copy
+  in its collection that run could not propagate to another TC Copy
 
 An error file holds at least one error across both arrays (R-MFILE-13 writes one
 only when a run recorded an error), and MAY omit an array that holds none. Every
@@ -290,7 +296,7 @@ as real errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "copyName": "main",
+>   "tcCopyName": "main",
 >   "date": "2026-08-14T18:04:22Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c...",
@@ -299,7 +305,7 @@ as real errors show what is needed.
 > }
 > ```
 >
-> A later mirror arrival of that content to another copy, in
+> A later mirror arrival of that content to another TC Copy, in
 > `receipt-20260902T090500Z-b1d2-off-site.arrival.json`, names no `layout` or
 > `importSource`; its matching `contentDigest` proves identical content arrived:
 >
@@ -308,7 +314,7 @@ as real errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260902T090500Z-b1d2",
->   "copyName": "off-site",
+>   "tcCopyName": "off-site",
 >   "date": "2026-09-02T09:05:00Z",
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c..."
@@ -323,7 +329,7 @@ as real errors show what is needed.
 >   "version": "0.1.0-draft",
 >   "tcSpecVersion": "0.1.0-draft",
 >   "runId": "20260814T180422Z-3f9a",
->   "copyName": "main",
+>   "tcCopyName": "main",
 >   "importErrors": [
 >     {
 >       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (import-spec.md R-SRC-5)"
@@ -332,24 +338,24 @@ as real errors show what is needed.
 > }
 > ```
 
-**R-MFILE-26.** A location receipt records where a copy is, as a hint for
-finding it, and states that copy's own location, never another's.
-Turbo-Collection MUST store it in its copy root's `.turbo-collection/`
+**R-MFILE-26.** A location receipt records where a TC Copy is, as a hint for
+finding it, and states that TC Copy's own location, never another's.
+Turbo-Collection MUST store it in its TC Directory's `.turbo-collection/`
 subdirectory (R-MFILE-2), one file per observation named
-`receipt-<runId>-<copyName>.location.json`, and MUST NOT modify or delete it
+`receipt-<runId>-<tcCopyName>.location.json`, and MUST NOT modify or delete it
 once written, as with every receipt file (R-MFILE-13). Its fields MUST be:
 
 - `version` (R-MFILE-4)
 - `tcSpecVersion`
 - `runId`
-- `copyName`, naming whichever copy this locates
+- `tcCopyName`, naming whichever TC Copy this locates
 - `date`, when that location was observed, written as an arrival's `date` is
   (R-MFILE-14)
-- an optional `volumeId`, an identifier that this copy's volume carries across
-  machines, where a `null` value is equivalent to an absent one and both mean
-  this copy is located by `relativePath` alone
-- `relativePath`, a path to this copy that MUST be relative and MUST NOT be
-  absolute
+- an optional `volumeId`, an identifier that this TC Copy's volume carries
+  across machines, where a `null` value is equivalent to an absent one and both
+  mean this TC Copy is located by `relativePath` alone
+- `relativePath`, a path to this TC Copy's TC Directory that MUST be relative
+  and MUST NOT be absolute
 
 When `volumeId` is present, `relativePath` is relative to that volume's root;
 when it is absent, `relativePath` is relative to this location receipt file's
@@ -363,65 +369,67 @@ another (`verify-spec.md` R-REC-9).
 
 **R-MFILE-17.** Configuration MUST be plain data in a text format a person can
 read and edit, and that a tool other than Turbo-Collection can parse. It MUST be
-named `turbo-collection-config.json` and MUST sit in its copy root's
+named `turbo-collection-config.json` and MUST sit in its TC Directory's
 `.turbo-collection/` subdirectory (R-MFILE-2).
 
 **R-MFILE-18.** A configuration file's fields MUST be: `version` (R-MFILE-4);
-`collectionId`, identifying which Collection this Copy belongs to;
-`collectionName`, stating that Collection's name; and `copyName`, stating what
-name Receipts use for this Copy. `collectionId` MUST be a version 4 UUID
+`collectionId`, identifying which Collection this TC Copy belongs to;
+`collectionName`, stating that Collection's name; and `tcCopyName`, stating what
+name Receipts use for this TC Copy. `collectionId` MUST be a version 4 UUID
 (RFC 9562) in its text form, with every letter in lower case, because a random
 identifier tells two Collections apart where their `collectionName` values
-match. `collectionName` and `copyName` MUST be non-empty. Configuration states a
-Copy's own identity and nothing about other Copies: it declares no role and no
-roster of Copies expected to exist, since Copies are peers and are discovered at
-run time.
+match. `collectionName` and `tcCopyName` MUST be non-empty. Configuration states
+a TC Copy's own identity and nothing about other TC Copies: it declares no role
+and no roster of TC Copies expected to exist, since TC Copies are peers and are
+discovered at run time.
 
-> **Example.** A configuration file for a Copy named `off-site`, in a Collection
-> named `Family Photos`:
+> **Example.** A configuration file for a TC Copy named `off-site`, in a
+> Collection named `Family Photos`:
 >
 > ```json
 > {
 >   "version": "0.1.0-draft",
 >   "collectionId": "3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30",
 >   "collectionName": "Family Photos",
->   "copyName": "off-site"
+>   "tcCopyName": "off-site"
 > }
 > ```
 
-**R-MFILE-19.** Every Copy MUST declare its own identity in its own
-configuration file. When **init** or **backup** creates a Copy, Turbo-Collection
-MUST set that Copy's `collectionId`, `collectionName` and `copyName` once, at
-creation, as `init-spec.md` R-INIT-4 and `backup-spec.md` R-BACKUP-1 state, and
-MUST write them into that Copy's configuration file. Turbo-Collection MUST give
-a Copy that a backup creates that backup's existing Copy's `collectionId` and
-`collectionName`, so that all Copies of a Collection hold one `collectionId` and
-one `collectionName`. Thereafter Turbo-Collection MUST determine a Copy's
-identity by reading that declaration, and MUST NOT infer it from a volume label,
-a mount path, a drive letter, or a command-line argument. `copyName` MUST be in
-Unicode Normalization Form C (NFC), and MUST NOT contain a control character
-(Unicode general category Cc) or any of `< > : " / \ | ? *`, because it appears
-verbatim in Receipt filenames (R-MFILE-13). Turbo-Collection MUST refuse an
-entire Run when two connected Copies state one `copyName`, comparing names
-without regard to letter case, since a difference of case alone names a single
-file on a case-insensitive filesystem (R-MFILE-13).
+**R-MFILE-19.** Every TC Copy MUST declare its own identity in its own
+configuration file. When **init** or **backup** creates a TC Copy,
+Turbo-Collection MUST set that TC Copy's `collectionId`, `collectionName` and
+`tcCopyName` once, at creation, as `init-spec.md` R-INIT-4 and `backup-spec.md`
+R-BACKUP-1 state, and MUST write them into that TC Copy's configuration file.
+Turbo-Collection MUST give a TC Copy that a backup creates that backup's
+existing TC Copy's `collectionId` and `collectionName`, so that all TC Copies of
+a Collection hold one `collectionId` and one `collectionName`. Thereafter
+Turbo-Collection MUST determine a TC Copy's identity by reading that
+declaration, and MUST NOT infer it from a volume label, a mount path, a drive
+letter, or a command-line argument. `tcCopyName` MUST be in Unicode
+Normalization Form C (NFC), and MUST NOT contain a control character (Unicode
+general category Cc) or any of `< > : " / \ | ? *`, because it appears verbatim
+in Receipt filenames (R-MFILE-13). Turbo-Collection MUST refuse an entire Run
+when two connected TC Copies state one `tcCopyName`, comparing names without
+regard to letter case, since a difference of case alone names a single file on a
+case-insensitive filesystem (R-MFILE-13).
 
 > **Example.** On every computer, whatever its language, `MAIN` and `main` are
 > one name, and so are `ΦΩΤΟΣ` and `φωτος`.
 
-**R-MFILE-20.** A copy MAY carry an ignore file named `.tcignore` at its root.
-It MUST be plain text encoded in UTF-8, one pattern per line, with blank lines
-skipped and a line beginning with `#` treated as a comment. Pattern syntax and
-matching MUST follow `gitignore(5)`, evaluated relative to that copy's root. A
-starter ignore file, which Turbo-Collection writes into a copy that has none
-(`init-spec.md` R-INIT-1), holds patterns for files that an operating system and
-its file managers create on their own; Turbo-Collection's reference
-implementation ships that list at `scripts/templates/default.tcignore`.
+**R-MFILE-20.** A TC Copy MAY carry an ignore file named `.tcignore` in its TC
+Directory. It MUST be plain text encoded in UTF-8, one pattern per line, with
+blank lines skipped and a line beginning with `#` treated as a comment. Pattern
+syntax and matching MUST follow `gitignore(5)`, evaluated relative to that TC
+Directory. A starter ignore file, which Turbo-Collection writes into a TC Copy
+that has none (`init-spec.md` R-INIT-1), holds patterns for files that an
+operating system and its file managers create on their own; Turbo-Collection's
+reference implementation ships that list at
+`scripts/templates/default.tcignore`.
 
 **R-MFILE-21.** Turbo-Collection MUST exclude an ignored file from every
-manifest and MUST NOT copy one to another copy. A file that matches a copy's
-ignore patterns MUST NOT enter that copy by an Import. Turbo-Collection MUST
-report a pattern it cannot evaluate and MUST NOT apply it.
+manifest and MUST NOT copy one to another TC Copy. A file that matches a TC
+Copy's ignore patterns MUST NOT enter that TC Copy by an Import.
+Turbo-Collection MUST report a pattern it cannot evaluate and MUST NOT apply it.
 
 > **Example.** A mistyped `*.mov` shows up as thousands of files matched, not as
 > silently empty video backups.
@@ -429,8 +437,8 @@ report a pattern it cannot evaluate and MUST NOT apply it.
 ## 7. This document's bump test
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This
-test is measured on **meta files**, which is what this document puts into a
-copy.
+test is measured on **meta files**, which is what this document puts into a TC
+Copy.
 
 | Level     | Test                                                                                                                                                                                                                                                                                                              |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

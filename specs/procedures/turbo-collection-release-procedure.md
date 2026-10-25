@@ -20,25 +20,26 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 ---
 
-**R-REL-1.** Confirm three copies exist on three drives, one of them off-site
+**R-REL-1.** Confirm three TC Copies exist on three drives, one of them off-site
 (`turbo-collection-setup-procedure.md` R-SET-13).
 
 **R-REL-2.** Run Turbo-Collection and confirm a report states that **these
-specific items** were counted, verified on your working copy, and verified on at
-least one other copy.
+specific items** were counted, verified on your working TC Copy, and verified on
+at least one other TC Copy.
 
 **R-REL-6.** Run a **status** report (`turbo-collection-spec.md` R-STATUS-1) and
 read each listed arrival's date. Treat an arrival as evidence of where content
-was placed, never as evidence that a copy holding it still exists; R-REL-1 and
-R-REL-2 are what establish that, and this report only tells you where to look.
+was placed, never as evidence that a TC Copy holding it still exists; R-REL-1
+and R-REL-2 are what establish that, and this report only tells you where to
+look.
 
 **R-REL-3.** Stop on any discrepancy. Import again rather than accepting a
 shortfall.
 
 **R-REL-4.** Release only what that report covers.
 
-**R-REL-5.** Do not release anything while fewer than three copies exist, or
-while your off-site copy is not off-site.
+**R-REL-5.** Do not release anything while fewer than three TC Copies exist, or
+while your off-site TC Copy is not off-site.
 
 ---
 

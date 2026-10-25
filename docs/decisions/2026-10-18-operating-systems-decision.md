@@ -8,21 +8,22 @@ because the collection lock, whose form differs by operating system, is built
 for Linux as well.
 
 Turbo-Collection is required to be operable under more than one operating
-system, and a copy written to under one is usable under another. The requirement
-names no operating system. Section 12 of `turbo-collection-spec.md`, its
-bindings, names Windows, macOS and Linux.
+system, and a TC Copy written to under one is usable under another. The
+requirement names no operating system. Section 12 of `turbo-collection-spec.md`,
+its bindings, names Windows, macOS and Linux.
 
-**A procedure already promised this.** The off-site copy never travels, so the
-working copy is taken to it and backed up on whatever computer is there. The
-off-site procedure tells an operator that any computer will do, including one
-the operator does not own (`R-OFF-2`). `R-CLI-15` is what backs that sentence.
+**A procedure already promised this.** The off-site TC Copy never travels, so
+the working TC Copy is taken to it and backed up on whatever computer is there.
+The off-site procedure tells an operator that any computer will do, including
+one the operator does not own (`R-OFF-2`). `R-CLI-15` is what backs that
+sentence.
 
 **What is written does not depend on where it was written.** The name and
-content of every file a run writes into a copy are the same under every
-operating system, so a copy carries no mark of which one wrote to it. That is
-what lets copies written under different operating systems be mirrored with each
-other, and what lets a sample copy written under one serve as a test under every
-other.
+content of every file a run writes into a TC Copy are the same under every
+operating system, so a TC Copy carries no mark of which one wrote to it. That is
+what lets TC Copies written under different operating systems be mirrored with
+each other, and what lets a sample TC Copy written under one serve as a test
+under every other.
 
 **Which operating systems is a binding.** Operating systems come and go over the
 decades this project plans for, so the list sits beside the mirror engine and

@@ -30,11 +30,11 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// Writes `text` as `copyRoot`'s configuration file.
-function writeConfiguration(copyRoot: string, text: string): void {
-  mkdirSync(path.join(copyRoot, ".turbo-collection"), { recursive: true });
+// Writes `text` as `tcDirectory`'s configuration file.
+function writeConfiguration(tcDirectory: string, text: string): void {
+  mkdirSync(path.join(tcDirectory, ".turbo-collection"), { recursive: true });
   writeFileSync(
-    path.join(copyRoot, ".turbo-collection", "turbo-collection-config.json"),
+    path.join(tcDirectory, ".turbo-collection", "turbo-collection-config.json"),
     text,
   );
 }
@@ -52,7 +52,7 @@ const ValidConfiguration = {
   version: "0.1.0-draft",
   collectionId: "3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30",
   collectionName: "Family Photos",
-  copyName: "main",
+  tcCopyName: "main",
 };
 
 const Checksum = "a".repeat(64);
@@ -93,63 +93,66 @@ test("R-MFILE-15: the content digest is the SHA-256 of the checksums in order, j
 });
 
 test("R-MFILE-18: a valid configuration file is read", (t) => {
-  const copyRoot = temporaryDirectory(t);
-  writeConfiguration(copyRoot, JSON.stringify(ValidConfiguration));
-  assert.deepEqual(readConfigurationFile(copyRoot), ValidConfiguration);
+  const tcDirectory = temporaryDirectory(t);
+  writeConfiguration(tcDirectory, JSON.stringify(ValidConfiguration));
+  assert.deepEqual(readConfigurationFile(tcDirectory), ValidConfiguration);
 });
 
 test("R-MFILE-7: a configuration file that is not JSON is an error naming it", (t) => {
-  const copyRoot = temporaryDirectory(t);
-  writeConfiguration(copyRoot, '{"version": "0.1.0-draft", "collectionId');
+  const tcDirectory = temporaryDirectory(t);
+  writeConfiguration(tcDirectory, '{"version": "0.1.0-draft", "collectionId');
   assert.throws(
-    () => readConfigurationFile(copyRoot),
+    () => readConfigurationFile(tcDirectory),
     /turbo-collection-config\.json" is not a JSON document/,
   );
 });
 
 test("R-MFILE-7: a configuration file that lacks a field is an error naming the field", (t) => {
-  const copyRoot = temporaryDirectory(t);
-  const { copyName: _, ...withoutCopyName } = ValidConfiguration;
-  writeConfiguration(copyRoot, JSON.stringify(withoutCopyName));
+  const tcDirectory = temporaryDirectory(t);
+  const { tcCopyName: _, ...withoutTcCopyName } = ValidConfiguration;
+  writeConfiguration(tcDirectory, JSON.stringify(withoutTcCopyName));
   assert.throws(
-    () => readConfigurationFile(copyRoot),
-    /lacks the field "copyName"/,
+    () => readConfigurationFile(tcDirectory),
+    /lacks the field "tcCopyName"/,
   );
 });
 
 test("R-MFILE-7: a meta file stating a version this code does not recognize is an error", (t) => {
-  const copyRoot = temporaryDirectory(t);
+  const tcDirectory = temporaryDirectory(t);
   writeConfiguration(
-    copyRoot,
+    tcDirectory,
     JSON.stringify({ ...ValidConfiguration, version: "9.0.0" }),
   );
   assert.throws(
-    () => readConfigurationFile(copyRoot),
+    () => readConfigurationFile(tcDirectory),
     /states version 9\.0\.0, which this Turbo-Collection does not recognize/,
   );
 });
 
 test("R-MFILE-18: a collectionId that is not a version 4 UUID in lower case is an error", (t) => {
-  const copyRoot = temporaryDirectory(t);
+  const tcDirectory = temporaryDirectory(t);
   writeConfiguration(
-    copyRoot,
+    tcDirectory,
     JSON.stringify({
       ...ValidConfiguration,
       collectionId: ValidConfiguration.collectionId.toUpperCase(),
     }),
   );
-  assert.throws(() => readConfigurationFile(copyRoot), /not a version 4 UUID/);
+  assert.throws(
+    () => readConfigurationFile(tcDirectory),
+    /not a version 4 UUID/,
+  );
 });
 
-test("R-MFILE-19: a copyName holding a character a filename refuses is an error", (t) => {
-  const copyRoot = temporaryDirectory(t);
+test("R-MFILE-19: a tcCopyName holding a character a filename refuses is an error", (t) => {
+  const tcDirectory = temporaryDirectory(t);
   writeConfiguration(
-    copyRoot,
-    JSON.stringify({ ...ValidConfiguration, copyName: "home/away" }),
+    tcDirectory,
+    JSON.stringify({ ...ValidConfiguration, tcCopyName: "home/away" }),
   );
   assert.throws(
-    () => readConfigurationFile(copyRoot),
-    /not a valid name for a copy/,
+    () => readConfigurationFile(tcDirectory),
+    /not a valid name for a TC Copy/,
   );
 });
 

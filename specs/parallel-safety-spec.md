@@ -15,15 +15,16 @@ log under its new ID.
 > `turbo-collection/logs/tc-20261015T215020Z-3b52.log.json` first keeps that ID.
 > A Run that comes second takes a new ID and creates its log under that one.
 
-**R-PARALLEL-2.** Where Turbo-Collection makes a directory a Copy
+**R-PARALLEL-2.** Where Turbo-Collection makes a TC Copy in a directory
 (`init-spec.md` R-INIT-1, `backup-spec.md` R-BACKUP-1), Turbo-Collection MUST
-write that Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before any
-other file it writes into that directory. Turbo-Collection MUST write that
+write that TC Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before
+any other file it writes into that directory. Turbo-Collection MUST write that
 configuration file only where nothing exists at its path.
 
-**R-PARALLEL-3.** Where a Run is making a directory a Copy and something already
-exists at that Copy's configuration file's path, Turbo-Collection MUST end that
-Run with an error, and MUST NOT write any other file into that directory.
+**R-PARALLEL-3.** Where a Run is making a TC Copy in a directory and something
+already exists at that TC Copy's configuration file's path, Turbo-Collection
+MUST end that Run with an error, and MUST NOT write any other file into that
+directory.
 
 > **Example.** An init and a backup are each given an empty directory,
 > `archive/photos`, at one moment, and each finds it empty. That init writes its
@@ -33,8 +34,8 @@ Run with an error, and MUST NOT write any other file into that directory.
 
 **R-PARALLEL-4.** Every Run other than an init MUST hold its Collection's lock
 on whichever computer that Run is performed on, for as long as that Run reads or
-writes a Copy of that Collection. Before holding that lock, a Run MAY read a
-Copy's configuration file, to learn which Collection that Copy belongs to.
+writes a TC Copy of that Collection. Before holding that lock, a Run MAY read a
+TC Copy's configuration file, to learn which Collection that TC Copy belongs to.
 
 **R-PARALLEL-5.** Turbo-Collection MUST NOT let two Runs on one computer hold
 one Collection's lock at once. Where a Run finds its Collection's lock held,
@@ -59,14 +60,14 @@ ends.
 > at once, with nothing for a person to do first.
 
 **R-PARALLEL-7.** Turbo-Collection MUST confirm that a Run holds its
-Collection's lock before that Run reads or writes a Copy of that Collection,
-other than that Copy's configuration file, and MUST end that Run with an error
-where that confirmation fails.
+Collection's lock before that Run reads or writes a TC Copy of that Collection,
+other than that TC Copy's configuration file, and MUST end that Run with an
+error where that confirmation fails.
 
 **R-PARALLEL-8.** Turbo-Collection MUST NOT start a process that writes into a
-Copy.
+TC Copy.
 
-> **Example.** A backup writes files into a Copy of a Collection itself, rather
-> than handing them to a copying program. Where that backup ends with an error
-> partway through, nothing is left writing into that Copy, so whichever Run next
-> takes that Collection's lock is alone in writing there.
+> **Example.** A backup writes files into a TC Copy of a Collection itself,
+> rather than handing them to a copying program. Where that backup ends with an
+> error partway through, nothing is left writing into that TC Copy, so whichever
+> Run next takes that Collection's lock is alone in writing there.

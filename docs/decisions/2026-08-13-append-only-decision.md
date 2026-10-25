@@ -15,11 +15,11 @@ Mirror-delete was the single exception, and it is gone.
 
 ## Why remove a feature that defaulted to off
 
-Mirror-delete bought one thing: a copy that shrinks when another does. It risked
-the classic backup catastrophe, in which a source appears empty (a failed mount,
-an expired token, a partial sync), the tool concludes everything was deleted,
-and the deletion propagates to the copy that was supposed to survive exactly
-that. A default is a promise the code makes to itself. Withdrawing the
+Mirror-delete bought one thing: a TC Copy that shrinks when another does. It
+risked the classic backup catastrophe, in which a source appears empty (a failed
+mount, an expired token, a partial sync), the tool concludes everything was
+deleted, and the deletion propagates to the TC Copy that was supposed to survive
+exactly that. A default is a promise the code makes to itself. Withdrawing the
 capability makes the catastrophe structurally unreachable rather than merely
 switched off.
 
@@ -39,12 +39,12 @@ disconnected drive cannot be deleted from.
 
 ## What it cost, accepted knowingly
 
-- **A corrupt file in a copy is never healed automatically.** `R-BACKUP-4` used
-  to overwrite any file differing from another copy's, which treated one copy as
-  authoritative and contradicted `R-INT-7`, where neither side is. `R-INT-7`
-  won. Repair is now an action a human requests.
-- **Each copy becomes a superset of what has been imported**, so `R-COL-4` no
-  longer claims structural equivalence, and `R-INT-8` stops `extra` in a copy
+- **A corrupt file in a TC Copy is never healed automatically.** `R-BACKUP-4`
+  used to overwrite any file differing from another TC Copy's, which treated one
+  TC Copy as authoritative and contradicted `R-INT-7`, where neither side is.
+  `R-INT-7` won. Repair is now an action a human requests.
+- **Each TC Copy becomes a superset of what has been imported**, so `R-COL-4` no
+  longer claims structural equivalence, and `R-INT-8` stops `extra` in a TC Copy
   being reported as an error. A tree that only grows is what makes an accidental
   deletion recoverable.
 - **Turbo-Collection cannot detect a deletion at a source of something never
@@ -88,4 +88,4 @@ the collection-location question, answered by
 
 `R-TGT-5` and `R-TGT-8` were removed on 2026-10-09, and `R-BACKUP-11`, the
 temporary-file carve-out, on 2026-10-22. `R-BACKUP-6` and `R-TGT-7` still
-prohibit deleting a file in a copy.
+prohibit deleting a file in a TC Copy.

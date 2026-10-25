@@ -24,7 +24,7 @@ The rule has three parts.
 The floor follows from what a content file is. Once a content file is any file
 that is neither a meta file nor an ignored file, skipping one is the loss a
 preservation system exists to prevent. So the partition is total: an ignored
-file never enters a copy; an item its primary layout can place goes there;
+file never enters a TC Copy; an item its primary layout can place goes there;
 everything else goes to the floor. Nothing that is not explicitly ignored is
 dropped.
 
@@ -44,7 +44,7 @@ none, which was reported and passed over, is now reported and kept.
 - **Each layout claims items by a condition on their bytes, and the core
   arbitrates** (the rule until this date). It could not express taking a file in
   where it sits: the photo layout claimed every photograph from anywhere, so a
-  photograph found in a copy was claimed twice and the run refused.
+  photograph found in a TC Copy was claimed twice and the run refused.
 - **Narrowing the photo layout's claim to exclude items that arrive with a path
   to keep.** It seats the choice inside a layout as a per-item test, when the
   import source and the layout are already recorded together for every

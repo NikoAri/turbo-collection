@@ -5,8 +5,8 @@
 > **Status:** Draft.
 
 This document is normative over one **Layout**: a content file is stored at
-whichever path its import source supplied for it, so a tree of files enters a
-copy in whatever shape it had at its import source. It states which items that
+whichever path its import source supplied for it, so a tree of files enters a TC
+Copy in whatever shape it had at its import source. It states which items that
 Layout is able to place ([`import-spec.md`](../import-spec.md) R-SRC-15), and
 which path each file receives.
 
@@ -24,8 +24,8 @@ Requirement ID prefix: **`R-FOUND-*`**.
 ## 0. Role and scope
 
 This document binds Turbo-Collection's implementation. It answers one question:
-given a file and a path its import source supplied for it, where in a copy does
-that file go.
+given a file and a path its import source supplied for it, where in a TC Copy
+does that file go.
 
 One rule serves each of these roles:
 
@@ -36,7 +36,7 @@ One rule serves each of these roles:
   (`import-spec.md` R-SRC-20).
 
 It does not decide what a file inside a directory is called, which `R-NAME-*`
-requirements own, and it does not decide which files a copy ignores, which an
+requirements own, and it does not decide which files a TC Copy ignores, which an
 ignore file does (`meta-file-spec.md` R-MFILE-20).
 
 ## 1. Terminology
@@ -44,18 +44,21 @@ ignore file does (`meta-file-spec.md` R-MFILE-20).
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Collection.** A set of files this project preserves, held as one or more
-  peer copies.
+  peer TC Copies.
 
-- **Copy.** One physical instance of a collection, held on one storage medium;
-  copies are peers.
+- **TC Copy.** One physical instance of a collection, held on one storage
+  medium; TC stands for Turbo-Collection. TC Copies are peers.
 
-- **Content file.** Any file a copy holds that is neither a meta file nor an
+- **TC Directory.** A TC Copy's root directory, which holds every file of that
+  TC Copy.
+
+- **Content file.** Any file a TC Copy holds that is neither a meta file nor an
   ignored file.
 
-- **Meta file.** A file that describes a copy or what happened to it, such as a
-  manifest or a receipt.
+- **Meta file.** A file that describes a TC Copy or what happened to it, such as
+  a manifest or a receipt.
 
-- **Ignored file.** A file in a copy that matches a pattern in that copy's
+- **Ignored file.** A file in a TC Copy that matches a pattern in that TC Copy's
   ignore file.
 
 - **Item.** One logical thing supplied by an import source, which may comprise
@@ -69,21 +72,21 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Importer.** A component that brings files into a collection from one import
   source.
 
-- **Layout.** A rule that determines where in a copy a content file is stored,
-  given that file's own bytes, any metadata its import source supplied with it,
-  and that import source.
+- **Layout.** A rule that determines where in a TC Copy a content file is
+  stored, given that file's own bytes, any metadata its import source supplied
+  with it, and that import source.
 
 - **Primary Layout.** A single Layout that an Import Source specification names
   to govern that Import Source's Items.
 
-- **Layout identifier.** This Layout's name as recorded in a copy:
+- **Layout identifier.** This Layout's name as recorded in a TC Copy:
   **`supplied-path-layout`**.
 
 - **Supplied path.** A path a file has at its import source, relative to a root
   that import source's specification states. An importer supplies it with every
   file (`import-spec.md` R-SRC-21).
 
-- **Collection filename.** A name a content file carries inside a copy.
+- **Collection filename.** A name a content file carries inside a TC Copy.
 
 ## 2. What this Layout places
 
@@ -98,7 +101,7 @@ its kind, or its filename extension.
 
 **R-FOUND-3.** For an Item from any Import Source, Turbo-Collection MUST store
 every Content file it places under this Layout at
-`<import source>/<supplied path>`, relative to a Copy's root, where
+`<import source>/<supplied path>`, relative to a TC Directory, where
 `<import source>` is that Import Source's identifier, recorded as
 `importSource.specId` in each manifest beneath that directory
 (`meta-file-spec.md` R-MFILE-9), and `<supplied path>` is that file's Supplied
@@ -119,12 +122,12 @@ absolute, is empty, or contains a segment that is `.` or `..`, and MUST report
 every item refused this way.
 
 > **Example.** A supplied path of `../../Windows/notes.txt` is refused and
-> reported, never resolved to a place outside its copy.
+> reported, never resolved to a place outside its TC Copy.
 
 ## 4. Filenames
 
 **R-FOUND-5.** Turbo-Collection MUST preserve every segment of a supplied path
-exactly as supplied, including its letter case, except where a Copy already
+exactly as supplied, including its letter case, except where a TC Copy already
 holds that segment in another letter case or another Unicode normalization
 (`turbo-collection-spec.md` R-TGT-14). This Layout MUST NOT alter a collection
 filename, which is governed by `R-NAME-*` requirements in
@@ -141,7 +144,7 @@ field name, is stated by whichever requirements define that file.
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This
 test is measured on **paths**, because a path is what this document gives a file
-in a copy.
+in a TC Copy.
 
 | Level     | Test                                                                                                                                                                                                                                                                                                       |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

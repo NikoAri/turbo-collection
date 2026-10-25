@@ -1,13 +1,13 @@
 # Samples
 
 [`tc-sample-main`](tc-sample-main/) and
-[`tc-sample-off-site`](tc-sample-off-site/) are copies of one sample collection.
-[`logs/`](logs/) holds the log of the init run that made `tc-sample-main`, as it
-would sit in the temporary directory of the computer that ran it, never in a
-copy.
+[`tc-sample-off-site`](tc-sample-off-site/) are TC Copies of one sample
+collection. [`logs/`](logs/) holds the log of the init run that made
+`tc-sample-main`, as it would sit in the temporary directory of the computer
+that ran it, never in a TC Copy.
 
 [`moon-laptop`](moon-laptop/) is a directory to import from. Imported into a new
-copy, it fills `local-folder/moon-laptop/` with files and manifest entries
+TC Copy, it fills `local-folder/moon-laptop/` with files and manifest entries
 matching `tc-sample-main`'s.
 
 [`moon-photos`](moon-photos/) is a directory of photos to import and sort by

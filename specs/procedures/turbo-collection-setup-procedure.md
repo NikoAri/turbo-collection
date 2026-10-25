@@ -19,26 +19,26 @@ Do these once. Written under
 **R-SET-1.** You MUST have a laptop or desktop computer running **Windows**,
 **macOS** or **Linux**, with a port your drives connect to.
 
-You also need three drives, which Section 2 covers. Your three copies are
+You also need three drives, which Section 2 covers. Your three TC Copies are
 **peers**: none is a master, each carries its own manifest, and any one can
 restore any other (`turbo-collection-spec.md` Section 3). They differ only in
 what you do with each and where it sits:
 
-| Copy              | What you do with it                                              | Drive             |
-| ----------------- | ---------------------------------------------------------------- | ----------------- |
-| **working copy**  | import into it, and carry it to where your off-site copy is kept | solid-state drive |
-| **home copy**     | keep it with you, backed up with your working copy               | hard disk         |
-| **off-site copy** | keep it in another building; it never travels                    | hard disk         |
+| TC Copy              | What you do with it                                                 | Drive             |
+| -------------------- | ------------------------------------------------------------------- | ----------------- |
+| **working TC Copy**  | import into it, and carry it to where your off-site TC Copy is kept | solid-state drive |
+| **home TC Copy**     | keep it with you, backed up with your working TC Copy               | hard disk         |
+| **off-site TC Copy** | keep it in another building; it never travels                       | hard disk         |
 
-**Off-site** means in a different building from every other copy.
+**Off-site** means in a different building from every other TC Copy.
 
 > **Why these names.** _Target_ is a word `turbo-collection-spec.md`
-> deliberately retired, because it casts one copy as subordinate to another when
-> copies are peers. _Working_, _home_ and _off-site_ name what a copy is for and
-> where it rests, not a rank. Which drive becomes your working copy is a
-> convention you adopt, not a property Turbo-Collection depends on: it
-> identifies a copy by its `copyName` in configuration, not by which one you
-> import into.
+> deliberately retired, because it casts one TC Copy as subordinate to another
+> when TC Copies are peers. _Working_, _home_ and _off-site_ name what a TC Copy
+> is for and where it rests, not a rank. Which drive becomes your working TC
+> Copy is a convention you adopt, not a property Turbo-Collection depends on: it
+> identifies a TC Copy by its `tcCopyName` in configuration, not by which one
+> you import into.
 
 ## 2. Get three drives
 
@@ -89,18 +89,18 @@ decides replacement.
 **R-SET-6.** Format all three drives as **exFAT**.
 
 **R-SET-7.** You SHOULD mark each drive on its outside so you can tell it from
-your other drives. A useful mark is which copy it is (**working**, **home**, or
-**off-site**) and its **purchase date**.
+your other drives. A useful mark is which TC Copy it is (**working**, **home**,
+or **off-site**) and its **purchase date**.
 
-**R-SET-8.** Use your **solid-state drive** for your working copy.
+**R-SET-8.** Use your **solid-state drive** for your working TC Copy.
 
 **R-SET-15.** Run Turbo-Collection's **init** on a directory on your solid-state
-drive that is empty or does not exist yet. Init makes that directory your
-working copy, named `main`. Photographs you already have enter it by an import
-(`turbo-collection-import-procedure.md`).
+drive that is empty or does not exist yet. Init makes your working TC Copy,
+named `main`, in that directory. Photographs you already have enter it by an
+import (`turbo-collection-import-procedure.md`).
 
-**R-SET-9.** Use your two hard disk drives as your **home copy** and your
-**off-site copy**.
+**R-SET-9.** Use your two hard disk drives as your **home TC Copy** and your
+**off-site TC Copy**.
 
 > **Why exFAT.** No other format is read and written by every supported
 > operating system with no extra software. Each alternative needs paid
@@ -108,12 +108,12 @@ working copy, named `main`. Photographs you already have enter it by an import
 > rejects.
 
 > **Why init comes before anything else.** Until init runs, nothing on a drive
-> says it is a copy, and an import or a backup into it is refused
+> says it is a TC Copy, and an import or a backup into it is refused
 > (`turbo-collection-core-spec.md` R-CLI-14, `backup-spec.md` R-BACKUP-1). Init
-> writes what makes a directory a copy, and refuses a directory that already
-> holds files, so a folder picked by mistake is left as it was (`init-spec.md`
-> R-INIT-1, R-INIT-3). Give init a different name only if another copy you
-> connect is already named `main`.
+> writes what makes a directory a TC Directory, and refuses a directory that
+> already holds files, so a folder picked by mistake is left as it was
+> (`init-spec.md` R-INIT-1, R-INIT-3). Give init a different name only if
+> another TC Copy you connect is already named `main`.
 
 > **Init's starter ignore file.** Init writes a `.tcignore` listing files that
 > operating systems create on their own, so an import does not take them in as
@@ -126,32 +126,33 @@ working copy, named `main`. Photographs you already have enter it by an import
 > **What to write on a drive, and what not to.** Marking is a memory aid, not
 > something Turbo-Collection reads, so what you write is yours. Write only what
 > stays true through routine work: a purchase date never changes, and your
-> off-site copy never travels (`turbo-collection-offsite-procedure.md`), so
+> off-site TC Copy never travels (`turbo-collection-offsite-procedure.md`), so
 > _off-site_ is safe to write on it. Which drive is off-site is decided by where
 > you keep it, not by what a case says, and a release depends on that placement.
 
 ## 4. Fill
 
-**R-SET-10.** Run Turbo-Collection's **backup** with your working copy and an
-empty directory on one hard disk drive, giving that new copy a name for where it
-will rest, such as `home`. Then verify your home copy against its own manifests.
-
-**R-SET-11.** Run Turbo-Collection's **backup** with your working copy and an
-empty directory on your other hard disk drive, giving that new copy a name for
-where it will rest, such as `off-site`. Then verify it against its own
+**R-SET-10.** Run Turbo-Collection's **backup** with your working TC Copy and an
+empty directory on one hard disk drive, giving that new TC Copy a name for where
+it will rest, such as `home`. Then verify your home TC Copy against its own
 manifests.
 
-**R-SET-12.** Take your off-site copy **off-site**, and leave it there.
+**R-SET-11.** Run Turbo-Collection's **backup** with your working TC Copy and an
+empty directory on your other hard disk drive, giving that new TC Copy a name
+for where it will rest, such as `off-site`. Then verify it against its own
+manifests.
+
+**R-SET-12.** Take your off-site TC Copy **off-site**, and leave it there.
 
 > **Why a backup, and why a name.** A backup given an empty directory creates a
-> new copy there and fills it, and refuses to do so without a name
-> (`backup-spec.md` R-BACKUP-1). A copy is named for where it permanently rests,
-> so a drive in a wrong place is plainly wrong. A drive that replaces a dead one
-> takes that dead copy's name.
+> new TC Copy there and fills it, and refuses to do so without a name
+> (`backup-spec.md` R-BACKUP-1). A TC Copy is named for where it permanently
+> rests, so a drive in a wrong place is plainly wrong. A drive that replaces a
+> dead one takes that dead TC Copy's name.
 
 ## 5. Done when
 
-**R-SET-13.** Confirm **three copies exist on three drives, one of them
+**R-SET-13.** Confirm **three TC Copies exist on three drives, one of them
 off-site**, before treating anything held at an import source as releasable.
 
 `turbo-collection-backup-procedure.md` takes over from here, and
@@ -165,8 +166,8 @@ holding.
 Drive replacement on age, retiring a drive to a cold spare, and what to do when
 a drive dies. All need a replacement cadence, which is undecided.
 
-**How often each copy is read and verified**, which is what establishes that a
-copy is still intact on any medium. This obligation replaced solid-state
+**How often each TC Copy is read and verified**, which is what establishes that
+a TC Copy is still intact on any medium. This obligation replaced solid-state
 prohibitions, since withdrawn, and it has no number yet.
 
 ## Bump test

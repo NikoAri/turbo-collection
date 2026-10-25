@@ -1,27 +1,27 @@
-import type { CopyContents, DirectoryContents } from "./copy-contents.ts";
+import type { TcCopyContents, DirectoryContents } from "./tc-copy-contents.ts";
 import type { Manifest, ManifestEntry } from "./meta-files.ts";
 import { pathKeyOf } from "./paths.ts";
 
-// Mirroring (backup-spec.md Section 7.1): what a backup of two copies copies
+// Mirroring (backup-spec.md Section 7.1): what a backup of two TC Copies copies
 // into each of them, and what it reports instead.
 //
 // Two paths that differ only in letter case or normalization are one path
 // (turbo-collection-spec.md R-TGT-14), so a mirror matches names and
-// directories by `pathKeyOf`, and writes into a copy at whichever spelling
-// that copy already holds.
+// directories by `pathKeyOf`, and writes into a TC Copy at whichever spelling
+// that TC Copy already holds.
 
 // One content file to copy into a directory: `from`, its name where it is
 // copied from, and `entry`, what it is to be listed with where it goes. That
-// entry holds every field of its entry in the copy it comes from, its `file`
+// entry holds every field of its entry in the TC Copy it comes from, its `file`
 // being its name where it goes (R-BACKUP-13, meta-file-spec.md R-MFILE-10).
 export type FileCopying = {
   from: string;
   entry: ManifestEntry;
 };
 
-// What a mirror copies into one directory of a copy, from that directory in
-// the other copy. `from` and `to` are its paths in each copy, which differ
-// where those copies spell it differently.
+// What a mirror copies into one directory of a TC Copy, from that directory in
+// the other TC Copy. `from` and `to` are its paths in each TC Copy, which
+// differ where those TC Copies spell it differently.
 export type DirectoryCopying = {
   from: string;
   to: string;
@@ -31,35 +31,35 @@ export type DirectoryCopying = {
   receiptFiles: string[];
 };
 
-// What a mirror does in one of its two copies.
+// What a mirror does in one of its two TC Copies.
 export type CopyPlan = {
   // Each directory to copy into
   directories: DirectoryCopying[];
   // Path of each content file here that no manifest lists, and that no file
-  // of the other copy is written over (R-BACKUP-12)
+  // of the other TC Copy is written over (R-BACKUP-12)
   unlisted: string[];
   // Each set of paths here that are one path (R-TGT-14), at which nothing
   // is copied either way
   heldTwice: string[][];
 };
 
-// A path at which manifests of two copies list a content file with
-// differing checksums (R-BACKUP-4), spelled as copy `a` spells it.
+// A path at which manifests of two TC Copies list a content file with
+// differing checksums (R-BACKUP-4), spelled as TC Copy `a` spells it.
 export type Difference = {
   path: string;
   a: ManifestEntry;
   b: ManifestEntry;
 };
 
-// A directory whose manifests in two copies name another Layout or another
-// Import Source (R-BACKUP-14), spelled as copy `a` spells it.
+// A directory whose manifests in two TC Copies name another Layout or another
+// Import Source (R-BACKUP-14), spelled as TC Copy `a` spells it.
 export type Mismatch = {
   path: string;
   a: Manifest;
   b: Manifest;
 };
 
-// What a mirror of copies `a` and `b` does, and what it reports.
+// What a mirror of TC Copies `a` and `b` does, and what it reports.
 export type MirrorPlan = {
   a: CopyPlan;
   b: CopyPlan;
@@ -67,27 +67,27 @@ export type MirrorPlan = {
   mismatched: Mismatch[];
 };
 
-// One directory as one copy holds it: `path`, where it is in that copy, or
-// is to go where that copy does not hold it, and what it holds there.
+// One directory as one TC Copy holds it: `path`, where it is in that TC Copy,
+// or is to go where that TC Copy does not hold it, and what it holds there.
 type DirectorySide = {
   path: string;
   contents: DirectoryContents;
 };
 
-// What a copy holds in a directory it does not have.
+// What a TC Copy holds in a directory it does not have.
 const Absent: DirectoryContents = {
   files: new Set(),
   manifest: undefined,
   receiptFiles: [],
 };
 
-// Plans a mirror of copies whose contents are `a` and `b`. A copy holds a
-// content file only where that file is at its path and its directory's
-// manifest lists it (R-BACKUP-4), so a file that one copy has lost, while
-// its manifest still lists it, is copied back from the other copy where
-// that copy's manifest states the same checksum. Only what a copy lacks is
-// copied, so copies in agreement have nothing copied (R-BACKUP-7).
-export function planMirror(a: CopyContents, b: CopyContents): MirrorPlan {
+// Plans a mirror of TC Copies whose contents are `a` and `b`. A TC Copy holds a
+// content file only where that file is at its path and its directory's manifest
+// lists it (R-BACKUP-4), so a file that one TC Copy has lost, while its
+// manifest still lists it, is copied back from the other TC Copy where that TC
+// Copy's manifest states the same checksum. Only what a TC Copy lacks is
+// copied, so TC Copies in agreement have nothing copied (R-BACKUP-7).
+export function planMirror(a: TcCopyContents, b: TcCopyContents): MirrorPlan {
   const plan: MirrorPlan = {
     a: { directories: [], unlisted: [], heldTwice: [] },
     b: { directories: [], unlisted: [], heldTwice: [] },
@@ -137,8 +137,8 @@ export function planMirror(a: CopyContents, b: CopyContents): MirrorPlan {
   return plan;
 }
 
-// Adds to `plan` what a mirror does in one directory, which copy `a` holds
-// as `inA` and copy `b` as `inB`.
+// Adds to `plan` what a mirror does in one directory, which TC Copy `a` holds
+// as `inA` and TC Copy `b` as `inB`.
 function planDirectory(
   plan: MirrorPlan,
   inA: DirectorySide,
@@ -193,8 +193,8 @@ function haveOneProvenance(a: Manifest, b: Manifest): boolean {
 }
 
 // Adds to `intoA` and `intoB` each content file listed in one directory
-// that one copy holds and the other does not, and to `plan` each file whose
-// manifests state two checksums, or which a copy holds in two spellings.
+// that one TC Copy holds and the other does not, and to `plan` each file whose
+// manifests state two checksums, or which a TC Copy holds in two spellings.
 function planContentFiles(
   plan: MirrorPlan,
   inA: DirectorySide,
@@ -324,10 +324,10 @@ function groupByKey<T>(
   return groups;
 }
 
-// Where in a copy each directory of the other copy goes, that copy's own
-// directories being `directories`, grouped by key: at a spelling that copy
-// holds, and otherwise under where its parent goes, by its own name
-// (R-TGT-14). Each place it gives a directory that copy does not hold is
+// Where in a TC Copy each directory of the other TC Copy goes, that TC Copy's
+// own directories being `directories`, grouped by key: at a spelling that TC
+// Copy holds, and otherwise under where its parent goes, by its own name
+// (R-TGT-14). Each place it gives a directory that TC Copy does not hold is
 // kept, so that two spellings of one path go to one place.
 function placer(
   directories: ReadonlyMap<string, readonly string[]>,
@@ -356,7 +356,7 @@ function placer(
   return place;
 }
 
-// Path of `name` in a directory at `directoryPath` of a copy.
+// Path of `name` in a directory at `directoryPath` of a TC Copy.
 function pathOf(directoryPath: string, name: string): string {
   return directoryPath === "" ? name : `${directoryPath}/${name}`;
 }

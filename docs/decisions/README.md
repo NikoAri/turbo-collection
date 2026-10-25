@@ -88,17 +88,17 @@ groupings by area once there is more than one area to group.
 | 2026-08-01 | [One document per layout](2026-08-01-layout-conventions-decision.md)                                                                                                  | Accepted |
 | 2026-08-01 | [Obligation keywords appear only in normative documents](2026-08-01-obligation-keywords-decision.md)                                                                  | Accepted |
 | 2026-08-08 | [An operator procedure, and the test for what belongs in it](2026-08-08-operator-procedure-decision.md)                                                               | Accepted |
-| 2026-08-10 | [Three copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md)                                                                    | Accepted |
+| 2026-08-10 | [Three TC Copies on three drives, with media chosen by cost](2026-08-10-storage-hardware-decision.md)                                                                 | Accepted |
 | 2026-08-13 | [Turbo-Collection only ever adds](2026-08-13-append-only-decision.md)                                                                                                 | Accepted |
-| 2026-08-15 | [Removable storage, and the off-site copy that never travels](2026-08-15-drive-naming-and-hardware-decision.md)                                                       | Accepted |
+| 2026-08-15 | [Removable storage, and the off-site TC Copy that never travels](2026-08-15-drive-naming-and-hardware-decision.md)                                                    | Accepted |
 | 2026-08-16 | [A future reader has help, so conveniences are not pre-built](2026-08-16-future-reader-decision.md)                                                                   | Accepted |
 | 2026-08-16 | [The manifest is JSON, and nothing sits beside it](2026-08-16-manifest-format-decision.md)                                                                            | Accepted |
 | 2026-08-22 | [The import source is a path segment, and the only category above a photo](2026-08-22-import-source-decision.md)                                                      | Accepted |
-| 2026-09-05 | [Copies are peers, with no privileged collection](2026-09-05-peer-model-decision.md)                                                                                  | Accepted |
+| 2026-09-05 | [TC Copies are peers, with no privileged collection](2026-09-05-peer-model-decision.md)                                                                               | Accepted |
 | 2026-09-07 | [A receipt is a set of immutable per-event files, and manifests are per-directory](2026-09-07-receipts-decision.md)                                                   | Accepted |
-| 2026-09-10 | [A copy records its own location as a location receipt](2026-09-10-location-receipt-decision.md)                                                                      | Accepted |
+| 2026-09-10 | [A TC Copy records its own location as a location receipt](2026-09-10-location-receipt-decision.md)                                                                   | Accepted |
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md)                                                   | Accepted |
-| 2026-09-27 | [Configuration lives in the copy root's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md)                                         | Accepted |
+| 2026-09-27 | [Configuration lives in the TC Directory's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md)                                      | Accepted |
 | 2026-10-03 | [An import source names its layout, and the supplied-path layout is the floor](2026-10-03-layout-selection-decision.md)                                               | Accepted |
 | 2026-10-03 | [A normative document carries no change ledger](2026-10-03-change-ledger-decision.md)                                                                                 | Accepted |
 | 2026-10-03 | [A requirement is a paragraph led by its ID, not a table row](2026-10-03-requirement-paragraphs-decision.md)                                                          | Accepted |
@@ -107,26 +107,26 @@ groupings by area once there is more than one area to group.
 | 2026-10-04 | [A vendor's tool may perform an import, and is never needed to read what is stored](2026-10-04-vendor-tool-decision.md)                                               | Accepted |
 | 2026-10-05 | [Specifications carry precision, `docs/` carries explanation](2026-10-05-docs-and-specs-separation-decision.md)                                                       | Accepted |
 | 2026-10-05 | [Traceability and durability are standards of their own, beside the core specification](2026-10-05-requirement-family-decision.md)                                    | Accepted |
-| 2026-10-06 | [The specification names concrete things, and has no ports](2026-10-06-spec-vocabulary-decision.md)                                                                   | Accepted |
-| 2026-10-06 | [Every file a copy preserves is a content file, with no derivative and no original](2026-10-06-content-file-decision.md)                                              | Accepted |
+| 2026-10-06 | [Every file a TC Copy preserves is a content file, with no derivative and no original](2026-10-06-content-file-decision.md)                                           | Accepted |
 | 2026-10-06 | [An importer makes a best effort, and the core guarantees nothing about what an import source delivers](2026-10-06-importer-best-effort-decision.md)                  | Accepted |
 | 2026-10-06 | [A file read from a directory is one item, and nothing pairs files by name](2026-10-06-one-file-one-item-decision.md)                                                 | Accepted |
 | 2026-10-06 | [A local folder is stored under its own name, and a clash is reported, not prevented](2026-10-06-local-folder-path-decision.md)                                       | Accepted |
 | 2026-10-06 | [An import never overwrites: a differing file stays out, and the rest comes in](2026-10-06-import-conflict-decision.md)                                               | Accepted |
 | 2026-10-06 | [A run exits 0 only when it was fully successful, and the exit status says nothing more](2026-10-06-exit-status-decision.md)                                          | Accepted |
-| 2026-10-06 | [Turbo-Collection writes no `README.md` into a copy](2026-10-06-no-copy-readme-decision.md)                                                                           | Accepted |
+| 2026-10-06 | [Turbo-Collection writes no `README.md` into a TC Copy](2026-10-06-no-copy-readme-decision.md)                                                                        | Accepted |
 | 2026-10-08 | [A version report names every specification the code conforms to](2026-10-08-version-report-decision.md)                                                              | Accepted |
-| 2026-10-14 | [A copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-14-collection-naming-decision.md)                              | Accepted |
-| 2026-10-17 | [Turbo-Collection copies files itself, and no copying program writes into a copy](2026-10-17-mirror-engine-decision.md)                                               | Accepted |
+| 2026-10-17 | [Turbo-Collection copies files itself, and no copying program writes into a TC Copy](2026-10-17-mirror-engine-decision.md)                                            | Accepted |
 | 2026-10-18 | [Turbo-Collection runs under more than one operating system, and which ones is a binding](2026-10-18-operating-systems-decision.md)                                   | Accepted |
-| 2026-10-18 | [Init creates the first copy in an empty directory; backup creates every later copy](2026-10-18-copy-creation-decision.md)                                            | Accepted |
+| 2026-10-18 | [Init creates the first TC Copy in an empty directory; backup creates every later TC Copy](2026-10-18-copy-creation-decision.md)                                      | Accepted |
 | 2026-10-18 | [The starter ignore file is described by the specification, shipped by the implementation, and curated for preservation](2026-10-18-starter-ignore-file-decision.md)  | Accepted |
 | 2026-10-18 | [A symbolic link is not content, and a run that meets one fails](2026-10-18-non-regular-files-decision.md)                                                            | Accepted |
 | 2026-10-19 | [Three operations write and two read: init, import, backup; verify and status](2026-10-19-operation-taxonomy-decision.md)                                             | Accepted |
-| 2026-10-19 | [A quick verify checks copies by name and size; a deep verify reads every byte](2026-10-19-verify-copies-decision.md)                                                 | Accepted |
+| 2026-10-19 | [A quick verify checks TC Copies by name and size; a deep verify reads every byte](2026-10-19-verify-copies-decision.md)                                              | Accepted |
 | 2026-10-20 | [A run logs one JSON object per line to the directory for temporary files, and text to the terminal](2026-10-20-log-location-decision.md)                             | Accepted |
 | 2026-10-20 | [Overlapping runs are kept apart by a log created exclusively, a configuration file written first, and a lock per collection](2026-10-20-parallel-safety-decision.md) | Accepted |
 | 2026-10-22 | [The operation is backup; its mechanism is a mirror](2026-10-22-backup-naming-decision.md)                                                                            | Accepted |
-| 2026-10-22 | [A backup mirrors two copies and leaves their meta files consistent](2026-10-22-backup-mirror-decision.md)                                                            | Accepted |
+| 2026-10-22 | [A backup mirrors two TC Copies and leaves their meta files consistent](2026-10-22-backup-mirror-decision.md)                                                         | Accepted |
 | 2026-10-22 | [Four rules added to the authoring standard: language, articles, and identifiers](2026-10-22-language-standard-additions-decision.md)                                 | Accepted |
-| 2026-10-22 | [Paths that differ only in letter case or normalization are one path in a copy](2026-10-22-letter-case-decision.md)                                                   | Accepted |
+| 2026-10-22 | [Paths that differ only in letter case or normalization are one path in a TC Copy](2026-10-22-letter-case-decision.md)                                                | Accepted |
+| 2026-10-25 | [The specification names concrete things, and has no ports](2026-10-25-spec-vocabulary-decision.md)                                                                   | Accepted |
+| 2026-10-25 | [A TC Copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-25-collection-naming-decision.md)                           | Accepted |

@@ -3,7 +3,7 @@ import { TcError } from "./helpers/tc-error.ts";
 import type { TcConfig } from "./meta-files.ts";
 
 // A collection's lock on this computer, which every run but init holds while
-// it reads or writes a copy of that collection (parallel-safety-spec.md
+// it reads or writes a TC Copy of that collection (parallel-safety-spec.md
 // R-PARALLEL-4). It is a NamedMutex named for its collection's ID.
 
 // Locks `tcConfig`'s collection, without waiting. Where another run holds its

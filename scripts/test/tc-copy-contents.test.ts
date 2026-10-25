@@ -12,8 +12,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { mock, test, type TestContext } from "node:test";
 
-import { readCopy } from "../copy-contents.ts";
-import { importIntoCopy } from "../import.ts";
+import { readTcCopy } from "../tc-copy-contents.ts";
+import { importIntoTcCopy } from "../import.ts";
 import { initializeTc } from "../init.ts";
 import { logger } from "../logger.ts";
 import {
@@ -56,36 +56,37 @@ function ignoring(text: string): IsIgnored {
 // Run ID of each import these tests make.
 const RunId = "20261022T150000Z-0001";
 
-// Makes a copy at `photos` in `parent`, and imports into it a directory named
-// `moon-laptop` holding `files`, each a path relative to it with its content.
-// Returns that copy's root, and where it stores what `moon-laptop` holds.
-async function makeCopyHolding(
+// Makes a TC Copy at `photos` in `parent`, and imports into it a directory
+// named `moon-laptop` holding `files`, each a path relative to it with its
+// content. Returns that TC Directory, and where it stores what `moon-laptop`
+// holds.
+async function makeTcCopyHolding(
   parent: string,
   files: Record<string, string>,
-): Promise<{ copyRoot: string; stored: string }> {
-  const copyRoot = path.join(parent, "photos");
-  initializeTc({ directory: copyRoot });
+): Promise<{ tcDirectory: string; stored: string }> {
+  const tcDirectory = path.join(parent, "photos");
+  initializeTc({ directory: tcDirectory });
   const folder = path.join(parent, "moon-laptop");
   for (const [relativePath, content] of Object.entries(files)) {
     writeFileUnder(folder, relativePath, content);
   }
-  await importIntoCopy(
-    { directory: folder, copy: copyRoot, dryRun: false },
+  await importIntoTcCopy(
+    { importDirectory: folder, tcDirectory, dryRun: false },
     RunId,
   );
   return {
-    copyRoot,
-    stored: path.join(copyRoot, "local-folder", "moon-laptop"),
+    tcDirectory,
+    stored: path.join(tcDirectory, "local-folder", "moon-laptop"),
   };
 }
 
-test("R-MFILE-2, R-MFILE-8: readCopy reads each directory of a copy, with its content files, its manifest and its receipt files, and the root's .tcignore is not a content file", async (t) => {
-  const { copyRoot } = await makeCopyHolding(temporaryDirectory(t), {
+test("R-MFILE-2, R-MFILE-8: readTcCopy reads each directory of a TC Copy, with its content files, its manifest and its receipt files, and the root's .tcignore is not a content file", async (t) => {
+  const { tcDirectory } = await makeTcCopyHolding(temporaryDirectory(t), {
     "a.txt": "a",
     "sub/b.txt": "b",
   });
 
-  const contents = readCopy(copyRoot, ignoring(""));
+  const contents = readTcCopy(tcDirectory, ignoring(""));
 
   assert.deepEqual([...contents.directories.keys()].sort(), [
     "",
@@ -108,14 +109,17 @@ test("R-MFILE-2, R-MFILE-8: readCopy reads each directory of a copy, with its co
   assert.deepEqual(contents.unrecognized, []);
 });
 
-test("R-INT-8: readCopy lists a content file that no manifest lists", async (t) => {
-  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
-    "a.txt": "a",
-  });
+test("R-INT-8: readTcCopy lists a content file that no manifest lists", async (t) => {
+  const { tcDirectory, stored } = await makeTcCopyHolding(
+    temporaryDirectory(t),
+    {
+      "a.txt": "a",
+    },
+  );
   writeFileUnder(stored, "extra.txt");
-  writeFileUnder(copyRoot, "notes/n.txt");
+  writeFileUnder(tcDirectory, "notes/n.txt");
 
-  const contents = readCopy(copyRoot, ignoring(""));
+  const contents = readTcCopy(tcDirectory, ignoring(""));
 
   assert.deepEqual(
     contents.directories.get("local-folder/moon-laptop")!.files,
@@ -126,17 +130,20 @@ test("R-INT-8: readCopy lists a content file that no manifest lists", async (t) 
   assert.equal(notes.manifest, undefined);
 });
 
-test("R-MFILE-21, R-CLI-19: readCopy passes over what an ignore file ignores, and reads every meta file whatever it ignores", async (t) => {
-  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
-    "a.json": "{}",
-    "b.txt": "b",
-  });
+test("R-MFILE-21, R-CLI-19: readTcCopy passes over what an ignore file ignores, and reads every meta file whatever it ignores", async (t) => {
+  const { tcDirectory, stored } = await makeTcCopyHolding(
+    temporaryDirectory(t),
+    {
+      "a.json": "{}",
+      "b.txt": "b",
+    },
+  );
   writeFileUnder(stored, ".DS_Store");
   writeFileUnder(stored, ".turbo-collection/.DS_Store");
   writeFileUnder(stored, "__MACOSX/c.txt");
 
-  const contents = readCopy(
-    copyRoot,
+  const contents = readTcCopy(
+    tcDirectory,
     ignoring(".DS_Store\n__MACOSX/\n*.json\n"),
   );
 
@@ -156,9 +163,9 @@ test("R-MFILE-21, R-CLI-19: readCopy passes over what an ignore file ignores, an
   assert.deepEqual(contents.unrecognized, []);
 });
 
-test("R-CLI-19: readCopy lists a link without following it, and passes over one that is ignored", async (t) => {
+test("R-CLI-19: readTcCopy lists a link without following it, and passes over one that is ignored", async (t) => {
   const temporary = temporaryDirectory(t);
-  const { copyRoot, stored } = await makeCopyHolding(temporary, {
+  const { tcDirectory, stored } = await makeTcCopyHolding(temporary, {
     "a.txt": "a",
   });
   const target = path.join(temporary, "elsewhere");
@@ -168,7 +175,7 @@ test("R-CLI-19: readCopy lists a link without following it, and passes over one 
   symlinkSync(target, path.join(stored, "latest"), "junction");
   symlinkSync(target, path.join(stored, "ignored-link"), "junction");
 
-  const contents = readCopy(copyRoot, ignoring("ignored-link\n"));
+  const contents = readTcCopy(tcDirectory, ignoring("ignored-link\n"));
 
   assert.deepEqual(contents.notRegular, [path.join(stored, "latest")]);
   assert.equal(
@@ -177,39 +184,42 @@ test("R-CLI-19: readCopy lists a link without following it, and passes over one 
   );
 });
 
-test("R-CLI-18: readCopy ends with an error at a configuration file below a copy's root", async (t) => {
-  const { copyRoot } = await makeCopyHolding(temporaryDirectory(t), {
+test("R-CLI-18: readTcCopy ends with an error at a configuration file below a TC Directory", async (t) => {
+  const { tcDirectory } = await makeTcCopyHolding(temporaryDirectory(t), {
     "a.txt": "a",
   });
   writeFileUnder(
-    copyRoot,
+    tcDirectory,
     "local-folder/nested/.turbo-collection/turbo-collection-config.json",
     "{}",
   );
 
   assert.throws(
-    () => readCopy(copyRoot, ignoring("")),
-    /nested" is a copy inside the copy at/,
+    () => readTcCopy(tcDirectory, ignoring("")),
+    /nested" is a TC Directory inside the TC Copy at/,
   );
 });
 
-test("R-MFILE-1: readCopy lists what a .turbo-collection holds that is no meta file there, and reads a location receipt file at a copy's root alone", async (t) => {
-  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
-    "a.txt": "a",
-  });
+test("R-MFILE-1: readTcCopy lists what a .turbo-collection holds that is no meta file there, and reads a location receipt file at a TC Directory alone", async (t) => {
+  const { tcDirectory, stored } = await makeTcCopyHolding(
+    temporaryDirectory(t),
+    {
+      "a.txt": "a",
+    },
+  );
   const metaDirectory = path.join(stored, ".turbo-collection");
   writeFileUnder(metaDirectory, "notes.txt");
   const locationReceipt = "receipt-20261022T150000Z-0002-main.location.json";
   writeFileUnder(metaDirectory, locationReceipt, "{}");
-  writeFileUnder(copyRoot, `.turbo-collection/${locationReceipt}`, "{}");
-  mkdirSync(path.join(copyRoot, ".turbo-collection", "tmp"));
+  writeFileUnder(tcDirectory, `.turbo-collection/${locationReceipt}`, "{}");
+  mkdirSync(path.join(tcDirectory, ".turbo-collection", "tmp"));
 
-  const contents = readCopy(copyRoot, ignoring(""));
+  const contents = readTcCopy(tcDirectory, ignoring(""));
 
   assert.deepEqual(
     contents.unrecognized.sort(),
     [
-      path.join(copyRoot, ".turbo-collection", "tmp"),
+      path.join(tcDirectory, ".turbo-collection", "tmp"),
       path.join(metaDirectory, "notes.txt"),
       path.join(metaDirectory, locationReceipt),
     ].sort(),
@@ -219,22 +229,28 @@ test("R-MFILE-1: readCopy lists what a .turbo-collection holds that is no meta f
   ]);
 });
 
-test("R-MFILE-7: readCopy ends with an error at a manifest that is not a JSON document", async (t) => {
-  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
-    "a.txt": "a",
-  });
+test("R-MFILE-7: readTcCopy ends with an error at a manifest that is not a JSON document", async (t) => {
+  const { tcDirectory, stored } = await makeTcCopyHolding(
+    temporaryDirectory(t),
+    {
+      "a.txt": "a",
+    },
+  );
   writeFileUnder(stored, ".turbo-collection/manifest.json", '{"version": "0.1');
 
   assert.throws(
-    () => readCopy(copyRoot, ignoring("")),
+    () => readTcCopy(tcDirectory, ignoring("")),
     /manifest\.json" is not a JSON document/,
   );
 });
 
-test("R-TGT-14: readCopy ends with an error at a meta directory or a manifest spelled in another letter case, or at a file named .turbo-collection", async (t) => {
-  const { copyRoot, stored } = await makeCopyHolding(temporaryDirectory(t), {
-    "a.txt": "a",
-  });
+test("R-TGT-14: readTcCopy ends with an error at a meta directory or a manifest spelled in another letter case, or at a file named .turbo-collection", async (t) => {
+  const { tcDirectory, stored } = await makeTcCopyHolding(
+    temporaryDirectory(t),
+    {
+      "a.txt": "a",
+    },
+  );
   // Through another name, since a drive that ignores case takes a rename
   // to a new letter case alone as no change on some systems
   const renameTo = (from: string, to: string) => {
@@ -248,20 +264,20 @@ test("R-TGT-14: readCopy ends with an error at a meta directory or a manifest sp
     path.join(metaDirectory, "Manifest.json"),
   );
   assert.throws(
-    () => readCopy(copyRoot, ignoring("")),
+    () => readTcCopy(tcDirectory, ignoring("")),
     /Manifest\.json" stands where Turbo-Collection keeps a file named "manifest\.json"/,
   );
 
   renameTo(metaDirectory, path.join(stored, ".Turbo-Collection"));
   assert.throws(
-    () => readCopy(copyRoot, ignoring("")),
+    () => readTcCopy(tcDirectory, ignoring("")),
     /Turbo-Collection" stands where Turbo-Collection keeps a directory named "\.turbo-collection"/,
   );
 
   rmSync(path.join(stored, ".Turbo-Collection"), { recursive: true });
   writeFileUnder(stored, ".turbo-collection");
   assert.throws(
-    () => readCopy(copyRoot, ignoring("")),
+    () => readTcCopy(tcDirectory, ignoring("")),
     /keeps a directory named "\.turbo-collection"/,
   );
 });

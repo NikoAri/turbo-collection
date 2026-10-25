@@ -10,7 +10,7 @@ import {
 } from "node:fs";
 
 // Reading and writing a content file: its checksum, and a copy of it written
-// into a copy.
+// into a TC Copy.
 
 // How much of a file is read and written at a time.
 const ChunkSize = 1024 * 1024;
@@ -78,16 +78,19 @@ export function copyAndChecksum(
   return { size, checksum: hash.digest("hex") };
 }
 
-// Whether `error` says that a copy at `copyRoot` cannot be written at all:
-// its drive gone, read-only or full (import-spec.md R-SRC-26, backup-spec.md
-// R-BACKUP-8).
-export function isCopyUnwritable(error: unknown, copyRoot: string): boolean {
+// Whether `error` says that a TC Copy at `tcDirectory` cannot be written at
+// all: its drive gone, read-only or full (import-spec.md R-SRC-26,
+// backup-spec.md R-BACKUP-8).
+export function isTcCopyUnwritable(
+  error: unknown,
+  tcDirectory: string,
+): boolean {
   const code = (error as NodeJS.ErrnoException).code;
   if (code === "ENOSPC" || code === "EROFS") {
     return true;
   }
   try {
-    return statSync(copyRoot, { throwIfNoEntry: false }) === undefined;
+    return statSync(tcDirectory, { throwIfNoEntry: false }) === undefined;
   } catch {
     return true;
   }

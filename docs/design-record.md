@@ -195,25 +195,25 @@ satisfy are also stated as requirements, in
   reasoning is in
   [the append-only decision](decisions/2026-08-13-append-only-decision.md).
   Worth stating here as philosophy and not only as a requirement, because it
-  explains an otherwise odd shape: every copy grows monotonically, so copies
-  converge by each gaining what the others hold, never by one being overwritten
-  to match another. A run's own incomplete work needs no carve-out: a file a run
-  stops writing stays at its path with no manifest listing it, so it is not in
-  the collection, and the next run writes over it (R-TGT-13).
+  explains an otherwise odd shape: every TC Copy grows monotonically, so TC
+  Copies converge by each gaining what the others hold, never by one being
+  overwritten to match another. A run's own incomplete work needs no carve-out:
+  a file a run stops writing stays at its path with no manifest listing it, so
+  it is not in the collection, and the next run writes over it (R-TGT-13).
 - **A record lives with the data it describes.** There is no central index of
   what is stored where. Every directory carries its own manifest and its own
-  receipt; every copy carries its own configuration, and optionally its own copy
-  of the specification; nothing remembers an import source's contents between
-  runs. Picasa is the worked example here as well as for plain files: it first
-  stored album definitions in `.pal` files under a user profile directory, away
-  from the photographs, and version 3.9 moved album data into a `.picasa.ini`
-  **inside each photo folder**. Google reached this conclusion themselves, too
-  late for anyone whose albums predated the move. The industry name for what is
-  rejected is a **catalog**: in backup software, the central database of what
-  was backed up onto which media, whose known failure is that losing it leaves
-  you holding media you can no longer interpret, so it needs its own backup and
-  its own recovery procedure. The cost accepted instead is repetition, which is
-  redundancy (`R-DUR-2`) applied to metadata. Reasoning:
+  receipt; every TC Copy carries its own configuration, and optionally its own
+  copy of the specification; nothing remembers an import source's contents
+  between runs. Picasa is the worked example here as well as for plain files: it
+  first stored album definitions in `.pal` files under a user profile directory,
+  away from the photographs, and version 3.9 moved album data into a
+  `.picasa.ini` **inside each photo folder**. Google reached this conclusion
+  themselves, too late for anyone whose albums predated the move. The industry
+  name for what is rejected is a **catalog**: in backup software, the central
+  database of what was backed up onto which media, whose known failure is that
+  losing it leaves you holding media you can no longer interpret, so it needs
+  its own backup and its own recovery procedure. The cost accepted instead is
+  repetition, which is redundancy (`R-DUR-2`) applied to metadata. Reasoning:
   [the receipts decision](decisions/2026-09-07-receipts-decision.md).
 - **A vendor may be an import source, never a custodian, and the same holds for
   hardware.** The rule began as a statement about services and tools, and it
@@ -228,11 +228,11 @@ satisfy are also stated as requirements, in
   there is **minimal dependency** rather than none. Reasoning:
   [the drive and hardware decision](decisions/2026-08-15-drive-naming-and-hardware-decision.md).
 - **The computer is equipment, not infrastructure.** No machine is part of this
-  system. Configuration travels on the working copy, and nothing is installed on
-  a host or remembered there: a run leaves its log in the computer's temporary
-  directory, and no later run reads it. So a backup can be performed on a
-  borrowed computer in another building. This is what several separately-argued
-  decisions were quietly buying.
+  system. Configuration travels on the working TC Copy, and nothing is installed
+  on a host or remembered there: a run leaves its log in the computer's
+  temporary directory, and no later run reads it. So a backup can be performed
+  on a borrowed computer in another building. This is what several
+  separately-argued decisions were quietly buying.
 - **The code is not the trust anchor.** This principle is what makes the
   previous one hard. If the orchestrator is small, regenerable from a
   specification, and therefore disposable, then any guarantee resting on the
@@ -252,14 +252,14 @@ satisfy are also stated as requirements, in
 
 ## 3. What we rejected and why
 
-| Option                                                                                | Why rejected                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Immich** (self-hosted Google Photos clone)                                          | Excellent, but too heavy; stores metadata in a **PostgreSQL database** (violates "plain files"), felt overwhelming, and it's a _manager_ not a _backup_. AGPL (fine for personal use, but not the direction).                                                                                                                                                                                                  |
-| **PhotoPrism / LibrePhotos**                                                          | Same class as Immich: DB-backed photo managers, heavier than needed.                                                                                                                                                                                                                                                                                                                                           |
-| **Managed cloud services as the _system of record_** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the import source for the iPhone, and a cloud bucket storing one object per file is a perfectly good backup copy (Section 10). What is rejected is depending on any of them for custody. |
-| **Proprietary backup apps** (e.g., Bvckup 2)                                          | The owner _liked_ Bvckup's file-mirroring model, but it's **proprietary** → no full control. We want an open equivalent.                                                                                                                                                                                                                                                                                       |
-| **Full versioned/repo backup tools as the core** (restic/Borg/Kopia)                  | Great tools, but their **repo format** isn't plain browsable files; you need the tool to read it back. Fine as a _later, optional_ versioned layer, not the core.                                                                                                                                                                                                                                              |
-| **POSIX shell as the orchestration language**                                         | Durable on Unix but **not truly OS-independent** (not native on Windows) and less approachable. A high-level language with a cross-platform runtime is more portable.                                                                                                                                                                                                                                          |
+| Option                                                                                | Why rejected                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Immich** (self-hosted Google Photos clone)                                          | Excellent, but too heavy; stores metadata in a **PostgreSQL database** (violates "plain files"), felt overwhelming, and it's a _manager_ not a _backup_. AGPL (fine for personal use, but not the direction).                                                                                                                                                                                              |
+| **PhotoPrism / LibrePhotos**                                                          | Same class as Immich: DB-backed photo managers, heavier than needed.                                                                                                                                                                                                                                                                                                                                       |
+| **Managed cloud services as the _system of record_** (iCloud/Google/OneDrive/Dropbox) | Rejected as **custodian**, not as **tool**. Subscription cost, lock-in in a vendor metadata format, and access tied to payment make them a poor place for photos to live. They stay in use here regardless: iCloud is the import source for the iPhone, and a cloud bucket storing one object per file is a perfectly good TC Copy (Section 10). What is rejected is depending on any of them for custody. |
+| **Proprietary backup apps** (e.g., Bvckup 2)                                          | The owner _liked_ Bvckup's file-mirroring model, but it's **proprietary** → no full control. We want an open equivalent.                                                                                                                                                                                                                                                                                   |
+| **Full versioned/repo backup tools as the core** (restic/Borg/Kopia)                  | Great tools, but their **repo format** isn't plain browsable files; you need the tool to read it back. Fine as a _later, optional_ versioned layer, not the core.                                                                                                                                                                                                                                          |
+| **POSIX shell as the orchestration language**                                         | Durable on Unix but **not truly OS-independent** (not native on Windows) and less approachable. A high-level language with a cross-platform runtime is more portable.                                                                                                                                                                                                                                      |
 
 **Note on AGPL vs MIT (discussed):** AGPL requires sharing modified source if
 you offer the software as a network service; it closes the "SaaS loophole." For
@@ -275,11 +275,11 @@ An **open, "Bvckup-like" file-mirroring preservation system**. Conceptually:
 
 ```
 Photos (plain folder tree)
-   ├── mirror engine (stdlib) ──▶ external drive  (exact, browsable copy)
+   ├── mirror engine (stdlib) ──▶ external drive  (exact, browsable TC Copy)
    ├── SHA-256 manifest ────────▶ bit-rot / integrity detection
    ├── thin orchestrator (TypeScript) coordinates the run
    ├── OS scheduler (launchd) runs it automatically
-   └── (optional, later) off-site copy: physical drive rotation OR cloud (e.g., B2)
+   └── (optional, later) off-site TC Copy: physical drive rotation OR cloud (e.g., B2)
 ```
 
 Key properties:
@@ -306,11 +306,11 @@ config JSON or TOML, the scheduler launchd or cron.
 
 **A note on words.** _Port_ and _adapter_ are this section's architecture
 vocabulary and appear nowhere in the specification, which names concrete things
-instead: an **importer** reads an **import source**, a copy sits on a **medium**
-and its **storage** declares what that medium can guarantee, and the tool that
-brings copies into agreement is the **mirror engine**. Read "Source" below as
+instead: an **importer** reads an **import source**, a TC Copy sits on a
+**medium** and its **storage** reads and writes it there, and the tool that
+brings TC Copies into agreement is the **mirror engine**. Read "Source" below as
 the import contract and "Storage" as the storage layout contract. Reasoning:
-[the vocabulary decision](decisions/2026-10-06-spec-vocabulary-decision.md).
+[the vocabulary decision](decisions/2026-10-25-spec-vocabulary-decision.md).
 
 ```mermaid
 graph TD
@@ -363,22 +363,22 @@ graph TD
 
 ### The core / importer seam
 
-An importer produces content and nothing else. The core owns every copy, decides
-where each file goes, and writes every meta file. An importer never sees a copy
-(`R-SRC-17`).
+An importer produces content and nothing else. The core owns every TC Copy,
+decides where each file goes, and writes every meta file. An importer never sees
+a TC Copy (`R-SRC-17`).
 
 - **One transport.** Every importer, whether a function inside the program or a
   separate executable, writes what it fetched into a hand-off directory outside
-  every copy, and the core takes files in from there. Every real import source
-  already delivers files (a camera card, an export directory, an archive), so
-  streaming bytes through the core would buy almost nothing and cost a second
-  code path. Because a separate executable hands over files, no framing protocol
-  over a byte stream is ever needed. The Importer contract
+  every TC Copy, and the core takes files in from there. Every real import
+  source already delivers files (a camera card, an export directory, an
+  archive), so streaming bytes through the core would buy almost nothing and
+  cost a second code path. Because a separate executable hands over files, no
+  framing protocol over a byte stream is ever needed. The Importer contract
   (`turbo-collection-core-spec.md` Section 11) has an importer hand over each
   file by the path at which the core reads it, and leaves free how a file comes
   to be there. The local-folder importer copies nothing first: a folder of files
   already is a hand-off directory, so the importer lists its files where they
-  sit and the core reads them from there. A copy made beforehand would move
+  sit and the core reads them from there. A TC Copy made beforehand would move
   every byte twice and add a hop the core does not verify, where reading the
   folder directly puts the whole trip under the core's checksum and
   verification. What a hand-off directory needs when an importer fills one (a
@@ -427,7 +427,7 @@ What lost:
 
 | Concern                    | Decision                                                           | Rationale                                                                                                                                                                                                                                                                                                                                                                                                    |
 | -------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Mirror engine**          | **Standard library** (`node:fs`, `node:crypto`)                    | Turbo-Collection writes every file into a copy itself, reading each file once both to check it against its manifest and to copy it. No copying program is started, since one could keep writing after its run's lock is released (`R-PARALLEL-8`). Why: [the mirror engine decision](decisions/2026-10-17-mirror-engine-decision.md).                                                                        |
+| **Mirror engine**          | **Standard library** (`node:fs`, `node:crypto`)                    | Turbo-Collection writes every file into a TC Copy itself, reading each file once both to check it against its manifest and to copy it. No copying program is started, since one could keep writing after its run's lock is released (`R-PARALLEL-8`). Why: [the mirror engine decision](decisions/2026-10-17-mirror-engine-decision.md).                                                                     |
 | **Orchestration language** | **TypeScript on Node.js** (direct TS execution, no transpile step) | Owner values **strong static types**. Node runs TS directly (type-stripping) → no build/transpile. Mainstream + idiomatic + small ⇒ future-AI-translatable. Runs on any OS.                                                                                                                                                                                                                                  |
 | **Dependencies**           | **Standard library first** (minimal third-party)                   | Dependencies are the hardest thing to maintain/translate. Node built-ins (`node:child_process`, `node:crypto`, `node:fs`, `node:path`) cover nearly everything. A package is admitted only when it implements a documented format the specification cites, has no dependencies of its own, and is listed in the table of core specification Section 12, with its license and a link, and installed with npm. |
 | **Config format**          | **JSON**                                                           | Node parses JSON **natively** (zero dependency). (TOML was the earlier default _for a Python build_, since Python 3.11+ has built-in `tomllib`; Node has no built-in TOML parser, so JSON keeps deps at zero.) Config is pure data, trivially convertible later.                                                                                                                                             |
@@ -545,8 +545,8 @@ browsable mirror?_ (Yes ⇒ filesystem/engine swaps are trivial.)
 **The filename gotcha (the real filesystem-migration risk):** a plain copy
 across ReFS↔NTFS↔APFS is lossless _except_ filenames: reserved characters,
 case-sensitivity collisions, and macOS's NFD vs. everyone else's NFC Unicode
-normalization. Mitigation: Turbo-Collection never makes two paths in a copy that
-differ only in letter case or normalization (`R-TGT-14`); the **name-hazard
+normalization. Mitigation: Turbo-Collection never makes two paths in a TC Copy
+that differ only in letter case or normalization (`R-TGT-14`); the **name-hazard
 check (`R-NAME-1`)**, run as verify names before a move, flags other risky names
 and any such pair made by hand; and the **SHA-256 manifest** verifies every file
 arrived intact after any move.
@@ -602,18 +602,18 @@ The complete end-to-end human workflow, from one-time setup through rare events.
 flowchart TD
     A[Take photos - phone] -->|automatic| B[Phone storage]
     B -->|monthly, you ~20 min:<br/>plug in / Wi-Fi transfer| C[Ingest to internal disk]
-    C -->|automatic: EXIF-sort, copy into collection| D[Collection on working copy<br/>external disk]
-    D -->|scheduled or on demand:<br/>mirror + SHA-256| E[Home copy]
-    E -->|monthly, you ~12 min:<br/>back up off-site| F[Off-site copy]
+    C -->|automatic: EXIF-sort, copy into collection| D[Collection on working TC Copy<br/>external disk]
+    D -->|scheduled or on demand:<br/>mirror + SHA-256| E[Home TC Copy]
+    E -->|monthly, you ~12 min:<br/>back up off-site| F[Off-site TC Copy]
     D -->|automatic| G[AI-summarized log]
     G -->|monthly, you ~8 min: glance| H[Verified safe]
 ```
 
 Scheduling is optional. The mirror step above runs on a schedule or on demand:
 `R-CLI-2` makes the tool one-shot with no daemon, and `R-CLI-6` requires it to
-be fully usable with no scheduler installed. Connecting a backup copy only when
-you use it trades automation for a stronger air gap, and pushes the whole burden
-of protecting new photos onto the backup procedure, which is why `R-REL-2` is
+be fully usable with no scheduler installed. Connecting a TC Copy only when you
+use it trades automation for a stronger air gap, and pushes the whole burden of
+protecting new photos onto the backup procedure, which is why `R-REL-2` is
 written as a gate on release rather than as a nightly habit.
 
 **Monthly checklist (~40 min):**
@@ -622,8 +622,8 @@ written as a gate on release rather than as a nightly habit.
    min).
 2. **Confirm backup**: check the run went green in the AI-summarized log (~8
    min).
-3. **Off-site**: take the working copy to the off-site copy, or confirm the
-   cloud upload (~12 min).
+3. **Off-site**: take the working TC Copy to the off-site TC Copy, or confirm
+   the cloud upload (~12 min).
 4. **Quarterly add-on**: restore a random sample to prove backups are restorable
    (~25 min, 4×/yr).
 
@@ -643,15 +643,15 @@ written as a gate on release rather than as a nightly habit.
 
 **Buying cheat-sheet:**
 
-| Decision   | Guidance                                                                                                                                                                                        |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Type       | SSD for the working copy, which is carried between machines; **HDD for both backup copies**, on price alone at roughly 30 against 60–80 USD/TB. Any medium is permitted in any role (`R-SET-2`) |
-| Avoid      | SMR drives for backup (prefer **CMR**); avoid unknown/relabeled sellers (counterfeit risk)                                                                                                      |
-| Capacity   | Buy **≥ 2× the library** so _age_, not fullness, is the trigger. Headroom costs money and costs no verification time                                                                            |
-| Quantity   | **Three copies total, bought on separated dates** (`R-SET-13`, `R-SET-3`). Never two matching drives together                                                                                   |
-| Brand      | Prefer different models, and different manufacturers where an enclosure discloses one. A suggestion, not a rule, because enclosures often do not disclose                                       |
-| Filesystem | exFAT only where a drive must be written by more than one supported operating system; a journaled native filesystem everywhere else                                                             |
-| On arrival | First mirror + checksum verify = free DOA/burn-in check                                                                                                                                         |
+| Decision   | Guidance                                                                                                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Type       | SSD for the working TC Copy, which is carried between machines; **HDD for the home and off-site TC Copies**, on price alone at roughly 30 against 60–80 USD/TB. Any medium is permitted in any role (`R-SET-2`) |
+| Avoid      | SMR drives for backup (prefer **CMR**); avoid unknown/relabeled sellers (counterfeit risk)                                                                                                                      |
+| Capacity   | Buy **≥ 2× the library** so _age_, not fullness, is the trigger. Headroom costs money and costs no verification time                                                                                            |
+| Quantity   | **Three TC Copies total, bought on separated dates** (`R-SET-13`, `R-SET-3`). Never two matching drives together                                                                                                |
+| Brand      | Prefer different models, and different manufacturers where an enclosure discloses one. A suggestion, not a rule, because enclosures often do not disclose                                                       |
+| Filesystem | exFAT only where a drive must be written by more than one supported operating system; a journaled native filesystem everywhere else                                                                             |
+| On arrival | First mirror + checksum verify = free DOA/burn-in check                                                                                                                                                         |
 
 **Why these choices.**
 
@@ -663,21 +663,21 @@ mirrors are independent plain trees, so recovery is an ordinary file copy and
 never a RAID rebuild, which removes the mechanism that usually kills a second
 drive right after the first.
 
-_SSD permitted in any role._ An SSD is fine for the off-site copy. JEDEC
+_SSD permitted in any role._ An SSD is fine for the off-site TC Copy. JEDEC
 JESD218's one-year client figure is measured on a drive stressed to its full
 rated terabytes written, and a photo collection leaves a drive at a small
 fraction of that, where retention is far longer. Medium is chosen on price, and
-the property that actually establishes a copy is intact is reading it on a
+the property that actually establishes a TC Copy is intact is reading it on a
 cadence, still undecided. Shock resistance is a reason to put the SSD on the
-working copy, since that is the one carried between machines. Full reasoning:
+working TC Copy, since that is the one carried between machines. Full reasoning:
 [storage hardware decision](decisions/2026-08-10-storage-hardware-decision.md).
 
 _What sets the cadence._ The immutable-backup literature supplies the idea worth
 borrowing: **dwell time**, the period damage sits undetected between the moment
 it happens and the moment someone looks. A verification cadence longer than
-dwell time means every surviving copy can be bad before anyone finds out. That
-reframes cadence as a **safety parameter rather than a performance one**, and
-raises its priority accordingly: it is now the only thing standing where the
+dwell time means every surviving TC Copy can be bad before anyone finds out.
+That reframes cadence as a **safety parameter rather than a performance one**,
+and raises its priority accordingly: it is now the only thing standing where the
 withdrawn media rule used to stand. The cost is measured and awkward, roughly 3
 hours per terabyte, disk-bound rather than hash-bound, so a full pass over 4 TB
 is a twelve-hour operation and cannot be the answer every time.
@@ -688,7 +688,7 @@ natural unit. No number is chosen yet.
 Append-only sharpens one edge of this. Never overwriting protects copies that
 already exist, and does nothing to stop bad bytes reaching new ones, so a
 collection file that corrupts silently would be faithfully copied to the next
-fresh copy. `R-BACKUP-12` closes that by verifying each file as it is copied,
+fresh TC Copy. `R-BACKUP-12` closes that by verifying each file as it is copied,
 which is cheap because the file is being read anyway. It does not replace a
 cadence; it only stops corruption spreading at the one moment the tool is
 already looking.
@@ -701,7 +701,7 @@ outlives its ~3-yr age life before filling. So replacement is **age-driven**,
 
 - **Backup run fails** → flagged in log → investigate, AI-guided (~15 min).
 - **Checksum mismatch (bit-rot)** → the system _working_; restore that file from
-  another copy (~15 min).
+  another TC Copy (~15 min).
 - **A drive dies** → no data lost (3-2-1); triggers a procurement event.
 
 ### Annual assumption re-validation ritual
@@ -786,11 +786,11 @@ calmer, so the system treats disruption as part of its normal operating
 environment, not a tail risk. That baseline sharpens two concrete choices:
 
 - **Grab-and-go portability**: keep the library on a **portable drive** (and the
-  off-site copy on a portable SSD) so photos are one item you can pick up and
+  off-site TC Copy on a portable SSD) so photos are one item you can pick up and
   carry. Tips the library-location choice toward external/portable.
-- **Real geographic separation**: the off-site copy lives genuinely _elsewhere_
-  (another building, city, or with trusted people), not just another room.
-  Against local disaster/unrest, _distance_ is the protection.
+- **Real geographic separation**: the off-site TC Copy lives genuinely
+  _elsewhere_ (another building, city, or with trusted people), not just another
+  room. Against local disaster/unrest, _distance_ is the protection.
 
 These fold into the spec: off-site becomes _geographic_; library defaults to
 _portable_.
@@ -834,12 +834,13 @@ from tools; the requirements/intent; SHA-256 _as a chosen mechanism_.
 - **Bit-rot**: silent data corruption on storage over time; detected by
   comparing checksums.
 - **Backup**: the operation and its purpose, moving photographs into safety;
-  carried out by the mirror mechanism across copies.
-- **Peer copy**: one of several byte-equal copies of a collection; no copy is
-  privileged.
-- **Mirror**: the mechanism that brings copies into agreement, transferring only
-  files a copy lacks; symmetric and add-only, never a one-way push and never a
-  delete.
+  carried out by the mirror mechanism across TC Copies.
+- **TC Copy**: one of several byte-equal instances of a collection, all peers;
+  no TC Copy is privileged. TC stands for Turbo-Collection.
+- **TC Directory**: a TC Copy's root directory, which a command line names.
+- **Mirror**: the mechanism that brings TC Copies into agreement, transferring
+  only files a TC Copy lacks; symmetric and add-only, never a one-way push and
+  never a delete.
 - **Manifest**: a JSON file, one per directory, recording each file's SHA-256
   checksum.
 - **Port / Adapter**: an interface (port) and its swappable implementation

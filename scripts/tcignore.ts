@@ -3,17 +3,18 @@ import path from "node:path";
 
 import ignore from "ignore";
 
-// A copy's ignore file, `.tcignore` (meta-file-spec.md R-MFILE-20).
+// A TC Copy's ignore file, `.tcignore` (meta-file-spec.md R-MFILE-20).
 
-// Where a copy whose root is `copyRoot` keeps its ignore file (R-MFILE-2).
-export function ignoreFileOf(copyRoot: string): string {
-  return path.join(copyRoot, ".tcignore");
+// Where a TC Copy whose root is `tcDirectory` keeps its ignore file
+// (R-MFILE-2).
+export function ignoreFileOf(tcDirectory: string): string {
+  return path.join(tcDirectory, ".tcignore");
 }
 
-// Patterns of an ignore file of a copy at `copyRoot`: none where that copy
-// has no ignore file (R-MFILE-20).
-export function readIgnoreFile(copyRoot: string): IgnorePattern[] {
-  const file = ignoreFileOf(copyRoot);
+// Patterns of an ignore file of a TC Copy at `tcDirectory`: none where that TC
+// Copy has no ignore file (R-MFILE-20).
+export function readIgnoreFile(tcDirectory: string): IgnorePattern[] {
+  const file = ignoreFileOf(tcDirectory);
   if (lstatSync(file, { throwIfNoEntry: false }) === undefined) {
     return [];
   }
@@ -46,7 +47,7 @@ export function readIgnorePatterns(text: string): IgnorePattern[] {
 // Whether a path is ignored. Where more than one pattern matches, whichever
 // comes last decides, as in a `.gitignore`.
 //
-// `path` is relative to a copy's root, with `/` between its segments. A
+// `path` is relative to a TC Directory, with `/` between its segments. A
 // directory's path ends in `/`, which is how npm package `ignore` tells one: a
 // pattern ending in `/` matches a directory and not a file.
 export type IsIgnored = (path: string) => boolean;

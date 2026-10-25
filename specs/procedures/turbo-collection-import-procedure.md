@@ -17,16 +17,16 @@ Written under [`../language-requirement.md`](../language-requirement.md). Terms:
 
 ---
 
-**R-IMP-1.** Plug in your working copy.
+**R-IMP-1.** Plug in your working TC Copy.
 
 **R-IMP-2.** Run Turbo-Collection's import for whichever import source you are
 importing from.
 
 **R-IMP-3.** Read that import's report.
 
-**R-IMP-4.** Leave these items in place at their import source until another
-copy holds them. What an import source holds does not count toward
-`turbo-collection-release-procedure.md` R-REL-1's three copies, because those
+**R-IMP-4.** Leave these items in place at their import source until another TC
+Copy holds them. What an import source holds does not count toward
+`turbo-collection-release-procedure.md` R-REL-1's three TC Copies, because those
 three are on drives you hold.
 
 **R-IMP-5.** Import in batches small enough to count, until export completeness

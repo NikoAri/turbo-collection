@@ -20,15 +20,15 @@ knows about arrivals are output. Only a report of something that could not be
 done, was refused, or was found wrong changes the exit status.
 
 **An extra file is a failure.** A content file that no manifest lists is one
-that no backup carries to another copy, so the finding has no reason to pass
+that no backup carries to another TC Copy, so the finding has no reason to pass
 quietly. It used to be reported with an exit status of 0. Its cure is to take
-the file out of the copy and import it; recording it where it sits is an
+the file out of the TC Copy and import it; recording it where it sits is an
 in-place import, which waits for a later version.
 
-**A copy that is not connected is not.** The off-site copy is away by design, so
-a verify at home that failed on its absence would fail every time, and an exit
-status that always fails says nothing. Verify checks the copies that are
-connected and names the ones that are not (`R-VERIFY-1`).
+**A TC Copy that is not connected is not.** The off-site TC Copy is away by
+design, so a verify at home that failed on its absence would fail every time,
+and an exit status that always fails says nothing. Verify checks the TC Copies
+that are connected and names the ones that are not (`R-VERIFY-1`).
 
 ## Rejected
 
@@ -37,7 +37,7 @@ connected and names the ones that are not (`R-VERIFY-1`).
   behind it.
 - **Exit 0 with warnings.** A run that left something undone and exited 0 is
   read as complete, by a scheduler and by a person in a hurry.
-- **Failing on a copy that is not connected.** As above.
+- **Failing on a TC Copy that is not connected.** As above.
 
 ## Touches
 

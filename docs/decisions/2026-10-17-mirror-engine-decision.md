@@ -1,17 +1,17 @@
-# Turbo-Collection copies files itself, and no copying program writes into a copy
+# Turbo-Collection copies files itself, and no copying program writes into a TC Copy
 
 **Status:** Accepted **Date:** 2026-10-17
 
 The mirror engine is Turbo-Collection's own code on the runtime's standard
 library (`turbo-collection-spec.md` Section 12), and Turbo-Collection starts no
-process that writes into a copy (`R-PARALLEL-8`). Until 2026-10-17 the binding
-was rclone, with rsync as a fallback.
+process that writes into a TC Copy (`R-PARALLEL-8`). Until 2026-10-17 the
+binding was rclone, with rsync as a fallback.
 
 - **One writer.** A process that a run starts can keep running after that run
   has ended, while the computer releases the collection's lock when the run ends
   (`R-PARALLEL-6`). A copying program left running by a backup that failed could
-  still be writing into a copy when the next run takes the lock, which is what
-  the lock is there to prevent
+  still be writing into a TC Copy when the next run takes the lock, which is
+  what the lock is there to prevent
   ([the parallel-safety decision](2026-10-20-parallel-safety-decision.md)).
 - **One read of each file.** Turbo-Collection already reads a file to check it
   against its manifest before copying it (`R-BACKUP-12`). Copying in that same
@@ -24,8 +24,8 @@ was rclone, with rsync as a fallback.
 ## Rejected
 
 - **rclone**, for the reasons above. What it would add is its backends for cloud
-  storage, and a cloud copy is deferred; one would have to meet `R-PARALLEL-8`
-  as well.
+  storage, and a cloud TC Copy is deferred; one would have to meet
+  `R-PARALLEL-8` as well.
 - **rsync**, the fallback. A separate process, as rclone is, and not part of
   Windows.
 

@@ -7,7 +7,7 @@ audience note admitted. Eleven requirements there govern how a document is
 numbered, published, archived and corrected, and code has nothing to cite in
 them. Those move to `specs/version-requirement.md` under prefix `R-PUB-*`,
 beside `language-requirement.md`, which already carries authoring obligations.
-Ten requirements governed how artifacts declare their version and how a copy
+Ten requirements governed how artifacts declare their version and how a TC Copy
 crosses a format-generation boundary, and those stayed. Most have left since:
 the ones about meta files moved to `meta-file-spec.md`, and migration was
 removed from every specification.

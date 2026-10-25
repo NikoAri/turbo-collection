@@ -18,14 +18,14 @@ import { URL } from "node:url";
 
 import {
   collectionNameFor,
-  copyNameFor,
+  tcCopyNameFor,
   createDirectoryIfMissing,
   ensureDirectoryHoldsNoFiles,
   initializeTc,
   writeConfigurationFile,
 } from "../init.ts";
 import { logEntryOf, logger, type LogEntry } from "../logger.ts";
-import { ensureNotInsideCopy } from "../paths.ts";
+import { ensureNotInsideTcCopy } from "../paths.ts";
 
 // A new, empty directory under `tmpdir()`, removed when test `t` ends. Its
 // path is resolved, since on a Mac `tmpdir()` lies behind a link, and a path
@@ -230,27 +230,27 @@ test("R-MFILE-18: an empty collection name is an error", () => {
   );
 });
 
-test("R-INIT-4: with no copy name given, the copy is main", () => {
-  assert.equal(copyNameFor(undefined), "main");
+test("R-INIT-4: with no TC Copy name given, the TC Copy is main", () => {
+  assert.equal(tcCopyNameFor(undefined), "main");
 });
 
-test("R-MFILE-19: a copy's name may be in any script, and keeps its case", () => {
+test("R-MFILE-19: a TC Copy's name may be in any script, and keeps its case", () => {
   for (const name of [
     "off-site",
     "Off-site at Mom's",
     PhotoInCyrillic,
     PhotographInJapanese,
   ]) {
-    assert.equal(copyNameFor(name), name);
+    assert.equal(tcCopyNameFor(name), name);
   }
 });
 
-test("R-MFILE-19: a copy's name is converted to Unicode Normalization Form C", () => {
+test("R-MFILE-19: a TC Copy's name is converted to Unicode Normalization Form C", () => {
   // "Café" with its accent as a combining character, and as one letter.
-  assert.equal(copyNameFor("Café"), "Café");
+  assert.equal(tcCopyNameFor("Café"), "Café");
 });
 
-test("R-MFILE-19: a copy's name holding a control character or a character a filename refuses is an error", () => {
+test("R-MFILE-19: a TC Copy's name holding a control character or a character a filename refuses is an error", () => {
   for (const name of [
     "a<b",
     "a>b",
@@ -265,12 +265,12 @@ test("R-MFILE-19: a copy's name holding a control character or a character a fil
     "a\nb",
     "a\u007fb",
   ]) {
-    assert.throws(() => copyNameFor(name), /cannot be a copy's name/);
+    assert.throws(() => tcCopyNameFor(name), /cannot be a TC Copy's name/);
   }
 });
 
-test("R-MFILE-18: an empty copy name is an error", () => {
-  assert.throws(() => copyNameFor(""), /cannot be a copy's name/);
+test("R-MFILE-18: an empty TC Copy name is an error", () => {
+  assert.throws(() => tcCopyNameFor(""), /cannot be a TC Copy's name/);
 });
 
 // What `directory` holds at every depth, as sorted paths with `/` between
@@ -281,7 +281,7 @@ function listUnder(directory: string): string[] {
     .sort();
 }
 
-// Where a copy in `directory` keeps its configuration file
+// Where a TC Copy in `directory` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(
@@ -302,7 +302,7 @@ test("R-INIT-1: init writes a configuration file and the starter ignore file, an
   const tcConfig = initializeTc({ directory });
 
   assert.equal(tcConfig.collectionName, "Family Photos");
-  assert.equal(tcConfig.copyName, "main");
+  assert.equal(tcConfig.tcCopyName, "main");
   assert.deepEqual(listUnder(directory), [
     ".tcignore",
     ".turbo-collection",
@@ -310,7 +310,7 @@ test("R-INIT-1: init writes a configuration file and the starter ignore file, an
   ]);
 });
 
-test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the collection's ID and name, and the copy's name, a field to a line", (t) => {
+test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the collection's ID and name, and the TC Copy's name, a field to a line", (t) => {
   const directory = path.join(temporaryDirectory(t), "Family Photos");
 
   const { collectionId } = initializeTc({ directory });
@@ -318,7 +318,7 @@ test("R-MFILE-18, R-MFILE-27: the configuration file states its version, the col
   assert.match(collectionId, CollectionIdPattern);
   assert.equal(
     readFileSync(configurationFileOf(directory), "utf8"),
-    `{\n  "version": "0.1.0-draft",\n  "collectionId": "${collectionId}",\n  "collectionName": "Family Photos",\n  "copyName": "main"\n}\n`,
+    `{\n  "version": "0.1.0-draft",\n  "collectionId": "${collectionId}",\n  "collectionName": "Family Photos",\n  "tcCopyName": "main"\n}\n`,
   );
 });
 
@@ -333,28 +333,28 @@ test("R-INIT-4: each init generates a new collectionId", (t) => {
   assert.notEqual(first.collectionId, second.collectionId);
 });
 
-test("R-INIT-4: names given on the command line are written as the collection's and the copy's", (t) => {
+test("R-INIT-4: names given on the command line are written as the collection's and the TC Copy's", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
 
   initializeTc({
     directory,
     collectionName: "Family Photos",
-    copyName: "desk",
+    tcCopyName: "desk",
   });
 
   const tcConfig = JSON.parse(
     readFileSync(configurationFileOf(directory), "utf8"),
   );
   assert.equal(tcConfig.collectionName, "Family Photos");
-  assert.equal(tcConfig.copyName, "desk");
+  assert.equal(tcConfig.tcCopyName, "desk");
 });
 
 test("R-INIT-4: a name that is not valid is an error before anything is written", (t) => {
   const directory = path.join(temporaryDirectory(t), "new-copy");
 
   assert.throws(
-    () => initializeTc({ directory, copyName: "a/b" }),
-    /cannot be a copy's name/,
+    () => initializeTc({ directory, tcCopyName: "a/b" }),
+    /cannot be a TC Copy's name/,
   );
   assert.throws(() => statSync(directory), /ENOENT/);
 });
@@ -372,14 +372,14 @@ test("R-CLI-15: the ignore file is the starter file byte for byte, with no carri
   assert.equal(written.includes("\r"), false);
 });
 
-test("R-INIT-3: an init of a directory that is already a copy is an error and changes nothing", (t) => {
+test("R-INIT-3: an init of a directory that is already a TC Copy is an error and changes nothing", (t) => {
   const directory = path.join(temporaryDirectory(t), "photos");
-  initializeTc({ directory, copyName: "main" });
+  initializeTc({ directory, tcCopyName: "main" });
   const holds = listUnder(directory);
   const configuration = readFileSync(configurationFileOf(directory), "utf8");
 
   assert.throws(
-    () => initializeTc({ directory, copyName: "other" }),
+    () => initializeTc({ directory, tcCopyName: "other" }),
     /holds 2 files/,
   );
 
@@ -405,12 +405,12 @@ test("R-PARALLEL-3: a configuration file that appears before init writes one is 
     version: "0.1.0-draft",
     collectionId: "3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30",
     collectionName: "photos",
-    copyName: "main",
+    tcCopyName: "main",
   };
 
   assert.throws(
     () => writeConfigurationFile(directory, tcConfig),
-    /Another run made .* a copy first/,
+    /Another run made .* a TC Directory first/,
   );
   assert.equal(readFileSync(configurationFileOf(directory), "utf8"), "content");
 });
@@ -439,25 +439,25 @@ test("R-LOG-17: init says what it made in a message", (t) => {
   );
   assert.equal(
     entries.at(-1)?.message,
-    `Made ${directory} a copy named "main", of a new collection named "Family Photos"`,
+    `Made a TC Copy named "main" of a new collection named "Family Photos", in ${directory}`,
   );
 });
 
-test("R-CLI-18: a directory inside a copy is an error, and nothing is made", (t) => {
-  const copy = path.join(temporaryDirectory(t), "photos");
-  initializeTc({ directory: copy });
-  const holds = listUnder(copy);
-  const directory = path.join(copy, "2024", "trip");
+test("R-CLI-18: a directory inside a TC Copy is an error, and nothing is made", (t) => {
+  const tcDirectory = path.join(temporaryDirectory(t), "photos");
+  initializeTc({ directory: tcDirectory });
+  const holds = listUnder(tcDirectory);
+  const directory = path.join(tcDirectory, "2024", "trip");
 
-  assert.throws(() => initializeTc({ directory }), /lies inside a copy at/);
-  assert.deepEqual(listUnder(copy), holds);
+  assert.throws(() => initializeTc({ directory }), /lies inside a TC Copy at/);
+  assert.deepEqual(listUnder(tcDirectory), holds);
 });
 
-test("R-CLI-18: a directory beside a copy is not inside it", (t) => {
+test("R-CLI-18: a directory beside a TC Copy is not inside it", (t) => {
   const parent = temporaryDirectory(t);
   initializeTc({ directory: path.join(parent, "photos") });
 
-  ensureNotInsideCopy(path.join(parent, "photos-2"));
+  ensureNotInsideTcCopy(path.join(parent, "photos-2"));
 });
 
 test("R-CLI-20: a path through a link is an error that names where it leads, and nothing is made", (t) => {

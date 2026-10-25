@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { CopyContents, DirectoryContents } from "../copy-contents.ts";
+import type { TcCopyContents, DirectoryContents } from "../tc-copy-contents.ts";
 import type { Manifest, ManifestEntry } from "../meta-files.ts";
 import { planMirror } from "../mirror.ts";
 
@@ -53,8 +53,10 @@ function holding(...entries: ManifestEntry[]): DirectoryContents {
   });
 }
 
-// What a copy holds: `directories`, each by its path.
-function copy(directories: Record<string, DirectoryContents>): CopyContents {
+// What a TC Copy holds: `directories`, each by its path.
+function tcCopy(
+  directories: Record<string, DirectoryContents>,
+): TcCopyContents {
   return {
     directories: new Map(Object.entries(directories)),
     notRegular: [],
@@ -62,17 +64,21 @@ function copy(directories: Record<string, DirectoryContents>): CopyContents {
   };
 }
 
-// A receipt file's name, of run number `run` and copy `copyName`.
-function receipt(run: number, copyName: string, kind: string): string {
-  return `receipt-20261022T150000Z-000${run}-${copyName}.${kind}.json`;
+// A receipt file's name, of run number `run` and TC Copy `tcCopyName`.
+function receipt(run: number, tcCopyName: string, kind: string): string {
+  return `receipt-20261022T150000Z-000${run}-${tcCopyName}.${kind}.json`;
 }
 
-test("R-BACKUP-4, R-BACKUP-13: a mirror copies into each copy every content file the other holds and it does not, each with every field of its entry", () => {
+test("R-BACKUP-4, R-BACKUP-13: a mirror copies into each TC Copy every content file the other holds and it does not, each with every field of its entry", () => {
   const dated = { ...entry("a.jpg"), date: "2024-08-01T10:00:00" };
 
   const plan = planMirror(
-    copy({ "": directory({}), d: holding(dated), e: holding(entry("c.txt")) }),
-    copy({ "": directory({}), d: holding(entry("b.jpg")) }),
+    tcCopy({
+      "": directory({}),
+      d: holding(dated),
+      e: holding(entry("c.txt")),
+    }),
+    tcCopy({ "": directory({}), d: holding(entry("b.jpg")) }),
   );
 
   assert.deepEqual(plan.b.directories, [
@@ -103,9 +109,9 @@ test("R-BACKUP-4, R-BACKUP-13: a mirror copies into each copy every content file
   assert.deepEqual(plan.b.unlisted, []);
 });
 
-test("R-BACKUP-7: copies in agreement have nothing copied into either", () => {
+test("R-BACKUP-7: TC Copies in agreement have nothing copied into either", () => {
   const contents = () =>
-    copy({
+    tcCopy({
       "": directory({ receiptFiles: [receipt(1, "main", "location")] }),
       d: holding(entry("a.jpg")),
     });
@@ -120,10 +126,10 @@ test("R-BACKUP-7: copies in agreement have nothing copied into either", () => {
   });
 });
 
-test("R-BACKUP-4: a content file whose manifests state two checksums is copied into neither copy, and is reported, whether both copies hold it or one does", () => {
+test("R-BACKUP-4: a content file whose manifests state two checksums is copied into neither TC Copy, and is reported, whether both TC Copies hold it or one does", () => {
   const plan = planMirror(
-    copy({ d: holding(entry("both.jpg", "1"), entry("one.jpg", "1")) }),
-    copy({
+    tcCopy({ d: holding(entry("both.jpg", "1"), entry("one.jpg", "1")) }),
+    tcCopy({
       d: directory({
         files: ["both.jpg"],
         manifest: manifest([entry("both.jpg", "2"), entry("one.jpg", "2")]),
@@ -143,14 +149,14 @@ test("R-BACKUP-4: a content file whose manifests state two checksums is copied i
   assert.deepEqual(plan.b.directories, []);
 });
 
-test("R-BACKUP-4: a file a copy has lost, while its manifest lists it with the checksum the other copy's manifest states, is copied back, and one both have lost is not", () => {
+test("R-BACKUP-4: a file a TC Copy has lost, while its manifest lists it with the checksum the other TC Copy's manifest states, is copied back, and one both have lost is not", () => {
   const plan = planMirror(
-    copy({
+    tcCopy({
       d: directory({
         manifest: manifest([entry("lost.jpg"), entry("gone.jpg")]),
       }),
     }),
-    copy({
+    tcCopy({
       d: directory({
         files: ["lost.jpg"],
         manifest: manifest([entry("lost.jpg"), entry("gone.jpg")]),
@@ -169,13 +175,13 @@ test("R-BACKUP-4: a file a copy has lost, while its manifest lists it with the c
   assert.deepEqual(plan.b.directories, []);
 });
 
-test("R-BACKUP-12: a content file no manifest lists is copied nowhere, and is reported unless a file of the other copy is written over it", () => {
+test("R-BACKUP-12: a content file no manifest lists is copied nowhere, and is reported unless a file of the other TC Copy is written over it", () => {
   const plan = planMirror(
-    copy({
+    tcCopy({
       d: directory({ files: ["by-hand.jpg", "left-over.jpg"] }),
       e: directory({ manifest: manifest([entry("lost.jpg")]) }),
     }),
-    copy({
+    tcCopy({
       d: holding(entry("left-over.jpg")),
       e: directory({ files: ["lost.jpg"] }),
     }),
@@ -196,7 +202,7 @@ test("R-BACKUP-12: a content file no manifest lists is copied nowhere, and is re
 
 test("R-BACKUP-14: a directory whose manifests name another import source or layout has nothing copied into it and is reported, every other directory is mirrored, and versions are not compared", () => {
   const plan = planMirror(
-    copy({
+    tcCopy({
       d: directory({
         files: ["a.jpg", "by-hand.jpg"],
         manifest: manifest([entry("a.jpg")]),
@@ -208,7 +214,7 @@ test("R-BACKUP-14: a directory whose manifests name another import source or lay
         manifest: manifest([entry("x.jpg")], { version: "0.2.0" }),
       }),
     }),
-    copy({
+    tcCopy({
       d: directory({
         files: ["b.jpg"],
         manifest: manifest([entry("b.jpg")], {
@@ -235,9 +241,9 @@ test("R-BACKUP-14: a directory whose manifests name another import source or lay
   assert.deepEqual(plan.a.unlisted, ["d/by-hand.jpg"]);
 });
 
-test("R-REC-6, R-REC-9: each copy gets every receipt file the other holds in a directory and it lacks, the root's location receipt files among them", () => {
+test("R-REC-6, R-REC-9: each TC Copy gets every receipt file the other holds in a directory and it lacks, the root's location receipt files among them", () => {
   const plan = planMirror(
-    copy({
+    tcCopy({
       "": directory({ receiptFiles: [receipt(1, "main", "location")] }),
       d: directory({
         receiptFiles: [
@@ -247,7 +253,7 @@ test("R-REC-6, R-REC-9: each copy gets every receipt file the other holds in a d
       }),
       e: directory({ receiptFiles: [receipt(3, "main", "error")] }),
     }),
-    copy({
+    tcCopy({
       "": directory({}),
       d: directory({
         receiptFiles: [
@@ -288,12 +294,12 @@ test("R-REC-6, R-REC-9: each copy gets every receipt file the other holds in a d
   ]);
 });
 
-test("R-TGT-14: a mirror takes names that differ only in letter case or normalization for one, and writes at the spelling a copy already holds", () => {
+test("R-TGT-14: a mirror takes names that differ only in letter case or normalization for one, and writes at the spelling a TC Copy already holds", () => {
   const cafeComposed = "café.jpg";
   const cafeDecomposed = "café.jpg";
 
   const plan = planMirror(
-    copy({
+    tcCopy({
       Photos: holding(
         entry("IMG_1.jpg", "1"),
         entry(cafeComposed, "2"),
@@ -303,7 +309,7 @@ test("R-TGT-14: a mirror takes names that differ only in letter case or normaliz
       ),
       "Photos/2024": holding(entry("a.jpg")),
     }),
-    copy({
+    tcCopy({
       photos: directory({
         files: ["img_1.jpg", cafeDecomposed, "EXTRA.jpg"],
         manifest: manifest([
@@ -338,9 +344,9 @@ test("R-TGT-14: a mirror takes names that differ only in letter case or normaliz
   assert.deepEqual(plan.differing, []);
 });
 
-test("R-TGT-14, R-BACKUP-12: a path a copy holds in two spellings is reported, nothing is copied at it either way, and a file in it that no manifest lists is reported", () => {
+test("R-TGT-14, R-BACKUP-12: a path a TC Copy holds in two spellings is reported, nothing is copied at it either way, and a file in it that no manifest lists is reported", () => {
   const plan = planMirror(
-    copy({
+    tcCopy({
       d: directory({
         files: ["a.jpg", "A.jpg", "b.jpg"],
         manifest: manifest([entry("a.jpg"), entry("b.jpg")]),
@@ -351,7 +357,7 @@ test("R-TGT-14, R-BACKUP-12: a path a copy holds in two spellings is reported, n
         manifest: manifest([entry("C.jpg")]),
       }),
     }),
-    copy({ d: directory({}) }),
+    tcCopy({ d: directory({}) }),
   );
 
   assert.deepEqual(plan.a.heldTwice, [

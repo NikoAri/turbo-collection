@@ -14,20 +14,20 @@ import { TcError } from "./helpers/tc-error.ts";
 import { configurationFileOf } from "./paths.ts";
 import { MetaFileSpecVersion, TurboCollectionSpecVersion } from "./versions.ts";
 
-// Meta files (meta-file-spec.md): a copy's configuration file, a directory's
+// Meta files (meta-file-spec.md): a TC Copy's configuration file, a directory's
 // manifest, and receipt files.
 
-// A copy's configuration file (R-MFILE-18).
+// A TC Copy's configuration file (R-MFILE-18).
 export type TcConfig = {
   version: string;
   collectionId: string;
   collectionName: string;
-  copyName: string;
+  tcCopyName: string;
 };
 
-// A character a copy's name cannot hold: a control character, or one that an
+// A character a TC Copy's name cannot hold: a control character, or one that an
 // operating system refuses in a filename (R-MFILE-19).
-export const CharacterNotInCopyName = /[\p{Cc}<>:"\/\\|?*]/u;
+export const CharacterNotInTcCopyName = /[\p{Cc}<>:"\/\\|?*]/u;
 
 // A version 4 UUID in its text form, in lower case, as a collectionId is
 // (R-MFILE-18).
@@ -115,10 +115,10 @@ function fieldOf<T>(
   return value;
 }
 
-// Reads `copyRoot`'s configuration file, and checks each field (R-MFILE-18,
+// Reads `tcDirectory`'s configuration file, and checks each field (R-MFILE-18,
 // R-MFILE-19). A field that is missing or not valid is an error.
-export function readConfigurationFile(copyRoot: string): TcConfig {
-  const file = configurationFileOf(copyRoot);
+export function readConfigurationFile(tcDirectory: string): TcConfig {
+  const file = configurationFileOf(tcDirectory);
   const object = readJsonMetaFile(file);
   const collectionId = fieldOf(
     file,
@@ -134,7 +134,7 @@ export function readConfigurationFile(copyRoot: string): TcConfig {
     isString,
     "a string",
   );
-  const copyName = fieldOf(file, object, "copyName", isString, "a string");
+  const tcCopyName = fieldOf(file, object, "tcCopyName", isString, "a string");
 
   if (!CollectionIdPattern.test(collectionId)) {
     throw new TcError(
@@ -145,12 +145,12 @@ export function readConfigurationFile(copyRoot: string): TcConfig {
     throw new TcError(`"${file}" states an empty collectionName.`);
   }
   if (
-    copyName === "" ||
-    CharacterNotInCopyName.test(copyName) ||
-    copyName !== copyName.normalize("NFC")
+    tcCopyName === "" ||
+    CharacterNotInTcCopyName.test(tcCopyName) ||
+    tcCopyName !== tcCopyName.normalize("NFC")
   ) {
     throw new TcError(
-      `"${file}" states the copyName "${copyName}", which is not a valid name for a copy.`,
+      `"${file}" states the tcCopyName "${tcCopyName}", which is not a valid name for a TC Copy.`,
     );
   }
 
@@ -158,7 +158,7 @@ export function readConfigurationFile(copyRoot: string): TcConfig {
     version: MetaFileSpecVersion,
     collectionId,
     collectionName,
-    copyName,
+    tcCopyName,
   };
 }
 
@@ -285,27 +285,27 @@ export function contentDigestOf(checksums: readonly string[]): string {
     .digest("hex");
 }
 
-// Writes a receipt file of `directory` for run `runId` and copy `copyName`:
-// an arrival file or an error file holding `fields` after those every
-// receipt file holds (R-MFILE-13, R-MFILE-14, R-MFILE-16). A
-// receipt file is never written over, so one already at its path is an error.
+// Writes a receipt file of `directory` for run `runId` and TC Copy
+// `tcCopyName`: an arrival file or an error file holding `fields` after those
+// every receipt file holds (R-MFILE-13, R-MFILE-14, R-MFILE-16). A receipt file
+// is never written over, so one already at its path is an error.
 export function writeReceiptFile(
   directory: string,
   kind: "arrival" | "error",
   runId: string,
-  copyName: string,
+  tcCopyName: string,
   fields: Record<string, unknown>,
 ): void {
   mkdirSync(metaDirectoryOf(directory), { recursive: true });
   const file = path.join(
     metaDirectoryOf(directory),
-    `receipt-${runId}-${copyName}.${kind}.json`,
+    `receipt-${runId}-${tcCopyName}.${kind}.json`,
   );
   const receipt = {
     version: MetaFileSpecVersion,
     tcSpecVersion: TurboCollectionSpecVersion,
     runId,
-    copyName,
+    tcCopyName,
     ...fields,
   };
   writeFileToDrive(file, jsonTextOf(receipt), "wx");

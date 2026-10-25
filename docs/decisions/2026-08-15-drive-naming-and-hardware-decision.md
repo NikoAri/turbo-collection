@@ -1,4 +1,4 @@
-# Removable storage, and the off-site copy that never travels
+# Removable storage, and the off-site TC Copy that never travels
 
 **Status:** Accepted **Date:** 2026-08-15
 
@@ -6,41 +6,41 @@ These decisions were taken together, because each one constrains the next.
 
 ## The three drives
 
-| Copy              | What it is                                                      | Media       |
-| ----------------- | --------------------------------------------------------------- | ----------- |
-| **working copy**  | import into it, and carry it to where the off-site copy is kept | solid-state |
-| **home copy**     | kept with you, backed up with the working copy                  | hard disk   |
-| **off-site copy** | kept in another building; it never travels                      | hard disk   |
+| TC Copy              | What it is                                                         | Media       |
+| -------------------- | ------------------------------------------------------------------ | ----------- |
+| **working TC Copy**  | import into it, and carry it to where the off-site TC Copy is kept | solid-state |
+| **home TC Copy**     | kept with you, backed up with the working TC Copy                  | hard disk   |
+| **off-site TC Copy** | kept in another building; it never travels                         | hard disk   |
 
-How copies are named, and the `copyName` field that holds a copy's name, are
-settled in
-[the collection-naming decision](2026-10-14-collection-naming-decision.md): a
-copy is named for where it permanently rests, and the working copy is `main`.
+How TC Copies are named, and the `tcCopyName` field that holds a TC Copy's name,
+are settled in
+[the collection-naming decision](2026-10-25-collection-naming-decision.md): a TC
+Copy is named for where it permanently rests, and the working TC Copy is `main`.
 That record also carries the rule that a name may encode only what changes by
-deliberate re-designation, which is why `R-SET-7` marks the off-site copy's
-placement but no other copy's.
+deliberate re-designation, which is why `R-SET-7` marks the off-site TC Copy's
+placement but no other TC Copy's.
 
-## The off-site copy never travels; the working copy goes to it
+## The off-site TC Copy never travels; the working TC Copy goes to it
 
 `turbo-collection-offsite-procedure.md` R-OFF-1. The alternative, fetching the
-off-site copy to be updated and returning it, was rejected.
+off-site TC Copy to be updated and returning it, was rejected.
 
-**Bringing it home puts all three copies in one building** for as long as it is
-there, and one fire during that window destroys every copy. That is precisely
-the event off-site storage exists to prevent, reintroduced periodically by the
-routine meant to maintain it. Taking the working copy to the off-site copy never
-puts more than two copies under one roof.
+**Bringing it home puts all three TC Copies in one building** for as long as it
+is there, and one fire during that window destroys every TC Copy. That is
+precisely the event off-site storage exists to prevent, reintroduced
+periodically by the routine meant to maintain it. Taking the working TC Copy to
+the off-site TC Copy never puts more than two TC Copies under one roof.
 
-The cost was weighed: while the working copy travels, only one current copy is
-at home, whereas the other arrangement would leave two. That is a
+The cost was weighed: while the working TC Copy travels, only one current TC
+Copy is at home, whereas the other arrangement would leave two. That is a
 two-simultaneous-failure scenario against a one-event scenario, and a fire does
 not need two things to go wrong. R-OFF-7 reduces it further by requiring a
-backup to the home copy before leaving, so a lost or dropped working copy costs
-a drive and no photographs.
+backup to the home TC Copy before leaving, so a lost or dropped working TC Copy
+costs a drive and no photographs.
 
-**A consequence worth naming:** the working copy is then present at every backup
-without exception, which is what let receipts settle on a single writer. See
-[the receipts decision](2026-09-07-receipts-decision.md).
+**A consequence worth naming:** the working TC Copy is then present at every
+backup without exception, which is what let receipts settle on a single writer.
+See [the receipts decision](2026-09-07-receipts-decision.md).
 
 ## Every drive is external and removable
 
@@ -54,8 +54,8 @@ removing the chips physically yields nothing without the original processor
 working. Recovery means board-level repair to revive that chip far enough to
 complete a handshake, at a handful of laboratories, for thousands of dollars,
 without guarantee. A collection on such storage has a single point of failure
-that no backup discipline mitigates, because one event takes that copy and the
-recovery path together.
+that no backup discipline mitigates, because one event takes that TC Copy and
+the recovery path together.
 
 The same trap sits one step out. Many consumer external drives encrypt in
 hardware on the enclosure's own bridge chip, whether or not the owner ever set a
@@ -93,7 +93,7 @@ It also satisfies the project's simplicity filter, which admits documented
 operations and standard formats: a storage interface is a documented contract,
 and a vendor's encryption bridge is not.
 
-`R-TGT-11` requires a copy to be restorable by ordinary file copy using **no
+`R-TGT-11` requires a TC Copy to be restorable by ordinary file copy using **no
 Turbo-Collection software**, and a bridge-encrypted drive satisfies it right up
 until the enclosure fails. R-SET-14 is the hardware counterpart that was
 missing, and it lives in the setup procedure because it binds a purchasing

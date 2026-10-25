@@ -9,49 +9,52 @@ given `--deep`
 
 Turbo-Collection has these operations and no others.
 
-**Writers**, which change a copy:
+**Writers**, which change a TC Copy:
 
-- **`init`** makes the first copy
+- **`init`** makes the first TC Copy
   ([the copy-creation decision](2026-10-18-copy-creation-decision.md)).
-- **`import`** brings files in from an import source, and never creates a copy.
-- **`backup`** mirrors peer copies, and creates every copy after the first.
+- **`import`** brings files in from an import source, and never creates a TC
+  Copy.
+- **`backup`** mirrors peer TC Copies, and creates every TC Copy after the
+  first.
 
 **Readers**, which write nothing:
 
 - **`verify`** probes live reality and reports discrepancies. Its inspections
-  are `copies` (every file each copy's manifests list is there at its recorded
-  size, and the copies hold the same files), `fixity` (bytes against a
-  manifest), `access` (import sources and copies reachable and authorized), and
-  `names` (filename hazards).
-- **`status`** reads Turbo-Collection's own records and reports them: which
-  copies each directory's content reached, when, and what sits on one copy only.
+  are `copies` (every file each TC Copy's manifests list is there at its
+  recorded size, and the TC Copies hold the same files), `fixity` (bytes against
+  a manifest), `access` (import sources and TC Copies reachable and authorized),
+  and `names` (filename hazards).
+- **`status`** reads Turbo-Collection's own records and reports them: which TC
+  Copies each directory's content reached, when, and what sits on one TC Copy
+  only.
 
 **The line between the two readers is reality against records.** Verify checks
 something against the world and can find it wrong. Status checks nothing against
 the world: it reads receipts, and a receipt records where content was placed,
-never that a copy still exists (`R-REC-8`). Filing status under verify would
+never that a TC Copy still exists (`R-REC-8`). Filing status under verify would
 claim more than a receipt can know, so it is an operation of its own.
 
 **`verify` with no inspection named runs all of them but `fixity`**, against
-every connected copy, and runs `fixity` too when given `--deep`. Fixity reads
+every connected TC Copy, and runs `fixity` too when given `--deep`. Fixity reads
 every byte, which takes hours per terabyte, so a check run after every backup
-cannot be the one that reads them. A copy that receipts name and that is not
+cannot be the one that reads them. A TC Copy that receipts name and that is not
 connected is reported as not connected, and that alone is not a failure (settled
 2026-10-04). The reasoning is survey against act: verify and status survey every
-copy known, so one that is unplugged is simply not here right now, while backup
-and import act on what they are given, where an absent copy is a real error. It
-also keeps a routine command from failing every time the off-site copy is away,
-which is where that copy is meant to be. A command that always fails teaches an
-operator to ignore it.
+TC Copy known, so one that is unplugged is simply not here right now, while
+backup and import act on what they are given, where an absent TC Copy is a real
+error. It also keeps a routine command from failing every time the off-site TC
+Copy is away, which is where that TC Copy is meant to be. A command that always
+fails teaches an operator to ignore it.
 
 **Modifying a file in place is a non-goal for now**, and that one call removes
 three candidate operations. _Restore_ is not an operation: recovery is an
-ordinary file copy, or init and backup for a whole lost copy, and a `restore`
+ordinary file copy, or init and backup for a whole lost TC Copy, and a `restore`
 verb would suggest the tool is needed to get photographs back. _Repair_ is not
 an operation: delete the bad file by hand and run backup, which refills it from
-a copy it verifies first (`R-BACKUP-4`, `R-BACKUP-12`). _Rebuilding a manifest_
-is deferred: its only trigger is a content file whose bytes changed, which is
-the non-goal itself.
+a TC Copy it verifies first (`R-BACKUP-4`, `R-BACKUP-12`). _Rebuilding a
+manifest_ is deferred: its only trigger is a content file whose bytes changed,
+which is the non-goal itself.
 
 Dry-run is a mode of each writer, never an operation.
 

@@ -12,11 +12,11 @@ import { URL } from "node:url";
 
 import { TcError } from "./helpers/tc-error.ts";
 import { logger } from "./logger.ts";
-import { CharacterNotInCopyName, type TcConfig } from "./meta-files.ts";
+import { CharacterNotInTcCopyName, type TcConfig } from "./meta-files.ts";
 import {
   configurationFileOf,
   ensureNoLinkInPath,
-  ensureNotInsideCopy,
+  ensureNotInsideTcCopy,
 } from "./paths.ts";
 import {
   compileIgnorePatterns,
@@ -25,7 +25,8 @@ import {
 } from "./tcignore.ts";
 import { MetaFileSpecVersion } from "./versions.ts";
 
-// Init, an operation that makes a directory a copy (init-spec.md R-INIT-1).
+// Init, an operation that makes a directory a TC Directory (init-spec.md
+// R-INIT-1).
 
 // Init's starter ignore file (meta-file-spec.md R-MFILE-20).
 const StarterIgnoreFileUrl = new URL(
@@ -107,12 +108,12 @@ export function ensureDirectoryHoldsNoFiles(directory: string): void {
         ? "a file"
         : `${filesNotIgnored.length} files`;
     throw new TcError(
-      `"${directoryPath}" holds ${files} that the starter .tcignore does not ignore, each named in the log. Init makes a copy only in a directory that holds no such file.`,
+      `"${directoryPath}" holds ${files} that the starter .tcignore does not ignore, each named in the log. Init makes a TC Copy only in a directory that holds no such file.`,
     );
   }
 }
 
-// A name for a collection begun by a copy in `directory` (R-INIT-4):
+// A name for a collection begun by a TC Copy in `directory` (R-INIT-4):
 // `givenName` as given where there is one, and otherwise `directory`'s name,
 // unchanged. A collection's name is not empty (meta-file-spec.md
 // R-MFILE-18), and an empty one is an error.
@@ -139,33 +140,34 @@ export function collectionNameFor(
   return directoryName;
 }
 
-// What a new copy is called where no name is given (R-INIT-4).
-const DefaultCopyName = "main";
+// What a new TC Copy is called where no name is given (R-INIT-4).
+const DefaultTcCopyName = "main";
 
-// A new copy's name (R-INIT-4): `givenName` in Unicode Normalization Form
+// A new TC Copy's name (R-INIT-4): `givenName` in Unicode Normalization Form
 // C where there is one, and otherwise `main`. A name that is empty or holds a
 // character it cannot hold is an error (meta-file-spec.md R-MFILE-18,
 // R-MFILE-19).
-export function copyNameFor(givenName: string | undefined): string {
+export function tcCopyNameFor(givenName: string | undefined): string {
   if (givenName === undefined) {
-    return DefaultCopyName;
+    return DefaultTcCopyName;
   }
 
-  const copyName = givenName.normalize("NFC");
-  if (copyName === "" || CharacterNotInCopyName.test(copyName)) {
+  const tcCopyName = givenName.normalize("NFC");
+  if (tcCopyName === "" || CharacterNotInTcCopyName.test(tcCopyName)) {
     throw new TcError(
-      `"${givenName}" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
+      `"${givenName}" cannot be a TC Copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
     );
   }
 
-  return copyName;
+  return tcCopyName;
 }
 
-// Writes `tcConfig` as a new copy's configuration file in `directory`, and
+// Writes `tcConfig` as a new TC Copy's configuration file in `directory`, and
 // returns that file's path. It is written with `wx`, so only where nothing is
 // at its path (parallel-safety-spec.md R-PARALLEL-2). Where something is,
-// another run made `directory` a copy after this run found it empty, and this
-// is an error (R-PARALLEL-3). Init and backup both make a copy this way.
+// another run made `directory` a TC Directory after this run found it empty,
+// and this is an error (R-PARALLEL-3). Init and backup both make a TC Copy this
+// way.
 export function writeConfigurationFile(
   directory: string,
   tcConfig: TcConfig,
@@ -181,7 +183,7 @@ export function writeConfigurationFile(
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === "EEXIST") {
       throw new TcError(
-        `Another run made "${directory}" a copy first. This run wrote no file there.`,
+        `Another run made "${directory}" a TC Directory first. This run wrote no file there.`,
         { cause: e },
       );
     }
@@ -193,33 +195,33 @@ export function writeConfigurationFile(
 
 // What a command line gives init.
 export type InitArgs = {
-  // Where to make a first copy: init's working directory where a command line
-  // names none (R-INIT-2)
+  // Where to make a first TC Copy: init's working directory where a command
+  // line names none (R-INIT-2)
   directory: string;
   // -n, --name: what a new collection is called (R-INIT-4)
   collectionName?: string | undefined;
-  // --copy: what a new copy is called (R-INIT-4)
-  copyName?: string | undefined;
+  // --tc-copy: what a new TC Copy is called (R-INIT-4)
+  tcCopyName?: string | undefined;
 };
 
-// Makes `directory` a new collection's first copy, and returns that copy's
-// configuration (R-INIT-1).
+// Makes a new collection's first TC Copy in `directory`, and returns that TC
+// Copy's configuration (R-INIT-1).
 //
-// Both names are checked before a directory is created, and so is
-// `directory`'s path (turbo-collection-core-spec.md R-CLI-18, R-CLI-20);
-// `directory` itself is checked before a file is written. Its configuration
-// file is written first, since that is what makes a directory a copy, and its
-// ignore file after (parallel-safety-spec.md R-PARALLEL-2).
+// Both names are checked before a directory is created, and so is `directory`'s
+// path (turbo-collection-core-spec.md R-CLI-18, R-CLI-20); `directory` itself
+// is checked before a file is written. Its configuration file is written first,
+// since that is what makes a directory a TC Directory, and its ignore file
+// after (parallel-safety-spec.md R-PARALLEL-2).
 export function initializeTc({
   directory,
   collectionName: givenCollectionName,
-  copyName: givenCopyName,
+  tcCopyName: givenTcCopyName,
 }: InitArgs): TcConfig {
   const collectionName = collectionNameFor(directory, givenCollectionName);
-  const copyName = copyNameFor(givenCopyName);
+  const tcCopyName = tcCopyNameFor(givenTcCopyName);
   const directoryPath = path.resolve(directory);
   ensureNoLinkInPath(directoryPath);
-  ensureNotInsideCopy(directoryPath);
+  ensureNotInsideTcCopy(directoryPath);
   createDirectoryIfMissing(directoryPath);
   ensureDirectoryHoldsNoFiles(directoryPath);
 
@@ -229,7 +231,7 @@ export function initializeTc({
     version: MetaFileSpecVersion,
     collectionId: randomUUID(),
     collectionName,
-    copyName,
+    tcCopyName,
   };
   const configurationFile = writeConfigurationFile(directoryPath, tcConfig);
   logger.log({
@@ -240,7 +242,7 @@ export function initializeTc({
     toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
   });
 
-  // Init's starter ignore file is copied byte for byte, so what a copy holds
+  // Init's starter ignore file is copied byte for byte, so what a TC Copy holds
   // does not depend on which operating system made it (R-CLI-15). It is never
   // copied over a file already there.
   copyFileSync(
@@ -252,7 +254,7 @@ export function initializeTc({
   // What init made, so that a plain init says what it did (logging-spec.md
   // R-LOG-17). That `configuration` entry above holds this too, as fields.
   logger.log(
-    `Made ${directoryPath} a copy named "${copyName}", of a new collection named "${collectionName}"`,
+    `Made a TC Copy named "${tcCopyName}" of a new collection named "${collectionName}", in ${directoryPath}`,
   );
   return tcConfig;
 }

@@ -5,13 +5,13 @@
 Five procedures exist under `specs/procedures/`, each covering one occasion when
 a person sits down with a known set of drives plugged in:
 
-| Document                                | Prefix    | The sitting                                          |
-| --------------------------------------- | --------- | ---------------------------------------------------- |
-| `turbo-collection-setup-procedure.md`   | `R-SET-*` | Once. Buy drives, label, fill.                       |
-| `turbo-collection-import-procedure.md`  | `R-IMP-*` | Working copy in. Import from an import source.       |
-| `turbo-collection-backup-procedure.md`  | `R-BAK-*` | Working copy plus the home copy in. Back up.         |
-| `turbo-collection-offsite-procedure.md` | `R-OFF-*` | Take the working copy to the off-site copy. Back up. |
-| `turbo-collection-release-procedure.md` | `R-REL-*` | Destroy a copy held outside the collection.          |
+| Document                                | Prefix    | The sitting                                                |
+| --------------------------------------- | --------- | ---------------------------------------------------------- |
+| `turbo-collection-setup-procedure.md`   | `R-SET-*` | Once. Buy drives, label, fill.                             |
+| `turbo-collection-import-procedure.md`  | `R-IMP-*` | Working TC Copy in. Import from an import source.          |
+| `turbo-collection-backup-procedure.md`  | `R-BAK-*` | Working TC Copy plus the home TC Copy in. Back up.         |
+| `turbo-collection-offsite-procedure.md` | `R-OFF-*` | Take the working TC Copy to the off-site TC Copy. Back up. |
+| `turbo-collection-release-procedure.md` | `R-REL-*` | Destroy a copy held outside the collection.                |
 
 ## The three-layer split this settles
 
@@ -37,7 +37,7 @@ and because it happens at a different moment from any of the others.
 
 ## Most operator obligations turned out to be software obligations
 
-A first draft made counting, checksum verification and copy verification
+A first draft made counting, checksum verification and TC Copy verification
 operator MUSTs. They are work Turbo-Collection performs. What a person actually
 does is plug drives in, run something, read a report, and decide whether to
 release.

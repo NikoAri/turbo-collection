@@ -1,4 +1,4 @@
-# Three copies on three drives, with media chosen by cost
+# Three TC Copies on three drives, with media chosen by cost
 
 **Status:** Accepted **Date:** 2026-08-10
 
@@ -6,11 +6,11 @@ Replaces the 2026-08-08 record of the same name, which chose backup media by an
 unpowered-retention interval. That reasoning was wrong, and the section below
 records why, because the error is the kind that repeats.
 
-## Three copies, counting the working collection
+## Three TC Copies, counting the working collection
 
-`R-SET-13`: at least three copies on three independently failing storage
+`R-SET-13`: at least three TC Copies on three independently failing storage
 devices, at least one off-site. **Off-site** means in a different building from
-every other copy.
+every other TC Copy.
 
 A working collection counts as one of three, because a collection lives on a
 dedicated portable drive rather than on internal storage. That closes a question
@@ -20,26 +20,27 @@ internal collection has to be migrated at every host refresh.
 
 Two clarifications, both of which would otherwise be misread:
 
-- A cold spare holds no current data, so it is a fourth drive and not a third
-  copy.
-- An unverified copy is a hypothesis, which is why `R-SET-13` only means
+- A cold spare holds no current data, so it is a fourth drive and not a third TC
+  Copy.
+- An unverified TC Copy is a hypothesis, which is why `R-SET-13` only means
   something beside `R-REL-2`.
 
-`R-REL-5` couples the two groups: releasing a source copy is forbidden while
-copies are below three. A dead drive therefore stops iCloud deletion until it is
+`R-REL-5` couples the two groups: releasing a source copy is forbidden while TC
+Copies are below three. A dead drive therefore stops iCloud deletion until it is
 replaced, without needing a deadline this project cannot yet justify.
 
 ## Media is chosen by cost, not by charge decay
 
-Hard disks for both backup copies, solid-state for the working copy, on price
-alone: external hard disk runs about 30 USD/TB against 60 to 80 USD/TB for
-portable solid-state. Solid-state media is **permitted in any role**. Nothing
-here forbids it.
+Hard disks for the home and off-site TC Copies, solid-state for the working TC
+Copy, on price alone: external hard disk runs about 30 USD/TB against 60 to 80
+USD/TB for portable solid-state. Solid-state media is **permitted in any role**.
+Nothing here forbids it.
 
 ### The retention argument that was withdrawn
 
-The 2026-08-08 record required that a copy expected to sit unpowered longer than
-six months not be held on solid-state media. The evidence does not support it.
+The 2026-08-08 record required that a TC Copy expected to sit unpowered longer
+than six months not be held on solid-state media. The evidence does not support
+it.
 
 JEDEC JESD218 sets power-off retention for a **client** class drive at one year
 at 30 °C. The qualifier is everything: the standard defines the endurance rating
@@ -68,10 +69,10 @@ Three further points, each of which the withdrawn rule ignored:
 
 ### What replaces it
 
-Nothing about media. **Verification cadence** is what establishes that a copy is
-intact, on any medium, and it is still an open question because the interval is
-undecided. Recorded honestly as a gap rather than papered over with a media rule
-that felt protective and was not.
+Nothing about media. **Verification cadence** is what establishes that a TC Copy
+is intact, on any medium, and it is still an open question because the interval
+is undecided. Recorded honestly as a gap rather than papered over with a media
+rule that felt protective and was not.
 
 ## Capacity, and why headroom is close to free
 
@@ -85,7 +86,7 @@ forces an unplanned migration instead of an age-driven replacement.
 
 Worked example, as of 2026-08-10. A photo library of roughly 1 TB puts the
 `R-SET-5` suggestion at 2 TB. Three 4 TB drives came to roughly **490 US
-dollars** with a solid-state working copy, and roughly **360 US dollars** all
+dollars** with a solid-state working TC Copy, and roughly **360 US dollars** all
 hard disk.
 
 Two cautions. Prices came from retail summaries rather than quotes, so they rank
@@ -123,14 +124,14 @@ addresses and which reading the drive detects.
 | Was                                                      | Now                                                   | Why                                                                        |
 | -------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
 | Order two matching drives so they rotate in sync         | One drive at a time, different model, separated dates | Correlated batch failure                                                   |
-| Solid-state forbidden for the off-site copy              | Any medium, chosen on cost                            | The retention argument above                                               |
+| Solid-state forbidden for the off-site TC Copy           | Any medium, chosen on cost                            | The retention argument above                                               |
 | Primary backup always connected, mirroring on a schedule | One deployment among others                           | `R-CLI-2` and `R-CLI-6` never required it, and it is not the owner's setup |
 
 The third correction has a design consequence worth stating: with no
 always-connected drive, nothing automatic protects newly imported photographs,
 so the backup procedure carries that weight alone, and `R-REL-2` is what refuses
 a release until it has run. It also strengthens the offline clause of 3-2-1-1-0,
-since two air-gapped copies is a better ransomware posture than one.
+since two air-gapped TC Copies is a better ransomware posture than one.
 
 An advantage this architecture already had, and had never written down: mirrors
 are independent plain trees, so recovery is an ordinary file copy and never a
@@ -140,7 +141,7 @@ first, sustained rebuild load on a same-age sibling, does not exist here.
 ## Rejected
 
 - **Buy 3 drives stated only as a purchase.** `R-SET-13` states the checkable
-  end state, three copies on three drives with one off-site, and `R-SET-2`
+  end state, three TC Copies on three drives with one off-site, and `R-SET-2`
   states what reaches it.
 - **APFS or NTFS with third-party drivers** for a drive shared between macOS and
   Windows. Both need paid kernel-level software, which the project's simplicity

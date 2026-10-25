@@ -27,15 +27,15 @@ those promises, and a run can open it before it knows which directory it acts on
 (`R-CFG-3`).
 
 **A directory a person names is used, or the run ends.** A run that cannot use
-the directory `--log-dir` names, because it lies inside a copy, its path passes
-through a link, or it cannot be written, ends with an error and writes its log
-nowhere else (`R-LOG-10`). The error still reaches the terminal, where the
-person who named the directory is.
+the directory `--log-dir` names, because it lies inside a TC Copy, its path
+passes through a link, or it cannot be written, ends with an error and writes
+its log nowhere else (`R-LOG-10`). The error still reaches the terminal, where
+the person who named the directory is.
 
 **A borrowed computer keeps the log, and that costs little.** A log is
 observability only (`R-LOG-2`). What bears on whether material at an import
-source can be deleted is recorded in receipts, inside each copy (`R-LOG-5`), so
-what a later run or a person needs travels with the drives.
+source can be deleted is recorded in receipts, inside each TC Copy (`R-LOG-5`),
+so what a later run or a person needs travels with the drives.
 
 **One object per line, because entries arrive one at a time.** A run adds each
 entry at the end and changes none (`R-LOG-7`), so nothing is rewritten, and a
@@ -70,11 +70,12 @@ more than two years old in its directory for temporary files.
 
 ## Rejected
 
-- **A log on a drive that holds a copy, beside the copy.** It brought the log of
-  a run on a borrowed computer home with the drives. It lost because it writes a
-  file on a drive in every run that promises to write nothing there, and because
-  a copy at a drive's root leaves no place on that drive outside the copy.
-- **A log inside a copy.** A manifest would change at every run for a file
+- **A log on a drive that holds a TC Copy, beside the TC Copy.** It brought the
+  log of a run on a borrowed computer home with the drives. It lost because it
+  writes a file on a drive in every run that promises to write nothing there,
+  and because a TC Copy at a drive's root leaves no place on that drive outside
+  the TC Copy.
+- **A log inside a TC Copy.** A manifest would change at every run for a file
   nothing may depend on, and a backup would carry every log to every drive.
   `R-LOG-5` still forbids it.
 - **One JSON document per run.** A program reads it whole, but a run has to

@@ -69,7 +69,7 @@ test("R-MFILE-20: the starter ignore file reads as its patterns, without its com
   }
 });
 
-test("R-MFILE-20: a pattern with no slash matches at any depth below the copy root", () => {
+test("R-MFILE-20: a pattern with no slash matches at any depth below the TC Directory", () => {
   const isIgnored = isIgnoredBy(".DS_Store\n");
 
   assert.equal(isIgnored(".DS_Store"), true);
@@ -77,7 +77,7 @@ test("R-MFILE-20: a pattern with no slash matches at any depth below the copy ro
   assert.equal(isIgnored("2019/trip/photo.jpg"), false);
 });
 
-test("R-MFILE-20: a pattern beginning with a slash matches at the copy root only", () => {
+test("R-MFILE-20: a pattern beginning with a slash matches at the TC Directory only", () => {
   const isIgnored = isIgnoredBy("/notes.txt\n");
 
   assert.equal(isIgnored("notes.txt"), true);

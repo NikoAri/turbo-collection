@@ -14,7 +14,7 @@ is the same failure, applied to how many.
 
 **A number that is itself the requirement stays.** The test is subtraction:
 delete the number, and see whether the requirement or the fact survives. "Three
-copies on three drives" does not survive, so that count stays. A heading that
+TC Copies on three drives" does not survive, so that count stays. A heading that
 announces five inspections above a table of them loses nothing, so that count
 goes. A fixed outside fact, such as the digit width of a date field, also stays.
 

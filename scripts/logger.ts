@@ -7,7 +7,7 @@ import process from "node:process";
 import { dateToString } from "./helpers/date-helper.ts";
 import { generateRunId } from "./helpers/run-id.ts";
 import { TcError } from "./helpers/tc-error.ts";
-import { copyRootAtOrAbove, ensureNoLinkInPath } from "./paths.ts";
+import { tcDirectoryAtOrAbove, ensureNoLinkInPath } from "./paths.ts";
 import {
   SpecificationVersionStamps,
   TurboCollectionVersion,
@@ -165,15 +165,15 @@ export function defaultLogDirectory(temporaryDirectory: string): string {
 
 // Checks whichever directory --log-dir names, as any directory
 // a run is given (turbo-collection-core-spec.md
-// R-CLI-20), and that it does not lie inside a copy,
+// R-CLI-20), and that it does not lie inside a TC Copy,
 // before anything is made there (R-LOG-10).
 export function ensureUsableLogDirectory(logDirectory: string): void {
   const directory = path.resolve(logDirectory);
   ensureNoLinkInPath(directory);
-  const copyRoot = copyRootAtOrAbove(directory);
-  if (copyRoot !== undefined) {
+  const tcDirectory = tcDirectoryAtOrAbove(directory);
+  if (tcDirectory !== undefined) {
     throw new TcError(
-      `The log directory "${directory}" lies inside a copy at "${copyRoot}", and a log is never written inside a copy. Name a directory outside every copy with --log-dir.`,
+      `The log directory "${directory}" lies inside a TC Copy at "${tcDirectory}", and a log is never written inside a TC Copy. Name a directory outside every TC Copy with --log-dir.`,
     );
   }
 }

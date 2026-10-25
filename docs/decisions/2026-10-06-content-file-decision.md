@@ -1,9 +1,9 @@
-# Every file a copy preserves is a content file, with no derivative and no original
+# Every file a TC Copy preserves is a content file, with no derivative and no original
 
 **Status:** Accepted **Date:** 2026-10-06
 
 A read of the core specification's glossary removed the entries below, and one
-requirement with them. What a copy preserves has one name, _Content file_.
+requirement with them. What a TC Copy preserves has one name, _Content file_.
 
 **_Derivative_ and `R-COL-5` are removed, because nothing produces a
 derivative.** The term covered a file Turbo-Collection itself renders from

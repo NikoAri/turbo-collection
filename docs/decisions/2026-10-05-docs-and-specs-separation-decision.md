@@ -36,7 +36,7 @@ justifies.** An example is a second channel for what a sentence means: if the
 English of a requirement has drifted, a worked case still fixes which reading
 was intended. That is redundancy applied to meaning, and it is short. A
 rationale essay explains why a rule was chosen, which a reader needs less often,
-and it weighs on a text that travels on every copy.
+and it weighs on a text that travels on every TC Copy.
 
 **Authoring standards and procedures are left as they are.** A `-requirement.md`
 document teaches its own rules, and its reasoning is part of the teaching. A

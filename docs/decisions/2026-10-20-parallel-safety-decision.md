@@ -15,33 +15,33 @@ two runs can meet, and every such rule is in `parallel-safety-spec.md`.
   draws a new ID where something is (`R-PARALLEL-1`). Creating a file only where
   none exists fails where one does, so of two runs writing into one log
   directory exactly one creates it.
-- **Making a directory a copy.** An init, or a backup creating a copy, writes
-  that copy's configuration file before any other file in it, and only where
-  none exists. A run that finds one in place ends with an error, having written
-  nothing else there (`R-PARALLEL-2`, `R-PARALLEL-3`). Two such runs meet on a
-  directory, which no lock names: init has no collection until its configuration
-  file exists, and a backup holds the lock of its own collection.
-- **Acting on a copy.** Every run but init holds the lock of each collection
-  whose copy it reads or writes, status and verify included (`R-PARALLEL-4`). A
-  run that finds a lock held ends at once and names the collection, and also the
-  process that holds the lock where the run can learn it (`R-PARALLEL-5`). The
-  computer releases a lock when its run ends, however it ends, so a crash leaves
-  nothing for a person to clean up (`R-PARALLEL-6`).
+- **Making a TC Copy in a directory.** An init, or a backup creating a TC Copy,
+  writes that TC Copy's configuration file before any other file in it, and only
+  where none exists. A run that finds one in place ends with an error, having
+  written nothing else there (`R-PARALLEL-2`, `R-PARALLEL-3`). Two such runs
+  meet on a directory, which no lock names: init has no collection until its
+  configuration file exists, and a backup holds the lock of its own collection.
+- **Acting on a TC Copy.** Every run but init holds the lock of each collection
+  whose TC Copy it reads or writes, status and verify included (`R-PARALLEL-4`).
+  A run that finds a lock held ends at once and names the collection, and also
+  the process that holds the lock where the run can learn it (`R-PARALLEL-5`).
+  The computer releases a lock when its run ends, however it ends, so a crash
+  leaves nothing for a person to clean up (`R-PARALLEL-6`).
 
-**The lock relies on every file belonging to one copy.** No copy lies inside
-another (`R-CLI-18`,
+**The lock relies on every file belonging to one TC Copy.** No TC Copy lies
+inside another (`R-CLI-18`,
 [the copy-creation decision](2026-10-18-copy-creation-decision.md)), no run
-follows a link inside a copy (`R-CLI-19`,
+follows a link inside a TC Copy (`R-CLI-19`,
 [the non-regular-files decision](2026-10-18-non-regular-files-decision.md)), and
-no import reads a folder that is a copy, lies inside one or holds one
-(`R-LOCALFOLDER-2`). A configuration is validated before its `collectionId`
+no import reads a folder that is a TC Directory, lies inside a TC Copy or holds
+one (`R-LOCALFOLDER-2`). A configuration is validated before its `collectionId`
 names a lock (`R-CFG-3`).
 
 **The lock relies on a run doing its own writing.** A process that a run starts
 can keep running after that run has ended, while the computer releases the lock
-when the run ends, so such a process could still be writing into a copy when the
-next run takes the lock. Turbo-Collection starts no process that writes into a
-copy (`R-PARALLEL-8`), so it copies files itself
+when the run ends, so such a process could still be writing into a TC Copy when
+the next run takes the lock. Turbo-Collection starts no process that writes into
+a TC Copy (`R-PARALLEL-8`), so it copies files itself
 ([the mirror engine decision](2026-10-17-mirror-engine-decision.md)).
 
 **The specification states behavior.** How each operating system holds a lock
@@ -52,8 +52,8 @@ helps a person find the run in the way, and nothing breaks without it.
 
 **Out of scope:** runs of other accounts and runs under `sudo` on one computer,
 runs in WSL against runs in Windows, and two versions of Turbo-Collection
-running at once. A copy is on an external hard drive, which one computer reaches
-at a time.
+running at once. A TC Copy is on an external hard drive, which one computer
+reaches at a time.
 
 ## Rejected
 
@@ -62,21 +62,21 @@ at a time.
 - **Judging a lock by a process ID.** A process ID passes to another program
   once its process ends. A process ID only names the holder in an error; the
   computer decides whether a lock is held.
-- **A lock inside a copy.** A read-only run would write into the copy, and a
-  leftover would travel with the drive.
+- **A lock inside a TC Copy.** A read-only run would write into the TC Copy, and
+  a leftover would travel with the drive.
 - **A heartbeat.** A run busy with work that does not yield misses its own
   refresh.
 - **Waiting for a lock.** When a run happens is up to whatever starts it
   (`R-CLI-2`), so a run that cannot start ends and says why.
 - **A global lock.** It refuses an init of an unrelated directory while another
-  init runs, and misses a backup creating a copy unless backup takes it too,
+  init runs, and misses a backup creating a TC Copy unless backup takes it too,
   after which a long backup refuses every init on the computer.
 - **A lock named after a directory.** One directory has many paths: letter case,
   links, a drive letter, a network path.
 - **A lock taken by init.** It guards nothing: no other run can find a new
   collection before its configuration file exists.
 - **The ignore file before the configuration file.** A run that loses the race
-  could leave its ignore file in the winner's copy.
+  could leave its ignore file in the winner's TC Copy.
 - **Many readers and one writer, so status and verify could run beside a
   backup.** Too complex for what it buys, and a verify reading a file a backup
   is still writing could report damage that is not there.

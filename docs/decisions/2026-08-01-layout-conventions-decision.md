@@ -2,8 +2,8 @@
 
 **Status:** Accepted **Date:** 2026-08-01
 
-A copy can hold content placed under more than one layout, and every directory's
-manifest records which layout placed it, with that layout's version
+A TC Copy can hold content placed under more than one layout, and every
+directory's manifest records which layout placed it, with that layout's version
 (`R-MFILE-9`). A layout therefore needs a version identity of its own, so each
 gets its own specification, directly under `specs/`:
 
@@ -20,7 +20,7 @@ text plus a conversion-grade changes-from section. Other domains are already
 anticipated (documents, spreadsheets, video), each bringing its own layout, so
 photos should not be privileged by being embedded.
 
-Which layouts a copy uses is read from its manifests, each naming one by its
+Which layouts a TC Copy uses is read from its manifests, each naming one by its
 identifier. Which layout governs a given item is decided by that item's import
 source
 ([the layout-selection decision](2026-10-03-layout-selection-decision.md)).

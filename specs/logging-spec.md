@@ -8,11 +8,11 @@
 **R-LOG-1.**  
 Every run MUST write a log recording at minimum: start time; end time;
 configuration used; per import source, how many items were imported and any
-refused items; per copy, how many files were transferred and their byte total;
-every error encountered; and its final outcome.
+refused items; per TC Copy, how many files were transferred and their byte
+total; every error encountered; and its final outcome.
 
 **R-LOG-2.**  
-Logs MUST be observability only. Whether any copy of a collection is correct
+Logs MUST be observability only. Whether any TC Copy of a collection is correct
 MUST NOT depend on a log file existing or being readable.
 
 **R-LOG-3.** A run's log MUST record Turbo-Collection's version and a version
@@ -25,7 +25,7 @@ exits non-zero. A crash alone MUST NOT be what shows that something went wrong.
 **R-LOG-5.** A log MUST NOT be a sole record of an event that changes whether
 material at an import source can safely be deleted. Such events are recorded in
 receipts (R-MFILE-13); a log MAY additionally record them and MUST NOT be relied
-on to. Turbo-Collection MUST NOT write a log inside a copy. Turbo-Collection
+on to. Turbo-Collection MUST NOT write a log inside a TC Copy. Turbo-Collection
 MUST write a Run's log into its operating system's directory for temporary
 files, unless its command line names another directory for it (R-LOG-10).
 
@@ -72,9 +72,9 @@ a verbose entry to standard output likewise where that Run's command line holds
 
 **R-LOG-10.** Where a Run's command line holds `--log-dir` with a directory,
 Turbo-Collection MUST use that directory as that Run's log directory (R-LOG-6).
-Where that directory lies inside a Copy, that Run MUST end with an error before
-it makes a directory there. Where that Run cannot use that directory, it MUST
-end with an error without writing its log into any other directory, as an
+Where that directory lies inside a TC Copy, that Run MUST end with an error
+before it makes a directory there. Where that Run cannot use that directory, it
+MUST end with an error without writing its log into any other directory, as an
 exception to R-LOG-1 and R-LOG-4. Where a Run's command line names an option or
 a command that Turbo-Collection does not have, or cannot otherwise be read, that
 Run MUST end with an error without writing a log, as a further exception to
@@ -111,11 +111,11 @@ whose `outcome` is `success`, MUST be verbose.
 `outcome` is `failure`, holding `message`, that error's message, and, where that
 error carries one, `stack`, a trace of calls that led to it.
 
-> **Example.** An init given a directory inside a Copy ends its log with lines
-> such as these:
+> **Example.** An init given a directory inside a TC Copy ends its log with
+> lines such as these:
 >
 > ```text
-> {"date":"2026-10-18T14:22:06Z","event":"error","outcome":"failure","message":"D:\\Photos\\2019 lies inside a copy at D:\\Photos","stack":"Error: D:\\Photos\\2019 lies inside a copy at D:\\Photos\n    at …"}
+> {"date":"2026-10-18T14:22:06Z","event":"error","outcome":"failure","message":"D:\\Photos\\2019 lies inside a TC Copy at D:\\Photos","stack":"Error: D:\\Photos\\2019 lies inside a TC Copy at D:\\Photos\n    at …"}
 > {"date":"2026-10-18T14:22:06Z","event":"run-end","outcome":"failure"}
 > ```
 
@@ -129,7 +129,7 @@ as its help or its version report, Turbo-Collection MUST record that text as a
 > {"date":"2026-10-18T14:22:05Z","event":"message","message":"turbo-collection 0.1.0\nturbo-collection-spec 0.1.0-draft\n…"}
 > ```
 
-**R-LOG-13.** Each time a Run reads or writes a Copy's configuration file,
+**R-LOG-13.** Each time a Run reads or writes a TC Copy's configuration file,
 Turbo-Collection MUST record a verbose `configuration` entry holding `path`,
 that file's path, and `configuration`, whatever configuration it read or wrote.
 
@@ -137,28 +137,29 @@ that file's path, and `configuration`, whatever configuration it read or wrote.
 > what configuration it wrote with a line such as this:
 >
 > ```text
-> {"date":"2026-10-18T14:22:06Z","event":"configuration","verbose":true,"path":"D:\\Photos\\.turbo-collection\\turbo-collection-config.json","configuration":{"version":"0.1.0-draft","collectionId":"3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30","collectionName":"Family Photos","copyName":"main"}}
+> {"date":"2026-10-18T14:22:06Z","event":"configuration","verbose":true,"path":"D:\\Photos\\.turbo-collection\\turbo-collection-config.json","configuration":{"version":"0.1.0-draft","collectionId":"3f2a9c1e-5b7d-4e8a-9c2f-1d6b8e4a7c30","collectionName":"Family Photos","tcCopyName":"main"}}
 > ```
 
 **R-LOG-15.** For each Content File a backup copies or an Import writes,
 Turbo-Collection MUST record a verbose `transfer` entry holding `from`, where
-that file is read from, `to`, its path in whichever Copy it is written to, and
-`size`, its length in bytes.
+that file is read from, `to`, its path in whichever TC Copy it is written to,
+and `size`, its length in bytes.
 
-**R-LOG-16.** For each of two Copies a backup mirrors, Turbo-Collection MUST
-record a `mirror` entry once it has finished copying into that Copy, holding
-`path`, that Copy's root, `copyName`, its name, `files`, how many files that
-backup copied into it, and `bytes`, their total length in bytes (R-LOG-1). A
-Dry-Run of a backup (`backup-spec.md` R-BACKUP-10) MUST record R-LOG-15's
-entries and this requirement's for what a real run would copy.
+**R-LOG-16.** For each of two TC Copies a backup mirrors, Turbo-Collection MUST
+record a `mirror` entry once it has finished copying into that TC Copy, holding
+`path`, that TC Copy's TC Directory, `tcCopyName`, its name, `files`, how many
+files that backup copied into it, and `bytes`, their total length in bytes
+(R-LOG-1). A Dry-Run of a backup (`backup-spec.md` R-BACKUP-10) MUST record
+R-LOG-15's entries and this requirement's for what a real run would copy.
 
-> **Example.** A backup that copies 412 photographs to a Copy named `home`, and
-> nothing back, records lines such as these, a `transfer` line once per file:
+> **Example.** A backup that copies 412 photographs to a TC Copy named `home`,
+> and nothing back, records lines such as these, a `transfer` line once per
+> file:
 >
 > ```text
 > {"date":"2026-10-19T20:14:03Z","event":"transfer","verbose":true,"from":"D:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","to":"E:\\Photos\\2024\\2024-08\\sd-card\\IMG_0001.JPG","size":4718592}
-> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"E:\\Photos","copyName":"home","files":412,"bytes":1932735283}
-> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"D:\\Photos","copyName":"main","files":0,"bytes":0}
+> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"E:\\Photos","tcCopyName":"home","files":412,"bytes":1932735283}
+> {"date":"2026-10-19T20:14:09Z","event":"mirror","path":"D:\\Photos","tcCopyName":"main","files":0,"bytes":0}
 > ```
 
 **R-LOG-18.** For each directory an Import passes over as a `.turbo-collection`
@@ -166,14 +167,14 @@ directory (`local-folder-import-source-spec.md` R-LOCALFOLDER-3),
 Turbo-Collection MUST record a verbose `passed-over` entry holding `path`, that
 directory's path. Once an Import has finished, Turbo-Collection MUST record an
 `import` entry holding `importSource`, that Import Source's identifier, `from`,
-which path it read files from, `to`, which Copy's root it wrote them to,
+which path it read files from, `to`, which TC Directory it wrote them to,
 `files`, how many files it wrote, `bytes`, their total length in bytes, and
 `leftOut`, how many files it left out of its Collection. A Dry-Run of an import
 (`import-spec.md` R-SRC-14) MUST record these entries and R-LOG-15's for what a
 real Import would do.
 
-> **Example.** An import of `D:\moon-laptop` into a Copy at `E:\Photos` records
-> lines such as these, a `transfer` line once per file:
+> **Example.** An import of `D:\moon-laptop` into a TC Copy at `E:\Photos`
+> records lines such as these, a `transfer` line once per file:
 >
 > ```text
 > {"date":"2026-10-21T15:02:11Z","event":"transfer","verbose":true,"from":"D:\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","to":"E:\\Photos\\local-folder\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","size":48211}

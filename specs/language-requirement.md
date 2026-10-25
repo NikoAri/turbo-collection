@@ -122,7 +122,7 @@ Self-contained, per R-LANG-5.
   blocks, examples, section introductions. Commentary has no binding force.
 
 - **Domain term.** A name for a project-specific concept, such as _collection_,
-  _copy_, or _manifest_, defined in a document's terminology section.
+  _TC Copy_, or _manifest_, defined in a document's terminology section.
 
 - **Published.** Issued under a version number without a `-draft` suffix, and
   thereafter immutable. A draft may still change.
@@ -212,9 +212,9 @@ date field's digit width, is not a count of this kind and MAY appear.
 > **Why definiteness is precision, not style (R-LANG-18).** "The" promises a
 > reader that exactly one referent is meant and that this reader can identify
 > it. Most statements in a specification are general, so that promise is usually
-> false. "The copy MUST carry a manifest" invites a question: _which_ copy?
-> "Every copy MUST carry a manifest" does not. This is a failure R-LANG-10
-> addresses for pronouns, caught one step earlier in a sentence.
+> false. "The TC Copy MUST carry a manifest" invites a question: _which_ TC
+> Copy? "Every TC Copy MUST carry a manifest" does not. This is a failure
+> R-LANG-10 addresses for pronouns, caught one step earlier in a sentence.
 
 > **Where this parts company with ASD-STE100.** Section 1 names STE as an
 > inspiration, and STE prefers explicit articles, because a maintenance
@@ -238,7 +238,7 @@ date field's digit width, is not a count of this kind and MAY appear.
 > R-LANG-11 names for time references, applied to counts: a tally anchored to a
 > set's present membership rots just as "the current best tool" does. Its test
 > is subtraction. If deleting a number leaves its requirement or fact intact,
-> that number was only counting a list, and SHOULD go. "Three copies on three
+> that number was only counting a list, and SHOULD go. "Three TC Copies on three
 > drives" fails that test, because deleting "three" deletes its requirement, so
 > that count stays.
 

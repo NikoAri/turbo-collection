@@ -19,7 +19,7 @@ Prefixes cited by this document and defined elsewhere: `R-META-*` in
 **Document language.** This document is written in **American English**
 (`language-requirement.md` R-LANG-21). Stating it here rather than only by
 reference matters, because R-VER-8 scatters copies of this document onto every
-copy, and `language-requirement.md` does not travel with them.
+TC Copy, and `language-requirement.md` does not travel with them.
 
 **Writing rules.** This document's language discipline (controlled vocabulary,
 one term per concept, a split between normative text and commentary) is defined

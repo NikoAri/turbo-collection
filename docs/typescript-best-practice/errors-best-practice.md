@@ -9,9 +9,9 @@ wrong. This document binds nothing, and no code cites it.
 `TcError`, and Node reports it.**
 
 ```ts
-if (copyName === "" || CharacterNotInCopyName.test(copyName)) {
+if (tcCopyName === "" || CharacterNotInTcCopyName.test(tcCopyName)) {
   throw new TcError(
-    `"${givenName}" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
+    `"${givenName}" cannot be a TC Copy's name. A name is not empty, and holds no control character and none of < > : " / \\ | ? *.`,
   );
 }
 ```
@@ -47,10 +47,10 @@ An error that stops a run is not caught on its way out. Node prints it and exits
 with status 1:
 
 ```
-TcError: "a/b" cannot be a copy's name. A name is not empty, and holds no control character and none of < > : " / \ | ? *.
-    at copyNameFor (file:///C:/turbo-collection/scripts/init.ts:123:11)
-    at initializeTc (file:///C:/turbo-collection/scripts/init.ts:151:20)
-    at main (file:///C:/turbo-collection/scripts/turbo-collection.ts:92:20)
+TcError: "a/b" cannot be a TC Copy's name. A name is not empty, and holds no control character and none of < > : " / \ | ? *.
+    at tcCopyNameFor (file:///C:/turbo-collection/scripts/init.ts:157:11)
+    at initializeTc (file:///C:/turbo-collection/scripts/init.ts:221:22)
+    at runCommand (file:///C:/turbo-collection/scripts/turbo-collection.ts:204:5)
 
 Node.js v24.20.0
 ```

@@ -83,12 +83,13 @@ being told, and what `package.json` deliberately leaves out:
 ## What this is today
 
 **`init`, `import` and `backup` work, and nothing else does yet.**
-`node turbo-collection.ts init` makes a directory a copy, as `init-spec.md`
-describes. `node turbo-collection.ts import local-folder <directory>` imports a
-directory's files into the copy it is run in, as `import-spec.md` and the
-local-folder specification describe.
-`node turbo-collection.ts backup <directory> <directory>` mirrors two copies,
-first making one of them a copy where it is an empty directory, as
+`node turbo-collection.ts init <tc-directory>` makes a directory a TC Directory,
+as `init-spec.md` describes.
+`node turbo-collection.ts import <import-directory> <tc-directory>` imports a
+directory's files into the TC Copy in a TC Directory, as `import-spec.md` and
+the local-folder specification describe.
+`node turbo-collection.ts backup <tc-directory> <tc-directory>` mirrors two TC
+Copies, first making a TC Copy in one of them where it is an empty directory, as
 `backup-spec.md` describes. Status and verify are not written.
 
 Every run, help and version among them, writes its log into
@@ -96,29 +97,29 @@ Every run, help and version among them, writes its log into
 directory `--log-dir` names, as `logging-spec.md` describes.
 
 Import and backup hold their collection's lock, a `NamedMutex`, while they read
-and write a copy (`parallel-safety-spec.md` R-PARALLEL-4).
+and write a TC Copy (`parallel-safety-spec.md` R-PARALLEL-4).
 
-| File                                                   | What it holds                                                                                |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| [`turbo-collection.ts`](turbo-collection.ts)           | Entry point: reads the command line, makes the run and its log, and runs a command.          |
-| [`init.ts`](init.ts)                                   | The init operation.                                                                          |
-| [`import.ts`](import.ts)                               | The import operation, which writes each file into the copy, and its manifest and receipts.   |
-| [`local-folder-importer.ts`](local-folder-importer.ts) | The local-folder importer: which files of a directory it supplies, and their paths.          |
-| [`backup.ts`](backup.ts)                               | The backup operation: its checks, a new copy, and each file, manifest and receipt it writes. |
-| [`mirror.ts`](mirror.ts)                               | What a mirror of two copies copies into each, and what it reports instead.                   |
-| [`copy-contents.ts`](copy-contents.ts)                 | Reads what a copy holds: each directory's files, manifest and receipt files.                 |
-| [`content-files.ts`](content-files.ts)                 | A content file's checksum, and a copy of it written and checked in one read.                 |
-| [`meta-files.ts`](meta-files.ts)                       | Reads and checks a configuration file and a manifest, and writes a manifest and receipts.    |
-| [`collection-lock.ts`](collection-lock.ts)             | Takes a collection's lock on this computer.                                                  |
-| [`logger.ts`](logger.ts)                               | A run's log: where it goes, what an entry holds, and the entries every run writes.           |
-| [`paths.ts`](paths.ts)                                 | Checks on a directory a run is given: a link in its path, and a copy above it.               |
-| [`versions.ts`](versions.ts)                           | The versions that a run's log records and the version report states.                         |
-| [`tcignore.ts`](tcignore.ts)                           | Reads an ignore file, and says whether it ignores a path.                                    |
-| [`templates/`](templates/)                             | The starter ignore file that init writes into a copy.                                        |
-| [`helpers/`](helpers/)                                 | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.              |
-| [`sample-usage/`](sample-usage/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it.           |
-| [`test/`](test/)                                       | Tests, each named for the requirement it exercises.                                          |
-| [`package.json.md`](package.json.md)                   | Why the manifest and the lint commands look as they do.                                      |
+| File                                                   | What it holds                                                                                   |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| [`turbo-collection.ts`](turbo-collection.ts)           | Entry point: reads the command line, makes the run and its log, and runs a command.             |
+| [`init.ts`](init.ts)                                   | The init operation.                                                                             |
+| [`import.ts`](import.ts)                               | The import operation, which writes each file into the TC Copy, and its manifest and receipts.   |
+| [`local-folder-importer.ts`](local-folder-importer.ts) | The local-folder importer: which files of a directory it supplies, and their paths.             |
+| [`backup.ts`](backup.ts)                               | The backup operation: its checks, a new TC Copy, and each file, manifest and receipt it writes. |
+| [`mirror.ts`](mirror.ts)                               | What a mirror of two TC Copies copies into each, and what it reports instead.                   |
+| [`tc-copy-contents.ts`](tc-copy-contents.ts)           | Reads what a TC Copy holds: each directory's files, manifest and receipt files.                 |
+| [`content-files.ts`](content-files.ts)                 | A content file's checksum, and a copy of it written and checked in one read.                    |
+| [`meta-files.ts`](meta-files.ts)                       | Reads and checks a configuration file and a manifest, and writes a manifest and receipts.       |
+| [`collection-lock.ts`](collection-lock.ts)             | Takes a collection's lock on this computer.                                                     |
+| [`logger.ts`](logger.ts)                               | A run's log: where it goes, what an entry holds, and the entries every run writes.              |
+| [`paths.ts`](paths.ts)                                 | Checks on a directory a run is given: a link in its path, and a TC Copy above it.               |
+| [`versions.ts`](versions.ts)                           | The versions that a run's log records and the version report states.                            |
+| [`tcignore.ts`](tcignore.ts)                           | Reads an ignore file, and says whether it ignores a path.                                       |
+| [`templates/`](templates/)                             | The starter ignore file that init writes into a TC Copy.                                        |
+| [`helpers/`](helpers/)                                 | The script behind `npm run update`, `NamedMutex`, `TcError`, dates and run IDs.                 |
+| [`sample-usage/`](sample-usage/)                       | Code run by hand to show a helper in use. Nothing imports it, and no test runs it.              |
+| [`test/`](test/)                                       | Tests, each named for the requirement it exercises.                                             |
+| [`package.json.md`](package.json.md)                   | Why the manifest and the lint commands look as they do.                                         |
 
 ## Rules this code is held to
 
@@ -149,12 +150,12 @@ check time instead.
 the TypeScript here is written, one practice to a document. Read each document
 there before changing a `.ts` file.
 
-**Never delete.** `R-BACKUP-6` and `R-TGT-7` prohibit deleting a file in a copy.
-Section 13 requires a test asserting no code path deletes. That test is not
-written. A scan of the source for calls that delete was considered on 2026-10-13
-and set aside as too weak: it misses a delete done by a program this code runs,
-and a rename or an overwrite that destroys content. A better form is owed. Until
-there is one, whoever reads a change holds this rule.
+**Never delete.** `R-BACKUP-6` and `R-TGT-7` prohibit deleting a file in a TC
+Copy. Section 13 requires a test asserting no code path deletes. That test is
+not written. A scan of the source for calls that delete was considered on
+2026-10-13 and set aside as too weak: it misses a delete done by a program this
+code runs, and a rename or an overwrite that destroys content. A better form is
+owed. Until there is one, whoever reads a change holds this rule.
 
 **Every MUST maps to a test.** Section 13. Each test is named for the
 requirement it exercises, so the traceability audit Section 13 describes can be

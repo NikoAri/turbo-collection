@@ -13,12 +13,12 @@ import {
 import path from "node:path";
 
 import { takeCollectionLock } from "./collection-lock.ts";
-import { copyAndChecksum, isCopyUnwritable } from "./content-files.ts";
-import { readCopy, type CopyContents } from "./copy-contents.ts";
+import { copyAndChecksum, isTcCopyUnwritable } from "./content-files.ts";
+import { readTcCopy, type TcCopyContents } from "./tc-copy-contents.ts";
 import { dateToString } from "./helpers/date-helper.ts";
 import { TcError } from "./helpers/tc-error.ts";
 import {
-  copyNameFor,
+  tcCopyNameFor,
   filesNotIgnoredIn,
   writeConfigurationFile,
 } from "./init.ts";
@@ -42,8 +42,8 @@ import {
 import {
   configurationFileOf,
   ensureNoLinkInPath,
-  ensureNotInsideCopy,
-  isCopyRoot,
+  ensureNotInsideTcCopy,
+  isTcDirectory,
   pathKeyOf,
 } from "./paths.ts";
 import {
@@ -53,41 +53,41 @@ import {
 } from "./tcignore.ts";
 import { MetaFileSpecVersion } from "./versions.ts";
 
-// Backup (backup-spec.md), which mirrors two copies of one collection, and
-// first makes one of its two directories a copy where it is not one yet.
-// Nothing here deletes a file (R-BACKUP-6) or needs a network (R-BACKUP-3):
-// a backup reads and writes files on its two copies' drives, and nothing
-// else.
+// Backup (backup-spec.md), which mirrors two TC Copies of one collection, and
+// first makes one of its two directories a TC Directory where it is not one
+// yet. Nothing here deletes a file (R-BACKUP-6) or needs a network
+// (R-BACKUP-3): a backup reads and writes files on its two TC Copies' drives,
+// and nothing else.
 
 // What a command line gives backup.
 export type BackupArgs = {
-  // Two directories to mirror, at least one of them a copy (R-BACKUP-1)
+  // Two directories to mirror, at least one of them a TC Directory (R-BACKUP-1)
   directories: readonly [string, string];
-  // --copy: a name for a copy this backup creates (R-BACKUP-1)
-  copyName: string | undefined;
+  // --tc-copy: a name for a TC Copy this backup creates (R-BACKUP-1)
+  tcCopyName: string | undefined;
   // --dry-run: say what a real backup would copy, and change nothing
   // (R-BACKUP-10)
   dryRun: boolean;
 };
 
-// One of a backup's two copies: its root, its configuration, and what it
-// held before this backup wrote anything, nothing for a copy this backup
+// One of a backup's two TC Copies: its root, its configuration, and what it
+// held before this backup wrote anything, nothing for a TC Copy this backup
 // creates.
-type BackupCopy = {
+type BackupTcCopy = {
   root: string;
   tcConfig: TcConfig;
-  contents: CopyContents;
+  contents: TcCopyContents;
 };
 
-// A receipt file this backup wrote into one copy, which it then writes into
-// the other copy too, so that both hold every receipt file (verify-spec.md
+// A receipt file this backup wrote into one TC Copy, which it then writes into
+// the other TC Copy too, so that both hold every receipt file (verify-spec.md
 // R-REC-6).
 type NewReceiptFile = {
-  // The copy it goes into, and its directory there
-  into: BackupCopy;
+  // The TC Copy it goes into, and its directory there
+  into: BackupTcCopy;
   directory: string;
   kind: "arrival" | "error";
-  copyName: string;
+  tcCopyName: string;
   fields: Record<string, unknown>;
 };
 
@@ -100,7 +100,7 @@ type BackupContext = {
   newReceiptFiles: NewReceiptFile[];
 };
 
-// What a mirror copied into one copy (logging-spec.md R-LOG-16).
+// What a mirror copied into one TC Copy (logging-spec.md R-LOG-16).
 type Copied = {
   files: number;
   bytes: number;
@@ -109,15 +109,15 @@ type Copied = {
 // Backs up `directories` (R-BACKUP-1). `runId` names the receipt files the
 // backup writes (meta-file-spec.md R-MFILE-13).
 //
-// Every check is made before a directory is made or a file written: the
-// paths given, each copy's configuration, then, holding the collection's
-// lock, the ignore files and what both copies hold. Then a directory that is
-// not a copy is made one, and each copy is given what the other holds and it
-// lacks. What is wrong is reported as it is found, and once all else is
-// done, it ends the run with an error, so the run exits with a non-zero
-// status (turbo-collection-core-spec.md R-CLI-1).
+// Every check is made before a directory is made or a file written: the paths
+// given, each TC Copy's configuration, then, holding the collection's lock, the
+// ignore files and what both TC Copies hold. Then a directory that is not a TC
+// Directory is made one, and each TC Copy is given what the other holds and it
+// lacks. What is wrong is reported as it is found, and once all else is done,
+// it ends the run with an error, so the run exits with a non-zero status
+// (turbo-collection-core-spec.md R-CLI-1).
 export async function backUp(
-  { directories, copyName: givenCopyName, dryRun }: BackupArgs,
+  { directories, tcCopyName: givenTcCopyName, dryRun }: BackupArgs,
   runId: string,
 ): Promise<void> {
   const [rootA, rootB] = [
@@ -132,28 +132,32 @@ export async function backUp(
       `A backup mirrors two directories, and was given "${rootA}" twice.`,
     );
   }
-  const isCopyA = isCopyRoot(rootA);
-  const isCopyB = isCopyRoot(rootB);
-  if (!isCopyA && !isCopyB) {
+  const isTcCopyA = isTcDirectory(rootA);
+  const isTcCopyB = isTcDirectory(rootB);
+  if (!isTcCopyA && !isTcCopyB) {
     throw new TcError(
-      `Neither "${rootA}" nor "${rootB}" is a copy, and a backup is given at least one copy.`,
+      `Neither "${rootA}" nor "${rootB}" is a TC Directory, and a backup is given at least one TC Directory.`,
     );
   }
   for (const root of [rootA, rootB]) {
-    ensureNotInsideCopy(root);
+    ensureNotInsideTcCopy(root);
   }
 
-  // A copy's configuration is read before the lock is taken, to learn which
-  // collection that copy belongs to (parallel-safety-spec.md R-PARALLEL-4).
-  const tcConfigA = isCopyA ? readConfiguration(rootA) : undefined;
-  const tcConfigB = isCopyB ? readConfiguration(rootB) : undefined;
+  // A TC Copy's configuration is read before the lock is taken, to learn which
+  // collection that TC Copy belongs to (parallel-safety-spec.md R-PARALLEL-4).
+  const tcConfigA = isTcCopyA ? readConfiguration(rootA) : undefined;
+  const tcConfigB = isTcCopyB ? readConfiguration(rootB) : undefined;
   if (tcConfigA !== undefined && tcConfigB !== undefined) {
-    ensureOneCollection(rootA, tcConfigA, rootB, tcConfigB, givenCopyName);
+    ensureOneCollection(rootA, tcConfigA, rootB, tcConfigB, givenTcCopyName);
   }
   const existingTcConfig = (tcConfigA ?? tcConfigB)!;
-  const newCopyName =
+  const newTcCopyName =
     tcConfigA === undefined || tcConfigB === undefined
-      ? nameForNewCopy(isCopyA ? rootB : rootA, existingTcConfig, givenCopyName)
+      ? nameForNewTcCopy(
+          isTcCopyA ? rootB : rootA,
+          existingTcConfig,
+          givenTcCopyName,
+        )
       : undefined;
 
   await using _collectionLock = await takeCollectionLock(existingTcConfig);
@@ -164,31 +168,31 @@ export async function backUp(
     problems: 0,
     newReceiptFiles: [],
   };
-  let copyA: BackupCopy;
-  let copyB: BackupCopy;
+  let tcCopyA: BackupTcCopy;
+  let tcCopyB: BackupTcCopy;
   if (tcConfigA !== undefined && tcConfigB !== undefined) {
     ensureSameIgnorePatterns(rootA, rootB);
-    copyA = readBackupCopy(rootA, tcConfigA);
-    copyB = readBackupCopy(rootB, tcConfigB);
-    ensureRegularEntriesOnly(context, copyA, copyB);
+    tcCopyA = readBackupTcCopy(rootA, tcConfigA);
+    tcCopyB = readBackupTcCopy(rootB, tcConfigB);
+    ensureRegularEntriesOnly(context, tcCopyA, tcCopyB);
   } else {
-    const existingRoot = isCopyA ? rootA : rootB;
-    const newRoot = isCopyA ? rootB : rootA;
-    ensureEmptyForNewCopy(newRoot, existingRoot);
-    const existing = readBackupCopy(existingRoot, existingTcConfig);
+    const existingRoot = isTcCopyA ? rootA : rootB;
+    const newRoot = isTcCopyA ? rootB : rootA;
+    ensureEmptyForNewTcCopy(newRoot, existingRoot);
+    const existing = readBackupTcCopy(existingRoot, existingTcConfig);
     ensureRegularEntriesOnly(context, existing);
-    const created = createCopy(context, newRoot, existing, newCopyName!);
-    [copyA, copyB] = isCopyA ? [existing, created] : [created, existing];
+    const created = createTcCopy(context, newRoot, existing, newTcCopyName!);
+    [tcCopyA, tcCopyB] = isTcCopyA ? [existing, created] : [created, existing];
   }
 
-  const plan = planMirror(copyA.contents, copyB.contents);
-  reportPlan(context, plan, copyA, copyB);
+  const plan = planMirror(tcCopyA.contents, tcCopyB.contents);
+  reportPlan(context, plan, tcCopyA, tcCopyB);
 
-  // Each copy is written to in turn, and a failure against one is reported
+  // Each TC Copy is written to in turn, and a failure against one is reported
   // and does not stop an attempt against the other (R-BACKUP-8).
   for (const [into, from, copyPlan] of [
-    [copyB, copyA, plan.b],
-    [copyA, copyB, plan.a],
+    [tcCopyB, tcCopyA, plan.b],
+    [tcCopyA, tcCopyB, plan.a],
   ] as const) {
     const copied: Copied = { files: 0, bytes: 0 };
     try {
@@ -200,14 +204,14 @@ export async function backUp(
     logger.log({
       event: "mirror",
       path: into.root,
-      copyName: into.tcConfig.copyName,
+      tcCopyName: into.tcConfig.tcCopyName,
       files: copied.files,
       bytes: copied.bytes,
       toString: () =>
-        `${dryRun ? "Would copy" : "Copied"} ${countOfFiles(copied.files)} (${copied.bytes} bytes) into "${into.tcConfig.copyName}" at ${into.root}`,
+        `${dryRun ? "Would copy" : "Copied"} ${countOfFiles(copied.files)} (${copied.bytes} bytes) into "${into.tcConfig.tcCopyName}" at ${into.root}`,
     });
   }
-  writeNewReceiptFilesIntoOtherCopies(context);
+  writeNewReceiptFilesIntoOtherTcCopies(context);
 
   if (context.problems > 0) {
     throw new TcError(
@@ -226,10 +230,11 @@ function countOf(count: number, thing: string): string {
   return count === 1 ? `1 ${thing}` : `${count} ${thing}s`;
 }
 
-// Reads the configuration of a copy at `copyRoot` (logging-spec.md R-LOG-13).
-function readConfiguration(copyRoot: string): TcConfig {
-  const configurationFile = configurationFileOf(copyRoot);
-  const tcConfig = readConfigurationFile(copyRoot);
+// Reads the configuration of a TC Copy at `tcDirectory` (logging-spec.md
+// R-LOG-13).
+function readConfiguration(tcDirectory: string): TcConfig {
+  const configurationFile = configurationFileOf(tcDirectory);
+  const tcConfig = readConfigurationFile(tcDirectory);
   logger.log({
     event: "configuration",
     verbose: true,
@@ -240,58 +245,58 @@ function readConfiguration(copyRoot: string): TcConfig {
   return tcConfig;
 }
 
-// Throws where copies at `rootA` and `rootB` belong to two collections
+// Throws where TC Copies at `rootA` and `rootB` belong to two collections
 // (R-BACKUP-1), or are named alike without regard to letter case
-// (meta-file-spec.md R-MFILE-19), or where `givenCopyName` names a copy this
-// backup would create, since it creates none (R-BACKUP-1).
+// (meta-file-spec.md R-MFILE-19), or where `givenTcCopyName` names a TC Copy
+// this backup would create, since it creates none (R-BACKUP-1).
 function ensureOneCollection(
   rootA: string,
   tcConfigA: TcConfig,
   rootB: string,
   tcConfigB: TcConfig,
-  givenCopyName: string | undefined,
+  givenTcCopyName: string | undefined,
 ): void {
   if (tcConfigA.collectionId !== tcConfigB.collectionId) {
     throw new TcError(
-      `"${rootA}" is a copy of the collection "${tcConfigA.collectionName}" (${tcConfigA.collectionId}), and "${rootB}" is a copy of the collection "${tcConfigB.collectionName}" (${tcConfigB.collectionId}). A backup mirrors two copies of one collection.`,
+      `"${rootA}" holds a TC Copy of the collection "${tcConfigA.collectionName}" (${tcConfigA.collectionId}), and "${rootB}" holds a TC Copy of the collection "${tcConfigB.collectionName}" (${tcConfigB.collectionId}). A backup mirrors two TC Copies of one collection.`,
     );
   }
-  if (pathKeyOf(tcConfigA.copyName) === pathKeyOf(tcConfigB.copyName)) {
+  if (pathKeyOf(tcConfigA.tcCopyName) === pathKeyOf(tcConfigB.tcCopyName)) {
     throw new TcError(
-      `"${rootA}" and "${rootB}" are copies named "${tcConfigA.copyName}" and "${tcConfigB.copyName}", which are one name without regard to letter case. Two copies a run connects have two names.`,
+      `"${rootA}" and "${rootB}" are TC Copies named "${tcConfigA.tcCopyName}" and "${tcConfigB.tcCopyName}", which are one name without regard to letter case. Two TC Copies a run connects have two names.`,
     );
   }
-  if (givenCopyName !== undefined) {
+  if (givenTcCopyName !== undefined) {
     throw new TcError(
-      `--copy names a copy for a backup to make, and "${rootA}" and "${rootB}" are both copies, so this backup makes none.`,
+      `--tc-copy names a TC Copy for a backup to make, and "${rootA}" and "${rootB}" are both TC Directories, so this backup makes none.`,
     );
   }
 }
 
-// The name of a new copy that a backup makes at `newRoot` (R-BACKUP-1):
-// `givenCopyName` in NFC. No name, one that is not valid, and the name of
-// the copy whose configuration is `existing`, without regard to letter case,
+// The name of a new TC Copy that a backup makes at `newRoot` (R-BACKUP-1):
+// `givenTcCopyName` in NFC. No name, one that is not valid, and the name of
+// the TC Copy whose configuration is `existing`, without regard to letter case,
 // are each an error (meta-file-spec.md R-MFILE-19).
-function nameForNewCopy(
+function nameForNewTcCopy(
   newRoot: string,
   existing: TcConfig,
-  givenCopyName: string | undefined,
+  givenTcCopyName: string | undefined,
 ): string {
-  if (givenCopyName === undefined) {
+  if (givenTcCopyName === undefined) {
     throw new TcError(
-      `"${newRoot}" is not a copy, and a backup makes it one only when given a name for it with --copy.`,
+      `"${newRoot}" is not a TC Directory, and a backup makes a TC Copy there only when given a name for it with --tc-copy.`,
     );
   }
-  const copyName = copyNameFor(givenCopyName);
-  if (pathKeyOf(copyName) === pathKeyOf(existing.copyName)) {
+  const tcCopyName = tcCopyNameFor(givenTcCopyName);
+  if (pathKeyOf(tcCopyName) === pathKeyOf(existing.tcCopyName)) {
     throw new TcError(
-      `"${givenCopyName}" is the name of the copy this backup mirrors, without regard to letter case. Give the new copy another name.`,
+      `"${givenTcCopyName}" is the name of the TC Copy this backup mirrors, without regard to letter case. Give the new TC Copy another name.`,
     );
   }
-  return copyName;
+  return tcCopyName;
 }
 
-// Throws where copies at `rootA` and `rootB` hold different ignore patterns,
+// Throws where TC Copies at `rootA` and `rootB` hold different ignore patterns,
 // or the same in another order, naming both ignore files (R-BACKUP-15).
 function ensureSameIgnorePatterns(rootA: string, rootB: string): void {
   const patternsA = readIgnoreFile(rootA).map((pattern) => pattern.text);
@@ -301,23 +306,23 @@ function ensureSameIgnorePatterns(rootA: string, rootB: string): void {
     patternsA.some((pattern, index) => pattern !== patternsB[index])
   ) {
     throw new TcError(
-      `The ignore files "${ignoreFileOf(rootA)}" and "${ignoreFileOf(rootB)}" hold different patterns, so nothing is backed up. A backup mirrors two copies once their ignore files hold the same patterns, in the same order; a copy with no ignore file holds none.`,
+      `The ignore files "${ignoreFileOf(rootA)}" and "${ignoreFileOf(rootB)}" hold different patterns, so nothing is backed up. A backup mirrors two TC Copies once their ignore files hold the same patterns, in the same order; a TC Copy with no ignore file holds none.`,
     );
   }
 }
 
-// Throws where `newRoot`, which is not a copy, cannot become one: where it is
-// something other than a directory, or holds a file at any depth that no
+// Throws where `newRoot`, which is not a TC Directory, cannot become one: where
+// it is something other than a directory, or holds a file at any depth that no
 // pattern of the ignore file at `existingRoot` ignores, after logging every
 // such file (R-BACKUP-1).
-function ensureEmptyForNewCopy(newRoot: string, existingRoot: string): void {
+function ensureEmptyForNewTcCopy(newRoot: string, existingRoot: string): void {
   const stats = statSync(newRoot, { throwIfNoEntry: false });
   if (stats === undefined) {
     return;
   }
   if (!stats.isDirectory()) {
     throw new TcError(
-      `"${newRoot}" is not a directory, so a backup cannot make it a copy.`,
+      `"${newRoot}" is not a directory, so a backup cannot make a TC Copy there.`,
     );
   }
   const filesNotIgnored = filesNotIgnoredIn(
@@ -335,29 +340,29 @@ function ensureEmptyForNewCopy(newRoot: string, existingRoot: string): void {
   }
   if (filesNotIgnored.length > 0) {
     throw new TcError(
-      `"${newRoot}" holds ${countOfFiles(filesNotIgnored.length)} that the ignore file of "${existingRoot}" does not ignore, each named above. A backup makes a copy only in a directory that holds no such file.`,
+      `"${newRoot}" holds ${countOfFiles(filesNotIgnored.length)} that the ignore file of "${existingRoot}" does not ignore, each named above. A backup makes a TC Copy only in a directory that holds no such file.`,
     );
   }
 }
 
-// A copy at `root` whose configuration is `tcConfig`, with what it holds,
+// A TC Copy at `root` whose configuration is `tcConfig`, with what it holds,
 // read through its own ignore file.
-function readBackupCopy(root: string, tcConfig: TcConfig): BackupCopy {
+function readBackupTcCopy(root: string, tcConfig: TcConfig): BackupTcCopy {
   return {
     root,
     tcConfig,
-    contents: readCopy(root, compileIgnorePatterns(readIgnoreFile(root))),
+    contents: readTcCopy(root, compileIgnorePatterns(readIgnoreFile(root))),
   };
 }
 
-// Throws where any of `copies` holds an entry that is neither a file nor a
+// Throws where any of `tcCopies` holds an entry that is neither a file nor a
 // directory, such as a link, after logging each, so that nothing is written
 // (turbo-collection-core-spec.md R-CLI-19).
 function ensureRegularEntriesOnly(
   context: BackupContext,
-  ...copies: BackupCopy[]
+  ...tcCopies: BackupTcCopy[]
 ): void {
-  const notRegular = copies.flatMap((copy) => copy.contents.notRegular);
+  const notRegular = tcCopies.flatMap((tcCopy) => tcCopy.contents.notRegular);
   for (const entry of notRegular) {
     reportError(
       context,
@@ -367,29 +372,29 @@ function ensureRegularEntriesOnly(
   }
   if (notRegular.length > 0) {
     throw new TcError(
-      "The backup copies nothing, since a copy holds entries that are neither a file nor a directory, each named above. A pattern in .tcignore passes over such an entry.",
+      "The backup copies nothing, since a TC Copy holds entries that are neither a file nor a directory, each named above. A pattern in .tcignore passes over such an entry.",
     );
   }
 }
 
-// Makes `newRoot` a new copy named `copyName` of the collection `existing`
-// belongs to, with a duplicate of `existing`'s ignore file, where it has one
-// (R-BACKUP-1, R-BACKUP-2). Its configuration file is written first, and only
-// where nothing is at its path (parallel-safety-spec.md R-PARALLEL-2,
+// Makes a new TC Copy in `newRoot`, named `tcCopyName`, of the collection
+// `existing` belongs to, with a duplicate of `existing`'s ignore file, where it
+// has one (R-BACKUP-1, R-BACKUP-2). Its configuration file is written first,
+// and only where nothing is at its path (parallel-safety-spec.md R-PARALLEL-2,
 // R-PARALLEL-3). A dry run makes nothing, and says what it would make.
-function createCopy(
+function createTcCopy(
   context: BackupContext,
   newRoot: string,
-  existing: BackupCopy,
-  copyName: string,
-): BackupCopy {
+  existing: BackupTcCopy,
+  tcCopyName: string,
+): BackupTcCopy {
   const tcConfig: TcConfig = {
     version: MetaFileSpecVersion,
     collectionId: existing.tcConfig.collectionId,
     collectionName: existing.tcConfig.collectionName,
-    copyName,
+    tcCopyName,
   };
-  const contents: CopyContents = {
+  const contents: TcCopyContents = {
     directories: new Map([
       ["", { files: new Set(), manifest: undefined, receiptFiles: [] }],
     ]),
@@ -419,7 +424,7 @@ function createCopy(
     }
   }
   logger.log(
-    `${context.dryRun ? "Would make" : "Made"} ${newRoot} a copy named "${copyName}", of the collection "${tcConfig.collectionName}"`,
+    `${context.dryRun ? "Would make" : "Made"} a TC Copy named "${tcCopyName}" of the collection "${tcConfig.collectionName}", in ${newRoot}`,
   );
   return { root: newRoot, tcConfig, contents };
 }
@@ -440,7 +445,7 @@ function reportError(
   context.problems++;
 }
 
-// Reports what `plan` found wrong in copies `a` and `b`, which a mirror
+// Reports what `plan` found wrong in TC Copies `a` and `b`, which a mirror
 // copies nowhere: a file no manifest lists (R-BACKUP-12), a file whose
 // manifests state two checksums (R-BACKUP-4, verify-spec.md R-INT-7), a
 // directory of two provenances (R-BACKUP-14), a path held in two spellings
@@ -449,31 +454,31 @@ function reportError(
 function reportPlan(
   context: BackupContext,
   plan: MirrorPlan,
-  a: BackupCopy,
-  b: BackupCopy,
+  a: BackupTcCopy,
+  b: BackupTcCopy,
 ): void {
-  for (const [copy, copyPlan] of [
+  for (const [tcCopy, copyPlan] of [
     [a, plan.a],
     [b, plan.b],
   ] as const) {
-    const copyName = copy.tcConfig.copyName;
+    const tcCopyName = tcCopy.tcConfig.tcCopyName;
     for (const unlisted of copyPlan.unlisted) {
-      const file = path.join(copy.root, unlisted);
+      const file = path.join(tcCopy.root, unlisted);
       reportError(
         context,
-        `"${file}" is listed in no manifest of copy "${copyName}", so it is not in the collection, and no backup copies it.`,
+        `"${file}" is listed in no manifest of TC Copy "${tcCopyName}", so it is not in the collection, and no backup copies it.`,
         file,
       );
     }
     for (const paths of copyPlan.heldTwice) {
-      const files = paths.map((one) => `"${path.join(copy.root, one)}"`);
+      const files = paths.map((one) => `"${path.join(tcCopy.root, one)}"`);
       reportError(
         context,
-        `Copy "${copyName}" holds ${files.join(" and ")}, which are one path, since they differ only in letter case or normalization, so nothing is copied at it.`,
-        path.join(copy.root, paths[0]!),
+        `TC Copy "${tcCopyName}" holds ${files.join(" and ")}, which are one path, since they differ only in letter case or normalization, so nothing is copied at it.`,
+        path.join(tcCopy.root, paths[0]!),
       );
     }
-    for (const file of copy.contents.unrecognized) {
+    for (const file of tcCopy.contents.unrecognized) {
       reportError(
         context,
         `"${file}" is no meta file Turbo-Collection knows, so it is not read.`,
@@ -481,12 +486,12 @@ function reportPlan(
       );
     }
   }
-  const nameA = a.tcConfig.copyName;
-  const nameB = b.tcConfig.copyName;
+  const nameA = a.tcConfig.tcCopyName;
+  const nameB = b.tcConfig.tcCopyName;
   for (const difference of plan.differing) {
     reportError(
       context,
-      `"${difference.path}" differs between copy "${nameA}" (checksum ${difference.a.checksum}) and copy "${nameB}" (checksum ${difference.b.checksum}), so neither is copied over the other. Which to keep is for a person to decide.`,
+      `"${difference.path}" differs between TC Copy "${nameA}" (checksum ${difference.a.checksum}) and TC Copy "${nameB}" (checksum ${difference.b.checksum}), so neither is copied over the other. Which to keep is for a person to decide.`,
       path.join(a.root, difference.path),
     );
   }
@@ -494,19 +499,19 @@ function reportPlan(
     const { a: inA, b: inB } = mismatch;
     reportError(
       context,
-      `"${mismatch.path}" holds content that ${inA.importSource.specId} placed under ${inA.layout.specId} in copy "${nameA}", and that ${inB.importSource.specId} placed under ${inB.layout.specId} in copy "${nameB}", so no file is copied into it either way.`,
+      `"${mismatch.path}" holds content that ${inA.importSource.specId} placed under ${inA.layout.specId} in TC Copy "${nameA}", and that ${inB.importSource.specId} placed under ${inB.layout.specId} in TC Copy "${nameB}", so no file is copied into it either way.`,
       path.join(a.root, mismatch.path),
     );
   }
 }
 
-// Copies into copy `into` from copy `from` what `copyPlan` names, adding
-// what it copies to `copied`. A copy that cannot be written at all ends this
+// Copies into TC Copy `into` from TC Copy `from` what `copyPlan` names, adding
+// what it copies to `copied`. A TC Copy that cannot be written at all ends this
 // at once, with an error (R-BACKUP-8).
 function mirrorInto(
   context: BackupContext,
-  into: BackupCopy,
-  from: BackupCopy,
+  into: BackupTcCopy,
+  from: BackupTcCopy,
   copyPlan: CopyPlan,
   copied: Copied,
 ): void {
@@ -515,18 +520,18 @@ function mirrorInto(
   }
 }
 
-// Copies into one directory of copy `into` what `copying` names. Each
+// Copies into one directory of TC Copy `into` what `copying` names. Each
 // content file is written straight to its path, and checked against its
 // entry as it is copied; once that directory's files are written, its
 // manifest lists those that match (R-BACKUP-9, R-BACKUP-12, R-BACKUP-13,
 // turbo-collection-spec.md R-TGT-13). Then it gets its arrival file
-// (verify-spec.md R-REC-5), and the receipt files the other copy holds there
+// (verify-spec.md R-REC-5), and the receipt files the other TC Copy holds there
 // (R-REC-6). A file that cannot be copied is recorded in an error file of
-// the copy it was to be copied from (meta-file-spec.md R-MFILE-13).
+// the TC Copy it was to be copied from (meta-file-spec.md R-MFILE-13).
 function mirrorDirectory(
   context: BackupContext,
-  into: BackupCopy,
-  from: BackupCopy,
+  into: BackupTcCopy,
+  from: BackupTcCopy,
   copying: DirectoryCopying,
   copied: Copied,
 ): void {
@@ -587,14 +592,14 @@ function isOneName(name: string): boolean {
   );
 }
 
-// Copies one content file into a directory of copy `into`, and returns the
+// Copies one content file into a directory of TC Copy `into`, and returns the
 // entry it is to be listed with there, or undefined where it copied nothing
 // it may list, after logging why and keeping that in `errors`. A dry run
 // copies nothing, and returns what a real run would list.
 function copyFile(
   context: BackupContext,
-  into: BackupCopy,
-  from: BackupCopy,
+  into: BackupTcCopy,
+  from: BackupTcCopy,
   copying: DirectoryCopying,
   file: FileCopying,
   errors: string[],
@@ -602,7 +607,7 @@ function copyFile(
   const source = path.join(from.root, copying.from, file.from);
   const target = path.join(into.root, copying.to, file.entry.file);
   const fail = (reason: string): undefined => {
-    const message = `"${source}" is not copied to copy "${into.tcConfig.copyName}": ${reason}`;
+    const message = `"${source}" is not copied to TC Copy "${into.tcConfig.tcCopyName}": ${reason}`;
     reportError(context, message, source);
     errors.push(message);
     return undefined;
@@ -646,9 +651,9 @@ function copyFile(
     mkdirSync(path.dirname(target), { recursive: true });
     written = copyAndChecksum(source, target);
   } catch (e) {
-    if (isCopyUnwritable(e, into.root)) {
+    if (isTcCopyUnwritable(e, into.root)) {
       throw new TcError(
-        `Copy "${into.tcConfig.copyName}" at "${into.root}" cannot be written: it is gone, read-only or full. Files copied before this are in the collection there.`,
+        `TC Copy "${into.tcConfig.tcCopyName}" at "${into.root}" cannot be written: it is gone, read-only or full. Files copied before this are in the collection there.`,
         { cause: e },
       );
     }
@@ -685,16 +690,15 @@ function logTransfer(
   });
 }
 
-// Lists `entries`, each of a file just written, in the manifest of a
-// directory of copy `into`, beside `kept`, the entries it keeps for other
-// files. A directory with no manifest gets one holding every field of copy
-// `from`'s manifest (R-BACKUP-13). Then writes that directory's arrival file
-// over the content files it now holds (meta-file-spec.md R-MFILE-14,
-// R-MFILE-15).
+// Lists `entries`, each of a file just written, in the manifest of a directory
+// of TC Copy `into`, beside `kept`, the entries it keeps for other files. A
+// directory with no manifest gets one holding every field of TC Copy `from`'s
+// manifest (R-BACKUP-13). Then writes that directory's arrival file over the
+// content files it now holds (meta-file-spec.md R-MFILE-14, R-MFILE-15).
 function listAndRecordArrival(
   context: BackupContext,
-  into: BackupCopy,
-  from: BackupCopy,
+  into: BackupTcCopy,
+  from: BackupTcCopy,
   copying: DirectoryCopying,
   kept: readonly ManifestEntry[],
   entries: readonly ManifestEntry[],
@@ -719,24 +723,24 @@ function listAndRecordArrival(
     fileCount: presentFiles.length,
     contentDigest: contentDigestOf(presentFiles.map((entry) => entry.checksum)),
   };
-  const copyName = into.tcConfig.copyName;
-  writeReceiptFile(intoDirectory, "arrival", context.runId, copyName, fields);
+  const tcCopyName = into.tcConfig.tcCopyName;
+  writeReceiptFile(intoDirectory, "arrival", context.runId, tcCopyName, fields);
   context.newReceiptFiles.push({
     into: from,
     directory: path.join(from.root, copying.from),
     kind: "arrival",
-    copyName,
+    tcCopyName,
     fields,
   });
 }
 
 // Copies a receipt file named `name` from `fromDirectory`'s
-// `.turbo-collection` into `intoDirectory`'s, a directory of copy `into`,
+// `.turbo-collection` into `intoDirectory`'s, a directory of TC Copy `into`,
 // only where nothing is at its path there (verify-spec.md R-REC-6), and has
-// it put on its drive. A copy that cannot be written at all is an error.
+// it put on its drive. A TC Copy that cannot be written at all is an error.
 function copyReceiptFile(
   context: BackupContext,
-  into: BackupCopy,
+  into: BackupTcCopy,
   fromDirectory: string,
   intoDirectory: string,
   name: string,
@@ -762,9 +766,9 @@ function copyReceiptFile(
       // case (turbo-collection-spec.md R-TGT-14)
       return;
     }
-    if (isCopyUnwritable(e, into.root)) {
+    if (isTcCopyUnwritable(e, into.root)) {
       throw new TcError(
-        `Copy "${into.tcConfig.copyName}" at "${into.root}" cannot be written: it is gone, read-only or full.`,
+        `TC Copy "${into.tcConfig.tcCopyName}" at "${into.root}" cannot be written: it is gone, read-only or full.`,
         { cause: e },
       );
     }
@@ -776,21 +780,21 @@ function copyReceiptFile(
   }
 }
 
-// Writes an error file holding `fields` in `fromDirectory`, a directory of
-// the copy files were copied from, for this run and copy `into`, which the
-// errors are of (meta-file-spec.md R-MFILE-13, R-MFILE-16), then has it
-// written into `intoDirectory` once both copies are mirrored. Where it
-// cannot be written, that is reported too.
+// Writes an error file holding `fields` in `fromDirectory`, a directory of the
+// TC Copy files were copied from, for this run and TC Copy `into`, which the
+// errors are of (meta-file-spec.md R-MFILE-13, R-MFILE-16), then has it written
+// into `intoDirectory` once both TC Copies are mirrored. Where it cannot be
+// written, that is reported too.
 function recordMirrorErrors(
   context: BackupContext,
   fromDirectory: string,
-  into: BackupCopy,
+  into: BackupTcCopy,
   intoDirectory: string,
   fields: Record<string, unknown>,
 ): void {
-  const copyName = into.tcConfig.copyName;
+  const tcCopyName = into.tcConfig.tcCopyName;
   try {
-    writeReceiptFile(fromDirectory, "error", context.runId, copyName, fields);
+    writeReceiptFile(fromDirectory, "error", context.runId, tcCopyName, fields);
   } catch (e) {
     reportError(
       context,
@@ -803,16 +807,16 @@ function recordMirrorErrors(
     into,
     directory: intoDirectory,
     kind: "error",
-    copyName,
+    tcCopyName,
     fields,
   });
 }
 
-// Writes each receipt file this backup wrote into one copy into the other
-// copy too, so that both copies end holding every receipt file
+// Writes each receipt file this backup wrote into one TC Copy into the other
+// TC Copy too, so that both TC Copies end holding every receipt file
 // (verify-spec.md R-REC-6). One that cannot be written there is reported,
 // and the next backup copies it.
-function writeNewReceiptFilesIntoOtherCopies(context: BackupContext): void {
+function writeNewReceiptFilesIntoOtherTcCopies(context: BackupContext): void {
   if (context.dryRun) {
     return;
   }
@@ -822,13 +826,13 @@ function writeNewReceiptFilesIntoOtherCopies(context: BackupContext): void {
         receipt.directory,
         receipt.kind,
         context.runId,
-        receipt.copyName,
+        receipt.tcCopyName,
         receipt.fields,
       );
     } catch (e) {
       reportError(
         context,
-        `A receipt file of copy "${receipt.copyName}" could not be written into "${receipt.directory}" of copy "${receipt.into.tcConfig.copyName}" (${(e as Error).message}). The next backup copies it there.`,
+        `A receipt file of TC Copy "${receipt.tcCopyName}" could not be written into "${receipt.directory}" of TC Copy "${receipt.into.tcConfig.tcCopyName}" (${(e as Error).message}). The next backup copies it there.`,
         receipt.directory,
       );
     }

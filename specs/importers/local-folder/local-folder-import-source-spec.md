@@ -6,8 +6,8 @@
 > **Layout:** [`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md)
 
 This document is normative over **Local-folder Import Source**: a directory of
-ordinary files outside whichever Copy is being imported into, reachable as files
-from a computer performing a Run. It covers an old archive on a drive, a
+ordinary files outside whichever TC Copy is being imported into, reachable as
+files from a computer performing a Run. It covers an old archive on a drive, a
 download directory, and a directory copied off a retired computer.
 
 Requirement ID prefix: **`R-LOCALFOLDER-*`**.
@@ -24,8 +24,8 @@ Requirement ID prefix: **`R-LOCALFOLDER-*`**.
 ## 0. Role and scope
 
 This document binds Turbo-Collection's implementation. It answers one question:
-which files in a directory outside a Copy does an Import take in, and what path
-does each one carry into its Collection.
+which files in a directory outside a TC Copy does an Import take in, and what
+path does each one carry into its Collection.
 
 No vendor controls this Import Source, so unlike a specification for a vendor's
 service it needs no dated evidence and no expiry: a directory of files is read
@@ -36,18 +36,21 @@ through an operating system's ordinary file operations.
 Per `language-requirement.md` R-LANG-5, this section is self-contained.
 
 - **Collection.** A set of files this project preserves, held as one or more
-  peer Copies.
+  peer TC Copies.
 
-- **Copy.** One physical instance of a Collection, held on one storage medium;
-  Copies are peers.
+- **TC Copy.** One physical instance of a Collection, held on one storage
+  medium; TC stands for Turbo-Collection. TC Copies are peers.
 
-- **Content file.** Any file a Copy holds that is neither a Meta file nor an
+- **TC Directory.** A TC Copy's root directory, which holds every file of that
+  TC Copy.
+
+- **Content file.** Any file a TC Copy holds that is neither a Meta file nor an
   Ignored file.
 
-- **Meta file.** A file that describes a Copy or what happened to it, such as a
-  Manifest or a receipt.
+- **Meta file.** A file that describes a TC Copy or what happened to it, such as
+  a Manifest or a receipt.
 
-- **Ignored file.** A file in a Copy that matches a pattern in that Copy's
+- **Ignored file.** A file in a TC Copy that matches a pattern in that TC Copy's
   ignore file.
 
 - **Manifest.** A Meta file that records a checksum for each Content file in one
@@ -58,10 +61,12 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   camera card or a directory of existing files.
 
 - **Local-folder Import Source.** This document's Import Source: directories of
-  ordinary files outside a Copy, read as files by a computer performing a Run.
+  ordinary files outside a TC Copy, read as files by a computer performing a
+  Run.
 
-- **Imported directory.** A directory, outside every Copy, that one Import from
-  Local-folder Import Source reads, together with every directory beneath it.
+- **Imported directory.** A directory, outside every TC Copy, that one Import
+  from Local-folder Import Source reads, together with every directory beneath
+  it.
 
 - **Importer.** A component that brings files into a Collection from one Import
   Source.
@@ -72,7 +77,8 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Item.** One logical thing supplied by an Import Source, which may comprise
   several files.
 
-- **Layout.** A rule that determines where in a Copy a Content file is stored.
+- **Layout.** A rule that determines where in a TC Copy a Content file is
+  stored.
 
 - **Primary Layout.** A single Layout that an Import Source specification names
   to govern that Import Source's Items.
@@ -100,27 +106,27 @@ directory an identifier of its own.
 
 **R-LOCALFOLDER-2.** Turbo-Collection MUST take an Import's Imported directory
 from a setting of that Run (`import-spec.md` R-SRC-3). Turbo-Collection MUST
-refuse an Imported directory that is a Copy, that is inside a Copy, that
-contains a Copy, or that has no name of its own, such as a drive's root.
+refuse an Imported directory that is a TC Directory, that is inside a TC Copy,
+that contains a TC Copy, or that has no name of its own, such as a drive's root.
 
-> **Example.** Importing a directory that is inside a Copy being imported into
-> would store each of its files a second time, under `local-folder/`. Importing
-> a directory that holds a Copy of another Collection would take in that Copy's
-> Meta files as Items.
+> **Example.** Importing a directory that is inside a TC Copy being imported
+> into would store each of its files a second time, under `local-folder/`.
+> Importing a directory that holds a TC Copy of another Collection would take in
+> that TC Copy's Meta files as Items.
 
 ## 3. Items
 
 **R-LOCALFOLDER-3.** In an Import from Local-folder Import Source,
 Turbo-Collection MUST take as an Item every file in its Imported directory, at
-any depth, other than a file whose path in whichever Copy is being imported into
-would match a pattern in that Copy's ignore file (`meta-file-spec.md`
+any depth, other than a file whose path in whichever TC Copy is being imported
+into would match a pattern in that TC Copy's ignore file (`meta-file-spec.md`
 R-MFILE-21), and other than a file in a directory named `.turbo-collection`.
 Turbo-Collection MUST report every such directory it passes over.
 
-> **Example.** A `.DS_Store` in an old archive, which a receiving Copy's ignore
-> file matches, is not taken in.
+> **Example.** A `.DS_Store` in an old archive, which a receiving TC Copy's
+> ignore file matches, is not taken in.
 
-> **Example.** A folder copied out of a Copy holds a `.turbo-collection`
+> **Example.** A folder copied out of a TC Copy holds a `.turbo-collection`
 > directory beside its photos. An Import passes over it, reports it, and takes
 > in those photos.
 
@@ -151,10 +157,10 @@ is every Supplied path's first segment.
 > stored at `local-folder/moon-laptop/Woodwork/birdhouse/drawing.pdf`
 > (`supplied-path-layout-spec.md` R-FOUND-3).
 
-> **Example.** Two Imported directories that share a name share a place in a
+> **Example.** Two Imported directories that share a name share a place in a TC
 > Copy. A file with one path and one content in both is one file. A file whose
-> path already holds different content stays out of that Copy's Collection and
-> is reported, and that Run exits non-zero (`import-spec.md` R-SRC-23).
+> path already holds different content stays out of that TC Copy's Collection
+> and is reported, and that Run exits non-zero (`import-spec.md` R-SRC-23).
 
 ## 5. Fidelity
 

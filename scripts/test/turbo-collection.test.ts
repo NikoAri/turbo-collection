@@ -74,7 +74,7 @@ function onlyRunEntries(temporary: string): Record<string, unknown>[] {
   return entriesOf(log!);
 }
 
-// Where a copy in `directory` keeps its configuration file
+// Where a TC Copy in `directory` keeps its configuration file
 // (meta-file-spec.md R-MFILE-17).
 function configurationFileOf(directory: string): string {
   return path.join(
@@ -84,7 +84,7 @@ function configurationFileOf(directory: string): string {
   );
 }
 
-test("R-INIT-2: given no directory, init makes the current directory a copy, and exits with status 0", (t) => {
+test("R-INIT-2: given no directory, init makes the current directory a TC Directory, and exits with status 0", (t) => {
   const temporary = temporaryDirectory(t);
   const directory = path.join(temporary, "Family Photos");
   mkdirSync(directory);
@@ -94,11 +94,11 @@ test("R-INIT-2: given no directory, init makes the current directory a copy, and
   assert.equal(run.status, 0);
   assert.match(
     run.stdout,
-    /a copy named "main", of a new collection named "Family Photos"/,
+    /a TC Copy named "main" of a new collection named "Family Photos", in /,
   );
   const tcConfig = readFileSync(configurationFileOf(directory), "utf8");
   assert.match(tcConfig, /"collectionName": "Family Photos"/);
-  assert.match(tcConfig, /"copyName": "main"/);
+  assert.match(tcConfig, /"tcCopyName": "main"/);
 });
 
 test("R-CLI-5: init is a command of its own, given the directory to act on", () => {
@@ -110,7 +110,7 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
     init: {
       directory: "D:\\Photos",
       collectionName: undefined,
-      copyName: undefined,
+      tcCopyName: undefined,
     },
     import: undefined,
     backup: undefined,
@@ -138,9 +138,10 @@ test("R-INIT-4: the name of a new collection is given by --name or -n, before th
   );
 });
 
-test("R-INIT-4: the name of a new copy is given by --copy", () => {
+test("R-INIT-4: the name of a new TC Copy is given by --tc-copy", () => {
   assert.equal(
-    parseCliArgs(["init", "D:\\Photos", "--copy", "off-site"]).init?.copyName,
+    parseCliArgs(["init", "D:\\Photos", "--tc-copy", "off-site"]).init
+      ?.tcCopyName,
     "off-site",
   );
 });
@@ -161,7 +162,7 @@ test("R-CLI-1: asking for help exits with status 0, and names the init command",
   const run = runTurboCollection(temporaryDirectory(t), ["--help"]);
 
   assert.equal(run.status, 0);
-  assert.match(run.stdout, /init \[<directory>\]/);
+  assert.match(run.stdout, /init \[<tc-directory>\]/);
 });
 
 test("R-LOG-6: help is a run, which writes its log into turbo-collection/logs/ in the directory for temporary files", (t) => {
@@ -245,15 +246,15 @@ test("R-LOG-10: a command line that cannot be read ends the run with an error, a
   assert.equal(existsSync(path.join(temporary, "turbo-collection")), false);
 });
 
-test("R-CLI-1: init given a name that cannot be a copy's name exits with a non-zero status, and says why", (t) => {
+test("R-CLI-1: init given a name that cannot be a TC Copy's name exits with a non-zero status, and says why", (t) => {
   const run = runTurboCollection(temporaryDirectory(t), [
     "init",
-    "--copy",
+    "--tc-copy",
     "a/b",
   ]);
 
   assert.notEqual(run.status, 0);
-  assert.match(run.stderr, /cannot be a copy's name/);
+  assert.match(run.stderr, /cannot be a TC Copy's name/);
 });
 
 test("R-LOG-4, R-LOG-12: an error that ends a run is in its log, with its stack, before a failed run-end", (t) => {
@@ -263,12 +264,12 @@ test("R-LOG-4, R-LOG-12: an error that ends a run is in its log, with its stack,
   const run = runTurboCollection(temporary, [
     "init",
     directory,
-    "--copy",
+    "--tc-copy",
     "a/b",
   ]);
 
   assert.equal(run.status, 1);
-  assert.match(run.stderr, /^"a\/b" cannot be a copy's name/m);
+  assert.match(run.stderr, /^"a\/b" cannot be a TC Copy's name/m);
   assert.match(run.stderr, /^Failed$/m);
   const entries = onlyRunEntries(temporary);
   assert.deepEqual(
@@ -326,21 +327,21 @@ test("R-LOG-10: --log-dir puts the log into the directory it names, making it, a
   assert.equal(entriesOf(path.join(logDirectory, log!))[0]?.event, "run-start");
 });
 
-test("R-LOG-10: a log directory inside a copy is an error, and the run makes nothing in the copy and writes no log", (t) => {
+test("R-LOG-10: a log directory inside a TC Copy is an error, and the run makes nothing in the TC Copy and writes no log", (t) => {
   const temporary = temporaryDirectory(t);
-  const copy = path.join(temporary, "photos");
-  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
   const second = temporaryDirectory(t);
 
   const run = runTurboCollection(second, [
     "--version",
     "--log-dir",
-    path.join(copy, "logs"),
+    path.join(tcDirectory, "logs"),
   ]);
 
   assert.notEqual(run.status, 0);
-  assert.match(run.stderr, /lies inside a copy/);
-  assert.deepEqual(readdirSync(copy).sort(), [
+  assert.match(run.stderr, /lies inside a TC Copy/);
+  assert.deepEqual(readdirSync(tcDirectory).sort(), [
     ".tcignore",
     ".turbo-collection",
   ]);
@@ -369,7 +370,7 @@ function startTurboCollection(
 // How many inits are started at once on one directory.
 const InitsAtOnce = 20;
 
-test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactly one makes it a copy, and every other ends with an error", async (t) => {
+test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactly one makes it a TC Directory, and every other ends with an error", async (t) => {
   const temporary = temporaryDirectory(t);
   const directory = path.join(temporary, "photos");
 
@@ -383,7 +384,7 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
   const failed = runs.filter((run) => run.status !== 0);
   assert.equal(made.length, 1);
   const lateToWrite = failed.filter((run) =>
-    /Another run made .* a copy first/.test(run.stderr),
+    /Another run made .* a TC Directory first/.test(run.stderr),
   ).length;
   const lateToLook = failed.filter((run) =>
     /that the starter \.tcignore does not ignore/.test(run.stderr),
@@ -404,64 +405,55 @@ test("R-PARALLEL-2, R-PARALLEL-3: of many inits at once on one directory, exactl
   assert.equal(logsIn(temporary).length, InitsAtOnce);
 });
 
-test("R-SRC-25: import local-folder is given the directory to import, and the copy defaults to the current directory", () => {
+test("R-SRC-25: import is given a directory to import from, then a TC Directory", () => {
   assert.deepEqual(
-    parseCliArgs(["import", "local-folder", "D:\\moon-laptop"]).import,
-    { directory: "D:\\moon-laptop", copy: ".", dryRun: false },
-  );
-  assert.deepEqual(
-    parseCliArgs(["import", "local-folder", "D:\\moon-laptop", "E:\\Photos"])
-      .import,
-    { directory: "D:\\moon-laptop", copy: "E:\\Photos", dryRun: false },
+    parseCliArgs(["import", "D:\\moon-laptop", "E:\\Photos"]).import,
+    {
+      importDirectory: "D:\\moon-laptop",
+      tcDirectory: "E:\\Photos",
+      dryRun: false,
+    },
   );
 });
 
 test("R-SRC-14: --dry-run makes an import a dry run", () => {
   assert.equal(
-    parseCliArgs(["import", "local-folder", "D:\\moon-laptop", "--dry-run"])
+    parseCliArgs(["import", "D:\\moon-laptop", "E:\\Photos", "--dry-run"])
       .import?.dryRun,
     true,
   );
 });
 
-test("R-LOG-10: import given no import source, an unknown one, no directory, or a third path is an error", () => {
+test("R-SRC-25, R-LOG-10: import given other than two directories is an error", () => {
   assert.throws(
     () => parseCliArgs(["import"]),
-    /import takes an import source/,
+    /import takes two directories, and was given 0/,
   );
   assert.throws(
-    () => parseCliArgs(["import", "icloud", "D:\\x"]),
-    /Unknown import source: icloud/,
+    () => parseCliArgs(["import", "D:\\moon-laptop"]),
+    /import takes two directories, and was given 1/,
   );
   assert.throws(
-    () => parseCliArgs(["import", "local-folder"]),
-    /takes the directory to import/,
-  );
-  assert.throws(
-    () => parseCliArgs(["import", "local-folder", "a", "b", "c"]),
-    /was also given: c/,
+    () => parseCliArgs(["import", "local-folder", "D:\\x", "E:\\Photos"]),
+    /import takes two directories, and was given 3/,
   );
 });
 
-test("R-SRC-25: given no copy, import imports into the current directory, says what it imported, and exits with status 0", (t) => {
+test("R-SRC-25: import imports into the TC Copy in the TC Directory it is given, says what it imported, and exits with status 0", (t) => {
   const temporary = temporaryDirectory(t);
-  const copy = path.join(temporary, "photos");
-  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
   const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
 
-  const run = runTurboCollection(
-    temporary,
-    ["import", "local-folder", folder],
-    copy,
-  );
+  const run = runTurboCollection(temporary, ["import", folder, tcDirectory]);
 
   assert.equal(run.status, 0);
   assert.match(run.stdout, /^Imported 1 file \(5 bytes\) from /m);
   assert.equal(
     readFileSync(
-      path.join(copy, "local-folder", "moon-laptop", "notes.txt"),
+      path.join(tcDirectory, "local-folder", "moon-laptop", "notes.txt"),
       "utf8",
     ),
     "notes",
@@ -470,12 +462,12 @@ test("R-SRC-25: given no copy, import imports into the current directory, says w
 
 test("R-SRC-23, R-CLI-1: an import that leaves a file out exits with a non-zero status, and names the file on standard error", (t) => {
   const temporary = temporaryDirectory(t);
-  const copy = path.join(temporary, "photos");
-  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
   const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
-  const args = ["import", "local-folder", folder, copy];
+  const args = ["import", folder, tcDirectory];
   assert.equal(runTurboCollection(temporary, args).status, 0);
   writeFileSync(path.join(folder, "notes.txt"), "notes, edited");
 
@@ -485,12 +477,12 @@ test("R-SRC-23, R-CLI-1: an import that leaves a file out exits with a non-zero 
   assert.match(run.stderr, /notes\.txt" is left out/);
 });
 
-test("R-BACKUP-1, R-BACKUP-10: backup is given two directories, --copy names a copy it makes, and --dry-run makes it a dry run", () => {
+test("R-BACKUP-1, R-BACKUP-10: backup is given two directories, --tc-copy names a TC Copy it makes, and --dry-run makes it a dry run", () => {
   assert.deepEqual(
     parseCliArgs(["backup", "D:\\Photos", "E:\\Photos"]).backup,
     {
       directories: ["D:\\Photos", "E:\\Photos"],
-      copyName: undefined,
+      tcCopyName: undefined,
       dryRun: false,
     },
   );
@@ -499,13 +491,13 @@ test("R-BACKUP-1, R-BACKUP-10: backup is given two directories, --copy names a c
       "backup",
       "D:\\Photos",
       "E:\\Photos",
-      "--copy",
+      "--tc-copy",
       "home",
       "--dry-run",
     ]).backup,
     {
       directories: ["D:\\Photos", "E:\\Photos"],
-      copyName: "home",
+      tcCopyName: "home",
       dryRun: true,
     },
   );
@@ -522,25 +514,24 @@ test("R-BACKUP-1, R-LOG-10: backup given one directory, or three, is an error", 
   );
 });
 
-test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into each copy, and exits with status 0; the next copies nothing", (t) => {
+test("R-BACKUP-1, R-LOG-16: a backup makes a new TC Copy, says what it copied into each TC Copy, and exits with status 0; the next copies nothing", (t) => {
   const temporary = temporaryDirectory(t);
-  const copy = path.join(temporary, "photos");
-  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
   const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
   assert.equal(
-    runTurboCollection(temporary, ["import", "local-folder", folder, copy])
-      .status,
+    runTurboCollection(temporary, ["import", folder, tcDirectory]).status,
     0,
   );
   const home = path.join(temporary, "backup", "photos");
-  const args = ["backup", copy, home, "--copy", "home"];
+  const args = ["backup", tcDirectory, home, "--tc-copy", "home"];
 
   const run = runTurboCollection(temporary, args);
 
   assert.equal(run.status, 0, run.stderr);
-  assert.match(run.stdout, /a copy named "home"/);
+  assert.match(run.stdout, /a TC Copy named "home"/);
   assert.match(run.stdout, /^Copied 1 file \(5 bytes\) into "home" at /m);
   assert.match(run.stdout, /^Copied 0 files \(0 bytes\) into "main" at /m);
   assert.equal(
@@ -551,7 +542,7 @@ test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into 
     "notes",
   );
 
-  const again = runTurboCollection(temporary, ["backup", copy, home]);
+  const again = runTurboCollection(temporary, ["backup", tcDirectory, home]);
 
   assert.equal(again.status, 0, again.stderr);
   assert.match(again.stdout, /^Copied 0 files \(0 bytes\) into "home" at /m);
@@ -559,16 +550,16 @@ test("R-BACKUP-1, R-LOG-16: a backup makes a new copy, says what it copied into 
 
 test("R-BACKUP-12, R-CLI-1: a backup that finds a file no manifest lists exits with a non-zero status, and names the file on standard error", (t) => {
   const temporary = temporaryDirectory(t);
-  const copy = path.join(temporary, "photos");
-  assert.equal(runTurboCollection(temporary, ["init", copy]).status, 0);
-  writeFileSync(path.join(copy, "by-hand.txt"), "by hand");
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  writeFileSync(path.join(tcDirectory, "by-hand.txt"), "by hand");
   const home = path.join(temporary, "home");
 
   const run = runTurboCollection(temporary, [
     "backup",
-    copy,
+    tcDirectory,
     home,
-    "--copy",
+    "--tc-copy",
     "home",
   ]);
 

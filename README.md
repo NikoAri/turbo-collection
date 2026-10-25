@@ -14,7 +14,7 @@ swapped.
 The point of that is not only survival. Once photos are in the collection and
 verified, **you** can delete them from iCloud or from your phone and stop paying
 for that storage. Turbo-Collection never deletes anything, anywhere: not at an
-import source, and not in any copy of the collection. Every deletion is your
+import source, and not in any TC Copy of the collection. Every deletion is your
 decision, taken against evidence the tool gives you.
 
 **Status:** design record and core specification (draft) written; implementation
@@ -85,7 +85,7 @@ Directories group by topic; the name carries the classification. A top-level
 specification line once one exists.
 
 A top-level [`samples/`](samples/) directory holds a worked example: a small
-collection and one backup copy with real manifests and receipts, that any file
+collection in two TC Copies, with real manifests and receipts, that any file
 manager can browse and any SHA-256 tool can verify.
 
 ## License

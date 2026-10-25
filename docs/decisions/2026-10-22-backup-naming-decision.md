@@ -14,9 +14,9 @@ kept; only the naming reverses, and it reverses past _mirror_ rather than back
 to it, because operator and mechanism are now named separately.
 
 The operation an operator runs is **backup**. Its mechanism is a
-**non-destructive, symmetric mirror** across peer copies. Recovering data from a
-copy is **restore**. _Reconcile_ is retired: with the operator layer and the
-mechanism layer each named, it has no layer left to hold.
+**non-destructive, symmetric mirror** across peer TC Copies. Recovering data
+from a TC Copy is **restore**. _Reconcile_ is retired: with the operator layer
+and the mechanism layer each named, it has no layer left to hold.
 
 ## Why backup, when the operation is symmetric
 
@@ -85,7 +85,7 @@ Sections 12.1, 12.3 and 14 reworded. `meta-file-spec.md`: `R-MFILE-13`,
 changed), and operator prose across all five moves to _back up_. Section 7.1's
 requirements were `R-MIRROR-1` to `R-MIRROR-12` until 2026-10-22, when they
 became `R-BACKUP-4` to `R-BACKUP-15` in the same order and every citation
-followed. The worked example and fixtures were renamed on 2026-09-28 (the copies
-`main` and `off-site`, replacing the subordinate `backup1` and
-`sample-backup-1`); copy naming is settled in
-[the collection-naming decision](2026-10-14-collection-naming-decision.md).
+followed. The worked example and fixtures were renamed on 2026-09-28 (the TC
+Copies `main` and `off-site`, replacing the subordinate `backup1` and
+`sample-backup-1`); TC Copy naming is settled in
+[the collection-naming decision](2026-10-25-collection-naming-decision.md).
