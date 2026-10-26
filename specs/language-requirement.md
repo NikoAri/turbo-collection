@@ -125,7 +125,9 @@ Self-contained, per R-LANG-5.
   _TC Copy_, or _manifest_, defined in a document's terminology section.
 
 - **Published.** Issued under a version number without a `-draft` suffix, and
-  thereafter immutable. A draft may still change.
+  stamped into a meta file that has left whichever machine holds its collection
+  (`version-requirement.md` R-PUB-3); thereafter immutable. A draft may still
+  change.
 
 ---
 
@@ -159,7 +161,7 @@ and cite its ID.
 > obligation a future reader can miss. Commentary explains these rules;
 > requirements _are_ these rules.
 
-### 3.2 Terms (`R-LANG-5` to `R-LANG-7`)
+### 3.2 Terms (`R-LANG-5` to `R-LANG-7`, `R-LANG-23`)
 
 **R-LANG-5.** A normative document MUST define every domain term it uses, in its
 own terminology section. It MUST NOT defer a definition to another document.
@@ -169,6 +171,11 @@ A defined term MUST NOT be replaced by a synonym or a paraphrase.
 
 **R-LANG-7.** Within one document, an ordinary word SHOULD keep one meaning and
 one part of speech throughout.
+
+**R-LANG-23.** Wherever a Normative document means one of its Domain terms, that
+document MUST write that term exactly as its own terminology section writes that
+term, capitals included. Where that document uses one of that term's words in
+its ordinary sense, that word MUST NOT take that term's capitals.
 
 > **R-LANG-6 in practice.** `turbo-collection-spec.md` already lives by this
 > rule: it says "collection" and never "library", "import source" and never a
@@ -182,6 +189,17 @@ one part of speech throughout.
 > MUST because English resists it, and enforcing it absolutely would cost more
 > than it protects. Apply it to load-bearing words first: a word like "copy"
 > (noun and verb, both frequent here) deserves care.
+
+> **Why R-LANG-23 exists.** A capital marks where a sentence leans on a
+> definition, so a reader tells a defined concept from that same word in plain
+> English without looking either up. R-LANG-6 gives each concept one name; this
+> rule makes that name visible, and a terminology section's entry is the one
+> place its form is decided.
+
+> **Example.** `turbo-collection-spec.md` defines **Content File**, so "a TC
+> Copy that lacks a Content File" writes that term as its terminology section
+> does, and "a TC Copy that lacks a Content file" does not. In "a file a person
+> removed", _file_ is an ordinary word and stays lowercase.
 
 ### 3.3 Sentences (`R-LANG-8` to `R-LANG-10`, `R-LANG-18`, `R-LANG-19`, `R-LANG-22`)
 

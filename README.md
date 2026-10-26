@@ -5,11 +5,10 @@ not just backing them up for a subscription cycle.
 
 The core idea: separate your data from your tools. Photos live as plain files in
 a plain folder tree: no database, no proprietary container, nothing that
-requires a specific app or company to stay in business. A thin, swappable
-orchestrator (today: [rclone](https://rclone.org/) + a SHA-256 integrity
-manifest) mirrors them to external storage and verifies nothing has silently
-rotted. If any piece dies, the plain file tree survives and the tool gets
-swapped.
+requires a specific app or company to stay in business. A thin, swappable tool
+mirrors them to external storage, keeps a SHA-256 integrity manifest beside
+them, and verifies nothing has silently rotted. If any piece dies, the plain
+file tree survives and the tool gets swapped.
 
 The point of that is not only survival. Once photos are in the collection and
 verified, **you** can delete them from iCloud or from your phone and stop paying

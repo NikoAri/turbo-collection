@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -14,6 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { mock, test, type TestContext } from "node:test";
+import { fileURLToPath, URL } from "node:url";
 
 import { NamedMutex } from "../helpers/named-mutex.ts";
 import { importIntoTcCopy } from "../import.ts";
@@ -756,4 +758,173 @@ test("R-LOCALFOLDER-3, R-TGT-14: a directory whose name differs from .turbo-coll
         String(entry.path).endsWith(".Turbo-Collection"),
     ),
   );
+});
+
+// `samples/moon-photos/`, whose JPEGs samples/README.md lists, each with
+// where photo-path layout files it.
+const MoonPhotos = fileURLToPath(
+  new URL("../../samples/moon-photos/", import.meta.url),
+);
+
+// Copies photos into `folder`: each from its path under `MoonPhotos` to its
+// path under `folder`.
+function copyPhotos(folder: string, photos: Record<string, string>): void {
+  for (const [relativePath, samplePath] of Object.entries(photos)) {
+    const file = path.join(folder, relativePath);
+    mkdirSync(path.dirname(file), { recursive: true });
+    cpSync(path.join(MoonPhotos, samplePath), file);
+  }
+}
+
+test("R-LOCALFOLDER-5, R-PHOTO-3, R-PHOTO-10: a directory holding photos is imported under photo-path layout, each photo where samples/README.md files it, and each manifest names that layout", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = path.join(temporary, "moon-photos");
+  cpSync(MoonPhotos, folder, { recursive: true });
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory);
+
+  for (const stored of [
+    "2019/2019-07/local-folder/IMG_0101.JPG",
+    "2019/2019-07/local-folder/IMG_0102.JPG",
+    "2020/2020-01/local-folder/IMG_0187.JPG",
+    "2018/2018-05/local-folder/DSC_0042.JPG",
+    "2021/2021-03/local-folder/IMG-20210305-WA0003.jpg",
+  ]) {
+    assert.equal(existsSync(path.join(tcDirectory, stored)), true, stored);
+  }
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
+  assert.deepEqual(
+    manifestOf(path.join(tcDirectory, "2019/2019-07/local-folder")).layout,
+    { specId: "photo-path-layout", version: "0.1.0-draft" },
+  );
+  const importEntry = entries.find((entry) => entry.event === "import")!;
+  assert.equal(importEntry.layout, "photo-path-layout");
+  assert.equal(importEntry.files, 5);
+});
+
+test("R-SRC-20, R-FOUND-3: under photo-path layout, a file it does not place keeps its Supplied path under supplied-path layout, and is logged", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = makeFolder(temporary, { "notes.txt": "notes" });
+  copyPhotos(folder, { "IMG_0101.JPG": "phone/IMG_0101.JPG" });
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory);
+
+  assert.equal(
+    existsSync(
+      path.join(tcDirectory, "2019/2019-07/local-folder/IMG_0101.JPG"),
+    ),
+    true,
+  );
+  assert.equal(existsSync(storedDirectory(tcDirectory, "IMG_0101.JPG")), false);
+  assert.equal(
+    readFileSync(storedDirectory(tcDirectory, "notes.txt"), "utf8"),
+    "notes",
+  );
+  assert.deepEqual(manifestOf(storedDirectory(tcDirectory)).layout, {
+    specId: "supplied-path-layout",
+    version: "0.1.0-draft",
+  });
+  assert.deepEqual(
+    entries
+      .filter((entry) => entry.event === "floored")
+      .map((entry) => entry.path),
+    [path.join(folder, "notes.txt")],
+  );
+});
+
+test("R-LOCALFOLDER-5, R-PHOTO-1: a directory holding no photo, whatever its files' names, is imported under supplied-path layout", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = makeFolder(temporary, { "IMG_0101.JPG": "not a JPEG" });
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory);
+
+  assert.equal(
+    readFileSync(storedDirectory(tcDirectory, "IMG_0101.JPG"), "utf8"),
+    "not a JPEG",
+  );
+  const importEntry = entries.find((entry) => entry.event === "import")!;
+  assert.equal(importEntry.layout, "supplied-path-layout");
+  assert.equal(
+    entries.some((entry) => entry.event === "floored"),
+    false,
+  );
+});
+
+test("R-PHOTO-8: each photo whose date is uncertain is logged, with that date and what it was read from", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = path.join(temporary, "moon-photos");
+  cpSync(MoonPhotos, folder, { recursive: true });
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory);
+
+  assert.deepEqual(
+    entries
+      .filter((entry) => entry.event === "uncertain-date")
+      .map((entry) => [
+        path.basename(String(entry.path)),
+        entry.governingTimestamp,
+        entry.readFrom,
+      ])
+      .sort(),
+    [
+      ["DSC_0042.JPG", "2018-05-20T08:00:00", "capture time with no offset"],
+      ["IMG-20210305-WA0003.jpg", "2021-03-05", "filename"],
+    ],
+  );
+});
+
+test("R-SRC-23, R-SRC-26: of two different photos given one name and taken in one month, the second by Supplied path is left out and recorded, and the run ends with an error", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = path.join(temporary, "moon-photos");
+  copyPhotos(folder, {
+    "a/IMG_0101.JPG": "phone/IMG_0101.JPG",
+    "b/IMG_0101.JPG": "phone/IMG_0102.JPG",
+  });
+
+  await assert.rejects(
+    importFolder(folder, tcDirectory),
+    /1 file left out of the collection/,
+  );
+
+  const stored = path.join(tcDirectory, "2019/2019-07/local-folder");
+  assert.deepEqual(
+    readFileSync(path.join(stored, "IMG_0101.JPG")),
+    readFileSync(path.join(MoonPhotos, "phone/IMG_0101.JPG")),
+  );
+  const errorFile = onlyReceiptOf(stored, "-main.error.json");
+  assert.match(
+    (errorFile.importErrors as { message: string }[])[0]!.message,
+    /b[\\/]IMG_0101\.JPG" is left out: .* holds other content/,
+  );
+});
+
+test("R-LOCALFOLDER-3: a photo whose place by date the TC Copy's ignore file ignores is not imported, nor kept at its Supplied path", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  writeFileSync(path.join(tcDirectory, ".tcignore"), "2019/\n");
+  const folder = path.join(temporary, "moon-photos");
+  copyPhotos(folder, {
+    "IMG_0101.JPG": "phone/IMG_0101.JPG",
+    "IMG_0187.JPG": "phone/IMG_0187.JPG",
+  });
+
+  await importFolder(folder, tcDirectory);
+
+  assert.equal(
+    existsSync(
+      path.join(tcDirectory, "2020/2020-01/local-folder/IMG_0187.JPG"),
+    ),
+    true,
+  );
+  assert.equal(existsSync(path.join(tcDirectory, "2019")), false);
+  assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
 });

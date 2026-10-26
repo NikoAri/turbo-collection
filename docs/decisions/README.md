@@ -130,3 +130,4 @@ groupings by area once there is more than one area to group.
 | 2026-10-22 | [Paths that differ only in letter case or normalization are one path in a TC Copy](2026-10-22-letter-case-decision.md)                                                | Accepted |
 | 2026-10-25 | [The specification names concrete things, and has no ports](2026-10-25-spec-vocabulary-decision.md)                                                                   | Accepted |
 | 2026-10-25 | [A TC Copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-25-collection-naming-decision.md)                           | Accepted |
+| 2026-10-25 | [A Domain term is written as its terminology section writes it, capitals included](2026-10-25-glossary-capitals-decision.md)                                          | Accepted |

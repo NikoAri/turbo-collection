@@ -14,19 +14,20 @@ export const MetaFileSpecVersion = "0.1.0-draft";
 // conformed to (meta-file-spec.md R-MFILE-14).
 export const TurboCollectionSpecVersion = "0.1.0-draft";
 
-// Versions of supplied-path layout and local-folder import source, which an
-// import records in a manifest and an arrival (meta-file-spec.md R-MFILE-9,
+// Versions of each layout and of local-folder import source, which an import
+// records in a manifest and an arrival (meta-file-spec.md R-MFILE-9,
 // R-MFILE-15).
+export const PhotoPathLayoutSpecVersion = "0.1.0-draft";
 export const SuppliedPathLayoutSpecVersion = "0.1.0-draft";
 export const LocalFolderImportSourceSpecVersion = "0.1.0-draft";
 
 // A version stamp (turbo-collection-spec.md R-VER-18) for every specification
-// this code conforms to, including a layout that no operation uses yet. A
-// draft has no publication date, so its stamp is its name and number alone.
+// this code conforms to. A draft has no publication date, so its stamp is its
+// name and number alone.
 export const SpecificationVersionStamps: readonly string[] = [
   `turbo-collection-spec ${TurboCollectionSpecVersion}`,
   `meta-file-spec ${MetaFileSpecVersion}`,
-  "photo-path-layout-spec 0.1.0-draft",
+  `photo-path-layout-spec ${PhotoPathLayoutSpecVersion}`,
   `supplied-path-layout-spec ${SuppliedPathLayoutSpecVersion}`,
   `local-folder-import-source-spec ${LocalFolderImportSourceSpecVersion}`,
 ];

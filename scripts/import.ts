@@ -38,6 +38,11 @@ import {
   pathKeyOf,
 } from "./paths.ts";
 import {
+  isUncertain,
+  photoPlaceOf,
+  type PhotoPlace,
+} from "./photo-path-layout.ts";
+import {
   compileIgnorePatterns,
   readIgnorePatterns,
   type IsIgnored,
@@ -45,26 +50,34 @@ import {
 import {
   LocalFolderImportSourceSpecVersion,
   MetaFileSpecVersion,
+  PhotoPathLayoutSpecVersion,
   SuppliedPathLayoutSpecVersion,
 } from "./versions.ts";
 
-// Import (import-spec.md) from Local-folder Import Source, under supplied-path
-// layout.
+// Import (import-spec.md) from Local-folder Import Source, under photo-path
+// layout or supplied-path layout.
 
 // Local-folder Import Source's identifier
 // (local-folder-import-source-spec.md R-LOCALFOLDER-1).
 const LocalFolder = "local-folder";
 
 // What an import records of whichever import source and layout placed a
-// directory's content (meta-file-spec.md R-MFILE-9, R-MFILE-15).
+// directory's content (meta-file-spec.md R-MFILE-9, R-MFILE-15), each
+// layout by its identifier (photo-path-layout-spec.md R-PHOTO-10,
+// supplied-path-layout-spec.md R-FOUND-6).
 const LocalFolderStamp = {
   specId: LocalFolder,
   version: LocalFolderImportSourceSpecVersion,
+};
+const PhotoPathLayoutStamp = {
+  specId: "photo-path-layout",
+  version: PhotoPathLayoutSpecVersion,
 };
 const SuppliedPathLayoutStamp = {
   specId: "supplied-path-layout",
   version: SuppliedPathLayoutSpecVersion,
 };
+type LayoutStamp = typeof SuppliedPathLayoutStamp;
 
 // What a command line gives import.
 export type ImportArgs = {
@@ -142,6 +155,7 @@ export async function importIntoTcCopy(
     });
   }
   ensureRegularFilesOnly(importedDirectory, listing.notRegular);
+  const { layout, placed } = placeItems(listing.items, isIgnored);
 
   const context: ImportContext = {
     tcDirectory,
@@ -154,20 +168,21 @@ export async function importIntoTcCopy(
     placed: new Map(),
     held: new Map(),
   };
-  for (const [suppliedDirectory, items] of byDirectory(listing.items)) {
-    importIntoDirectory(context, suppliedDirectory, items);
+  for (const [directory, group] of byDirectory(placed)) {
+    importIntoDirectory(context, directory, group.layout, group.items);
   }
 
   logger.log({
     event: "import",
     importSource: LocalFolder,
+    layout: layout.specId,
     from: importedDirectory,
     to: tcDirectory,
     files: context.files,
     bytes: context.bytes,
     leftOut: context.leftOut,
     toString: () =>
-      `${dryRun ? "Would import" : "Imported"} ${countOfFiles(context.files)} (${context.bytes} bytes) from ${importedDirectory} into ${tcDirectory}`,
+      `${dryRun ? "Would import" : "Imported"} ${countOfFiles(context.files)} (${context.bytes} bytes) from ${importedDirectory} into ${tcDirectory}, under ${layout.specId.replace(/-layout$/, " layout")}`,
   });
   if (context.leftOut > 0) {
     throw new TcError(
@@ -275,28 +290,107 @@ function isPlaceable(suppliedPath: string): boolean {
   );
 }
 
-// `items` grouped by their directories' Supplied paths, so that each
-// directory of a TC Copy is filled once, whichever spelling of its path an item
-// gives (turbo-collection-spec.md R-TGT-14). Each group is under its first
-// item's spelling. Items are taken in manifest order (meta-file-spec.md
-// R-MFILE-12), which no operating system decides, so that of two spellings of
-// one path, one and the same arrives first on every computer.
-function byDirectory(items: readonly Item[]): Map<string, Item[]> {
-  const groups = new Map<string, Item[]>();
-  const spellings = new Map<string, string>();
-  const sorted = [...items].sort((a, b) =>
-    compareManifestNames(a.suppliedPath, b.suppliedPath),
+// Last segment of `suppliedPath`, its Supplied filename.
+function nameOf(suppliedPath: string): string {
+  return suppliedPath.slice(suppliedPath.lastIndexOf("/") + 1);
+}
+
+// An Item, and where it goes: a directory of a TC Copy, relative to its TC
+// Directory with `/` between segments, and whichever layout places it there.
+type PlacedItem = { item: Item; directory: string; layout: LayoutStamp };
+
+// Where each of `items` goes: under photo-path layout where it places at least
+// one of them, and under supplied-path layout otherwise
+// (local-folder-import-source-spec.md R-LOCALFOLDER-5). An Item is one file,
+// its own primary file (photo-path-layout-spec.md R-PHOTO-2).
+//
+// Under photo-path layout, each file it does not place keeps its Supplied path
+// and is logged (import-spec.md R-SRC-20), each photo whose date is uncertain
+// is logged (R-PHOTO-8), and a photo whose place by date `isIgnored` ignores
+// is passed over (R-LOCALFOLDER-3).
+function placeItems(
+  items: readonly Item[],
+  isIgnored: IsIgnored,
+): { layout: LayoutStamp; placed: PlacedItem[] } {
+  const atItsPath = (item: Item): PlacedItem => ({
+    item,
+    directory: collectionPathOf(
+      item.suppliedPath.slice(0, item.suppliedPath.lastIndexOf("/")),
+    ),
+    layout: SuppliedPathLayoutStamp,
+  });
+  const places = new Map<Item, PhotoPlace | undefined>(
+    items.map((item) => [
+      item,
+      photoPlaceOf(item.readPath, nameOf(item.suppliedPath), LocalFolder),
+    ]),
   );
-  for (const item of sorted) {
-    const suppliedDirectory = item.suppliedPath.slice(
-      0,
-      item.suppliedPath.lastIndexOf("/"),
-    );
-    const key = pathKeyOf(suppliedDirectory);
-    const spelling = spellings.get(key) ?? suppliedDirectory;
+  const isPassedOver = (item: Item, place: PhotoPlace): boolean =>
+    isIgnored(`${place.directory}/${nameOf(item.suppliedPath)}`);
+  if (
+    !items.some((item) => {
+      const place = places.get(item);
+      return place !== undefined && !isPassedOver(item, place);
+    })
+  ) {
+    return { layout: SuppliedPathLayoutStamp, placed: items.map(atItsPath) };
+  }
+
+  const placed: PlacedItem[] = [];
+  for (const item of items) {
+    const place = places.get(item);
+    if (place === undefined) {
+      logger.log({
+        event: "floored",
+        verbose: true,
+        path: item.readPath,
+        toString: () =>
+          `Kept ${item.readPath} at its Supplied path, since photo-path layout does not place it`,
+      });
+      placed.push(atItsPath(item));
+    } else if (!isPassedOver(item, place)) {
+      if (isUncertain(place)) {
+        logger.log({
+          event: "uncertain-date",
+          verbose: true,
+          path: item.readPath,
+          governingTimestamp: place.governingTimestamp,
+          readFrom: place.readFrom,
+          toString: () =>
+            `Dated ${item.readPath} ${place.governingTimestamp} from its ${place.readFrom}, which is uncertain`,
+        });
+      }
+      placed.push({
+        item,
+        directory: place.directory,
+        layout: PhotoPathLayoutStamp,
+      });
+    }
+  }
+  return { layout: PhotoPathLayoutStamp, placed };
+}
+
+// `placed` grouped by directory, so that each directory of a TC Copy is filled
+// once, whichever spelling of its path an item gives (turbo-collection-spec.md
+// R-TGT-14). Each group is under its first item's spelling, with its
+// directory's layout. Items are taken in manifest order of their Supplied
+// paths (meta-file-spec.md R-MFILE-12), which no operating system decides, so
+// that of two spellings of one path, or of two files given one name, one and
+// the same arrives first on every computer.
+function byDirectory(
+  placed: readonly PlacedItem[],
+): Map<string, { layout: LayoutStamp; items: Item[] }> {
+  const groups = new Map<string, { layout: LayoutStamp; items: Item[] }>();
+  const spellings = new Map<string, string>();
+  const sorted = [...placed].sort((a, b) =>
+    compareManifestNames(a.item.suppliedPath, b.item.suppliedPath),
+  );
+  for (const { item, directory, layout } of sorted) {
+    const key = pathKeyOf(directory);
+    const spelling = spellings.get(key) ?? directory;
     spellings.set(key, spelling);
-    const group = groups.get(spelling) ?? [];
-    group.push(item);
+    const group = groups.get(spelling) ?? { layout, items: [] };
+    group.items.push(item);
     groups.set(spelling, group);
   }
   return groups;
@@ -419,15 +513,16 @@ function quoted(names: readonly string[]): string {
   return names.map((name) => `"${name}"`).join(" and ");
 }
 
-// Imports `items`, all from one directory whose Supplied path is
-// `suppliedDirectory`, into that directory of a TC Copy. A file is written
-// where that directory's manifest does not list it, and listed once it is
+// Imports `items` under `layout` into a directory of a TC Copy whose path is
+// `relativeDirectory`, relative to its TC Directory. A file is written where
+// that directory's manifest does not list it, and listed once it is
 // completely written (turbo-collection-spec.md R-TGT-13). Then that directory
 // gets its arrival file (verify-spec.md R-REC-5), and an error file where a
 // file was left out (meta-file-spec.md R-MFILE-13, R-MFILE-16).
 function importIntoDirectory(
   context: ImportContext,
-  suppliedDirectory: string,
+  relativeDirectory: string,
+  layout: LayoutStamp,
   items: readonly Item[],
 ): void {
   const errors: string[] = [];
@@ -449,10 +544,7 @@ function importIntoDirectory(
 
   // A directory with no place leaves every file for it out, with no error
   // file, which would need that directory (R-SRC-26, R-TGT-14).
-  const placement = placeDirectory(
-    context,
-    collectionPathOf(suppliedDirectory),
-  );
+  const placement = placeDirectory(context, relativeDirectory);
   if (!("directory" in placement)) {
     const reason =
       "blockedBy" in placement
@@ -471,7 +563,7 @@ function importIntoDirectory(
   if (
     manifest !== undefined &&
     (manifest.importSource.specId !== LocalFolderStamp.specId ||
-      manifest.layout.specId !== SuppliedPathLayoutStamp.specId)
+      manifest.layout.specId !== layout.specId)
   ) {
     for (const item of items) {
       leaveOut(
@@ -528,7 +620,7 @@ function importIntoDirectory(
     writeManifest(directory, {
       ...manifest,
       version: MetaFileSpecVersion,
-      layout: { ...manifest?.layout, ...SuppliedPathLayoutStamp },
+      layout: { ...manifest?.layout, ...layout },
       importSource: { ...manifest?.importSource, ...LocalFolderStamp },
       checksumAlgorithm: "SHA-256",
       files,
@@ -537,7 +629,7 @@ function importIntoDirectory(
       date: dateToString(new Date()),
       fileCount: files.length,
       contentDigest: contentDigestOf(files.map((file) => file.checksum)),
-      layout: SuppliedPathLayoutStamp,
+      layout,
       importSource: LocalFolderStamp,
     });
   }
@@ -588,9 +680,7 @@ function importFile(
     );
     return undefined;
   }
-  const suppliedName = item.suppliedPath.slice(
-    item.suppliedPath.lastIndexOf("/") + 1,
-  );
+  const suppliedName = nameOf(item.suppliedPath);
   const key = pathKeyOf(suppliedName);
 
   // A directory's meta files are where a file of this name would go

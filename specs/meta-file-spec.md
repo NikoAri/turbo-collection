@@ -431,9 +431,6 @@ manifest and MUST NOT copy one to another TC Copy. A file that matches a TC
 Copy's ignore patterns MUST NOT enter that TC Copy by an Import.
 Turbo-Collection MUST report a pattern it cannot evaluate and MUST NOT apply it.
 
-> **Example.** A mistyped `*.mov` shows up as thousands of files matched, not as
-> silently empty video backups.
-
 ## 7. This document's bump test
 
 Required of every normative document by `version-requirement.md` R-PUB-1. This
