@@ -17,7 +17,7 @@ those, never here.
 Requirement ID prefix: **`R-FOUND-*`**.
 
 > **Rationale.** Why this Layout sits beneath every other as a floor:
-> [layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
+> [layout-selection decision](../../docs/decisions/2026-10-26-layout-selection-decision.md).
 
 ---
 
@@ -30,7 +30,7 @@ does that file go.
 One rule serves each of these roles:
 
 - **Primary Layout.** An Import Source specification names this Layout to govern
-  its Items (`import-spec.md` R-SRC-15).
+  an Import's Items (`import-spec.md` R-SRC-15).
 - **Floor.** This Layout takes an item that another primary layout is not able
   to place, so no item is left out of a collection for want of a place
   (`import-spec.md` R-SRC-20).
@@ -76,8 +76,8 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   stored, given that file's own bytes, any metadata its import source supplied
   with it, and that import source.
 
-- **Primary Layout.** A single Layout that an Import Source specification names
-  to govern that Import Source's Items.
+- **Primary Layout.** A single Layout that governs an Import's Items, as its
+  Import Source's specification states.
 
 - **Layout identifier.** This Layout's name as recorded in a TC Copy:
   **`supplied-path-layout`**.
@@ -105,8 +105,8 @@ every Content file it places under this Layout at
 `<import source>` is that Import Source's identifier, recorded as
 `importSource.specId` in each manifest beneath that directory
 (`meta-file-spec.md` R-MFILE-9), and `<supplied path>` is that file's Supplied
-path. This rule applies alike to an Item whose Import Source names this Layout
-as its Primary Layout, and to an Item this Layout takes in its role as floor.
+path. This rule applies alike to an Item of an Import whose Primary Layout is
+this Layout, and to an Item this Layout takes in its role as floor.
 
 > **Example.** Local-folder Import Source reads a folder named `moon-laptop` and
 > supplies `moon-laptop/Woodwork/birdhouse/drawing.pdf` as one file's Supplied

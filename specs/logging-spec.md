@@ -166,17 +166,35 @@ R-LOG-15's entries and this requirement's for what a real run would copy.
 directory (`local-folder-import-source-spec.md` R-LOCALFOLDER-3),
 Turbo-Collection MUST record a verbose `passed-over` entry holding `path`, that
 directory's path. Once an Import has finished, Turbo-Collection MUST record an
-`import` entry holding `importSource`, that Import Source's identifier, `from`,
+`import` entry holding `importSource`, that Import Source's identifier,
+`layout`, its primary layout's identifier (`import-spec.md` R-SRC-15), `from`,
 which path it read files from, `to`, which TC Directory it wrote them to,
 `files`, how many files it wrote, `bytes`, their total length in bytes, and
 `leftOut`, how many files it left out of its Collection. A Dry-Run of an import
-(`import-spec.md` R-SRC-14) MUST record these entries and R-LOG-15's for what a
-real Import would do.
+(`import-spec.md` R-SRC-14) MUST record these entries, R-LOG-15's and R-LOG-19's
+for what a real Import would do.
 
 > **Example.** An import of `D:\moon-laptop` into a TC Copy at `E:\Photos`
 > records lines such as these, a `transfer` line once per file:
 >
 > ```text
 > {"date":"2026-10-21T15:02:11Z","event":"transfer","verbose":true,"from":"D:\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","to":"E:\\Photos\\local-folder\\moon-laptop\\Woodwork\\birdhouse\\drawing.pdf","size":48211}
-> {"date":"2026-10-21T15:02:12Z","event":"import","importSource":"local-folder","from":"D:\\moon-laptop","to":"E:\\Photos","files":212,"bytes":1048576000,"leftOut":0}
+> {"date":"2026-10-21T15:02:12Z","event":"import","importSource":"local-folder","layout":"supplied-path-layout","from":"D:\\moon-laptop","to":"E:\\Photos","files":212,"bytes":1048576000,"leftOut":0}
+> ```
+
+**R-LOG-19.** For each item an Import places under supplied-path layout because
+its primary layout is not able to place it (`import-spec.md` R-SRC-20),
+Turbo-Collection MUST record a verbose `floored` entry holding `path`, where
+that item's file is read from. For each item with an uncertain date
+(`photo-path-layout-spec.md` R-PHOTO-8), Turbo-Collection MUST record a verbose
+`uncertain-date` entry holding `path`, where that item's file is read from,
+`governingTimestamp`, that item's governing timestamp, and `readFrom`, what that
+timestamp was read from, such as `filename`.
+
+> **Example.** An import of a camera's folder holding a `notes.txt`, and a photo
+> whose Exif states a capture time with no offset, records lines such as these:
+>
+> ```text
+> {"date":"2026-10-26T09:12:40Z","event":"floored","verbose":true,"path":"D:\\camera\\notes.txt"}
+> {"date":"2026-10-26T09:12:40Z","event":"uncertain-date","verbose":true,"path":"D:\\camera\\DSC_0042.JPG","governingTimestamp":"2018-05-20T08:00:00","readFrom":"capture time with no offset"}
 > ```

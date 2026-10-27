@@ -100,19 +100,19 @@ nothing.
 > reports zero pending items shows everything there has already reached its
 > collection.
 
-**R-SRC-15.** Every import source specification MUST name exactly one Layout as
-that import source's primary layout. A layout specification MUST state which
-items its layout is able to place, as a condition on an item's own bytes and any
-metadata its import source supplies with it. Turbo-Collection MUST determine an
-item's collection path under its import source's primary layout, wherever that
-layout is able to place that item. R-SRC-20 governs an item that layout is not
-able to place.
+**R-SRC-15.** Every import source specification MUST state, as a rule on an
+Import's items, which one Layout is that Import's primary layout. A layout
+specification MUST state which items its layout is able to place, as a condition
+on an item's own bytes and any metadata its import source supplies with it.
+Turbo-Collection MUST determine an item's collection path under its Import's
+primary layout, wherever that layout is able to place that item. R-SRC-20
+governs an item that layout is not able to place.
 
-> **Example.** Identical photo bytes are filed by date when imported from an
-> import source whose primary layout is photo-path layout, and keep their place
-> in their folder when that folder is imported as a local folder, where
-> supplied-path layout places them. Bytes decide where an item goes within a
-> layout, never which layout.
+> **Example.** Every iCloud Import has photo-path layout as its primary layout.
+> A local-folder Import has photo-path layout where its directory holds a photo,
+> and supplied-path layout where it holds none
+> (`local-folder-import-source-spec.md` R-LOCALFOLDER-5). Either way, one Import
+> has one primary layout.
 
 **R-SRC-16.** On importing into an existing import-source directory,
 Turbo-Collection MUST compare its running import source's version against
@@ -138,8 +138,8 @@ items it actually received from that importer, and MUST report any mismatch.
 
 **R-SRC-20.**  
 **Floor.**  
-Where an item's import source has a primary layout that is not able to place
-that item, Turbo-Collection MUST place that item under supplied-path layout
+Where an Import's primary layout is not able to place an item of that Import,
+Turbo-Collection MUST place that item under supplied-path layout
 (`supplied-path-layout-spec.md`), and MUST report every item placed this way.
 Turbo-Collection MUST NOT leave an item out of a collection because a layout is
 not able to place it.

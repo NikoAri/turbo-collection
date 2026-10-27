@@ -14,8 +14,9 @@ reaches exactly one import source, and configuration names it (`R-SRC-3`), so
 the directory name is a declared value rather than a derived one.
 
 This is the path the **photo layout** gives an item. Which layout an item gets
-is decided by its import source:
-[the layout-selection decision](2026-10-03-layout-selection-decision.md).
+is decided by a rule its import source's specification states, one layout per
+import:
+[the layout-selection decision](2026-10-26-layout-selection-decision.md).
 
 This replaced `R-SRC-10`, which had said the layout MUST NOT depend on which
 source supplied a file and that two identical photos arriving by different ways

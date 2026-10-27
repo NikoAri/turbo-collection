@@ -3,7 +3,8 @@
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
 > **Status:** Draft.  
-> **Layout:** [`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md)
+> **Layouts:** [`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md),
+> [`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md)
 
 This document is normative over **Local-folder Import Source**: a directory of
 ordinary files outside whichever TC Copy is being imported into, reachable as
@@ -12,8 +13,8 @@ download directory, and a directory copied off a retired computer.
 
 Requirement ID prefix: **`R-LOCALFOLDER-*`**.
 
-> **Rationale.** Why this Import Source names Supplied-path Layout:
-> [layout-selection decision](../../../docs/decisions/2026-10-03-layout-selection-decision.md).
+> **Rationale.** Which Layout an Import Source names, and why:
+> [layout-selection decision](../../../docs/decisions/2026-10-26-layout-selection-decision.md).
 > Why every file is an Item of its own:
 > [one-file-one-item decision](../../../docs/decisions/2026-10-06-one-file-one-item-decision.md).
 > Why a Supplied path starts with its Imported directory's own name:
@@ -80,8 +81,11 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Layout.** A rule that determines where in a TC Copy a Content file is
   stored.
 
-- **Primary Layout.** A single Layout that an Import Source specification names
-  to govern that Import Source's Items.
+- **Primary Layout.** A single Layout that governs an Import's Items, as its
+  Import Source's specification states.
+
+- **Photo-path Layout.** A Layout that stores a photograph or a video in a
+  directory named for the year and month that file states it was taken.
 
 - **Supplied-path Layout.** A Layout that stores a file at whichever path its
   Import Source supplied for it.
@@ -135,15 +139,24 @@ file that R-LOCALFOLDER-3 names as an Item of its own, and MUST NOT take two or
 more files as one Item.
 
 > **Example.** `IMG_0412.HEIC` and `IMG_0412.MOV` in one directory are two
-> Items, each stored at its own Supplied path, so `import-spec.md` R-SRC-9 has
-> no Item of several files to keep whole.
+> Items, each placed on its own, so `import-spec.md` R-SRC-9 has no Item of
+> several files to keep whole.
 
 ## 4. Placement and Supplied path
 
-**R-LOCALFOLDER-5.** Turbo-Collection MUST place every Item of Local-folder
-Import Source under Supplied-path Layout
-([`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md)),
-which is this Import Source's Primary Layout (`import-spec.md` R-SRC-15).
+**R-LOCALFOLDER-5.** Turbo-Collection MUST place every Item of an Import from
+Local-folder Import Source under Photo-path Layout
+([`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md)) where
+Photo-path Layout is able to place at least one of that Import's Items
+(`photo-path-layout-spec.md` R-PHOTO-1), and under Supplied-path Layout
+([`supplied-path-layout-spec.md`](../../layouts/supplied-path-layout-spec.md))
+otherwise. Whichever Layout this requirement names is that Import's Primary
+Layout (`import-spec.md` R-SRC-15).
+
+> **Example.** An Imported directory holding a camera's JPEGs and a `notes.txt`
+> is imported under Photo-path Layout: each JPEG is filed by its date, and
+> `notes.txt` keeps its Supplied path (`import-spec.md` R-SRC-20). An Imported
+> directory of documents alone keeps each file at its Supplied path.
 
 **R-LOCALFOLDER-6.** An Importer for Local-folder Import Source MUST supply, as
 each file's Supplied path (`import-spec.md` R-SRC-21), that file's path relative

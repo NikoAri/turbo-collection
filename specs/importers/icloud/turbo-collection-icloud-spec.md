@@ -69,10 +69,10 @@ when each claim expires.
 ## 6. Layout and supplied path
 
 This import source names
-[`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md) as its
-primary layout, as [`import-spec.md`](../../import-spec.md) R-SRC-15 requires
-each import source specification to name one. An item that layout is not able to
-place goes to supplied-path layout (R-SRC-20).
+[`photo-path-layout-spec.md`](../../layouts/photo-path-layout-spec.md) as every
+import's primary layout, as [`import-spec.md`](../../import-spec.md) R-SRC-15
+requires each import source specification to state one. An item that layout is
+not able to place goes to supplied-path layout (R-SRC-20).
 
 Placeholder for a supplied path as R-SRC-21 requires: which root it is relative
 to, and whether that path stays unchanged when one item is exported twice. A

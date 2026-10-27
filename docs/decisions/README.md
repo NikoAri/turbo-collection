@@ -99,7 +99,6 @@ groupings by area once there is more than one area to group.
 | 2026-09-10 | [A TC Copy records its own location as a location receipt](2026-09-10-location-receipt-decision.md)                                                                   | Accepted |
 | 2026-09-26 | [A specification depends on another by naming its MAJOR line in the header](2026-09-26-spec-dependency-decision.md)                                                   | Accepted |
 | 2026-09-27 | [Configuration lives in the TC Directory's `.turbo-collection/`, not loose at the root](2026-09-27-config-placement-decision.md)                                      | Accepted |
-| 2026-10-03 | [An import source names its layout, and the supplied-path layout is the floor](2026-10-03-layout-selection-decision.md)                                               | Accepted |
 | 2026-10-03 | [A normative document carries no change ledger](2026-10-03-change-ledger-decision.md)                                                                                 | Accepted |
 | 2026-10-03 | [A requirement is a paragraph led by its ID, not a table row](2026-10-03-requirement-paragraphs-decision.md)                                                          | Accepted |
 | 2026-10-04 | [Prose names a set and does not count it](2026-10-04-no-hardcoded-counts-decision.md)                                                                                 | Accepted |
@@ -131,3 +130,4 @@ groupings by area once there is more than one area to group.
 | 2026-10-25 | [The specification names concrete things, and has no ports](2026-10-25-spec-vocabulary-decision.md)                                                                   | Accepted |
 | 2026-10-25 | [A TC Copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-25-collection-naming-decision.md)                           | Accepted |
 | 2026-10-25 | [A Domain term is written as its terminology section writes it, capitals included](2026-10-25-glossary-capitals-decision.md)                                          | Accepted |
+| 2026-10-26 | [An import has one primary layout, by its import source's rule, and the supplied-path layout is the floor](2026-10-26-layout-selection-decision.md)                   | Accepted |

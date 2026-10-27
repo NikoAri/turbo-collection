@@ -21,7 +21,7 @@ Requirement ID prefix: **`R-PHOTO-*`**.
 > [layout-conventions decision](../../docs/decisions/2026-08-01-layout-conventions-decision.md),
 > and [design-record](../../docs/design-record.md). Why an import source, not
 > this document, selects which items come here:
-> [layout-selection decision](../../docs/decisions/2026-10-03-layout-selection-decision.md).
+> [layout-selection decision](../../docs/decisions/2026-10-26-layout-selection-decision.md).
 
 ---
 
@@ -34,10 +34,10 @@ It does not decide what a collection holds, which is scope
 ([`turbo-collection-spec.md`](../turbo-collection-spec.md) Section 1), and it
 does not decide what a file inside a directory is called, which `R-NAME-*`
 requirements own. It also does not decide which items are sent to it: an import
-source specification names its primary layout (`import-spec.md` R-SRC-15), and
-this document states only what this Layout is able to place once an item
-arrives. A second Layout, for a kind of content this one does not place, is a
-second document and changes nothing here.
+source specification states which Layout is an import's primary layout
+(`import-spec.md` R-SRC-15), and this document states only what this Layout is
+able to place once an item arrives. A second Layout, for a kind of content this
+one does not place, is a second document and changes nothing here.
 
 ## 1. Terminology
 
