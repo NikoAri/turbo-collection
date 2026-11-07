@@ -440,9 +440,9 @@ keeps it at or below the Node floor in package.json engines.
 Options:
       --dry-run            Report what a run would write and install, and change no
                            file.
-      --[no-]types-node    Write the @types/node entry first. On by default;
+      --types-node    Write the @types/node entry first. On by default;
                            --no-types-node skips it.
-      --[no-]dependencies  Update the dependencies. On by default; --no-dependencies
+      --dependencies  Update the dependencies. On by default; --no-dependencies
                            skips it, so a run only writes the @types/node entry.
   -h, --help               Show this message.`;
 

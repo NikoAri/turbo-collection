@@ -10,7 +10,7 @@ documents repository.
 
 ### Prerequisites
 
-One prerequisite: **Node 24.19.0 or newer**.
+One prerequisite: **Node 26.13.0 or newer**.
 
 On Windows 11:
 
@@ -30,13 +30,14 @@ On Linux, with Homebrew:
 brew install node
 ```
 
-The floor is Node 24.19.0. Two things need a recent Node 24: stripping
-TypeScript types as each file loads, enabled by default only from Node 22.18 and
-24.0 onward, and the `import.meta.main` run-guard in
+The floor is Node 26.13.0, Node 26's first long-term support release. No floor
+can go below Node 24.2.0, for two things this code needs: stripping TypeScript
+types as each file loads, enabled by default only from Node 22.18 and 24.0
+onward, and the `import.meta.main` run-guard in
 [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), added in
-Node 24.2.0. 24.19.0 clears both. [`package.json`](package.json) records the
-floor in `engines`, and [`.npmrc`](.npmrc) sets `engine-strict=true`, so
-`npm install` fails on an older Node rather than only warning.
+Node 24.2.0. [`package.json`](package.json) records the floor in `engines`, and
+[`.npmrc`](.npmrc) sets `engine-strict=true`, so `npm install` fails on an older
+Node rather than only warning.
 
 There is no setup script, deliberately: one `winget install` does not need
 wrapping.
@@ -87,9 +88,10 @@ being told, and what `package.json` deliberately leaves out:
 as `init-spec.md` describes.
 `node turbo-collection.ts import <import-directory> <tc-directory>` imports a
 directory's files into the TC Copy in a TC Directory, as `import-spec.md` and
-the local-folder specification describe. Where that directory holds a JPEG,
-photo-path layout files each JPEG by its date, and every other file keeps its
-path; otherwise every file keeps its path, under supplied-path layout.
+the local-folder specification describe. Where that directory holds a photo or a
+video photo-path layout reads, a JPEG, a PNG, a HEIF image such as a HEIC, or a
+QuickTime or MP4 movie, it files each of those by its date, and every other file
+keeps its path; otherwise every file keeps its path, under supplied-path layout.
 `node turbo-collection.ts backup <tc-directory> <tc-directory>` mirrors two TC
 Copies, first making a TC Copy in one of them where it is an empty directory, as
 `backup-spec.md` describes. Status and verify are not written.
@@ -108,6 +110,7 @@ and write a TC Copy (`parallel-safety-spec.md` R-PARALLEL-4).
 | [`import.ts`](import.ts)                               | The import operation, which writes each file into the TC Copy, and its manifest and receipts.       |
 | [`local-folder-importer.ts`](local-folder-importer.ts) | The local-folder importer: which files of a directory it supplies, and their paths.                 |
 | [`photo-path-layout.ts`](photo-path-layout.ts)         | Photo-path layout: which files it places, and in which directory each goes, by a date read from it. |
+| [`capture-times.ts`](capture-times.ts)                 | When a photo or a video was captured, read from its bytes: JPEG, PNG, HEIF, QuickTime and MP4.      |
 | [`backup.ts`](backup.ts)                               | The backup operation: its checks, a new TC Copy, and each file, manifest and receipt it writes.     |
 | [`mirror.ts`](mirror.ts)                               | What a mirror of two TC Copies copies into each, and what it reports instead.                       |
 | [`tc-copy-contents.ts`](tc-copy-contents.ts)           | Reads what a TC Copy holds: each directory's files, manifest and receipt files.                     |

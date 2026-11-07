@@ -760,8 +760,8 @@ test("R-LOCALFOLDER-3, R-TGT-14: a directory whose name differs from .turbo-coll
   );
 });
 
-// `samples/moon-photos/`, whose JPEGs samples/README.md lists, each with
-// where photo-path layout files it.
+// `samples/moon-photos/`, whose photos and video samples/README.md lists,
+// each with where photo-path layout files it.
 const MoonPhotos = fileURLToPath(
   new URL("../../samples/moon-photos/", import.meta.url),
 );
@@ -789,6 +789,9 @@ test("R-LOCALFOLDER-5, R-PHOTO-3, R-PHOTO-10: a directory holding photos is impo
     "2019/2019-07/local-folder/IMG_0101.JPG",
     "2019/2019-07/local-folder/IMG_0102.JPG",
     "2020/2020-01/local-folder/IMG_0187.JPG",
+    "2021/2021-09/local-folder/IMG_0301.HEIC",
+    "2021/2021-09/local-folder/IMG_0301.MOV",
+    "2022/2022-02/local-folder/IMG_0420.PNG",
     "2018/2018-05/local-folder/DSC_0042.JPG",
     "2021/2021-03/local-folder/IMG-20210305-WA0003.jpg",
   ]) {
@@ -801,7 +804,7 @@ test("R-LOCALFOLDER-5, R-PHOTO-3, R-PHOTO-10: a directory holding photos is impo
   );
   const importEntry = entries.find((entry) => entry.event === "import")!;
   assert.equal(importEntry.layout, "photo-path-layout");
-  assert.equal(importEntry.files, 5);
+  assert.equal(importEntry.files, 8);
 });
 
 test("R-SRC-20, R-FOUND-3: under photo-path layout, a file it does not place keeps its Supplied path under supplied-path layout, and is logged", async (t) => {

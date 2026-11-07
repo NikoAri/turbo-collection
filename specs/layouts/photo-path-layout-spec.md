@@ -2,7 +2,7 @@
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-08-27  
-> **Status:** Draft. Implemented for JPEG alone so far.
+> **Status:** Draft. Implemented for JPEG, PNG, HEIF, QuickTime and MP4 so far.
 
 This document is normative over one **Layout**: where a photograph or a video is
 stored inside a TC Copy. It states which items that Layout is able to place
