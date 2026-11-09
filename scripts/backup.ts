@@ -45,6 +45,7 @@ import {
   ensureNotInsideTcCopy,
   isTcDirectory,
   pathKeyOf,
+  tcDirectoryOfWorkingDirectory,
 } from "./paths.ts";
 import {
   compileIgnorePatterns,
@@ -61,8 +62,9 @@ import { MetaFileSpecVersion } from "./versions.ts";
 
 // What a command line gives backup.
 export type BackupArgs = {
-  // Two directories to mirror, at least one of them a TC Directory (R-BACKUP-1)
-  directories: readonly [string, string];
+  // Two directories to mirror, at least one of them a TC Directory, the second
+  // undefined where a command line leaves it out (R-BACKUP-1)
+  directories: readonly [string, string | undefined];
   // --tc-copy: a name for a TC Copy this backup creates (R-BACKUP-1)
   tcCopyName: string | undefined;
   // --dry-run: say what a real backup would copy, and change nothing
@@ -106,8 +108,10 @@ type Copied = {
   bytes: number;
 };
 
-// Backs up `directories` (R-BACKUP-1). `runId` names the receipt files the
-// backup writes (meta-file-spec.md R-MFILE-13).
+// Backs up `directories`, taking the second from this run's working directory
+// where it is undefined (R-BACKUP-1, turbo-collection-core-spec.md R-CLI-22).
+// `runId` names the receipt files the backup writes (meta-file-spec.md
+// R-MFILE-13).
 //
 // Every check is made before a directory is made or a file written: the paths
 // given, each TC Copy's configuration, then, holding the collection's lock, the
@@ -122,7 +126,9 @@ export async function backUp(
 ): Promise<void> {
   const [rootA, rootB] = [
     path.resolve(directories[0]),
-    path.resolve(directories[1]),
+    directories[1] === undefined
+      ? tcDirectoryOfWorkingDirectory()
+      : path.resolve(directories[1]),
   ];
   for (const root of [rootA, rootB]) {
     ensureNoLinkInPath(root);
@@ -284,7 +290,7 @@ function nameForNewTcCopy(
 ): string {
   if (givenTcCopyName === undefined) {
     throw new TcError(
-      `"${newRoot}" is not a TC Directory, and a backup makes a TC Copy there only when given a name for it with --tc-copy.`,
+      `"${newRoot}" is not a TC Directory, and a backup makes a TC Copy there only when given a name for it with --tc-copy. Name it for where it will rest, such as --tc-copy home or --tc-copy off-site.`,
     );
   }
   const tcCopyName = tcCopyNameFor(givenTcCopyName);
@@ -424,7 +430,7 @@ function createTcCopy(
     }
   }
   logger.log(
-    `${context.dryRun ? "Would make" : "Made"} a TC Copy named "${tcCopyName}" of the collection "${tcConfig.collectionName}", in ${newRoot}`,
+    `${context.dryRun ? "Would create" : "Created"} for Turbo Collection named "${tcConfig.collectionName}" a TC Copy named "${tcCopyName}", in ${newRoot}`,
   );
   return { root: newRoot, tcConfig, contents };
 }

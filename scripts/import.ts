@@ -32,6 +32,7 @@ import {
 import {
   configurationFileOf,
   tcDirectoryAtOrAbove,
+  tcDirectoryOfWorkingDirectory,
   ensureNoLinkInPath,
   ensureNotInsideTcCopy,
   isTcDirectory,
@@ -83,8 +84,9 @@ type LayoutStamp = typeof SuppliedPathLayoutStamp;
 export type ImportArgs = {
   // Imported directory (local-folder-import-source-spec.md R-LOCALFOLDER-2)
   importDirectory: string;
-  // TC Directory of whichever TC Copy to import into (R-SRC-25)
-  tcDirectory: string;
+  // TC Directory of whichever TC Copy to import into, where one is given
+  // (R-SRC-25)
+  tcDirectory: string | undefined;
   // --dry-run: say what a real import would do, and change nothing (R-SRC-14)
   dryRun: boolean;
 };
@@ -108,10 +110,11 @@ type ImportContext = {
 };
 
 // Imports `importDirectory`'s files into whichever TC Copy is in
-// `tcDirectory` (R-SRC-25). `runId` names every receipt file this import
-// writes (meta-file-spec.md R-MFILE-13).
+// `tcDirectory` or, where none is given, whichever TC Copy this run's working
+// directory is in (R-SRC-25, turbo-collection-core-spec.md R-CLI-22). `runId`
+// names every receipt file this import writes (meta-file-spec.md R-MFILE-13).
 //
-// Both paths given, that TC Copy's configuration, its collection's lock and
+// Both directories, that TC Copy's configuration, its collection's lock and
 // every entry of `importDirectory` are checked before a file is written. Then
 // each directory of that TC Copy is filled in turn, and what stops a run in
 // one, such as a manifest that does not parse, stops it there. A file left
@@ -122,7 +125,10 @@ export async function importIntoTcCopy(
   runId: string,
 ): Promise<void> {
   const importedDirectory = path.resolve(importDirectory);
-  const tcDirectory = path.resolve(givenTcDirectory);
+  const tcDirectory =
+    givenTcDirectory === undefined
+      ? tcDirectoryOfWorkingDirectory()
+      : path.resolve(givenTcDirectory);
   ensureNoLinkInPath(tcDirectory);
   ensureNoLinkInPath(importedDirectory);
   ensureTcDirectory(tcDirectory);

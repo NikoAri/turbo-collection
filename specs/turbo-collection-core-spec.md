@@ -57,8 +57,8 @@ Every operation MUST be independently invocable on demand, not only as part of a
 combined run: **init**, **import**, **backup**, **status**, and **verify**
 inspections. Further subdivisions **verify copies** (R-INT-11), **verify
 fixity** (R-INT-2), **verify access** (R-VERIFY-2), and **verify names**
-(R-NAME-1). Dry-run MUST be a mode of **import** (R-SRC-14) and of **backup**
-(R-BACKUP-10), not a separate operation.
+(R-NAME-1). Dry-run MUST be a mode of **init** (`init-spec.md` R-INIT-5), of
+**import** (R-SRC-14) and of **backup** (R-BACKUP-10), not a separate operation.
 
 **R-CLI-6.**  
 Turbo-Collection MUST be fully usable with **no scheduler installed or
@@ -74,9 +74,35 @@ An operation MUST NOT require an interactive prompt to complete, because a
 scheduled run cannot answer one. Every option that changes what a run does MUST
 be settable in configuration or by a command-line flag.
 
+**R-CLI-23.** Turbo-Collection MUST read a command line as Utility Syntax
+Guidelines 3 to 14 of POSIX.1-2024 describe (IEEE Std 1003.1-2024, Base
+Definitions,
+[Section 12.2](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap12.html#tag_12_02)),
+and MUST give each option a long name, as the
+[GNU Coding Standards](https://www.gnu.org/prep/standards/) of April 27, 2026
+describe
+([Section 4.8](https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html)).
+Its help MUST write each command line in the notation of POSIX.1-2024
+[Section 12.1](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap12.html#tag_12_01).
+Given `--help` or `--version`, a Run MUST do as GNU Section 4.8 describes, and
+MUST still read its log's options (`logging-spec.md` R-LOG-9, R-LOG-10) and end
+with an error where its command line names an option or a command that
+Turbo-Collection does not have (R-LOG-10).
+
+> **Example.** `backup --help` shows help and exits with status 0, as `--help`
+> alone does, and `--help --log-dir D:\logs` writes that Run's log into
+> `D:\logs`. `init -- -photos` makes a directory named `-photos` a TC Directory.
+
 **R-CLI-14.** Turbo-Collection MUST NOT create a TC Copy in any operation other
 than **init** and **backup**, and in every other operation MUST refuse to act on
 a directory given as a TC Directory that is not a TC Directory.
+
+**R-CLI-22.** Where a Run's command line leaves out an optional TC Directory,
+Turbo-Collection MUST take as that TC Directory whichever TC Directory that
+Run's current working directory is or lies inside. Turbo-Collection MUST end a
+Run that finds no such TC Directory with an error, before that Run makes a
+directory or writes a file, other than that Run's log and its log directory
+(`logging-spec.md` R-LOG-6).
 
 **R-CLI-18.** A TC Copy MUST NOT lie inside another TC Copy. Where a TC Copy
 that a Run acts on, or a directory that a Run is to make a TC Directory, lies

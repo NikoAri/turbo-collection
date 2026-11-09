@@ -94,7 +94,7 @@ test("R-INIT-2: given no directory, init makes the current directory a TC Direct
   assert.equal(run.status, 0);
   assert.match(
     run.stdout,
-    /a TC Copy named "main" of a new collection named "Family Photos", in /,
+    /Created Turbo Collection named "Family Photos", with TC Copy named "main", in /,
   );
   const tcConfig = readFileSync(configurationFileOf(directory), "utf8");
   assert.match(tcConfig, /"collectionName": "Family Photos"/);
@@ -111,24 +111,59 @@ test("R-CLI-5: init is a command of its own, given the directory to act on", () 
       directory: "D:\\Photos",
       collectionName: undefined,
       tcCopyName: undefined,
+      dryRun: false,
     },
     import: undefined,
     backup: undefined,
   });
 });
 
+test("R-CLI-5, R-INIT-5: --dry-run makes an init a dry run", () => {
+  assert.equal(
+    parseCliArgs(["init", "D:\\Photos", "--dry-run"]).init?.dryRun,
+    true,
+  );
+});
+
+test("R-INIT-5: an init dry run says what it would make, makes no directory, and exits with status 0", (t) => {
+  const temporary = temporaryDirectory(t);
+  const directory = path.join(temporary, "Family Photos");
+
+  const run = runTurboCollection(temporary, ["init", directory, "--dry-run"]);
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(
+    run.stdout,
+    /Would create Turbo Collection named "Family Photos", with TC Copy named "main", in /,
+  );
+  assert.equal(existsSync(directory), false);
+});
+
+test("R-INIT-5, R-CLI-18: an init dry run inside a TC Copy fails, as init would", (t) => {
+  const temporary = temporaryDirectory(t);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  const directory = path.join(tcDirectory, "2024");
+
+  const run = runTurboCollection(temporary, ["init", directory, "--dry-run"]);
+
+  assert.notEqual(run.status, 0);
+  assert.match(run.stderr, /lies inside a TC Copy at/);
+  assert.equal(existsSync(directory), false);
+});
+
 test("R-INIT-2: init given no directory acts on the current one", () => {
   assert.equal(parseCliArgs(["init"]).init?.directory, ".");
 });
 
-test("R-INIT-4: the name of a new collection is given by --name or -n, before the command or after it", () => {
+test("R-INIT-4: the name of a new collection is given by --name, before the command or after it", () => {
   assert.equal(
     parseCliArgs(["init", "D:\\Photos", "--name", "Family Photos"]).init
       ?.collectionName,
     "Family Photos",
   );
   assert.equal(
-    parseCliArgs(["init", "-n", "Family Photos"]).init?.collectionName,
+    parseCliArgs(["init", "--name=Family Photos"]).init?.collectionName,
     "Family Photos",
   );
   assert.equal(
@@ -158,11 +193,18 @@ test("R-LOG-9, R-LOG-10: --verbose and --log-dir are read from the command line"
   assert.equal(tcCliArgs.logDir, "D:\\logs");
 });
 
-test("R-CLI-1: asking for help exits with status 0, and names the init command", (t) => {
-  const run = runTurboCollection(temporaryDirectory(t), ["--help"]);
+test("R-CLI-1, R-LOG-6: asking for help exits with status 0, and names the init command and the default log directory, by its environment variable", (t) => {
+  const temporary = temporaryDirectory(t);
+  const run = runTurboCollection(temporary, ["--help"]);
 
   assert.equal(run.status, 0);
-  assert.match(run.stdout, /init \[<tc-directory>\]/);
+  assert.match(run.stdout, /init \[options\] \[<tc-directory>\]/);
+  const typed = process.platform === "win32" ? "%TEMP%" : "$TMPDIR";
+  assert.ok(
+    run.stdout.includes(path.join(typed, "turbo-collection", "logs")),
+    run.stdout,
+  );
+  assert.equal(run.stdout.includes(temporary), false, run.stdout);
 });
 
 test("R-LOG-6: help is a run, which writes its log into turbo-collection/logs/ in the directory for temporary files", (t) => {
@@ -424,19 +466,126 @@ test("R-SRC-14: --dry-run makes an import a dry run", () => {
   );
 });
 
-test("R-SRC-25, R-LOG-10: import given other than two directories is an error", () => {
+test("R-CLI-23: -n is --dry-run, and an argument after -- is an operand", () => {
+  assert.equal(
+    parseCliArgs(["import", "-n", "D:\\moon-laptop"]).import?.dryRun,
+    true,
+  );
+  assert.equal(
+    parseCliArgs(["init", "--", "-photos"]).init?.directory,
+    "-photos",
+  );
+});
+
+test("R-CLI-23: --help and --version pass over a command's arguments and options, but not the log's", () => {
+  assert.deepEqual(parseCliArgs(["backup", "--help"]), {
+    help: true,
+    version: false,
+    verbose: false,
+    logDir: undefined,
+    init: undefined,
+    import: undefined,
+    backup: undefined,
+  });
+  assert.equal(
+    parseCliArgs(["init", "a", "b", "--name", "x", "--version"]).version,
+    true,
+  );
+  assert.equal(
+    parseCliArgs(["import", "--help", "--log-dir", "D:\\logs"]).logDir,
+    "D:\\logs",
+  );
+});
+
+test("R-CLI-23, R-LOG-10: --help with an unknown option or command is still an error", () => {
+  assert.throws(() => parseCliArgs(["--help", "--bogus"]), /--bogus/);
   assert.throws(
-    () => parseCliArgs(["import"]),
-    /import takes two directories, and was given 0/,
+    () => parseCliArgs(["--help", "bogus"]),
+    /Unknown command: bogus/,
+  );
+});
+
+test("R-CLI-23: backup --help shows help and exits with status 0", (t) => {
+  const run = runTurboCollection(temporaryDirectory(t), ["backup", "--help"]);
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /^Usage:$/m);
+});
+
+test("R-LOG-10: an option its command does not take is an error", () => {
+  assert.throws(
+    () => parseCliArgs(["import", "D:\\x", "--tc-copy", "home", "--name", "x"]),
+    /import does not take --name or --tc-copy\./,
   );
   assert.throws(
-    () => parseCliArgs(["import", "D:\\moon-laptop"]),
-    /import takes two directories, and was given 1/,
+    () => parseCliArgs(["backup", "D:\\x", "--name", "Photos"]),
+    /backup does not take --name\./,
+  );
+  assert.throws(
+    () => parseCliArgs(["--tc-copy", "home"]),
+    /A run with no command does not take --tc-copy\./,
+  );
+});
+
+test("R-SRC-25, R-LOG-10: import given no directory to import from, or a directory after its TC Directory, is an error", () => {
+  assert.throws(
+    () => parseCliArgs(["import"]),
+    /import takes a directory to import from, then an optional TC Directory, and was given none/,
   );
   assert.throws(
     () => parseCliArgs(["import", "local-folder", "D:\\x", "E:\\Photos"]),
-    /import takes two directories, and was given 3/,
+    /and was also given: E:\\Photos/,
   );
+});
+
+test("R-SRC-25: import may be given no TC Directory", () => {
+  assert.deepEqual(parseCliArgs(["import", "D:\\moon-laptop"]).import, {
+    importDirectory: "D:\\moon-laptop",
+    tcDirectory: undefined,
+    dryRun: false,
+  });
+});
+
+test("R-SRC-25, R-CLI-22: import given no TC Directory imports into whichever TC Copy its working directory lies inside", (t) => {
+  const temporary = temporaryDirectory(t);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  const workingDirectory = path.join(tcDirectory, "2024");
+  mkdirSync(workingDirectory);
+  const folder = path.join(temporary, "moon-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+
+  const run = runTurboCollection(
+    temporary,
+    ["import", folder],
+    workingDirectory,
+  );
+
+  assert.equal(run.status, 0);
+  assert.equal(
+    readFileSync(
+      path.join(tcDirectory, "local-folder", "moon-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
+  );
+});
+
+test("R-SRC-25, R-CLI-22: import given no TC Directory, from a working directory in no TC Copy, is an error and imports nothing", (t) => {
+  const temporary = temporaryDirectory(t);
+  const folder = path.join(temporary, "moon-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+
+  const run = runTurboCollection(temporary, ["import", folder], temporary);
+
+  assert.notEqual(run.status, 0);
+  assert.match(
+    run.stderr,
+    /A TC Directory was left out, and ".*" is in no TC Copy to take it from/,
+  );
+  assert.equal(existsSync(path.join(temporary, "local-folder")), false);
 });
 
 test("R-SRC-25: import imports into the TC Copy in the TC Directory it is given, says what it imported, and exits with status 0", (t) => {
@@ -503,14 +652,51 @@ test("R-BACKUP-1, R-BACKUP-10: backup is given two directories, --tc-copy names 
   );
 });
 
-test("R-BACKUP-1, R-LOG-10: backup given one directory, or three, is an error", () => {
+test("R-BACKUP-1, R-LOG-10: backup given no directory, or a directory after its second, is an error", () => {
   assert.throws(
-    () => parseCliArgs(["backup", "D:\\Photos"]),
-    /backup takes two directories, and was given 1/,
+    () => parseCliArgs(["backup"]),
+    /backup takes two TC Directories, the second optional, and was given none/,
   );
   assert.throws(
     () => parseCliArgs(["backup", "a", "b", "c"]),
-    /backup takes two directories, and was given 3/,
+    /and was also given: c/,
+  );
+});
+
+test("R-BACKUP-1: backup may be given one directory", () => {
+  assert.deepEqual(parseCliArgs(["backup", "D:\\Photos"]).backup, {
+    directories: ["D:\\Photos", undefined],
+    tcCopyName: undefined,
+    dryRun: false,
+  });
+});
+
+test("R-BACKUP-1, R-CLI-22: backup given one directory mirrors it with whichever TC Copy its working directory is in", (t) => {
+  const temporary = temporaryDirectory(t);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  const folder = path.join(temporary, "moon-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+  assert.equal(
+    runTurboCollection(temporary, ["import", folder], tcDirectory).status,
+    0,
+  );
+  const home = path.join(temporary, "home");
+
+  const run = runTurboCollection(
+    temporary,
+    ["backup", home, "--tc-copy", "home"],
+    tcDirectory,
+  );
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(
+    readFileSync(
+      path.join(home, "local-folder", "moon-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
   );
 });
 
@@ -531,7 +717,10 @@ test("R-BACKUP-1, R-LOG-16: a backup makes a new TC Copy, says what it copied in
   const run = runTurboCollection(temporary, args);
 
   assert.equal(run.status, 0, run.stderr);
-  assert.match(run.stdout, /a TC Copy named "home"/);
+  assert.match(
+    run.stdout,
+    /^Created for Turbo Collection named "photos" a TC Copy named "home", in /m,
+  );
   assert.match(run.stdout, /^Copied 1 file \(5 bytes\) into "home" at /m);
   assert.match(run.stdout, /^Copied 0 files \(0 bytes\) into "main" at /m);
   assert.equal(

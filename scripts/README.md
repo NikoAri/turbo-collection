@@ -84,17 +84,21 @@ being told, and what `package.json` deliberately leaves out:
 ## What this is today
 
 **`init`, `import` and `backup` work, and nothing else does yet.**
-`node turbo-collection.ts init <tc-directory>` makes a directory a TC Directory,
-as `init-spec.md` describes.
-`node turbo-collection.ts import <import-directory> <tc-directory>` imports a
+`node turbo-collection.ts init [<tc-directory>]` makes a directory a TC
+Directory, as `init-spec.md` describes.
+`node turbo-collection.ts import <import-directory> [<tc-directory>]` imports a
 directory's files into the TC Copy in a TC Directory, as `import-spec.md` and
 the local-folder specification describe. Where that directory holds a photo or a
 video photo-path layout reads, a JPEG, a PNG, a HEIF image such as a HEIC, or a
 QuickTime or MP4 movie, it files each of those by its date, and every other file
 keeps its path; otherwise every file keeps its path, under supplied-path layout.
-`node turbo-collection.ts backup <tc-directory> <tc-directory>` mirrors two TC
-Copies, first making a TC Copy in one of them where it is an empty directory, as
-`backup-spec.md` describes. Status and verify are not written.
+`node turbo-collection.ts backup <tc-directory-1> [<tc-directory-2>]` mirrors
+two TC Copies, in whichever order they are given, first making a TC Copy in one
+of them where it is an empty directory, as `backup-spec.md` describes. Where an
+import is given no TC Directory, or a backup only one, it acts on whichever TC
+Copy the current directory is in. Given `--dry-run`, each of these commands
+makes every check it makes, says what it would do, and changes nothing. Status
+and verify are not written.
 
 Every run, help and version among them, writes its log into
 `turbo-collection/logs/` in the directory for temporary files, or into the

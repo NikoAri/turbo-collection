@@ -32,3 +32,15 @@ which name is not valid.
 
 > **Example.** An init of a folder named `Photos (2019)`, given neither name,
 > makes a TC Copy named `main` of a Collection named `Photos (2019)`.
+
+**R-INIT-5.** Turbo-Collection MUST support a Dry-Run mode for init that makes
+every check init makes, and that ends its Run with an error where a check fails,
+as init would. Where no check fails, that Dry-Run MUST report which TC Directory
+init would make, and which `collectionName` and `tcCopyName` init would write
+(R-INIT-4). A Dry-Run of init MUST NOT make a directory or write a file, other
+than its Run's log and its log directory (`logging-spec.md` R-LOG-6).
+
+> **Example.** An init dry run given `D:\Photos\2024`, where `D:\Photos` is a TC
+> Directory, fails as an init would. Given `E:\Photos`, which does not exist, it
+> names the TC Copy it would make there, and `E:\Photos` still does not exist
+> afterward.

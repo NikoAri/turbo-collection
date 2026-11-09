@@ -1,11 +1,11 @@
 # Init creates the first TC Copy in an empty directory; backup creates every later TC Copy
 
-**Status:** Accepted **Date:** 2026-10-18
+**Status:** Accepted **Date:** 2026-11-08
 
-Replaces the record of 2026-10-17. Init has no dry run, and it lists every file
-that stops it. The dry run came in on 2026-09-30, when init took in the files
-already in its directory and a dry run could list them, and with that parked it
-had nothing left to show.
+Replaces the record of 2026-10-18, which gave init no dry run because a dry run
+"would report only what a person can already see". That was wrong: init's checks
+find what a glance at a directory does not, such as a TC Copy in a directory
+above it, and init now has a dry run as import and backup do.
 
 A directory becomes a TC Directory when Turbo-Collection writes its
 configuration, which states the collection its TC Copy belongs to and the name
@@ -73,10 +73,14 @@ Copies of two collections. A TC Copy inside another keeps its meta files in that
 TC Copy's directories, so runs of both would write one manifest, and for two
 collections each of those runs would hold only its own collection's lock.
 
-**Init has no dry run.** Init writes its configuration file and ignore file into
-an empty directory, writes nothing when it fails, and leaves a TC Copy that can
-be deleted while nothing refers to it. A dry run would report only what a person
-can already see, and `yarn init` offers none either.
+**Init has a dry run, as import and backup do.** `--dry-run` is an option of
+every command. Given it, init makes every check it makes before it writes, fails
+where init would, and otherwise names the TC Directory it would make and the
+names it would write, making no directory and writing nothing but its run's log
+(`R-INIT-5`). Those checks find what a person cannot see at a glance: a TC Copy
+in a directory above (`R-CLI-18`), a hidden file that stops init (`R-INIT-3`), a
+link in a path (`R-CLI-20`), and a name that cannot be used (`R-INIT-4`). A dry
+run reports no `collectionId`, since a real init generates its own.
 
 **A replacement drive takes the dead TC Copy's name.** Receipts record where
 content was placed, never that a TC Copy survives (`R-REC-8`), a release already
@@ -96,10 +100,10 @@ two connected TC Copies state one name (`R-MFILE-19`).
   in-place import, which waits for a later version. A directory full of
   photographs is still the ordinary starting point: it is brought in by an
   import.
-- **A dry run of init.** The rule from 2026-09-30 until 2026-10-18. It came in
-  with init's taking in the files already in its directory, which a dry run
-  could list. With that parked, it cost a flag and code to report what a person
-  can already see.
+- **Init without a dry run.** The rule from 2026-10-18 until 2026-11-08, on the
+  ground that init writes into an empty directory and leaves nothing a person
+  cannot see or delete. What init checks is not what a person sees, and one
+  `--dry-run` for every command is one behavior to learn.
 - **The first TC Copy named after its directory.** The rule on 2026-10-13. A
   directory's name says what is kept, which is the collection; a TC Copy is
   named for where it rests.
@@ -147,20 +151,20 @@ two connected TC Copies state one name (`R-MFILE-19`).
 `init-spec.md`: `R-INIT-1` to `R-INIT-4` (init: what it writes, its directory,
 its refusal of a directory that holds a file and its report of every such file,
 the `collectionId` it generates, and its two names), which were `R-CLI-11` and a
-sentence of `R-MFILE-19` until 2026-10-18. `turbo-collection-core-spec.md`:
-`R-CLI-5` names init, and makes dry run a mode of import and backup only;
-`R-CLI-14` (no other operation creates a TC Copy) and `R-CLI-18` (no TC Copy
-inside another, for every run). `backup-spec.md`: `R-BACKUP-1` (backup creating
-a TC Copy) and `R-BACKUP-2` (every directory a backup's path needs is created),
-which were `R-CLI-13` and a sentence of `R-CLI-14` until 2026-10-21. `R-CLI-12`,
-under which init performed an in-place import, was removed on 2026-10-12. The
-in-place import source specification was withdrawn with it, and so was
-`R-FOUND-2` in `supplied-path-layout-spec.md`. `turbo-collection-spec.md`: the
-glossary holds _Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19`
-states that a TC Copy's identity is set once, at creation, that backup passes
-the `collectionId` on, and what a TC Copy's name may hold; `R-MFILE-20` and
-`R-MFILE-21` carry the starter ignore file and the rule that an ignored file
-never enters a TC Copy
+sentence of `R-MFILE-19` until 2026-10-18, and `R-INIT-5`, its dry run.
+`turbo-collection-core-spec.md`: `R-CLI-5` names init, and makes dry run a mode
+of init, import and backup; `R-CLI-14` (no other operation creates a TC Copy)
+and `R-CLI-18` (no TC Copy inside another, for every run). `backup-spec.md`:
+`R-BACKUP-1` (backup creating a TC Copy) and `R-BACKUP-2` (every directory a
+backup's path needs is created), which were `R-CLI-13` and a sentence of
+`R-CLI-14` until 2026-10-21. `R-CLI-12`, under which init performed an in-place
+import, was removed on 2026-10-12. The in-place import source specification was
+withdrawn with it, and so was `R-FOUND-2` in `supplied-path-layout-spec.md`.
+`turbo-collection-spec.md`: the glossary holds _Init_ and _Ignored file_.
+`meta-file-spec.md`: `R-MFILE-19` states that a TC Copy's identity is set once,
+at creation, that backup passes the `collectionId` on, and what a TC Copy's name
+may hold; `R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the
+rule that an ignored file never enters a TC Copy
 ([the starter-ignore-file decision](2026-10-18-starter-ignore-file-decision.md)).
 The setup procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11`
 create the later TC Copies by backup.

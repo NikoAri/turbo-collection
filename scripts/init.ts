@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import {
   constants,
   copyFileSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -198,14 +199,20 @@ export type InitArgs = {
   // Where to make a first TC Copy: init's working directory where a command
   // line names none (R-INIT-2)
   directory: string;
-  // -n, --name: what a new collection is called (R-INIT-4)
+  // --name: what a new collection is called (R-INIT-4)
   collectionName?: string | undefined;
   // --tc-copy: what a new TC Copy is called (R-INIT-4)
   tcCopyName?: string | undefined;
+  // --dry-run: make every check init makes, say what it would make, and make
+  // nothing (R-INIT-5)
+  dryRun?: boolean | undefined;
 };
 
 // Makes a new collection's first TC Copy in `directory`, and returns that TC
-// Copy's configuration (R-INIT-1).
+// Copy's configuration (R-INIT-1). A dry run makes every check that init
+// makes, says what init would make, and makes no directory and writes no file
+// but its run's log (R-INIT-5). It returns a configuration it would write,
+// whose `collectionId` no TC Copy holds and no log records.
 //
 // Both names are checked before a directory is created, and so is `directory`'s
 // path (turbo-collection-core-spec.md R-CLI-18, R-CLI-20); `directory` itself
@@ -216,14 +223,22 @@ export function initializeTc({
   directory,
   collectionName: givenCollectionName,
   tcCopyName: givenTcCopyName,
+  dryRun = false,
 }: InitArgs): TcConfig {
   const collectionName = collectionNameFor(directory, givenCollectionName);
   const tcCopyName = tcCopyNameFor(givenTcCopyName);
   const directoryPath = path.resolve(directory);
   ensureNoLinkInPath(directoryPath);
   ensureNotInsideTcCopy(directoryPath);
-  createDirectoryIfMissing(directoryPath);
-  ensureDirectoryHoldsNoFiles(directoryPath);
+  if (!dryRun) {
+    createDirectoryIfMissing(directoryPath);
+  }
+  // A directory that does not exist holds no file, and a dry run makes none.
+  // Anything else at its path is looked into, so a file there is an error, as
+  // it would be for a real init.
+  if (lstatSync(directoryPath, { throwIfNoEntry: false }) !== undefined) {
+    ensureDirectoryHoldsNoFiles(directoryPath);
+  }
 
   // Init generates its new collection's ID (R-INIT-4), which Node writes in
   // lower case.
@@ -233,28 +248,31 @@ export function initializeTc({
     collectionName,
     tcCopyName,
   };
-  const configurationFile = writeConfigurationFile(directoryPath, tcConfig);
-  logger.log({
-    event: "configuration",
-    verbose: true,
-    path: configurationFile,
-    configuration: tcConfig,
-    toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
-  });
+  if (!dryRun) {
+    const configurationFile = writeConfigurationFile(directoryPath, tcConfig);
+    logger.log({
+      event: "configuration",
+      verbose: true,
+      path: configurationFile,
+      configuration: tcConfig,
+      toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
+    });
 
-  // Init's starter ignore file is copied byte for byte, so what a TC Copy holds
-  // does not depend on which operating system made it (R-CLI-15). It is never
-  // copied over a file already there.
-  copyFileSync(
-    StarterIgnoreFileUrl,
-    path.join(directoryPath, ".tcignore"),
-    constants.COPYFILE_EXCL,
-  );
+    // Init's starter ignore file is copied byte for byte, so what a TC Copy
+    // holds does not depend on which operating system made it (R-CLI-15). It
+    // is never copied over a file already there.
+    copyFileSync(
+      StarterIgnoreFileUrl,
+      path.join(directoryPath, ".tcignore"),
+      constants.COPYFILE_EXCL,
+    );
+  }
 
-  // What init made, so that a plain init says what it did (logging-spec.md
-  // R-LOG-17). That `configuration` entry above holds this too, as fields.
+  // What init made, or a dry run would make, so that init says what it did
+  // (logging-spec.md R-LOG-17). A real init's `configuration` entry above holds
+  // this too, as fields.
   logger.log(
-    `Made a TC Copy named "${tcCopyName}" of a new collection named "${collectionName}", in ${directoryPath}`,
+    `${dryRun ? "Would create" : "Created"} Turbo Collection named "${collectionName}", with TC Copy named "${tcCopyName}", in ${directoryPath}`,
   );
   return tcConfig;
 }

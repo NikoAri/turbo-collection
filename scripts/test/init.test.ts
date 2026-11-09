@@ -439,8 +439,68 @@ test("R-LOG-17: init says what it made in a message", (t) => {
   );
   assert.equal(
     entries.at(-1)?.message,
-    `Made a TC Copy named "main" of a new collection named "Family Photos", in ${directory}`,
+    `Created Turbo Collection named "Family Photos", with TC Copy named "main", in ${directory}`,
   );
+});
+
+test("R-INIT-5: a dry run says what init would make, and makes no directory", (t) => {
+  const directory = path.join(temporaryDirectory(t), "photos", "2024");
+  const entries = collectEntries(t);
+
+  initializeTc({ directory, collectionName: "Family Photos", dryRun: true });
+
+  assert.throws(() => statSync(path.dirname(directory)), /ENOENT/);
+  assert.deepEqual(
+    entries.map(({ event, message }) => ({ event, message })),
+    [
+      {
+        event: "message",
+        message: `Would create Turbo Collection named "Family Photos", with TC Copy named "main", in ${directory}`,
+      },
+    ],
+  );
+});
+
+test("R-INIT-5: a dry run of an empty directory writes nothing into it", (t) => {
+  const directory = temporaryDirectory(t);
+  writeFileUnder(directory, ".DS_Store");
+
+  initializeTc({ directory, dryRun: true });
+
+  assert.deepEqual(listUnder(directory), [".DS_Store"]);
+});
+
+test("R-INIT-5: a dry run fails where init would, and changes nothing", (t) => {
+  const tcDirectory = path.join(temporaryDirectory(t), "photos");
+  initializeTc({ directory: tcDirectory });
+  const holds = listUnder(tcDirectory);
+  const folder = temporaryDirectory(t);
+  writeFileUnder(folder, "2019/photo.jpg");
+
+  assert.throws(
+    () => initializeTc({ directory: tcDirectory, dryRun: true }),
+    /holds 2 files/,
+  );
+  assert.throws(
+    () =>
+      initializeTc({ directory: path.join(tcDirectory, "2024"), dryRun: true }),
+    /lies inside a TC Copy at/,
+  );
+  assert.throws(
+    () => initializeTc({ directory: folder, dryRun: true }),
+    /holds a file/,
+  );
+  assert.throws(
+    () =>
+      initializeTc({
+        directory: path.join(folder, "new"),
+        tcCopyName: "a/b",
+        dryRun: true,
+      }),
+    /cannot be a TC Copy's name/,
+  );
+  assert.deepEqual(listUnder(tcDirectory), holds);
+  assert.deepEqual(listUnder(folder), ["2019", "2019/photo.jpg"]);
 });
 
 test("R-CLI-18: a directory inside a TC Copy is an error, and nothing is made", (t) => {

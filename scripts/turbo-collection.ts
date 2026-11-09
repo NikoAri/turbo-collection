@@ -1,5 +1,6 @@
 import console from "node:console";
 import os from "node:os";
+import path from "node:path";
 import process from "node:process";
 import { parseArgs } from "node:util";
 
@@ -22,42 +23,57 @@ import {
 const HELP_TEXT = `Turbo-Collection
 
 Usage:
-  turbo-collection init [<tc-directory>] [-n <name>] [--tc-copy <name>]
-  turbo-collection import <import-directory> <tc-directory> [--dry-run]
-  turbo-collection backup <tc-directory> <tc-directory> [--tc-copy <name>]
-                          [--dry-run]
+  turbo-collection init [options] [<tc-directory>]
+  turbo-collection import [options] <import-directory> [<tc-directory>]
+  turbo-collection backup [options] <tc-directory-1> [<tc-directory-2>]
 
-Commands:
-  init [<tc-directory>]
-                      Make the first TC Copy of a new collection in
-                      <tc-directory>, creating it where it does not exist.
-                      Without <tc-directory>, the current directory.
-  import <import-directory> <tc-directory>
-                      Import every file in <import-directory> into the TC
-                      Copy in <tc-directory>, under
-                      local-folder/<name of import-directory>/, each at its
-                      path there.
-  backup <tc-directory> <tc-directory>
-                      Copy into each of two TC Copies every file the other
-                      holds and it lacks. Where one directory is not a TC
-                      Directory yet, and holds no file, make a TC Copy
-                      there, named with --tc-copy.
+init [options] [<tc-directory>]
+  Make the first TC Copy of a new collection in <tc-directory>, creating it
+  where it does not exist. Default <tc-directory>: the current directory.
 
-Options:
-  -n, --name <name>      Name the new collection. Without it, the collection
-                         takes the name of its directory.
-      --tc-copy <name>   Name the new TC Copy. With init, without it, the TC
-                         Copy is "main"; a backup that makes a TC Copy needs
-                         it.
-      --dry-run          With import or backup, say what it would copy, and
-                         change nothing.
+      --name <name>      Name the new collection. Default: name of its
+                         directory.
+      --tc-copy <name>   Name the new TC Copy. Default: "main".
+
+import [options] <import-directory> [<tc-directory>]
+  Import every file in <import-directory> into the TC Copy in <tc-directory>:
+  each photo and video by its date, and every other file under
+  local-folder/<name of import-directory>/, at its path there.
+  Default <tc-directory>: the TC Copy the current directory is in.
+
+backup [options] <tc-directory-1> [<tc-directory-2>]
+  Copy into each of two TC Copies every file the other holds and it lacks,
+  whichever order they are given in. Where one directory is not a TC
+  Directory yet, and holds no file, make a TC Copy there.
+  Default <tc-directory-2>: the TC Copy the current directory is in.
+
+      --tc-copy <name>   Name the TC Copy this backup makes. Default: none;
+                         required when it makes one.
+
+Options for every command:
+  -n, --dry-run          Make every check, say what the command would do, and
+                         change nothing. Default: off.
       --verbose          Also show the details that the run's log holds.
-      --log-dir <dir>    Write the run's log into <dir>. Without it, the log
-                         is in the directory for temporary files.
+                         Default: off.
+      --log-dir <dir>    Write the run's log into <dir>. Default:
+                         ${defaultLogDirectory(temporaryDirectoryAsTyped())}
   -h, --help             Show this help and exit.
       --version          Show the version of Turbo-Collection and of each
                          specification it conforms to, and exit.
 `;
+
+// How help names a run's directory for temporary files: as a person would type
+// it, %TEMP% on Windows and $TMPDIR elsewhere, where that variable holds
+// `os.tmpdir()`, so that help shows no user's name. Otherwise, as `os.tmpdir()`
+// gives it.
+function temporaryDirectoryAsTyped(): string {
+  const [variable, typed] =
+    process.platform === "win32" ? ["TEMP", "%TEMP%"] : ["TMPDIR", "$TMPDIR"];
+  const value = process.env[variable];
+  return value !== undefined && path.resolve(value) === os.tmpdir()
+    ? typed
+    : os.tmpdir();
+}
 
 async function runTurboCollection(): Promise<void> {
   logger.log("Turbo-Collection");
@@ -79,9 +95,12 @@ type TcCliArgs = {
   backup: BackupArgs | undefined;
 };
 
-// Reads command line `args`. An unknown option or command, init given more
-// than one directory, and import or backup given other than two directories,
-// are each an error.
+// Reads command line `args`, as POSIX's Utility Syntax Guidelines and GNU's
+// long options describe (turbo-collection-core-spec.md R-CLI-23). An unknown
+// command or option, an option its command does not take, and a directory too
+// few or too many for its command, are each an error. Given --help or
+// --version, a command line's other arguments are passed over, its log's
+// options aside, so that `backup --help` shows help.
 export function parseCliArgs(args: readonly string[]): TcCliArgs {
   const { values, positionals } = parseArgs({
     args: [...args],
@@ -90,9 +109,10 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
       version: { type: "boolean", default: false },
       verbose: { type: "boolean", default: false },
       "log-dir": { type: "string" },
-      name: { type: "string", short: "n" },
+      name: { type: "string" },
       "tc-copy": { type: "string" },
-      "dry-run": { type: "boolean", default: false },
+      // -n, as in GNU's table of long options
+      "dry-run": { type: "boolean", short: "n", default: false },
     },
     allowPositionals: true,
   });
@@ -106,6 +126,26 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
   ) {
     throw new TcError(`Unknown command: ${command}`);
   }
+  if (values.help || values.version) {
+    return {
+      help: values.help,
+      version: values.version,
+      verbose: values.verbose,
+      logDir: values["log-dir"],
+      init: undefined,
+      import: undefined,
+      backup: undefined,
+    };
+  }
+  const notTaken = (["name", "tc-copy"] as const).filter(
+    (option) =>
+      values[option] !== undefined && !optionsTakenBy(command).includes(option),
+  );
+  if (notTaken.length > 0) {
+    throw new TcError(
+      `${command ?? "A run with no command"} does not take ${notTaken.map((option) => `--${option}`).join(" or ")}.`,
+    );
+  }
 
   return {
     help: values.help,
@@ -118,6 +158,7 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
             directory: initDirectoryOf(commandArgs),
             collectionName: values.name,
             tcCopyName: values["tc-copy"],
+            dryRun: values["dry-run"],
           }
         : undefined,
     import:
@@ -135,15 +176,34 @@ export function parseCliArgs(args: readonly string[]): TcCliArgs {
   };
 }
 
-// Which two directories backup is given in `commandArgs`, every argument
-// after backup (backup-spec.md R-BACKUP-1).
+// Options `command` takes, beside --help, --version, --verbose, --log-dir and
+// --dry-run, which every run takes (turbo-collection-core-spec.md R-CLI-5).
+function optionsTakenBy(command: string | undefined): readonly string[] {
+  switch (command) {
+    case "init":
+      return ["name", "tc-copy"];
+    case "backup":
+      return ["tc-copy"];
+    default:
+      return [];
+  }
+}
+
+// Which directories backup is given in `commandArgs`, every argument after
+// backup: two TC Directories, in either order, the second optional
+// (backup-spec.md R-BACKUP-1).
 function backupDirectoriesOf(
   commandArgs: readonly string[],
-): readonly [string, string] {
+): readonly [string, string | undefined] {
   const [first, second, ...unexpected] = commandArgs;
-  if (first === undefined || second === undefined || unexpected.length > 0) {
+  if (first === undefined) {
     throw new TcError(
-      `backup takes two directories, and was given ${commandArgs.length}: backup <directory> <directory>\nA path that holds a space needs quotes around it.`,
+      "backup takes two TC Directories, the second optional, and was given none: backup <tc-directory-1> [<tc-directory-2>]",
+    );
+  }
+  if (unexpected.length > 0) {
+    throw new TcError(
+      `backup takes two TC Directories, the second optional, and was also given: ${unexpected.join(" ")}\nA path that holds a space needs quotes around it.`,
     );
   }
   return [first, second];
@@ -162,19 +222,21 @@ function initDirectoryOf(commandArgs: readonly string[]): string {
 }
 
 // What import is given in `commandArgs`, every argument after import: a
-// directory to import from, then a TC Directory (import-spec.md R-SRC-25).
+// directory to import from, then an optional TC Directory (import-spec.md
+// R-SRC-25).
 function importArgsOf(
   commandArgs: readonly string[],
   dryRun: boolean,
 ): ImportArgs {
   const [importDirectory, tcDirectory, ...unexpected] = commandArgs;
-  if (
-    importDirectory === undefined ||
-    tcDirectory === undefined ||
-    unexpected.length > 0
-  ) {
+  if (importDirectory === undefined) {
     throw new TcError(
-      `import takes two directories, and was given ${commandArgs.length}: import <import-directory> <tc-directory>\nA path that holds a space needs quotes around it.`,
+      "import takes a directory to import from, then an optional TC Directory, and was given none: import <import-directory> [<tc-directory>]",
+    );
+  }
+  if (unexpected.length > 0) {
+    throw new TcError(
+      `import takes a directory to import from, then an optional TC Directory, and was also given: ${unexpected.join(" ")}\nA path that holds a space needs quotes around it.`,
     );
   }
   return { importDirectory, tcDirectory, dryRun };

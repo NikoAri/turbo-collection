@@ -1,5 +1,6 @@
 import { lstatSync, realpathSync } from "node:fs";
 import path from "node:path";
+import process from "node:process";
 
 import { TcError } from "./helpers/tc-error.ts";
 
@@ -110,4 +111,21 @@ export function ensureNoLinkInPath(directory: string): void {
       );
     }
   }
+}
+
+// Whichever TC Directory this run's working directory is or lies inside, for a
+// run whose command line leaves out an optional TC Directory
+// (turbo-collection-core-spec.md R-CLI-22). Throws where there is none, or
+// where that working directory's path passes through a link, since a run
+// never follows one (R-CLI-20).
+export function tcDirectoryOfWorkingDirectory(): string {
+  const workingDirectory = process.cwd();
+  ensureNoLinkInPath(workingDirectory);
+  const tcDirectory = tcDirectoryAtOrAbove(workingDirectory);
+  if (tcDirectory === undefined) {
+    throw new TcError(
+      `A TC Directory was left out, and "${workingDirectory}" is in no TC Copy to take it from. Give that TC Directory, or run from inside a TC Copy.`,
+    );
+  }
+  return tcDirectory;
 }

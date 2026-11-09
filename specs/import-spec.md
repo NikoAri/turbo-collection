@@ -13,19 +13,23 @@ That is what extensibility means here. How importers are loaded is a binding
 
 **R-SRC-25.**  
 **Import Operation**  
-In an **import**, Turbo-Collection MUST take two directories from that import's
-command line: first a directory to import from, then a TC Directory, naming
-which TC Copy to import into. Turbo-Collection MUST import into that TC Copy,
-drawing from Import Source `local-folder`
+In an **import**, Turbo-Collection MUST take from that import's command line
+first a directory to import from, then an optional TC Directory (R-CLI-22),
+naming which TC Copy to import into. Turbo-Collection MUST import into that TC
+Copy, drawing from Import Source `local-folder`
 ([`local-folder-import-source-spec.md`](importers/local-folder/local-folder-import-source-spec.md))
 with that directory to import from as that Import Source's setting (R-SRC-3).
-Turbo-Collection MUST end an import not given exactly two directories with an
-error, before that import writes anything.
+Turbo-Collection MUST end an import given no directory to import from, or given
+a directory after that import's TC Directory, with an error, before that import
+writes anything.
 
 > **Example.** `turbo-collection import D:\moon-laptop E:\photos` imports from
 > `D:\moon-laptop` into a TC Copy at `E:\photos`, and where `E:\photos` is not a
 > TC Directory, is refused and imports nothing (R-CLI-14). Given
-> `D:\moon-laptop` alone, an import ends with an error and imports nothing.
+> `D:\moon-laptop` alone, an import whose working directory is `E:\photos\2024`,
+> inside a TC Copy at `E:\photos`, imports into that TC Copy, and one whose
+> working directory is in no TC Copy ends with an error and imports nothing
+> (R-CLI-22).
 
 **R-SRC-1.** Files MUST enter a collection only by Import. Turbo-Collection's
 Core MUST contain no logic specific to any individual import source, device,

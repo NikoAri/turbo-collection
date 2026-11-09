@@ -30,7 +30,7 @@ two runs can meet, and every such rule is in `parallel-safety-spec.md`.
 
 **The lock relies on every file belonging to one TC Copy.** No TC Copy lies
 inside another (`R-CLI-18`,
-[the copy-creation decision](2026-10-18-copy-creation-decision.md)), no run
+[the copy-creation decision](2026-11-08-copy-creation-decision.md)), no run
 follows a link inside a TC Copy (`R-CLI-19`,
 [the non-regular-files decision](2026-10-18-non-regular-files-decision.md)), and
 no import reads a folder that is a TC Directory, lies inside a TC Copy or holds

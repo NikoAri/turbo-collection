@@ -20,11 +20,11 @@ temporary files.
 
 **Every run writes a log, including runs that promise to write nothing.**
 `R-LOG-1` requires a log of every run, and a run that only shows help or reports
-the version is a run too. A dry run mutates nothing (`R-SRC-14`, `R-BACKUP-10`),
-status is read-only (`R-STATUS-1`), and an init run by mistake fails and writes
-nothing (`R-INIT-3`). A log in the directory for temporary files breaks none of
-those promises, and a run can open it before it knows which directory it acts on
-(`R-CFG-3`).
+the version is a run too. A dry run mutates nothing (`R-INIT-5`, `R-SRC-14`,
+`R-BACKUP-10`), status is read-only (`R-STATUS-1`), and an init run by mistake
+fails and writes nothing (`R-INIT-3`). A log in the directory for temporary
+files breaks none of those promises, and a run can open it before it knows which
+directory it acts on (`R-CFG-3`).
 
 **A directory a person names is used, or the run ends.** A run that cannot use
 the directory `--log-dir` names, because it lies inside a TC Copy, its path

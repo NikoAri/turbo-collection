@@ -10,9 +10,11 @@ never be replaced. A file no manifest lists is not in the collection, and a
 later run writes over it (`R-TGT-13`), so that reason is gone, and one model of
 writing serves import and backup.
 
-A backup is given exactly two directories, at least one of them a TC Directory
-(`R-BACKUP-1`), and mirrors them: each gains every content file the other holds
-and it lacks, and nothing in the collection is overwritten or deleted
+A backup acts on exactly two directories, at least one of them a TC Directory
+(`R-BACKUP-1`), its second found from its working directory where its command
+line leaves that one out (`R-CLI-22`), and mirrors them: each gains every
+content file the other holds and it lacks, and nothing in the collection is
+overwritten or deleted
 ([the append-only decision](2026-08-13-append-only-decision.md)).
 
 - **Two directories.** Every procedure backs up two TC Copies at a time, and the
