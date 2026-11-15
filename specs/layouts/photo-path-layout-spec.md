@@ -15,9 +15,9 @@ those, never here.
 
 Requirement ID prefix: **`R-PHOTO-*`**.
 
-> **Rationale.** Why items are placed by local-time month and by import source,
-> and alternatives weighed:
-> [import-source decision](../../docs/decisions/2026-08-22-import-source-decision.md),
+> **Rationale.** Why items are placed by local-time month, why not by import
+> source, and alternatives weighed:
+> [import-source decision](../../docs/decisions/2026-11-14-import-source-decision.md),
 > [layout-conventions decision](../../docs/decisions/2026-08-01-layout-conventions-decision.md),
 > and [design-record](../../docs/design-record.md). Why an import source, not
 > this document, selects which items come here:
@@ -99,6 +99,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
 - **Supplied filename.** A name a file carries at its import source when
   Turbo-Collection reads it.
 
+- **Supplied path.** A path a file has at its import source, relative to a root
+  that import source's specification states (`import-spec.md` R-SRC-21).
+
 - **Uncertain date.** An item's state where its governing timestamp was not read
   from a capture timestamp that item itself states (R-PHOTO-8).
 
@@ -124,11 +127,15 @@ one's SHA-256 checksum is lowest.
 ## 3. An item's directory
 
 **R-PHOTO-3.** Turbo-Collection MUST store every content file of an item this
-Layout places in `<YYYY>/<YYYY>-<MM>/<import source>/`, relative to a TC
-Directory, where `<YYYY>` and `<MM>` state in which year and month that item's
-governing timestamp falls, and `<import source>` is that import source's
-identifier, recorded as `importSource.specId` in that directory's manifest
-(`meta-file-spec.md` R-MFILE-9).
+Layout places in `<YYYY>/<YYYY>-<MM>/`, relative to a TC Directory, where
+`<YYYY>` and `<MM>` state in which year and month that item's governing
+timestamp falls, or in a subdirectory of it, as R-PHOTO-11 states.
+
+> **Example.** A photo taken in July 2019 is stored in `2019/2019-07/`,
+> whichever import source supplied it. That import source is recorded as
+> `importSource.specId` in that directory's manifest (`meta-file-spec.md`
+> R-MFILE-9), and where that import source held that photo, as that file's
+> `suppliedPath` (`meta-file-spec.md` R-MFILE-10).
 
 **R-PHOTO-4.** Turbo-Collection MUST write `<YYYY>` as four digits and `<MM>` as
 two digits, zero-padded, as proleptic Gregorian years and months, following ISO
@@ -136,6 +143,31 @@ two digits, zero-padded, as proleptic Gregorian years and months, following ISO
 
 **R-PHOTO-5.** Turbo-Collection MUST place every content file of one item in one
 directory, under one governing timestamp.
+
+**R-PHOTO-11.** Where a TC Copy being imported into already holds, in its
+Collection, a content file of differing content at a path where R-PHOTO-3 would
+store a content file of an item (`import-spec.md` R-SRC-23), Turbo-Collection
+MUST store that item in a subdirectory of whichever directory R-PHOTO-3 names
+for it. That subdirectory MUST be named by that arriving file's supplied path's
+last directories, as few of them as differ from as many last directories of that
+held file's supplied path (`meta-file-spec.md` R-MFILE-10), comparing names as
+`turbo-collection-spec.md` R-TGT-14 compares paths. Where that subdirectory
+holds such a file in turn, Turbo-Collection MUST compare with that file in this
+way, and MUST take whichever subdirectory of R-PHOTO-3's directory that
+comparison gives. Where a comparison finds no directory that differs,
+Turbo-Collection MUST store that item where that comparison began, and
+`import-spec.md` R-SRC-23 applies there.
+
+> **Example.** `2019/2019-07/IMG_0101.JPG` holds a photo supplied as
+> `trip/camera/IMG_0101.JPG`. A different photo supplied as
+> `trip/phone/IMG_0101.JPG` is stored at `2019/2019-07/phone/IMG_0101.JPG`,
+> since `phone` and `camera` differ. Had that held photo been supplied as
+> `card-a/DCIM/IMG_0101.JPG`, a different photo supplied as
+> `card-b/DCIM/IMG_0101.JPG` would be stored at
+> `2019/2019-07/card-b/DCIM/IMG_0101.JPG`, since `DCIM` does not differ. A
+> different photo supplied as `trip/camera/IMG_0101.JPG`, as that held photo
+> was, finds no directory that differs, and is left out (`import-spec.md`
+> R-SRC-23).
 
 ## 4. Governing timestamp
 

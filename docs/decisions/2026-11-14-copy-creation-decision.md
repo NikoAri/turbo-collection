@@ -1,17 +1,19 @@
-# Init creates the first TC Copy in an empty directory; backup creates every later TC Copy
+# Init or an import creates the first TC Copy; backup creates every later TC Copy
 
-**Status:** Accepted **Date:** 2026-11-08
+**Status:** Accepted **Date:** 2026-11-14
 
-Replaces the record of 2026-10-18, which gave init no dry run because a dry run
-"would report only what a person can already see". That was wrong: init's checks
-find what a glance at a directory does not, such as a TC Copy in a directory
-above it, and init now has a dry run as import and backup do.
+Replaces the record of 2026-11-08, under which import never created a TC Copy.
+That record let backup create every later TC Copy because an init for each one
+"adds a step whose only output is an empty TC Copy that the next backup fills
+anyway". The same holds for an init before a first import, and an import that
+creates a TC Copy makes every check init makes, so it can no more turn a folder
+of photographs into a TC Directory than init can.
 
 A directory becomes a TC Directory when Turbo-Collection writes its
 configuration, which states the collection its TC Copy belongs to and the name
 every receipt will use for that TC Copy
 ([the collection-naming decision](2026-10-25-collection-naming-decision.md)).
-Init and backup do that, and no other operation ever does:
+Init, import and backup do that, and no other operation ever does:
 
 - **`init`** creates the **first** TC Copy of a new collection, in the directory
   it is given, or in the current directory where it is given none. It generates
@@ -27,7 +29,17 @@ Init and backup do that, and no other operation ever does:
   that contains a TC Copy holds that TC Copy's files, so init stops on both and
   changes nothing, which protects the name a TC Copy's receipts already carry. A
   directory inside a TC Copy is refused as well, before init makes any
-  directory.
+  directory. Init is where a person chooses either name, or edits a TC Copy's
+  ignore file before anything enters it (`R-MFILE-21`).
+- **`import`** also creates the **first** TC Copy of a new collection, where the
+  directory it imports into does not exist or is not a TC Directory, as init
+  would given that directory and no name, and then imports into it (`R-SRC-27`).
+  Its collection takes its directory's name, and its TC Copy is `main`. Every
+  check init makes comes before an import writes anything but its log, and so
+  does a refusal of a directory to import from that would contain that new TC
+  Copy. Its report and its dry run name the TC Directory it makes and both names
+  it writes. Import takes no `--name` or `--tc-copy`, so names are chosen in one
+  place.
 - **`backup`** creates **every later** TC Copy. Given a TC Directory, it mirrors
   it; given one that is empty or does not exist, it creates a TC Copy there and
   fills it; given anything else, it refuses and lists what the directory holds.
@@ -37,8 +49,6 @@ Init and backup do that, and no other operation ever does:
   required on the run that creates a TC Copy, and creation needs exactly one
   existing TC Copy, which settles whose ignore file and whose collection are
   inherited.
-- **`import`** never creates a TC Copy. A directory that is not a TC Directory
-  is an error.
 
 Files a person already has enter a TC Copy as every other file does, by an
 import.
@@ -53,7 +63,8 @@ which is the collection. A TC Copy is named for where it rests, which only the
 operator knows, and two drives that each hold a folder of one name would give
 two TC Copies one name, which stops every run (`R-MFILE-19`). So the first TC
 Copy is `main`, the hub, and backup has no default: a guessed name would be
-permanent in every receipt.
+permanent in every receipt. An import that creates a TC Copy names both as init
+does given no name.
 
 **A TC Copy's name may be in any script.** It is kept as typed, in Unicode
 Normalization Form C, and holds no control character and none of
@@ -63,11 +74,25 @@ letter case are one name, on every computer whatever its language. A
 collection's name appears in no filename and has only to be non-empty.
 
 **Every directory a path needs is created.** `init a/b/c` creates all three, and
-backup does the same, so a person meets one behavior in both operations.
+an import and a backup do the same, so a person meets one behavior in every
+operation that creates a TC Copy.
+
+**An import given no TC Directory makes one in its working directory where a
+search finds none**
+([the working-directory decision](2026-11-14-working-directory-decision.md)), as
+init does given no directory (`R-INIT-2`). A working directory that holds a file
+stops it, as it stops init (`R-INIT-3`), so an import run by mistake from a home
+folder writes nothing.
+
+**Two imports making one TC Copy at once cannot both succeed.** A TC Copy's
+configuration file is written first, and only where nothing exists, so the
+second ends with an error (`R-PARALLEL-2`, `R-PARALLEL-3`). A collection's lock
+cannot keep them apart, since each such import generates a `collectionId` of its
+own.
 
 **No TC Copy lies inside another.** Every run refuses a directory inside a TC
-Copy, init and backup included, before it makes a directory or writes a file,
-and a run that finds a configuration file below a TC Directory fails too
+Copy, init, import and backup included, before it makes a directory or writes a
+file, and a run that finds a configuration file below a TC Directory fails too
 (`R-CLI-18`). This holds for two TC Copies of one collection as it does for TC
 Copies of two collections. A TC Copy inside another keeps its meta files in that
 TC Copy's directories, so runs of both would write one manifest, and for two
@@ -80,7 +105,9 @@ names it would write, making no directory and writing nothing but its run's log
 (`R-INIT-5`). Those checks find what a person cannot see at a glance: a TC Copy
 in a directory above (`R-CLI-18`), a hidden file that stops init (`R-INIT-3`), a
 link in a path (`R-CLI-20`), and a name that cannot be used (`R-INIT-4`). A dry
-run reports no `collectionId`, since a real init generates its own.
+run reports no `collectionId`, since a real init generates its own. An import
+that would make a TC Copy reports in its dry run what init's would, and what it
+would import (`R-SRC-27`).
 
 **A replacement drive takes the dead TC Copy's name.** Receipts record where
 content was placed, never that a TC Copy survives (`R-REC-8`), a release already
@@ -91,6 +118,21 @@ two connected TC Copies state one name (`R-MFILE-19`).
 
 ## Rejected
 
+- **Import never creating a TC Copy, so that init comes first.** The rule until
+  2026-11-14, on the ground that creation is a deliberate act with its own
+  operation, and that a routine operation able to create one could turn any
+  unmarked directory into a TC Directory. Reversed because init's refusal of a
+  directory that holds a file stops an import as it stops init. A mistyped
+  directory that does not exist becomes a stray collection, which import's
+  report names and which costs a deletion, since an import leaves its files
+  where they were (`R-SRC-7`).
+- **An import that creates a TC Copy only in a directory its command line
+  names.** It would end a run that forgot to change directory with "no TC
+  Directory found" rather than init's list of files in the way. Init's refusal
+  already stops that run, and its error can say both.
+- **Import with a `--name` and a `--tc-copy` of its own.** Names would be chosen
+  in two places, and each option would need an error for an import into a TC
+  Copy that already exists.
 - **Init takes in what its directory already holds.** The rule from 2026-09-30
   until 2026-10-12. It had itself overturned "init requires an empty directory",
   on the ground that a directory already full of photographs is the ordinary
@@ -115,8 +157,9 @@ two connected TC Copies state one name (`R-MFILE-19`).
   ground was a removable drive's mount point, which exists only while that drive
   is connected: creating a whole missing path could build a TC Copy on whatever
   disk the parent resolves to, with the drive it was meant for sitting
-  unplugged. Reversed so that a path given to init or to backup is simply
-  created, and the two agree. Nothing in this rule now stops that case.
+  unplugged. Reversed so that a path given to init, to an import or to a backup
+  is simply created, and all three agree. Nothing in this rule now stops that
+  case.
 - **Checks of their own for a TC Copy at or under the directory.** The rule
   until 2026-10-13. The check for a file already stops a directory that is a TC
   Directory and one that contains a TC Copy.
@@ -129,9 +172,6 @@ two connected TC Copies state one name (`R-MFILE-19`).
   above.
 - **A question for the name, as `npm init` asks.** Familiar, but `yarn init`
   asks nothing, and no operation may need a prompt (`R-CLI-8`).
-- **The first import or backup creates the first TC Copy from a name argument.**
-  It makes a routine operation able to turn any unmarked directory into a TC
-  Directory. Creation is a deliberate act with its own operation.
 - **Init for every TC Copy, with backup never creating one.** It adds a step
   whose only output is an empty TC Copy that the next backup fills anyway.
   Backup detects the state of each directory instead, as a build tool tells a
@@ -152,19 +192,24 @@ two connected TC Copies state one name (`R-MFILE-19`).
 its refusal of a directory that holds a file and its report of every such file,
 the `collectionId` it generates, and its two names), which were `R-CLI-11` and a
 sentence of `R-MFILE-19` until 2026-10-18, and `R-INIT-5`, its dry run.
-`turbo-collection-core-spec.md`: `R-CLI-5` names init, and makes dry run a mode
-of init, import and backup; `R-CLI-14` (no other operation creates a TC Copy)
-and `R-CLI-18` (no TC Copy inside another, for every run). `backup-spec.md`:
+`import-spec.md`: `R-SRC-27` (an import making a TC Copy, its checks, its report
+and its dry run), and `R-SRC-25`'s example. `turbo-collection-core-spec.md`:
+`R-CLI-5` names init, and makes dry run a mode of init, import and backup;
+`R-CLI-14` (no operation but init, import and backup creates a TC Copy),
+`R-CLI-18` (no TC Copy inside another, for every run) and `R-CLI-22` (a run's
+working directory, where a search finds no TC Directory). `backup-spec.md`:
 `R-BACKUP-1` (backup creating a TC Copy) and `R-BACKUP-2` (every directory a
 backup's path needs is created), which were `R-CLI-13` and a sentence of
-`R-CLI-14` until 2026-10-21. `R-CLI-12`, under which init performed an in-place
-import, was removed on 2026-10-12. The in-place import source specification was
-withdrawn with it, and so was `R-FOUND-2` in `supplied-path-layout-spec.md`.
-`turbo-collection-spec.md`: the glossary holds _Init_ and _Ignored file_.
-`meta-file-spec.md`: `R-MFILE-19` states that a TC Copy's identity is set once,
-at creation, that backup passes the `collectionId` on, and what a TC Copy's name
-may hold; `R-MFILE-20` and `R-MFILE-21` carry the starter ignore file and the
-rule that an ignored file never enters a TC Copy
+`R-CLI-14` until 2026-10-21. `parallel-safety-spec.md`: `R-PARALLEL-2` (a
+configuration file written first, by init, an import or a backup). `R-CLI-12`,
+under which init performed an in-place import, was removed on 2026-10-12. The
+in-place import source specification was withdrawn with it, and so was
+`R-FOUND-2` in `supplied-path-layout-spec.md`. `turbo-collection-spec.md`: the
+glossary holds _Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19`
+states that a TC Copy's identity is set once, at creation, that backup passes
+the `collectionId` on, and what a TC Copy's name may hold; `R-MFILE-20` and
+`R-MFILE-21` carry the starter ignore file and the rule that an ignored file
+never enters a TC Copy
 ([the starter-ignore-file decision](2026-10-18-starter-ignore-file-decision.md)).
 The setup procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11`
 create the later TC Copies by backup.

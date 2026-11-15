@@ -7,5 +7,5 @@
   "fileCount": 2,
   "contentDigest": "59b9056422e24f10b0de715442628971606ef5db48b6639a0f1aa415da8e1a24",
   "layout": { "specId": "photo-path-layout", "version": "0.1.0-draft" },
-  "importSource": { "specId": "icloud", "version": "0.1.0-draft" }
+  "importSource": { "specId": "local-folder", "version": "0.1.0-draft" }
 }

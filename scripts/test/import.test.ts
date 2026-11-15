@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
+  appendFileSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -22,6 +23,7 @@ import { importIntoTcCopy } from "../import.ts";
 import { initializeTc } from "../init.ts";
 import { logEntryOf, logger, type LogEntry } from "../logger.ts";
 import type { TcConfig } from "../meta-files.ts";
+import { configurationFileOf } from "../paths.ts";
 
 // What these tests make an import log is shown nowhere, unless a test
 // collects it.
@@ -165,7 +167,7 @@ test("R-SRC-25, R-FOUND-3, R-LOCALFOLDER-6: an import stores each file at local-
   );
 });
 
-test("R-MFILE-9, R-MFILE-10, R-MFILE-12: a manifest names the layout and the import source, and lists each file with its size and checksum, without regard to case", async (t) => {
+test("R-MFILE-9, R-MFILE-10, R-MFILE-12: a manifest names the layout and the import source, and lists each file with its size, its checksum and its Supplied path, without regard to case", async (t) => {
   const temporary = temporaryDirectory(t);
   const { tcDirectory } = makeTcCopy(temporary);
   const folder = makeFolder(temporary, {
@@ -181,8 +183,18 @@ test("R-MFILE-9, R-MFILE-10, R-MFILE-12: a manifest names the layout and the imp
     importSource: { specId: "local-folder", version: "0.1.0-draft" },
     checksumAlgorithm: "SHA-256",
     files: [
-      { file: "bread.txt", size: 5, checksum: checksumOf("bread") },
-      { file: "Soup.txt", size: 4, checksum: checksumOf("soup") },
+      {
+        file: "bread.txt",
+        size: 5,
+        checksum: checksumOf("bread"),
+        suppliedPath: "moon-laptop/bread.txt",
+      },
+      {
+        file: "Soup.txt",
+        size: 4,
+        checksum: checksumOf("soup"),
+        suppliedPath: "moon-laptop/Soup.txt",
+      },
     ],
   });
 });
@@ -423,18 +435,104 @@ test("R-LOCALFOLDER-2: a directory with no name of its own, such as a drive's ro
   );
 });
 
-test("R-CLI-14: an import into a directory that is not a TC Copy is an error, and writes nothing", async (t) => {
+test("R-SRC-27: an import into an empty directory that is not a TC Directory makes a TC Copy there as init would given no name, says so, and imports into it", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const folder = makeFolder(temporary, { "a.txt": "a", ".DS_Store": "finder" });
+  const tcDirectory = path.join(temporary, "photos");
+  mkdirSync(tcDirectory);
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory);
+
+  const tcConfig = JSON.parse(
+    readFileSync(configurationFileOf(tcDirectory), "utf8"),
+  ) as TcConfig;
+  assert.equal(tcConfig.collectionName, "photos");
+  assert.equal(tcConfig.tcCopyName, "main");
+  assert.equal(existsSync(path.join(tcDirectory, ".tcignore")), true);
+  assert.equal(
+    readFileSync(storedDirectory(tcDirectory, "a.txt"), "utf8"),
+    "a",
+  );
+  // A starter pattern keeps a file out of a TC Copy that an import makes
+  // (meta-file-spec.md R-MFILE-21).
+  assert.equal(existsSync(storedDirectory(tcDirectory, ".DS_Store")), false);
+  assert.ok(
+    entries.some(
+      (entry) =>
+        entry.message ===
+        `Created Turbo Collection named "photos", with TC Copy named "main", in ${tcDirectory}`,
+    ),
+  );
+});
+
+test("R-SRC-27, R-INIT-2: an import into a directory that does not exist makes it, with every directory above it", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const folder = makeFolder(temporary, { "a.txt": "a" });
+  const tcDirectory = path.join(temporary, "drive", "photos");
+
+  await importFolder(folder, tcDirectory);
+
+  assert.equal(
+    readFileSync(storedDirectory(tcDirectory, "a.txt"), "utf8"),
+    "a",
+  );
+});
+
+test("R-SRC-27, R-INIT-3: an import into a directory that is not a TC Directory and holds a file is an error, and writes nothing", async (t) => {
   const temporary = temporaryDirectory(t);
   const folder = makeFolder(temporary, { "a.txt": "a" });
   const notATcDirectory = path.join(temporary, "photos");
-  mkdirSync(notATcDirectory);
+  writeFileUnder(notATcDirectory, "letter.txt");
 
   await assert.rejects(
     importFolder(folder, notATcDirectory),
-    /is not a TC Directory/,
+    /is not a TC Directory, and this import cannot make a TC Copy there as init would given no name: .* holds a file/,
   );
 
-  assert.deepEqual(readdirSync(notATcDirectory), []);
+  assert.deepEqual(readdirSync(notATcDirectory), ["letter.txt"]);
+});
+
+test("R-SRC-27, R-LOCALFOLDER-2: an import whose new TC Copy would hold its directory to import from, or lie inside it, is an error, and writes nothing", async (t) => {
+  const outer = path.join(temporaryDirectory(t), "outer");
+  const folder = makeFolder(outer, { "a.txt": "a" });
+  const inner = path.join(folder, "inner");
+
+  await assert.rejects(
+    importFolder(folder, outer),
+    /would lie inside the TC Copy this import makes/,
+  );
+  await assert.rejects(
+    importFolder(folder, inner),
+    /would hold the TC Copy this import makes/,
+  );
+  await assert.rejects(
+    importFolder(folder, folder),
+    /would hold the TC Copy this import makes/,
+  );
+
+  assert.equal(existsSync(configurationFileOf(outer)), false);
+  assert.equal(existsSync(inner), false);
+  assert.equal(existsSync(configurationFileOf(folder)), false);
+});
+
+test("R-SRC-27, R-INIT-5: a dry run of an import that would make a TC Copy says what it would make and import, and writes nothing", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const folder = makeFolder(temporary, { "a.txt": "a" });
+  const tcDirectory = path.join(temporary, "photos");
+  const entries = collectEntries(t);
+
+  await importFolder(folder, tcDirectory, true);
+
+  assert.equal(existsSync(tcDirectory), false);
+  assert.ok(
+    entries.some(
+      (entry) =>
+        entry.message ===
+        `Would create Turbo Collection named "photos", with TC Copy named "main", in ${tcDirectory}`,
+    ),
+  );
+  assert.equal(entries.find((entry) => entry.event === "import")?.files, 1);
 });
 
 test("R-SRC-22: a directory holding a link imports nothing, and the link is named", async (t) => {
@@ -760,10 +858,10 @@ test("R-LOCALFOLDER-3, R-TGT-14: a directory whose name differs from .turbo-coll
   );
 });
 
-// `samples/moon-photos/`, whose photos and video samples/README.md lists,
-// each with where photo-path layout files it.
+// `samples/import-samples/moon-photos/`, whose photos and video
+// samples/README.md lists, each with where photo-path layout files it.
 const MoonPhotos = fileURLToPath(
-  new URL("../../samples/moon-photos/", import.meta.url),
+  new URL("../../samples/import-samples/moon-photos/", import.meta.url),
 );
 
 // Copies photos into `folder`: each from its path under `MoonPhotos` to its
@@ -786,22 +884,22 @@ test("R-LOCALFOLDER-5, R-PHOTO-3, R-PHOTO-10: a directory holding photos is impo
   await importFolder(folder, tcDirectory);
 
   for (const stored of [
-    "2019/2019-07/local-folder/IMG_0101.JPG",
-    "2019/2019-07/local-folder/IMG_0102.JPG",
-    "2020/2020-01/local-folder/IMG_0187.JPG",
-    "2021/2021-09/local-folder/IMG_0301.HEIC",
-    "2021/2021-09/local-folder/IMG_0301.MOV",
-    "2022/2022-02/local-folder/IMG_0420.PNG",
-    "2018/2018-05/local-folder/DSC_0042.JPG",
-    "2021/2021-03/local-folder/IMG-20210305-WA0003.jpg",
+    "2019/2019-07/IMG_0101.JPG",
+    "2019/2019-07/IMG_0102.JPG",
+    "2020/2020-01/IMG_0187.JPG",
+    "2021/2021-09/IMG_0301.HEIC",
+    "2021/2021-09/IMG_0301.MOV",
+    "2022/2022-02/IMG_0420.PNG",
+    "2018/2018-05/DSC_0042.JPG",
+    "2021/2021-03/IMG-20210305-WA0003.jpg",
   ]) {
     assert.equal(existsSync(path.join(tcDirectory, stored)), true, stored);
   }
   assert.equal(existsSync(path.join(tcDirectory, "local-folder")), false);
-  assert.deepEqual(
-    manifestOf(path.join(tcDirectory, "2019/2019-07/local-folder")).layout,
-    { specId: "photo-path-layout", version: "0.1.0-draft" },
-  );
+  assert.deepEqual(manifestOf(path.join(tcDirectory, "2019/2019-07")).layout, {
+    specId: "photo-path-layout",
+    version: "0.1.0-draft",
+  });
   const importEntry = entries.find((entry) => entry.event === "import")!;
   assert.equal(importEntry.layout, "photo-path-layout");
   assert.equal(importEntry.files, 8);
@@ -817,9 +915,7 @@ test("R-SRC-20, R-FOUND-3: under photo-path layout, a file it does not place kee
   await importFolder(folder, tcDirectory);
 
   assert.equal(
-    existsSync(
-      path.join(tcDirectory, "2019/2019-07/local-folder/IMG_0101.JPG"),
-    ),
+    existsSync(path.join(tcDirectory, "2019/2019-07/IMG_0101.JPG")),
     true,
   );
   assert.equal(existsSync(storedDirectory(tcDirectory, "IMG_0101.JPG")), false);
@@ -884,29 +980,124 @@ test("R-PHOTO-8: each photo whose date is uncertain is logged, with that date an
   );
 });
 
-test("R-SRC-23, R-SRC-26: of two different photos given one name and taken in one month, the second by Supplied path is left out and recorded, and the run ends with an error", async (t) => {
+test("R-PHOTO-11, R-SRC-28, R-SRC-8: of two different photos given one name and taken in one month, the second by Supplied path goes to a subdirectory named by its last directory, which differs, and a second import adds nothing", async (t) => {
   const temporary = temporaryDirectory(t);
   const { tcDirectory } = makeTcCopy(temporary);
-  const folder = path.join(temporary, "moon-photos");
+  const folder = path.join(temporary, "trip");
   copyPhotos(folder, {
-    "a/IMG_0101.JPG": "phone/IMG_0101.JPG",
-    "b/IMG_0101.JPG": "phone/IMG_0102.JPG",
+    "phone/IMG_0101.JPG": "phone/IMG_0102.JPG",
+    "camera/IMG_0101.JPG": "phone/IMG_0101.JPG",
   });
+  const entries = collectEntries(t);
 
+  await importFolder(folder, tcDirectory);
+  await importFolder(folder, tcDirectory);
+
+  const month = path.join(tcDirectory, "2019/2019-07");
+  const fromPhone = readFileSync(path.join(MoonPhotos, "phone/IMG_0102.JPG"));
+  assert.deepEqual(
+    readFileSync(path.join(month, "IMG_0101.JPG")),
+    readFileSync(path.join(MoonPhotos, "phone/IMG_0101.JPG")),
+  );
+  assert.deepEqual(
+    readFileSync(path.join(month, "phone/IMG_0101.JPG")),
+    fromPhone,
+  );
+  assert.deepEqual(manifestOf(path.join(month, "phone")).files, [
+    {
+      file: "IMG_0101.JPG",
+      size: fromPhone.length,
+      checksum: createHash("sha256").update(fromPhone).digest("hex"),
+      suppliedPath: "trip/phone/IMG_0101.JPG",
+    },
+  ]);
+  assert.deepEqual(
+    entries
+      .filter((entry) => entry.event === "import")
+      .map((entry) => entry.files),
+    [2, 0],
+  );
+});
+
+test("R-PHOTO-11: a photo whose name its month holds goes up its Supplied path's directories until one differs, across imports", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const cardA = path.join(temporary, "card-a");
+  const cardB = path.join(temporary, "card-b");
+  copyPhotos(cardA, { "DCIM/IMG_0101.JPG": "phone/IMG_0101.JPG" });
+  copyPhotos(cardB, { "DCIM/IMG_0101.JPG": "phone/IMG_0102.JPG" });
+
+  await importFolder(cardA, tcDirectory);
+  await importFolder(cardB, tcDirectory);
+
+  const month = path.join(tcDirectory, "2019/2019-07");
+  assert.deepEqual(
+    readFileSync(path.join(month, "card-b/DCIM/IMG_0101.JPG")),
+    readFileSync(path.join(MoonPhotos, "phone/IMG_0102.JPG")),
+  );
+  assert.equal(existsSync(path.join(month, "DCIM")), false);
+});
+
+test("R-PHOTO-11, R-SRC-14: a photo whose subdirectory holds its name too goes on to a subdirectory of its month named by more of its directories, in a dry run as in a real one", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const folder = path.join(temporary, "trip");
+  copyPhotos(folder, {
+    "camera/IMG_0101.JPG": "phone/IMG_0101.JPG",
+    "phone/IMG_0101.JPG": "phone/IMG_0102.JPG",
+    "x/phone/IMG_0101.JPG": "phone/IMG_0102.JPG",
+  });
+  // Bytes after a JPEG's image make another file, of that same date
+  appendFileSync(path.join(folder, "x/phone/IMG_0101.JPG"), "another photo");
+  const month = path.join(tcDirectory, "2019/2019-07");
+  const expected = [
+    path.join(month, "IMG_0101.JPG"),
+    path.join(month, "phone", "IMG_0101.JPG"),
+    path.join(month, "x", "phone", "IMG_0101.JPG"),
+  ];
+  const entries = collectEntries(t);
+  const transfers = () =>
+    entries
+      .filter((entry) => entry.event === "transfer")
+      .map((entry) => String(entry.to))
+      .sort();
+
+  await importFolder(folder, tcDirectory, true);
+  assert.deepEqual(transfers(), expected);
+  assert.equal(existsSync(path.join(tcDirectory, "2019")), false);
+  entries.length = 0;
+
+  await importFolder(folder, tcDirectory);
+  assert.deepEqual(transfers(), expected);
+  assert.deepEqual(
+    readFileSync(path.join(month, "x/phone/IMG_0101.JPG")),
+    readFileSync(path.join(folder, "x/phone/IMG_0101.JPG")),
+  );
+});
+
+test("R-PHOTO-11, R-SRC-23, R-SRC-26: a different photo supplied at the path that the photo holding its name was supplied at is left out and recorded, and the run ends with an error", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const { tcDirectory } = makeTcCopy(temporary);
+  const first = path.join(temporary, "first", "trip");
+  const second = path.join(temporary, "second", "trip");
+  copyPhotos(first, { "camera/IMG_0101.JPG": "phone/IMG_0101.JPG" });
+  copyPhotos(second, { "camera/IMG_0101.JPG": "phone/IMG_0102.JPG" });
+
+  await importFolder(first, tcDirectory);
   await assert.rejects(
-    importFolder(folder, tcDirectory),
+    importFolder(second, tcDirectory),
     /1 file left out of the collection/,
   );
 
-  const stored = path.join(tcDirectory, "2019/2019-07/local-folder");
-  assert.deepEqual(
-    readFileSync(path.join(stored, "IMG_0101.JPG")),
-    readFileSync(path.join(MoonPhotos, "phone/IMG_0101.JPG")),
-  );
-  const errorFile = onlyReceiptOf(stored, "-main.error.json");
+  const month = path.join(tcDirectory, "2019/2019-07");
+  assert.deepEqual(readdirSync(month).sort(), [
+    ".turbo-collection",
+    "IMG_0101.JPG",
+  ]);
+  const errorFile = onlyReceiptOf(month, "-main.error.json");
   assert.match(
     (errorFile.importErrors as { message: string }[])[0]!.message,
-    /b[\\/]IMG_0101\.JPG" is left out: .* holds other content/,
+    /camera[\\/]IMG_0101\.JPG" is left out: .* holds other content/,
   );
 });
 
@@ -923,9 +1114,7 @@ test("R-LOCALFOLDER-3: a photo whose place by date the TC Copy's ignore file ign
   await importFolder(folder, tcDirectory);
 
   assert.equal(
-    existsSync(
-      path.join(tcDirectory, "2020/2020-01/local-folder/IMG_0187.JPG"),
-    ),
+    existsSync(path.join(tcDirectory, "2020/2020-01/IMG_0187.JPG")),
     true,
   );
   assert.equal(existsSync(path.join(tcDirectory, "2019")), false);

@@ -3,7 +3,9 @@ import console from "node:console";
 import { readFileSync } from "node:fs";
 import process from "node:process";
 import { fileURLToPath, URL } from "node:url";
+import { parseArgs } from "node:util";
 
+import { nodeFloorChange } from "./engines-node-floor.ts";
 import { writeNodeTypesException } from "./node-types-version-exception.ts";
 import { TcError } from "./tc-error.ts";
 
@@ -13,13 +15,16 @@ import { TcError } from "./tc-error.ts";
 // * Uses `@latest` for most packages. * Any package listed in
 // npm-version-exceptions.json is held to whichever range is recorded there
 // instead. A file that is missing or incorrect holds no package, and a run
-// that writes an entry writes that file afresh. * `@types/node` always has an
-// entry there. Each run starts by writing it, derived from package.json's Node
-// floor, `engines.node`, so those types never describe a newer Node than this
-// code has to run on. See node-types-version-exception.ts. * A run writes that
-// entry, then updates every dependency. Each step is on by default:
-// `--no-types-node` leaves out step one and `--no-dependencies` step two. A
-// dry run reports what each step would do and changes no file.
+// that writes an entry writes that file afresh. * Each run starts by raising
+// package.json's Node floor, `engines.node`, to whichever Node runs it, within
+// that floor's major. See engines-node-floor.ts. * `@types/node` always has an
+// entry in npm-version-exceptions.json. A run writes it next, derived from
+// that floor, so those types never describe a newer Node than this code has
+// to run on. See node-types-version-exception.ts. * A run raises that floor,
+// writes that entry, then updates every dependency. Each step is on by
+// default: `--no-engines-node` leaves out step one, `--no-types-node` step two
+// and `--no-dependencies` step three. A dry run reports what each step would
+// do and changes no file.
 //
 // Held or not, a package resolves to a concrete version first, then `npm
 // install` pins it and writes into package-lock.json. Resolving first is what
@@ -92,23 +97,28 @@ function execNpm(npmArgs: string, captureOutput: boolean): string {
 // matches, like "^24", it prints an array in publish order: string[]
 type NpmViewVersions = Version | Version[];
 
-function EnsureJsonParse<T>(stringJson: string): T {
+// `stringJson` parsed, where it holds a value other than null. `what` names
+// that text in the error thrown where it holds null. Text that is not JSON
+// throws `JSON.parse`'s own error.
+function EnsureJsonParse<T>(stringJson: string, what: string): T {
   const parsedObj = JSON.parse(stringJson) as T;
 
   if (parsedObj === null) {
-    throw Error();
+    throw new TcError(`${what} holds null, where a JSON value was expected`);
   }
 
   return parsedObj;
 }
 
 function EnsureJsonParseUrl<T>(url: URL): T {
-  return EnsureJsonParse<T>(readFileSync(url, "utf8"));
+  return EnsureJsonParse<T>(readFileSync(url, "utf8"), fileURLToPath(url));
 }
 
-function EnsureObj<T>(obj: T | undefined): T {
+// `obj`, where it is defined. `what` names it in the error thrown where it is
+// not.
+function EnsureObj<T>(obj: T | undefined, what: string): T {
   if (obj === undefined) {
-    throw Error();
+    throw new TcError(`${what} is missing`);
   }
 
   return obj;
@@ -125,7 +135,10 @@ export function getRequestedVersion(
   requestedRange: VersionRange,
 ): Version {
   try {
-    const npmViewVersions = EnsureJsonParse<NpmViewVersions>(npmViewOutputJson);
+    const npmViewVersions = EnsureJsonParse<NpmViewVersions>(
+      npmViewOutputJson,
+      "npm view's output",
+    );
 
     // Single Version
     if (!Array.isArray(npmViewVersions)) {
@@ -135,7 +148,7 @@ export function getRequestedVersion(
     // Last Version in Array
     const lastVersion = npmViewVersions[npmViewVersions.length - 1];
 
-    return EnsureObj(lastVersion);
+    return EnsureObj(lastVersion, "npm view's last version");
   } catch (e) {
     throw new TcError(
       `no published version of ${packageName} satisfies ${requestedRange}: npmViewOutputJson: ${npmViewOutputJson}`,
@@ -275,14 +288,15 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
     }
   }
 
-  // An unrecognized CLI package name on a command line is a typo worth
+  // A package name on a command line that is not a dependency is a typo worth
   // stopping for, not a package to silently add.
   const unrecognizedCliPackage = npmUpdaterCliArgs.packages.filter(
     (name) => !(name in origAllDependencies),
   );
   if (unrecognizedCliPackage.length > 0) {
-    console.error(`Not a dependency: ${unrecognizedCliPackage.join(", ")}`);
-    process.exit(1);
+    throw new TcError(
+      `not a dependency in package.json: ${unrecognizedCliPackage.join(", ")}. Name only a package that package.json lists.`,
+    );
   }
 
   const packagesToUpdate: PackageToUpdate[] = getPackagesToUpdate(
@@ -302,7 +316,10 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
   const nameVersionStringsBySaveSettings: Record<string, string[]> = {};
   const packageLock = findPackageLock();
   for (const { packageName, requestedRange } of packagesToUpdate) {
-    const origVersion = EnsureObj(origAllDependencies[packageName]);
+    const origVersion = EnsureObj(
+      origAllDependencies[packageName],
+      `${packageName}'s range in package.json`,
+    );
     const saveSettings = getSaveSettings(packageName, origVersion);
 
     const npmVersion = queryRequestedNpmVersion(
@@ -420,7 +437,11 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 }
 
 type NpmUpdaterCliArgs = {
+  // --help: show UsageMessage, and do nothing else
+  help: boolean;
   dryRun: boolean;
+  // Raise package.json's Node floor first. On unless --no-engines-node
+  enginesNode: boolean;
   // Write `@types/node`'s entry first. On unless --no-types-node
   typesNode: boolean;
   // Update every dependency. On unless --no-dependencies
@@ -429,63 +450,119 @@ type NpmUpdaterCliArgs = {
   packages: PackageName[];
 };
 
-const UsageMessage = `Usage: node package-json-npm-updater.ts [options] [package...]
+// Written as turbo-collection.ts writes its help: options before operands, a
+// placeholder in angle brackets, and each option's default.
+const UsageMessage = `Usage:
+  node helpers/package-json-npm-updater.ts [options] [<package>...]
 
-Update dependencies to their newest allowed release, rewriting package.json and
-package-lock.json. With no package names, every dependency is updated; otherwise only
-the named ones. A package in npm-version-exceptions.json stays within its recorded
-range. @types/node always has an entry there: each run first writes the range that
-keeps it at or below the Node floor in package.json engines.
+Update each <package>, or every dependency where none is named, to its newest
+allowed release, rewriting package.json and package-lock.json. Each run first
+raises package.json's Node floor, engines.node, to whichever Node runs it,
+within that floor's major. A package in helpers/npm-version-exceptions.json
+stays within its recorded range. @types/node always has an entry there, which
+each run writes next: a range that keeps it at or below that floor.
 
 Options:
-      --dry-run            Report what a run would write and install, and change no
-                           file.
-      --types-node    Write the @types/node entry first. On by default;
-                           --no-types-node skips it.
-      --dependencies  Update the dependencies. On by default; --no-dependencies
-                           skips it, so a run only writes the @types/node entry.
-  -h, --help               Show this message.`;
+  -n, --dry-run          Report what a run would write and install, and change
+                         no file. Default: off.
+      --engines-node     Raise engines.node to the Node running this update,
+                         within its major. Default: on; --no-engines-node
+                         leaves it out.
+      --types-node      Write the @types/node entry first. Default: on;
+                         --no-types-node leaves it out.
+      --dependencies     Update each dependency. Default: on;
+                         --no-dependencies leaves it out, so a run only writes
+                         the @types/node entry.
+  -h, --help             Show this help and exit.
+`;
 
-export function parseCliArgs(argv: string[]): NpmUpdaterCliArgs {
-  const npmUpdaterCliArgs: NpmUpdaterCliArgs = {
-    dryRun: false,
-    typesNode: true,
-    dependencies: true,
-    packages: [],
+// Reads command line `argv` as POSIX's Utility Syntax Guidelines and GNU's
+// long options describe, as turbo-collection.ts reads its own. An unknown
+// option is an error, which `parseArgs` throws. Given --help, a command line's
+// package names are passed over.
+export function parseCliArgs(argv: readonly string[]): NpmUpdaterCliArgs {
+  const { values, positionals } = parseArgs({
+    args: [...argv],
+    options: {
+      // -n, as in GNU's table of long options
+      "dry-run": { type: "boolean", short: "n", default: false },
+      "engines-node": { type: "boolean", default: true },
+      "types-node": { type: "boolean", default: true },
+      dependencies: { type: "boolean", default: true },
+      help: { type: "boolean", short: "h", default: false },
+    },
+    allowPositionals: true,
+    // --no-engines-node, --no-types-node and --no-dependencies
+    allowNegative: true,
+  });
+
+  return {
+    help: values.help,
+    dryRun: values["dry-run"],
+    enginesNode: values["engines-node"],
+    typesNode: values["types-node"],
+    dependencies: values.dependencies,
+    packages: positionals,
   };
+}
 
-  for (const arg of argv) {
-    if (arg === "--dry-run") {
-      npmUpdaterCliArgs.dryRun = true;
-    } else if (arg === "--types-node" || arg === "--no-types-node") {
-      npmUpdaterCliArgs.typesNode = arg === "--types-node";
-    } else if (arg === "--dependencies" || arg === "--no-dependencies") {
-      npmUpdaterCliArgs.dependencies = arg === "--dependencies";
-    } else if (arg === "-h" || arg === "--help") {
-      console.log(UsageMessage);
-      process.exit(0);
-    } else if (arg.startsWith("-")) {
-      console.error(`Unknown option: ${arg}\n\n${UsageMessage}`);
-      process.exit(1);
-    } else {
-      npmUpdaterCliArgs.packages.push(arg);
-    }
+// Raises package.json's Node floor, `enginesNode`, to whichever Node runs this
+// update, within that floor's major, and says so. Returns that floor as this
+// run leaves it, or as a dry run would leave it, so `@types/node`'s entry
+// follows it in a dry run too. See engines-node-floor.ts.
+//
+// `npm pkg set` writes that floor into package.json, changing no other line.
+// package-lock.json repeats package.json's `engines`, and `npm install
+// --package-lock-only` brings it up to date, touching no other line and no
+// node_modules. Both measured under npm 11.20.0 and Node 26.13.1. Its setting
+// is double-quoted because `>` redirects under both shells.
+function raiseNodeFloor(
+  enginesNode: string | undefined,
+  dryRun: boolean,
+): string | undefined {
+  const nodeVersion = process.versions.node;
+  const change = nodeFloorChange(enginesNode, nodeVersion);
+
+  if (change.kind === "keep") {
+    return enginesNode;
+  }
+  if (change.kind === "newerMajor") {
+    console.log(
+      `engines.node: ${enginesNode} kept. Node ${nodeVersion} runs this update, a newer major, and raising engines.node to it is a hand edit in package.json.`,
+    );
+    return enginesNode;
+  }
+  if (dryRun) {
+    console.log(
+      `Dry run: would raise engines.node from ${enginesNode} to ${change.enginesNode}, the Node running this update`,
+    );
+    return change.enginesNode;
   }
 
-  return npmUpdaterCliArgs;
+  execNpm(`pkg set "engines.node=${change.enginesNode}"`, false);
+  execNpm("install --package-lock-only", false);
+  console.log(
+    `package.json: engines.node is now ${change.enginesNode}, the Node running this update`,
+  );
+  return change.enginesNode;
 }
 
 function updatePackageJson(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
-  // First write `@types/node` in npm-version-exceptions.json.
-  // Actual update that follows
-  // then reads that file and knows nothing specific about `@types/node`.
-  if (npmUpdaterCliArgs.typesNode) {
-    const packageJsonObj = EnsureJsonParseUrl<PackageJsonType>(packageJsonUrl);
+  const packageJsonObj = EnsureJsonParseUrl<PackageJsonType>(packageJsonUrl);
 
+  // First raise package.json's Node floor, then write `@types/node` in
+  // npm-version-exceptions.json from that floor. Actual update that follows
+  // then reads that file and knows nothing specific about `@types/node`.
+  let enginesNode = packageJsonObj.engines?.node;
+  if (npmUpdaterCliArgs.enginesNode) {
+    enginesNode = raiseNodeFloor(enginesNode, npmUpdaterCliArgs.dryRun);
+  }
+
+  if (npmUpdaterCliArgs.typesNode) {
     writeNodeTypesException(
       npmVersionExceptionsUrl,
       getAllDependencies(packageJsonObj),
-      packageJsonObj.engines?.node,
+      enginesNode,
       npmUpdaterCliArgs.dryRun,
     );
   }
@@ -496,9 +573,20 @@ function updatePackageJson(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 }
 
 function main(): void {
-  const npmUpdaterCliArgs: NpmUpdaterCliArgs = parseCliArgs(
-    process.argv.slice(2),
-  );
+  // A command line that cannot be read ends its run after UsageMessage, with
+  // its error thrown again for Node to report.
+  let npmUpdaterCliArgs: NpmUpdaterCliArgs;
+  try {
+    npmUpdaterCliArgs = parseCliArgs(process.argv.slice(2));
+  } catch (e) {
+    console.error(UsageMessage);
+    throw e;
+  }
+
+  if (npmUpdaterCliArgs.help) {
+    console.log(UsageMessage);
+    return;
+  }
 
   updatePackageJson(npmUpdaterCliArgs);
 }

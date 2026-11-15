@@ -17,6 +17,13 @@ import path from "node:path";
 import { takeCollectionLock } from "./collection-lock.ts";
 import { dateToString } from "./helpers/date-helper.ts";
 import { TcError } from "./helpers/tc-error.ts";
+import {
+  checkNewTcCopy,
+  compileStarterIgnoreFile,
+  logNewTcCopy,
+  writeNewTcCopy,
+  type NewTcCopy,
+} from "./init.ts";
 import { listLocalFolder, type Item } from "./local-folder-importer.ts";
 import { logger } from "./logger.ts";
 import {
@@ -28,11 +35,12 @@ import {
   writeManifest,
   writeReceiptFile,
   type ManifestEntry,
+  type TcConfig,
 } from "./meta-files.ts";
 import {
   configurationFileOf,
   tcDirectoryAtOrAbove,
-  tcDirectoryOfWorkingDirectory,
+  tcDirectoryOrWorkingDirectory,
   ensureNoLinkInPath,
   ensureNotInsideTcCopy,
   isTcDirectory,
@@ -111,15 +119,18 @@ type ImportContext = {
 
 // Imports `importDirectory`'s files into whichever TC Copy is in
 // `tcDirectory` or, where none is given, whichever TC Copy this run's working
-// directory is in (R-SRC-25, turbo-collection-core-spec.md R-CLI-22). `runId`
-// names every receipt file this import writes (meta-file-spec.md R-MFILE-13).
+// directory is in (R-SRC-25, turbo-collection-core-spec.md R-CLI-22). Where
+// there is no TC Copy there, this import makes one as init would given no
+// name, and imports into it (R-SRC-27). `runId` names every receipt file this
+// import writes (meta-file-spec.md R-MFILE-13).
 //
 // Both directories, that TC Copy's configuration, its collection's lock and
-// every entry of `importDirectory` are checked before a file is written. Then
-// each directory of that TC Copy is filled in turn, and what stops a run in
-// one, such as a manifest that does not parse, stops it there. A file left
-// out is an error once this import has done all else, so its run exits with
-// a non-zero status (R-SRC-23, R-SRC-24, R-SRC-26).
+// every entry of `importDirectory` are checked before a file is written, and
+// so is a TC Copy this import makes, which is made only then. Each directory
+// of that TC Copy is then filled in turn, and what stops a run in one, such as
+// a manifest that does not parse, stops it there. A file left out is an error
+// once this import has done all else, so its run exits with a non-zero status
+// (R-SRC-23, R-SRC-24, R-SRC-26).
 export async function importIntoTcCopy(
   { importDirectory, tcDirectory: givenTcDirectory, dryRun }: ImportArgs,
   runId: string,
@@ -127,28 +138,34 @@ export async function importIntoTcCopy(
   const importedDirectory = path.resolve(importDirectory);
   const tcDirectory =
     givenTcDirectory === undefined
-      ? tcDirectoryOfWorkingDirectory()
+      ? tcDirectoryOrWorkingDirectory()
       : path.resolve(givenTcDirectory);
   ensureNoLinkInPath(tcDirectory);
   ensureNoLinkInPath(importedDirectory);
-  ensureTcDirectory(tcDirectory);
   ensureImportable(importedDirectory);
 
-  const configurationFile = configurationFileOf(tcDirectory);
-  const tcConfig = readConfigurationFile(tcDirectory);
-  logger.log({
-    event: "configuration",
-    verbose: true,
-    path: configurationFile,
-    configuration: tcConfig,
-    toString: () => `Read ${configurationFile}: ${JSON.stringify(tcConfig)}`,
-  });
+  // A TC Copy this import makes, where `tcDirectory` is not a TC Directory
+  const newTcCopy = isTcDirectory(tcDirectory)
+    ? undefined
+    : checkTcCopyToMake(
+        tcDirectory,
+        importedDirectory,
+        givenTcDirectory === undefined,
+      );
+  const tcConfig = newTcCopy?.tcConfig ?? readTcConfigOf(tcDirectory);
 
+  // A TC Copy this import makes is locked before it is written, so another run
+  // that finds its configuration file finds its collection's lock held
+  // (parallel-safety-spec.md R-PARALLEL-4).
   await using _collectionLock = await takeCollectionLock(tcConfig);
 
   // A TC Copy's ignore file decides by a file's path in that TC Copy
-  // (R-LOCALFOLDER-3).
-  const isIgnored = readIgnoreFileOf(tcDirectory);
+  // (R-LOCALFOLDER-3), and a TC Copy this import makes will hold init's
+  // starter ignore file.
+  const isIgnored =
+    newTcCopy === undefined
+      ? readIgnoreFileOf(tcDirectory)
+      : compileStarterIgnoreFile();
   const listing = listLocalFolder(importedDirectory, (suppliedPath) =>
     isIgnored(collectionPathOf(suppliedPath)),
   );
@@ -163,6 +180,13 @@ export async function importIntoTcCopy(
   ensureRegularFilesOnly(importedDirectory, listing.notRegular);
   const { layout, placed } = placeItems(listing.items, isIgnored);
 
+  if (newTcCopy !== undefined) {
+    if (!dryRun) {
+      writeNewTcCopy(newTcCopy);
+    }
+    logNewTcCopy(newTcCopy, dryRun);
+  }
+
   const context: ImportContext = {
     tcDirectory,
     tcCopyName: tcConfig.tcCopyName,
@@ -174,8 +198,24 @@ export async function importIntoTcCopy(
     placed: new Map(),
     held: new Map(),
   };
-  for (const [directory, group] of byDirectory(placed)) {
-    importIntoDirectory(context, directory, group.layout, group.items);
+  // A photo whose name its directory holds with other content goes on to a
+  // subdirectory (photo-path-layout-spec.md R-PHOTO-11), and each round of
+  // such photos is imported in turn, unless `isIgnored` ignores its new place
+  // (R-LOCALFOLDER-3).
+  let groups = byDirectory(placed);
+  while (groups.size > 0) {
+    const moved: PlacedItem[] = [];
+    for (const [directory, group] of groups) {
+      moved.push(
+        ...importIntoDirectory(context, directory, group.layout, group.items),
+      );
+    }
+    groups = byDirectory(
+      moved.filter(
+        ({ item, directory }) =>
+          !isIgnored(`${directory}/${nameOf(item.suppliedPath)}`),
+      ),
+    );
   }
 
   logger.log({
@@ -202,15 +242,70 @@ function countOfFiles(count: number): string {
   return count === 1 ? "1 file" : `${count} files`;
 }
 
-// Throws where `tcDirectory` is not a TC Directory
-// (turbo-collection-core-spec.md R-CLI-14), or lies inside one (R-CLI-18).
-function ensureTcDirectory(tcDirectory: string): void {
-  if (!isTcDirectory(tcDirectory)) {
+// Configuration of a TC Copy in `tcDirectory`, a TC Directory, after checking
+// that it lies inside no other TC Copy (turbo-collection-core-spec.md
+// R-CLI-18).
+function readTcConfigOf(tcDirectory: string): TcConfig {
+  ensureNotInsideTcCopy(tcDirectory);
+  const configurationFile = configurationFileOf(tcDirectory);
+  const tcConfig = readConfigurationFile(tcDirectory);
+  logger.log({
+    event: "configuration",
+    verbose: true,
+    path: configurationFile,
+    configuration: tcConfig,
+    toString: () => `Read ${configurationFile}: ${JSON.stringify(tcConfig)}`,
+  });
+  return tcConfig;
+}
+
+// A TC Copy an import makes in `tcDirectory`, which is not a TC Directory, as
+// init would given no name, once every check init makes has passed
+// (R-SRC-27). `importedDirectory` is checked as it will be once that TC Copy
+// exists: it neither holds that TC Copy nor lies inside it
+// (local-folder-import-source-spec.md R-LOCALFOLDER-2). `leftOut` says that
+// `tcDirectory` is this run's working directory, since its command line gave
+// none (turbo-collection-core-spec.md R-CLI-22).
+function checkTcCopyToMake(
+  tcDirectory: string,
+  importedDirectory: string,
+  leftOut: boolean,
+): NewTcCopy {
+  if (isAtOrInside(tcDirectory, importedDirectory)) {
     throw new TcError(
-      `"${tcDirectory}" is not a TC Directory, so nothing is imported into it. Give a TC Directory to import into.`,
+      `"${importedDirectory}" would hold the TC Copy this import makes at "${tcDirectory}", and a directory holding a TC Copy is not imported. Give a TC Directory outside it.`,
     );
   }
-  ensureNotInsideTcCopy(tcDirectory);
+  if (isAtOrInside(importedDirectory, tcDirectory)) {
+    throw new TcError(
+      `"${importedDirectory}" would lie inside the TC Copy this import makes at "${tcDirectory}", and nothing inside a TC Copy is imported. Give a TC Directory outside it.`,
+    );
+  }
+
+  try {
+    return checkNewTcCopy(tcDirectory, undefined, undefined);
+  } catch (e) {
+    const where = leftOut
+      ? `No TC Directory was given, and "${tcDirectory}" is in no TC Copy`
+      : `"${tcDirectory}" is not a TC Directory`;
+    throw new TcError(
+      `${where}, and this import cannot make a TC Copy there as init would given no name: ${(e as Error).message}`,
+      { cause: e },
+    );
+  }
+}
+
+// Whether `directory` is `other` or lies inside it, comparing paths as a TC
+// Copy compares them (turbo-collection-spec.md R-TGT-14).
+function isAtOrInside(directory: string, other: string): boolean {
+  const directoryKey = pathKeyOf(directory);
+  const otherKey = pathKeyOf(other);
+  return (
+    directoryKey === otherKey ||
+    directoryKey.startsWith(
+      otherKey.endsWith(path.sep) ? otherKey : otherKey + path.sep,
+    )
+  );
 }
 
 // Throws where `directory` cannot be an Imported directory: one that is not a
@@ -328,7 +423,7 @@ function placeItems(
   const places = new Map<Item, PhotoPlace | undefined>(
     items.map((item) => [
       item,
-      photoPlaceOf(item.readPath, nameOf(item.suppliedPath), LocalFolder),
+      photoPlaceOf(item.readPath, nameOf(item.suppliedPath)),
     ]),
   );
   const isPassedOver = (item: Item, place: PhotoPlace): boolean =>
@@ -400,6 +495,36 @@ function byDirectory(
     groups.set(spelling, group);
   }
   return groups;
+}
+
+// Where photo-path layout puts a photo supplied as `suppliedPath`, whose name
+// `relativeDirectory` holds with other content, supplied as
+// `heldSuppliedPath` (photo-path-layout-spec.md R-PHOTO-11): a subdirectory
+// of its month's directory, named by as few last directories of
+// `suppliedPath` as differ from as many of `heldSuppliedPath`'s, compared as
+// R-TGT-14 compares paths. Each try takes more directories than
+// `relativeDirectory` already takes below its month, so a photo moved on
+// never comes back. Undefined where no directory differs, and that photo is
+// left out (import-spec.md R-SRC-23).
+function subdirectoryFor(
+  relativeDirectory: string,
+  suppliedPath: string,
+  heldSuppliedPath: string,
+): string | undefined {
+  const [year, month, ...taken] = relativeDirectory.split("/");
+  const directoriesOf = (supplied: string): string[] =>
+    supplied.split("/").slice(0, -1);
+  const arriving = directoriesOf(suppliedPath);
+  const held = directoriesOf(heldSuppliedPath);
+  const keyOf = (segments: readonly string[]): string =>
+    pathKeyOf(segments.join("/"));
+  for (let count = taken.length + 1; count <= arriving.length; count++) {
+    const last = arriving.slice(-count);
+    if (keyOf(last) !== keyOf(held.slice(-count))) {
+      return [year, month, ...last].join("/");
+    }
+  }
+  return undefined;
 }
 
 // Where a directory goes in a TC Copy, as `placeDirectory` finds it: at
@@ -524,14 +649,17 @@ function quoted(names: readonly string[]): string {
 // that directory's manifest does not list it, and listed once it is
 // completely written (turbo-collection-spec.md R-TGT-13). Then that directory
 // gets its arrival file (verify-spec.md R-REC-5), and an error file where a
-// file was left out (meta-file-spec.md R-MFILE-13, R-MFILE-16).
+// file was left out (meta-file-spec.md R-MFILE-13, R-MFILE-16). Returns each
+// photo this directory holds another file's name for, with a subdirectory it
+// goes to instead (photo-path-layout-spec.md R-PHOTO-11).
 function importIntoDirectory(
   context: ImportContext,
   relativeDirectory: string,
   layout: LayoutStamp,
   items: readonly Item[],
-): void {
+): PlacedItem[] {
   const errors: string[] = [];
+  const moved: PlacedItem[] = [];
 
   // Logs a file as left out of its collection, and keeps its message for that
   // directory's error file.
@@ -548,6 +676,33 @@ function importIntoDirectory(
     context.leftOut++;
   };
 
+  // A file whose name `target` holds with other content, supplied as
+  // `heldSuppliedPath`, goes on to a subdirectory under photo-path layout
+  // where its directories differ from that file's, and is otherwise left
+  // out, since an import never writes over a file (R-SRC-23).
+  const holdsOtherContent = (
+    item: Item,
+    target: string,
+    heldSuppliedPath: string,
+  ): void => {
+    const subdirectory =
+      layout.specId === PhotoPathLayoutStamp.specId
+        ? subdirectoryFor(
+            relativeDirectory,
+            item.suppliedPath,
+            heldSuppliedPath,
+          )
+        : undefined;
+    if (subdirectory === undefined) {
+      leaveOut(
+        item,
+        `"${target}" in the collection holds other content, and an import never writes over it.`,
+      );
+    } else {
+      moved.push({ item, directory: subdirectory, layout });
+    }
+  };
+
   // A directory with no place leaves every file for it out, with no error
   // file, which would need that directory (R-SRC-26, R-TGT-14).
   const placement = placeDirectory(context, relativeDirectory);
@@ -559,7 +714,7 @@ function importIntoDirectory(
     for (const item of items) {
       leaveOut(item, reason);
     }
-    return;
+    return moved;
   }
   const { directory } = placement;
 
@@ -578,7 +733,7 @@ function importIntoDirectory(
       );
     }
     recordErrors(context, directory, errors);
-    return;
+    return moved;
   }
 
   // A directory filled under another MAJOR line of its import source's
@@ -614,6 +769,7 @@ function importIntoDirectory(
       listed,
       wouldWrite,
       leaveOut,
+      holdsOtherContent,
     );
     if (entry !== undefined) {
       list(entry);
@@ -640,6 +796,7 @@ function importIntoDirectory(
     });
   }
   recordErrors(context, directory, errors);
+  return moved;
 }
 
 // Writes `directory`'s error file where this import left out a file that was
@@ -658,19 +815,20 @@ function recordErrors(
   });
 }
 
-// A file a dry run would write: where it is read from, and where it would go.
-type Arrival = { readPath: string; target: string };
+// A file a dry run would write: where it is read from, its Supplied path, and
+// where it would go.
+type Arrival = { readPath: string; suppliedPath: string; target: string };
 
 // Imports `item` into `directory`, whose manifest's entries are `listed`,
 // each under its name's key, and returns an entry to list it with, or
 // undefined where it wrote nothing. A file listed under any spelling of its
 // name is that file (turbo-collection-spec.md R-TGT-14): with identical
 // content it is in its collection already (R-SRC-8), and with other content
-// it is left out (R-SRC-23). A dry run lists nothing, so it keeps each file
-// it would write in `wouldWrite`, and compares a later spelling of that name
-// with it, as a real import would. A file that cannot be read or written is
-// left out, and one that a TC Copy cannot take at all, such as on a full drive,
-// ends its run (R-SRC-26).
+// it goes to `holdsOtherContent`. A dry run lists nothing, so it keeps each
+// file it would write in `wouldWrite`, and compares a later spelling of that
+// name with it, as a real import would. A file that cannot be read or written
+// is left out, and one that a TC Copy cannot take at all, such as on a full
+// drive, ends its run (R-SRC-26).
 function importFile(
   context: ImportContext,
   directory: string,
@@ -678,6 +836,11 @@ function importFile(
   listed: ReadonlyMap<string, readonly ManifestEntry[]>,
   wouldWrite: Map<string, Arrival>,
   leaveOut: (item: Item, reason: string) => void,
+  holdsOtherContent: (
+    item: Item,
+    target: string,
+    heldSuppliedPath: string,
+  ) => void,
 ): ManifestEntry | undefined {
   if (!isPlaceable(item.suppliedPath)) {
     leaveOut(
@@ -749,10 +912,7 @@ function importFile(
       return undefined;
     }
     if (checksum !== entry.checksum) {
-      leaveOut(
-        item,
-        `"${target}" in the collection holds other content, and an import never writes over it.`,
-      );
+      holdsOtherContent(item, target, entry.suppliedPath);
     }
     return undefined;
   }
@@ -767,10 +927,7 @@ function importFile(
       return undefined;
     }
     if (!same) {
-      leaveOut(
-        item,
-        `"${earlier.target}" in the collection holds other content, and an import never writes over it.`,
-      );
+      holdsOtherContent(item, earlier.target, earlier.suppliedPath);
     }
     return undefined;
   }
@@ -782,7 +939,11 @@ function importFile(
 
   if (context.dryRun) {
     logTransfer(context, item.readPath, target, size);
-    wouldWrite.set(key, { readPath: item.readPath, target });
+    wouldWrite.set(key, {
+      readPath: item.readPath,
+      suppliedPath: item.suppliedPath,
+      target,
+    });
     return undefined;
   }
 
@@ -810,7 +971,12 @@ function importFile(
   }
 
   logTransfer(context, item.readPath, target, written.size);
-  return { file: name, size: written.size, checksum: written.checksum };
+  return {
+    file: name,
+    size: written.size,
+    checksum: written.checksum,
+    suppliedPath: item.suppliedPath,
+  };
 }
 
 // Logs a file an import writes, or a dry run would write (R-LOG-15).

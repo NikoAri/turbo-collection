@@ -108,10 +108,6 @@ run that could not do what it was asked.
   quotes above them becomes a line of Node's own. Standard error then holds the
   message twice, first as the `error` entry's line (`logging-spec.md` R-LOG-9),
   then in Node's report with the stack trace under it, and both stay.
-- **`ExitSignal`**, which stands in for `process.exit` in the npm updater's
-  [test](../../scripts/test/package-json-npm-updater.test.ts): throwing it ends
-  a call the way an exit would end the process. It reports no failure, so it
-  extends `Error` directly.
 
 ## What holds it
 

@@ -21,8 +21,9 @@ export type ReadFrom =
 
 // Where photo-path layout places a file, and by which date.
 export type PhotoPlace = {
-  // `<YYYY>/<YYYY>-<MM>/<import source>`, relative to a TC Directory, with `/`
-  // between its segments (R-PHOTO-3, R-PHOTO-4)
+  // `<YYYY>/<YYYY>-<MM>`, relative to a TC Directory, with `/` between its
+  // segments, whichever import source supplied that file (R-PHOTO-3,
+  // R-PHOTO-4)
   directory: string;
   // Governing timestamp, in local wall-clock time, as `YYYY-MM-DDTHH:MM:SS`,
   // or as `YYYY-MM-DD` where only a date was read (R-PHOTO-6, R-PHOTO-7)
@@ -36,13 +37,11 @@ export function isUncertain(place: PhotoPlace): boolean {
 }
 
 // Where photo-path layout places a file read from `file`, whose Supplied
-// filename is `suppliedName`, from Import Source `importSource`. Undefined
-// where `file` is no photo or video `readMediaHead` reads (R-PHOTO-1), or
-// cannot be read.
+// filename is `suppliedName`. Undefined where `file` is no photo or video
+// `readMediaHead` reads (R-PHOTO-1), or cannot be read.
 export function photoPlaceOf(
   file: string,
   suppliedName: string,
-  importSource: string,
 ): PhotoPlace | undefined {
   let head: MediaHead | undefined;
   try {
@@ -64,7 +63,7 @@ export function photoPlaceOf(
   const year = governingTimestamp.slice(0, 4);
   const month = governingTimestamp.slice(5, 7);
   return {
-    directory: `${year}/${year}-${month}/${importSource}`,
+    directory: `${year}/${year}-${month}`,
     governingTimestamp,
     readFrom,
   };

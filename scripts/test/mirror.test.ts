@@ -8,7 +8,7 @@ import { planMirror } from "../mirror.ts";
 // An entry listing `file`, whose checksum `checksum` stands for a SHA-256
 // checksum, since a plan only compares checksums.
 function entry(file: string, checksum = `checksum of ${file}`): ManifestEntry {
-  return { file, size: 1, checksum };
+  return { file, size: 1, checksum, suppliedPath: `moon-laptop/${file}` };
 }
 
 // A manifest listing `entries`, of content that `importSource` placed under
@@ -326,8 +326,16 @@ test("R-TGT-14: a mirror takes names that differ only in letter case or normaliz
       from: "Photos",
       to: "photos",
       files: [
-        { from: "LOST.jpg", entry: entry("lost.jpg", "3") },
-        { from: "extra.jpg", entry: entry("EXTRA.jpg", "4") },
+        // Respelled where a TC Copy holds another spelling, each entry keeps
+        // its Supplied path
+        {
+          from: "LOST.jpg",
+          entry: { ...entry("LOST.jpg", "3"), file: "lost.jpg" },
+        },
+        {
+          from: "extra.jpg",
+          entry: { ...entry("extra.jpg", "4"), file: "EXTRA.jpg" },
+        },
         { from: "new.jpg", entry: entry("new.jpg", "5") },
       ],
       receiptFiles: [],

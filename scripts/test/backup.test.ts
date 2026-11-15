@@ -23,6 +23,7 @@ import { backUp } from "../backup.ts";
 import { importIntoTcCopy } from "../import.ts";
 import { initializeTc } from "../init.ts";
 import { logEntryOf, logger, type LogEntry } from "../logger.ts";
+import { readManifest } from "../meta-files.ts";
 
 // What these tests make a backup log is shown nowhere, unless a test
 // collects it.
@@ -174,7 +175,7 @@ test("R-BACKUP-1, R-BACKUP-2, R-MFILE-19: a backup makes a TC Copy of its collec
   assert.equal(readFileSync(stored(home, "moon-laptop", "a.txt"), "utf8"), "a");
 });
 
-test("R-BACKUP-4, R-BACKUP-13, R-REC-6: a backup copies into each TC Copy what the other holds, with the same manifest entries, and both TC Copies end with every receipt file", async (t) => {
+test("R-BACKUP-4, R-BACKUP-13, R-REC-6, R-MFILE-10: a backup copies into each TC Copy what the other holds, with the same manifest entries, Supplied paths among them, and both TC Copies end with every receipt file", async (t) => {
   const temporary = temporaryDirectory(t);
   const { main, home } = await makeTwoTcCopies(temporary);
   await importFolder(temporary, main, "laptop", { "a.txt": "a" });
@@ -184,6 +185,10 @@ test("R-BACKUP-4, R-BACKUP-13, R-REC-6: a backup copies into each TC Copy what t
 
   assert.equal(readFileSync(stored(home, "laptop", "a.txt"), "utf8"), "a");
   assert.equal(readFileSync(stored(main, "phone", "b.txt"), "utf8"), "b");
+  assert.equal(
+    readManifest(stored(home, "laptop"))?.files[0]?.suppliedPath,
+    "laptop/a.txt",
+  );
   for (const name of ["laptop", "phone"]) {
     assert.deepEqual(
       manifestOf(stored(main, name)),

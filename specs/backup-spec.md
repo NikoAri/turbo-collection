@@ -27,9 +27,9 @@ Turbo-Collection MUST refuse a backup given a name for a new TC Copy where that
 backup creates no TC Copy. To create a new TC Copy, Turbo-Collection MUST write
 into its TC Directory a configuration file (`meta-file-spec.md` R-MFILE-17,
 R-MFILE-19) and, where that existing TC Copy has an ignore file, a duplicate of
-that ignore file (R-MFILE-20). Turbo-Collection MUST refuse to act on a
-directory given to a backup that is not a TC Directory and that holds any file
-not matching such a pattern, and MUST report every such file.
+that ignore file (R-MFILE-20). Where either of a backup's two directories is not
+a TC Directory and holds any file not matching such a pattern, Turbo-Collection
+MUST refuse that backup, and MUST report every such file.
 
 > **Example.** A backup creates a TC Copy only in an empty directory, so files
 > already there are not pulled into a collection by a two-way mirror. Two
@@ -39,7 +39,9 @@ not matching such a pattern, and MUST report every such file.
 > Copy, `main`, and an empty directory makes a TC Copy named `home` there when
 > given that name, and refuses `MAIN` as a name before it makes anything. A
 > backup given only `F:\photos`, from a working directory inside a TC Copy at
-> `E:\photos`, mirrors `E:\photos` and `F:\photos` (R-CLI-22).
+> `E:\photos`, mirrors `E:\photos` and `F:\photos` (R-CLI-22). A backup given
+> only `E:\photos` and a name, `home`, from an empty working directory in no TC
+> Copy, makes a TC Copy named `home` in that working directory and fills it.
 
 **R-BACKUP-2.** Where backup creates a directory, Turbo-Collection MUST also
 create every directory above it that does not exist.

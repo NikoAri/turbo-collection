@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0-draft",
+  "tcSpecVersion": "0.1.0-draft",
+  "runId": "20260830T093015Z-8b2e",
+  "tcCopyName": "main",
+  "importErrors": [
+    {
+      "message": "\"D:\\moon-iphone\\IMG_4108.HEIC\" is left out: \"E:\\tc-sample-main\\2026\\2026-08\\IMG_4108.HEIC\" in the collection holds other content, and an import never writes over it."
+    }
+  ]
+}

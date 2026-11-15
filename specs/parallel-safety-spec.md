@@ -16,10 +16,11 @@ log under its new ID.
 > A Run that comes second takes a new ID and creates its log under that one.
 
 **R-PARALLEL-2.** Where Turbo-Collection makes a TC Copy in a directory
-(`init-spec.md` R-INIT-1, `backup-spec.md` R-BACKUP-1), Turbo-Collection MUST
-write that TC Copy's configuration file (`meta-file-spec.md` R-MFILE-17) before
-any other file it writes into that directory. Turbo-Collection MUST write that
-configuration file only where nothing exists at its path.
+(`init-spec.md` R-INIT-1, `import-spec.md` R-SRC-27, `backup-spec.md`
+R-BACKUP-1), Turbo-Collection MUST write that TC Copy's configuration file
+(`meta-file-spec.md` R-MFILE-17) before any other file it writes into that
+directory. Turbo-Collection MUST write that configuration file only where
+nothing exists at its path.
 
 **R-PARALLEL-3.** Where a Run is making a TC Copy in a directory and something
 already exists at that TC Copy's configuration file's path, Turbo-Collection

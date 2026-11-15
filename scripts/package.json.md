@@ -44,24 +44,31 @@ resolves every dependency to its newest allowed release, rewrites both
 `package.json` and `package-lock.json`, and reports what moved. A range keeps
 its form, whatever npm is configured to write on the machine: what stands in
 front of its version (`^`, `~`, `>=`, `=`, or nothing) stays in front of the new
-one. It carries no flags because what to hold back is data, not a command-line
-argument. `@types/node` is held to the Node floor that `engines` already
-records: a floor of `>=24.19.0` resolves it within `>=24.0.0 <=24.19.0`, so
-types never carry a version above the lowest Node this code has to run on, and
-raising the floor is the single edit that moves both. The cap is the floor's own
-version on purpose. The patch of `@types/node` only counts revisions of the
-types, so a later `24.19.x` would describe the same Node, but a plain comparison
-of two versions is easier to hold in mind than that numbering, and a few
-revisions of the types are the accepted price. Every hold is a range recorded in
+one. Its options choose which steps a run takes, never what to hold back,
+because what to hold back is data, not a command-line argument. Each run first
+raises `engines.node`, the Node floor, to whichever Node runs it, within that
+floor's major, so the floor follows each Node release this code is updated on. A
+move to a newer major is a hand edit, and a run that sees a newer major says so.
+`npm pkg set` writes that floor, and `npm install --package-lock-only` brings
+`package-lock.json`'s copy of `engines` up to date, each changing that one line
+and nothing else. `@types/node` is then held to that floor: a floor of
+`>=24.19.0` resolves it within `>=24.0.0 <=24.19.0`, so types never carry a
+version above the lowest Node this code has to run on, and raising the floor, by
+a run or by hand, moves both. The cap is the floor's own version on purpose. The
+patch of `@types/node` only counts revisions of the types, so a later `24.19.x`
+would describe the same Node, but a plain comparison of two versions is easier
+to hold in mind than that numbering, and a few revisions of the types are the
+accepted price. Every hold is a range recorded in
 [`helpers/npm-version-exceptions.json`](helpers/npm-version-exceptions.json).
-The one for `@types/node` is written there at the start of each run by
+The one for `@types/node` is written there right after that raise by
 [`node-types-version-exception.ts`](helpers/node-types-version-exception.ts);
-any other is recorded by hand, and there is none today. A dry run changes no
-file and reports what it would have written and installed. `--no-types-node`
-leaves out the writing of that entry, and `--no-dependencies` leaves out the
-update. Wrapping it as a verb is what lets `npm run update` work from anywhere,
-since npm runs a script from this directory and a bare `node helpers/...` path
-resolves only from here.
+any other is recorded by hand, and there is none today. A dry run (`-n`) changes
+no file and reports what it would have written and installed, the `@types/node`
+range that a raised floor would bring included. `--no-engines-node` leaves out
+the raise, `--no-types-node` the writing of that entry, and `--no-dependencies`
+the update. Wrapping it as a verb is what lets `npm run update` work from
+anywhere, since npm runs a script from this directory and a bare
+`node helpers/...` path resolves only from here.
 
 **`tsc` takes no arguments on purpose.** Given no input files it reads
 [`tsconfig.json`](tsconfig.json), which is where `noEmit`, `strict` and
@@ -170,7 +177,10 @@ when the running Node is below the `engines` floor instead of only warning.
 Verified on this project: below the floor, npm exits non-zero with an
 `EBADENGINE` error naming the required and actual versions; at or above it,
 install proceeds. The check reads the project's own `engines`, gates
-`npm install` only (not running the tool), and yields to `--force`.
+`npm install` only (not running the tool), and yields to `--force`. Since each
+`npm run update` raises that floor to whichever Node ran it, a computer whose
+Node is older, Linux in WSL included, fails `npm install` until its Node is
+updated too.
 
 This **reverses the 2026-08-22 decision** to leave the floor unenforced, which
 reasoned that nobody would run an older Node so the scenario was not worth

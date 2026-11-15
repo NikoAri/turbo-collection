@@ -12,9 +12,9 @@ Turbo-Collection has these operations and no others.
 **Writers**, which change a TC Copy:
 
 - **`init`** makes the first TC Copy
-  ([the copy-creation decision](2026-11-08-copy-creation-decision.md)).
-- **`import`** brings files in from an import source, and never creates a TC
-  Copy.
+  ([the copy-creation decision](2026-11-14-copy-creation-decision.md)).
+- **`import`** brings files in from an import source, and makes the first TC
+  Copy where it finds none.
 - **`backup`** mirrors peer TC Copies, and creates every TC Copy after the
   first.
 

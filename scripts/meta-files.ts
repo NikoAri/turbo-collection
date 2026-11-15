@@ -170,11 +170,13 @@ export type SpecificationStamp = {
   [field: string]: unknown;
 };
 
-// A manifest's entry for one file (R-MFILE-10).
+// A manifest's entry for one file: its name, its length, its checksum, and
+// its Supplied path in whichever import placed it (R-MFILE-10).
 export type ManifestEntry = {
   file: string;
   size: number;
   checksum: string;
+  suppliedPath: string;
   [field: string]: unknown;
 };
 
@@ -198,7 +200,8 @@ const isEntry = (value: unknown): value is ManifestEntry =>
   Number.isSafeInteger(value.size) &&
   (value.size as number) >= 0 &&
   isString(value.checksum) &&
-  ChecksumPattern.test(value.checksum);
+  ChecksumPattern.test(value.checksum) &&
+  isString(value.suppliedPath);
 
 const isEntryList = (value: unknown): value is ManifestEntry[] =>
   Array.isArray(value) && value.every(isEntry);
@@ -231,7 +234,7 @@ export function readManifest(directory: string): Manifest | undefined {
     object,
     "files",
     isEntryList,
-    "a list of entries, each holding file, size and a SHA-256 checksum",
+    "a list of entries, each holding file, size, a SHA-256 checksum and suppliedPath",
   );
   if (algorithm !== "SHA-256") {
     throw new TcError(

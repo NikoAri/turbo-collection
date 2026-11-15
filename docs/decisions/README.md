@@ -93,7 +93,6 @@ groupings by area once there is more than one area to group.
 | 2026-08-15 | [Removable storage, and the off-site TC Copy that never travels](2026-08-15-drive-naming-and-hardware-decision.md)                                                    | Accepted |
 | 2026-08-16 | [A future reader has help, so conveniences are not pre-built](2026-08-16-future-reader-decision.md)                                                                   | Accepted |
 | 2026-08-16 | [The manifest is JSON, and nothing sits beside it](2026-08-16-manifest-format-decision.md)                                                                            | Accepted |
-| 2026-08-22 | [The import source is a path segment, and the only category above a photo](2026-08-22-import-source-decision.md)                                                      | Accepted |
 | 2026-09-05 | [TC Copies are peers, with no privileged collection](2026-09-05-peer-model-decision.md)                                                                               | Accepted |
 | 2026-09-07 | [A receipt is a set of immutable per-event files, and manifests are per-directory](2026-09-07-receipts-decision.md)                                                   | Accepted |
 | 2026-09-10 | [A TC Copy records its own location as a location receipt](2026-09-10-location-receipt-decision.md)                                                                   | Accepted |
@@ -130,6 +129,7 @@ groupings by area once there is more than one area to group.
 | 2026-10-25 | [A TC Copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-25-collection-naming-decision.md)                           | Accepted |
 | 2026-10-25 | [A Domain term is written as its terminology section writes it, capitals included](2026-10-25-glossary-capitals-decision.md)                                          | Accepted |
 | 2026-10-26 | [An import has one primary layout, by its import source's rule, and the supplied-path layout is the floor](2026-10-26-layout-selection-decision.md)                   | Accepted |
-| 2026-11-08 | [A TC Directory left off a command line is found by searching up from a run's working directory](2026-11-08-working-directory-decision.md)                            | Accepted |
-| 2026-11-08 | [Init creates the first TC Copy in an empty directory; backup creates every later TC Copy](2026-11-08-copy-creation-decision.md)                                      | Accepted |
 | 2026-11-08 | [The command line follows POSIX's utility conventions, with GNU's long options](2026-11-08-command-line-conventions-decision.md)                                      | Accepted |
+| 2026-11-14 | [A photo is filed by its month alone, and its manifest records where it came from](2026-11-14-import-source-decision.md)                                              | Accepted |
+| 2026-11-14 | [A TC Directory left off a command line is found by searching up from a run's working directory, or is that directory](2026-11-14-working-directory-decision.md)      | Accepted |
+| 2026-11-14 | [Init or an import creates the first TC Copy; backup creates every later TC Copy](2026-11-14-copy-creation-decision.md)                                               | Accepted |

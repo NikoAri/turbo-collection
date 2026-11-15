@@ -10,7 +10,8 @@ documents repository.
 
 ### Prerequisites
 
-One prerequisite: **Node 26.13.0 or newer**.
+One prerequisite: **Node.js LTS**, at or above the minimum version that
+[`package.json`](package.json) names in `engines`.
 
 On Windows 11:
 
@@ -30,14 +31,15 @@ On Linux, with Homebrew:
 brew install node
 ```
 
-The floor is Node 26.13.0, Node 26's first long-term support release. No floor
-can go below Node 24.2.0, for two things this code needs: stripping TypeScript
-types as each file loads, enabled by default only from Node 22.18 and 24.0
-onward, and the `import.meta.main` run-guard in
+That minimum is a Node.js long-term support release, and each `npm run update`
+raises it to whichever Node ran that update, within its major. A move to a newer
+major is a hand edit in `package.json`. No minimum can go below Node 24.2.0, for
+two things this code needs: stripping TypeScript types as each file loads,
+enabled by default only from Node 22.18 and 24.0 onward, and the
+`import.meta.main` run-guard in
 [`package-json-npm-updater.ts`](helpers/package-json-npm-updater.ts), added in
-Node 24.2.0. [`package.json`](package.json) records the floor in `engines`, and
-[`.npmrc`](.npmrc) sets `engine-strict=true`, so `npm install` fails on an older
-Node rather than only warning.
+Node 24.2.0. [`.npmrc`](.npmrc) sets `engine-strict=true`, so `npm install`
+fails on an older Node rather than only warning.
 
 There is no setup script, deliberately: one `winget install` does not need
 wrapping.

@@ -7,7 +7,8 @@
     {
       "file": "sourdough.txt",
       "size": 32,
-      "checksum": "adf711108df1b3140f0b4938bb9aed2d2eaf82830d799401042550d949b6b7f2"
+      "checksum": "adf711108df1b3140f0b4938bb9aed2d2eaf82830d799401042550d949b6b7f2",
+      "suppliedPath": "moon-laptop/Recipes/sourdough.txt"
     }
   ]
 }

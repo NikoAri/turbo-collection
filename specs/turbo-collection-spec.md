@@ -144,8 +144,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
 
 - **Init** v  
   An operation that creates a TC Directory for a new TC Copy with no other TC
-  Copy present, which is how a collection's first TC Copy comes to exist
-  (`init-spec.md` R-INIT-1).
+  Copy present, as an import does where it finds no TC Copy (`init-spec.md`
+  R-INIT-1, `import-spec.md` R-SRC-27).
 
 - **Import** v  
   Bringing files into a collection's TC Copy from an import source, performed by
@@ -161,6 +161,10 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   A component that brings files into a Collection from one **Import Source**. An
   importer is internal to Turbo-Collection and reaches exactly one import
   source; an import source is an outside origin files are imported from.
+
+- **Supplied Path**  
+  A path a file has at its **Import Source**, relative to a root that import
+  source's specification states (`import-spec.md` R-SRC-21).
 
 - **TC Copy**  
   One physical instance of a collection, held on one storage medium; TC stands

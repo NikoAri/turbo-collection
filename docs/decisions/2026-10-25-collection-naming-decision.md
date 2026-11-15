@@ -25,11 +25,12 @@ conventionally `main` among peers without asserting a rank.
 Every TC Copy's configuration states three things (`R-MFILE-18`, `R-MFILE-19`):
 
 - **`collectionId`**, the collection that TC Copy belongs to: a version 4 UUID
-  that init generates and backup writes into each TC Copy it creates. Nobody
-  chooses or types it.
+  that init or an import generates and backup writes into each TC Copy it
+  creates. Nobody chooses or types it.
 - **`collectionName`**, that collection's name, for people. Init takes it from
-  `--name`, or else from the name of the directory it is given
-  ([the copy-creation decision](2026-11-08-copy-creation-decision.md)). It
+  `--name`, or else from the name of the directory it is given, as an import
+  that creates a TC Copy does
+  ([the copy-creation decision](2026-11-14-copy-creation-decision.md)). It
   appears in no filename, so it has only to be non-empty.
 - **`tcCopyName`**, that TC Copy's own name, which every receipt carries in its
   filename and its contents (`R-MFILE-13`). Init takes it from `--tc-copy`, or

@@ -70,6 +70,9 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   (`icloud-personal`); a leaf manifest records which one placed a directory
   (R-MFILE-9).
 
+- **Supplied path.** A path a file has at its import source, relative to a root
+  that import source's specification states (`import-spec.md` R-SRC-21).
+
 - **Layout.** A rule that determines where in a TC Copy a content file is
   stored. Each layout is defined by its own specification, which declares that
   layout's identifier and carries a version (R-MFILE-9).
@@ -179,10 +182,19 @@ content file needs no manifest. A manifest MUST NOT cover an ignored file.
 - `files`, an array holding one object per covered file
 
 **R-MFILE-10.** Each entry in `files` MUST state, in fields of these names: that
-file's name (`file`), that file's length in bytes (`size`), and that file's
-checksum (`checksum`). A `file` field MUST state a name only, MUST NOT state a
-path, and MUST preserve that name's casing exactly as stored. A `checksum` MUST
-be lowercase hexadecimal.
+file's name (`file`), that file's length in bytes (`size`), that file's checksum
+(`checksum`), and that file's supplied path (`suppliedPath`). A `file` field
+MUST state a name only, MUST NOT state a path, and MUST preserve that name's
+casing exactly as stored. A `checksum` MUST be lowercase hexadecimal. A
+`suppliedPath` MUST state that file's supplied path in whichever import placed
+that file, under any layout, with its segments as that import's importer
+supplied them, joined by `/`.
+
+> **Example.** An import reads `D:\moon-photos\phone\IMG_0101.JPG`, and
+> photo-path layout places that file by its date. That file's entry states
+> `"file": "IMG_0101.JPG"` and
+> `"suppliedPath": "moon-photos/phone/IMG_0101.JPG"`, so where that photo was
+> read from stays known whichever directory holds it.
 
 **R-MFILE-11.** An entry MAY also state a `date`, a time its import source
 associates with that file. That import source sets that value and defines its
@@ -396,22 +408,22 @@ discovered at run time.
 > ```
 
 **R-MFILE-19.** Every TC Copy MUST declare its own identity in its own
-configuration file. When **init** or **backup** creates a TC Copy,
+configuration file. When **init**, **import** or **backup** creates a TC Copy,
 Turbo-Collection MUST set that TC Copy's `collectionId`, `collectionName` and
-`tcCopyName` once, at creation, as `init-spec.md` R-INIT-4 and `backup-spec.md`
-R-BACKUP-1 state, and MUST write them into that TC Copy's configuration file.
-Turbo-Collection MUST give a TC Copy that a backup creates that backup's
-existing TC Copy's `collectionId` and `collectionName`, so that all TC Copies of
-a Collection hold one `collectionId` and one `collectionName`. Thereafter
-Turbo-Collection MUST determine a TC Copy's identity by reading that
-declaration, and MUST NOT infer it from a volume label, a mount path, a drive
-letter, or a command-line argument. `tcCopyName` MUST be in Unicode
-Normalization Form C (NFC), and MUST NOT contain a control character (Unicode
-general category Cc) or any of `< > : " / \ | ? *`, because it appears verbatim
-in Receipt filenames (R-MFILE-13). Turbo-Collection MUST refuse an entire Run
-when two connected TC Copies state one `tcCopyName`, comparing names without
-regard to letter case, since a difference of case alone names a single file on a
-case-insensitive filesystem (R-MFILE-13).
+`tcCopyName` once, at creation, as `init-spec.md` R-INIT-4, `import-spec.md`
+R-SRC-27 and `backup-spec.md` R-BACKUP-1 state, and MUST write them into that TC
+Copy's configuration file. Turbo-Collection MUST give a TC Copy that a backup
+creates that backup's existing TC Copy's `collectionId` and `collectionName`, so
+that all TC Copies of a Collection hold one `collectionId` and one
+`collectionName`. Thereafter Turbo-Collection MUST determine a TC Copy's
+identity by reading that declaration, and MUST NOT infer it from a volume label,
+a mount path, a drive letter, or a command-line argument. `tcCopyName` MUST be
+in Unicode Normalization Form C (NFC), and MUST NOT contain a control character
+(Unicode general category Cc) or any of `< > : " / \ | ? *`, because it appears
+verbatim in Receipt filenames (R-MFILE-13). Turbo-Collection MUST refuse an
+entire Run when two connected TC Copies state one `tcCopyName`, comparing names
+without regard to letter case, since a difference of case alone names a single
+file on a case-insensitive filesystem (R-MFILE-13).
 
 > **Example.** On every computer, whatever its language, `MAIN` and `main` are
 > one name, and so are `ΦΩΤΟΣ` and `φωτος`.

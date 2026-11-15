@@ -85,14 +85,22 @@ export function filesNotIgnoredIn(
   return filesNotIgnored;
 }
 
+// A test of whether a starter pattern ignores a path (meta-file-spec.md
+// R-MFILE-20).
+export function compileStarterIgnoreFile(): IsIgnored {
+  return compileIgnorePatterns(
+    readIgnorePatterns(readFileSync(StarterIgnoreFileUrl, "utf8")),
+  );
+}
+
 // Throws an error where `directory` holds a file, at any depth, that no starter
 // pattern ignores, after logging every such file (R-INIT-3).
 export function ensureDirectoryHoldsNoFiles(directory: string): void {
   const directoryPath = path.resolve(directory);
-  const isIgnored = compileIgnorePatterns(
-    readIgnorePatterns(readFileSync(StarterIgnoreFileUrl, "utf8")),
+  const filesNotIgnored = filesNotIgnoredIn(
+    directoryPath,
+    compileStarterIgnoreFile(),
   );
-  const filesNotIgnored = filesNotIgnoredIn(directoryPath, isIgnored);
 
   for (const file of filesNotIgnored) {
     logger.log({
@@ -167,8 +175,8 @@ export function tcCopyNameFor(givenName: string | undefined): string {
 // returns that file's path. It is written with `wx`, so only where nothing is
 // at its path (parallel-safety-spec.md R-PARALLEL-2). Where something is,
 // another run made `directory` a TC Directory after this run found it empty,
-// and this is an error (R-PARALLEL-3). Init and backup both make a TC Copy this
-// way.
+// and this is an error (R-PARALLEL-3). Init, an import and a backup each make a
+// TC Copy this way.
 export function writeConfigurationFile(
   directory: string,
   tcConfig: TcConfig,
@@ -208,71 +216,99 @@ export type InitArgs = {
   dryRun?: boolean | undefined;
 };
 
-// Makes a new collection's first TC Copy in `directory`, and returns that TC
-// Copy's configuration (R-INIT-1). A dry run makes every check that init
-// makes, says what init would make, and makes no directory and writes no file
-// but its run's log (R-INIT-5). It returns a configuration it would write,
-// whose `collectionId` no TC Copy holds and no log records.
-//
-// Both names are checked before a directory is created, and so is `directory`'s
-// path (turbo-collection-core-spec.md R-CLI-18, R-CLI-20); `directory` itself
-// is checked before a file is written. Its configuration file is written first,
-// since that is what makes a directory a TC Directory, and its ignore file
-// after (parallel-safety-spec.md R-PARALLEL-2).
-export function initializeTc({
-  directory,
-  collectionName: givenCollectionName,
-  tcCopyName: givenTcCopyName,
-  dryRun = false,
-}: InitArgs): TcConfig {
+// A new collection's first TC Copy, as init makes it: its TC Directory's
+// absolute path, and its configuration.
+export type NewTcCopy = {
+  directoryPath: string;
+  tcConfig: TcConfig;
+};
+
+// A new collection's first TC Copy in `directory`, named `givenCollectionName`
+// and `givenTcCopyName` or by init's defaults (R-INIT-4), once every check init
+// makes before it makes a directory has passed. Both names are checked, and so
+// is `directory`'s path (turbo-collection-core-spec.md R-CLI-18, R-CLI-20).
+// Anything already at `directory`'s path is looked into, so a file there is an
+// error (R-INIT-3); a directory that does not exist holds no file. An import
+// that makes a TC Copy checks it this way too (import-spec.md R-SRC-27).
+export function checkNewTcCopy(
+  directory: string,
+  givenCollectionName: string | undefined,
+  givenTcCopyName: string | undefined,
+): NewTcCopy {
   const collectionName = collectionNameFor(directory, givenCollectionName);
   const tcCopyName = tcCopyNameFor(givenTcCopyName);
   const directoryPath = path.resolve(directory);
   ensureNoLinkInPath(directoryPath);
   ensureNotInsideTcCopy(directoryPath);
-  if (!dryRun) {
-    createDirectoryIfMissing(directoryPath);
-  }
-  // A directory that does not exist holds no file, and a dry run makes none.
-  // Anything else at its path is looked into, so a file there is an error, as
-  // it would be for a real init.
   if (lstatSync(directoryPath, { throwIfNoEntry: false }) !== undefined) {
     ensureDirectoryHoldsNoFiles(directoryPath);
   }
 
   // Init generates its new collection's ID (R-INIT-4), which Node writes in
   // lower case.
-  const tcConfig: TcConfig = {
-    version: MetaFileSpecVersion,
-    collectionId: randomUUID(),
-    collectionName,
-    tcCopyName,
+  return {
+    directoryPath,
+    tcConfig: {
+      version: MetaFileSpecVersion,
+      collectionId: randomUUID(),
+      collectionName,
+      tcCopyName,
+    },
   };
-  if (!dryRun) {
-    const configurationFile = writeConfigurationFile(directoryPath, tcConfig);
-    logger.log({
-      event: "configuration",
-      verbose: true,
-      path: configurationFile,
-      configuration: tcConfig,
-      toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
-    });
+}
 
-    // Init's starter ignore file is copied byte for byte, so what a TC Copy
-    // holds does not depend on which operating system made it (R-CLI-15). It
-    // is never copied over a file already there.
-    copyFileSync(
-      StarterIgnoreFileUrl,
-      path.join(directoryPath, ".tcignore"),
-      constants.COPYFILE_EXCL,
-    );
-  }
+// Makes `newTcCopy`, which `checkNewTcCopy` gave: creates its TC Directory
+// where it does not exist (R-INIT-2), then writes its configuration file
+// first, since that is what makes a directory a TC Directory, and its ignore
+// file after (parallel-safety-spec.md R-PARALLEL-2).
+export function writeNewTcCopy({ directoryPath, tcConfig }: NewTcCopy): void {
+  createDirectoryIfMissing(directoryPath);
+  const configurationFile = writeConfigurationFile(directoryPath, tcConfig);
+  logger.log({
+    event: "configuration",
+    verbose: true,
+    path: configurationFile,
+    configuration: tcConfig,
+    toString: () => `Wrote ${configurationFile}: ${JSON.stringify(tcConfig)}`,
+  });
 
-  // What init made, or a dry run would make, so that init says what it did
-  // (logging-spec.md R-LOG-17). A real init's `configuration` entry above holds
-  // this too, as fields.
-  logger.log(
-    `${dryRun ? "Would create" : "Created"} Turbo Collection named "${collectionName}", with TC Copy named "${tcCopyName}", in ${directoryPath}`,
+  // Init's starter ignore file is copied byte for byte, so what a TC Copy
+  // holds does not depend on which operating system made it (R-CLI-15). It
+  // is never copied over a file already there.
+  copyFileSync(
+    StarterIgnoreFileUrl,
+    path.join(directoryPath, ".tcignore"),
+    constants.COPYFILE_EXCL,
   );
-  return tcConfig;
+}
+
+// Says what was made of `newTcCopy`, or would be made in a dry run
+// (logging-spec.md R-LOG-17, import-spec.md R-SRC-27). A `configuration` entry
+// that `writeNewTcCopy` logs holds this too, as fields.
+export function logNewTcCopy(
+  { directoryPath, tcConfig }: NewTcCopy,
+  dryRun: boolean,
+): void {
+  logger.log(
+    `${dryRun ? "Would create" : "Created"} Turbo Collection named "${tcConfig.collectionName}", with TC Copy named "${tcConfig.tcCopyName}", in ${directoryPath}`,
+  );
+}
+
+// Makes a new collection's first TC Copy in `directory`, and returns that TC
+// Copy's configuration (R-INIT-1). A dry run makes every check that init
+// makes, says what init would make, and makes no directory and writes no file
+// but its run's log (R-INIT-5). It returns a configuration it would write,
+// whose `collectionId` no TC Copy holds and no log records.
+export function initializeTc({
+  directory,
+  collectionName,
+  tcCopyName,
+  dryRun = false,
+}: InitArgs): TcConfig {
+  const newTcCopy = checkNewTcCopy(directory, collectionName, tcCopyName);
+  if (!dryRun) {
+    writeNewTcCopy(newTcCopy);
+  }
+  logNewTcCopy(newTcCopy, dryRun);
+  return newTcCopy.tcConfig;
 }

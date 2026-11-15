@@ -45,7 +45,7 @@ import {
   ensureNotInsideTcCopy,
   isTcDirectory,
   pathKeyOf,
-  tcDirectoryOfWorkingDirectory,
+  tcDirectoryOrWorkingDirectory,
 } from "./paths.ts";
 import {
   compileIgnorePatterns,
@@ -127,7 +127,7 @@ export async function backUp(
   const [rootA, rootB] = [
     path.resolve(directories[0]),
     directories[1] === undefined
-      ? tcDirectoryOfWorkingDirectory()
+      ? tcDirectoryOrWorkingDirectory()
       : path.resolve(directories[1]),
   ];
   for (const root of [rootA, rootB]) {

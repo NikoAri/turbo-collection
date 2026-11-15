@@ -24,12 +24,31 @@ a directory after that import's TC Directory, with an error, before that import
 writes anything.
 
 > **Example.** `turbo-collection import D:\moon-laptop E:\photos` imports from
-> `D:\moon-laptop` into a TC Copy at `E:\photos`, and where `E:\photos` is not a
-> TC Directory, is refused and imports nothing (R-CLI-14). Given
-> `D:\moon-laptop` alone, an import whose working directory is `E:\photos\2024`,
-> inside a TC Copy at `E:\photos`, imports into that TC Copy, and one whose
-> working directory is in no TC Copy ends with an error and imports nothing
-> (R-CLI-22).
+> `D:\moon-laptop` into a TC Copy at `E:\photos`. Given `D:\moon-laptop` alone,
+> an import whose working directory is `E:\photos\2024`, inside a TC Copy at
+> `E:\photos`, imports into that TC Copy (R-CLI-22). Where an import finds no TC
+> Copy, it makes one (R-SRC-27).
+
+**R-SRC-27.** **Import makes a TC Copy where it finds none.** Where a directory
+an import is to import into (R-SRC-25, R-CLI-22) does not exist or is not a TC
+Directory, Turbo-Collection MUST make a TC Copy in that directory, as init would
+given that directory and no name (`init-spec.md` R-INIT-1 to R-INIT-4), and then
+import into that TC Copy. Turbo-Collection MUST end that import with an error,
+before it makes a directory or writes a file other than its log and its log
+directory (`logging-spec.md` R-LOG-6), where init would refuse that directory,
+or where that import's directory to import from would be refused once that TC
+Copy exists (`local-folder-import-source-spec.md` R-LOCALFOLDER-2). That import
+MUST report which TC Directory it made, and which `collectionName` and
+`tcCopyName` it wrote. A Dry-Run of that import MUST report what a Dry-Run of
+that init would report (`init-spec.md` R-INIT-5), as well as what R-SRC-14
+requires.
+
+> **Example.** Where `E:\photos` does not exist,
+> `turbo-collection import D:\moon-laptop E:\photos` makes a TC Copy named
+> `main` of a Collection named `photos` there, and imports into it. Given
+> `D:\moon-laptop` alone, an import whose working directory is `C:\Users\moon`,
+> in no TC Copy and holding files, ends with an error and imports nothing, as an
+> init there would (`init-spec.md` R-INIT-3).
 
 **R-SRC-1.** Files MUST enter a collection only by Import. Turbo-Collection's
 Core MUST contain no logic specific to any individual import source, device,
@@ -78,10 +97,27 @@ split such an item silently.
 
 **R-SRC-10.** An item's Collection path MUST be a pure function of that item's
 own bytes, whatever metadata its import source supplies with it, and that import
-source, under whichever layout governs that item (R-SRC-15, R-SRC-20).
+source, under whichever layout governs that item (R-SRC-15, R-SRC-20). A
+layout's specification MAY depart from this only where a TC Copy being imported
+into already holds a content file of differing content at that item's path, as
+photo-path layout does (`photo-path-layout-spec.md` R-PHOTO-11).
 
 > **Example.** No `-2` suffix to disambiguate import order, and no directory
-> named for a label a person adds after import.
+> named for a label a person adds after import. A subdirectory that photo-path
+> layout gives a photo whose name is already held is named from that photo's own
+> supplied path, never by a count.
+
+**R-SRC-28.** **One order on every computer.** Within one Import,
+Turbo-Collection MUST take items in ascending order of their supplied paths,
+ordered as `meta-file-spec.md` R-MFILE-12 orders names, taking for an item of
+several files whichever of its supplied paths comes first in that order.
+
+> **Example.** An Import supplies `trip/phone/IMG_0101.JPG` and
+> `trip/camera/IMG_0101.JPG`, two different photos of one month.
+> `trip/camera/IMG_0101.JPG` comes first, so in whichever TC Copy those files
+> are imported into, on whichever computer, it keeps that month's plain name,
+> and `trip/phone/IMG_0101.JPG` goes to that month's `phone/`
+> (`photo-path-layout-spec.md` R-PHOTO-11).
 
 **R-SRC-12.**  
 **Import is additive.**  

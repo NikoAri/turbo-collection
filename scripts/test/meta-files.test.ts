@@ -62,7 +62,14 @@ const ValidManifest: Manifest = {
   layout: { specId: "supplied-path-layout", version: "0.1.0-draft" },
   importSource: { specId: "local-folder", version: "0.1.0-draft" },
   checksumAlgorithm: "SHA-256",
-  files: [{ file: "a.txt", size: 1, checksum: Checksum }],
+  files: [
+    {
+      file: "a.txt",
+      size: 1,
+      checksum: Checksum,
+      suppliedPath: "moon-laptop/a.txt",
+    },
+  ],
 };
 
 test("R-MFILE-12: names are ordered with A to Z folded to lower case, then as they are", () => {
@@ -175,6 +182,18 @@ test("R-MFILE-7: a manifest entry that lacks a checksum is an error", (t) => {
   writeManifestText(
     directory,
     JSON.stringify({ ...ValidManifest, files: [{ file: "a.txt", size: 1 }] }),
+  );
+  assert.throws(() => readManifest(directory), /lacks the field "files"/);
+});
+
+test("R-MFILE-7, R-MFILE-10: a manifest entry that lacks a suppliedPath is an error", (t) => {
+  const directory = temporaryDirectory(t);
+  writeManifestText(
+    directory,
+    JSON.stringify({
+      ...ValidManifest,
+      files: [{ file: "a.txt", size: 1, checksum: Checksum }],
+    }),
   );
   assert.throws(() => readManifest(directory), /lacks the field "files"/);
 });

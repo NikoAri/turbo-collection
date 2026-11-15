@@ -1,6 +1,4 @@
 import assert from "node:assert/strict";
-import console from "node:console";
-import process from "node:process";
 import { test } from "node:test";
 
 import {
@@ -10,16 +8,7 @@ import {
   getSaveSettings,
   parseCliArgs,
 } from "../helpers/package-json-npm-updater.ts";
-
-// A process.exit stand-in: throwing it unwinds a call as a real exit would end
-// its process, and carries an exit code for a test to assert on.
-class ExitSignal extends Error {
-  code: number;
-  constructor(code: number) {
-    super(`process.exit(${code})`);
-    this.code = code;
-  }
-}
+import { TcError } from "../helpers/tc-error.ts";
 
 test("getAllDependencies: merges dependencies and devDependencies", () => {
   const merged = getAllDependencies({
@@ -51,6 +40,16 @@ test("getRequestedVersion:an empty result throws, naming the package and spec", 
 
 test("getRequestedVersion:an empty array throws the same no-match error", () => {
   assert.throws(() => getRequestedVersion("[]", "ghost", "^9"), /ghost.*\^9/);
+});
+
+test("getRequestedVersion: a null output or an empty array throws a TcError caused by a TcError", () => {
+  for (const output of ["null", "[]"]) {
+    assert.throws(
+      () => getRequestedVersion(output, "ghost", "^9"),
+      (error: unknown) =>
+        error instanceof TcError && error.cause instanceof TcError,
+    );
+  }
 });
 
 test("getPackagesToUpdate: every dependency, sorted by name, when no package is named", () => {
@@ -156,31 +155,46 @@ test("getPackagesToUpdate: an empty package.json yields nothing", () => {
 
 test("parseCliArgs: no arguments runs every step on every dependency, no dry run", () => {
   assert.deepEqual(parseCliArgs([]), {
+    help: false,
     dryRun: false,
+    enginesNode: true,
     typesNode: true,
     dependencies: true,
     packages: [],
   });
 });
 
-test("parseCliArgs: --no-types-node and --no-dependencies each leave one step out", () => {
+test("parseCliArgs: --no-engines-node, --no-types-node and --no-dependencies each leave one step out", () => {
+  const noEnginesNode = parseCliArgs(["--no-engines-node"]);
+  assert.equal(noEnginesNode.enginesNode, false);
+  assert.equal(noEnginesNode.typesNode, true);
+  assert.equal(noEnginesNode.dependencies, true);
+
   const noTypesNode = parseCliArgs(["--no-types-node"]);
+  assert.equal(noTypesNode.enginesNode, true);
   assert.equal(noTypesNode.typesNode, false);
   assert.equal(noTypesNode.dependencies, true);
 
   const noDependencies = parseCliArgs(["--no-dependencies"]);
+  assert.equal(noDependencies.enginesNode, true);
   assert.equal(noDependencies.typesNode, true);
   assert.equal(noDependencies.dependencies, false);
 });
 
-test("parseCliArgs: --types-node and --dependencies state the default", () => {
-  const stated = parseCliArgs(["--types-node", "--dependencies"]);
+test("parseCliArgs: --engines-node, --types-node and --dependencies state the default", () => {
+  const stated = parseCliArgs([
+    "--engines-node",
+    "--types-node",
+    "--dependencies",
+  ]);
+  assert.equal(stated.enginesNode, true);
   assert.equal(stated.typesNode, true);
   assert.equal(stated.dependencies, true);
 });
 
-test("parseCliArgs: --dry-run sets the dry-run flag", () => {
+test("parseCliArgs: --dry-run and -n each set the dry-run flag", () => {
   assert.equal(parseCliArgs(["--dry-run"]).dryRun, true);
+  assert.equal(parseCliArgs(["-n"]).dryRun, true);
 });
 
 test("parseCliArgs: positional names are collected in order", () => {
@@ -191,43 +205,29 @@ test("parseCliArgs: positional names are collected in order", () => {
 });
 
 test("parseCliArgs: flags and package names mix freely", () => {
-  assert.deepEqual(
-    parseCliArgs(["--dry-run", "--no-types-node", "typescript"]),
-    {
-      dryRun: true,
-      typesNode: false,
-      dependencies: true,
-      packages: ["typescript"],
-    },
+  assert.deepEqual(parseCliArgs(["-n", "--no-types-node", "typescript"]), {
+    help: false,
+    dryRun: true,
+    enginesNode: true,
+    typesNode: false,
+    dependencies: true,
+    packages: ["typescript"],
+  });
+});
+
+test("parseCliArgs: --help and -h each set the help flag, whatever else a command line holds", () => {
+  assert.equal(parseCliArgs(["--help"]).help, true);
+  assert.equal(parseCliArgs(["-h"]).help, true);
+  assert.equal(
+    parseCliArgs(["--no-dependencies", "ghost", "--help"]).help,
+    true,
   );
 });
 
-test("parseCliArgs: --help prints usage and exits 0", (t) => {
-  const out: string[] = [];
-  t.mock.method(console, "log", (...args: unknown[]) => {
-    out.push(String(args[0] ?? ""));
-  });
-  t.mock.method(process, "exit", (code?: number): never => {
-    throw new ExitSignal(code ?? 0);
-  });
-  assert.throws(
-    () => parseCliArgs(["--help"]),
-    (error: unknown) => error instanceof ExitSignal && error.code === 0,
-  );
-  assert.match(out.join("\n"), /Usage:/);
-});
-
-test("parseCliArgs: an unknown option exits 1", (t) => {
-  const errors: string[] = [];
-  t.mock.method(console, "error", (...args: unknown[]) => {
-    errors.push(String(args[0] ?? ""));
-  });
-  t.mock.method(process, "exit", (code?: number): never => {
-    throw new ExitSignal(code ?? 0);
-  });
-  assert.throws(
-    () => parseCliArgs(["--bogus"]),
-    (error: unknown) => error instanceof ExitSignal && error.code === 1,
-  );
-  assert.match(errors.join("\n"), /Unknown option/);
+test("parseCliArgs: an unknown option throws, --help beside it included", () => {
+  for (const argv of [["--bogus"], ["--help", "--bogus"], ["-x"]]) {
+    assert.throws(() => parseCliArgs(argv), {
+      code: "ERR_PARSE_ARGS_UNKNOWN_OPTION",
+    });
+  }
 });

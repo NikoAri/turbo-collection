@@ -572,20 +572,55 @@ test("R-SRC-25, R-CLI-22: import given no TC Directory imports into whichever TC
   );
 });
 
-test("R-SRC-25, R-CLI-22: import given no TC Directory, from a working directory in no TC Copy, is an error and imports nothing", (t) => {
+test("R-SRC-27, R-CLI-22: import given no TC Directory, from an empty working directory in no TC Copy, makes a TC Copy there, says so, and imports into it", (t) => {
   const temporary = temporaryDirectory(t);
   const folder = path.join(temporary, "moon-laptop");
   mkdirSync(folder);
   writeFileSync(path.join(folder, "notes.txt"), "notes");
+  const workingDirectory = path.join(temporary, "photos");
+  mkdirSync(workingDirectory);
 
-  const run = runTurboCollection(temporary, ["import", folder], temporary);
+  const run = runTurboCollection(
+    temporary,
+    ["import", folder],
+    workingDirectory,
+  );
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(
+    run.stdout,
+    /Created Turbo Collection named "photos", with TC Copy named "main", in /,
+  );
+  assert.equal(
+    readFileSync(
+      path.join(workingDirectory, "local-folder", "moon-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
+  );
+});
+
+test("R-SRC-27, R-INIT-3, R-CLI-22: import given no TC Directory, from a working directory in no TC Copy that holds a file, is an error and writes nothing there", (t) => {
+  const temporary = temporaryDirectory(t);
+  const folder = path.join(temporary, "moon-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+  const workingDirectory = path.join(temporary, "home");
+  mkdirSync(workingDirectory);
+  writeFileSync(path.join(workingDirectory, "letter.txt"), "letter");
+
+  const run = runTurboCollection(
+    temporary,
+    ["import", folder],
+    workingDirectory,
+  );
 
   assert.notEqual(run.status, 0);
   assert.match(
     run.stderr,
-    /A TC Directory was left out, and ".*" is in no TC Copy to take it from/,
+    /No TC Directory was given, and ".*" is in no TC Copy, and this import cannot make a TC Copy there as init would given no name: .* holds a file/,
   );
-  assert.equal(existsSync(path.join(temporary, "local-folder")), false);
+  assert.deepEqual(readdirSync(workingDirectory), ["letter.txt"]);
 });
 
 test("R-SRC-25: import imports into the TC Copy in the TC Directory it is given, says what it imported, and exits with status 0", (t) => {
@@ -688,6 +723,36 @@ test("R-BACKUP-1, R-CLI-22: backup given one directory mirrors it with whichever
     temporary,
     ["backup", home, "--tc-copy", "home"],
     tcDirectory,
+  );
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(
+    readFileSync(
+      path.join(home, "local-folder", "moon-laptop", "notes.txt"),
+      "utf8",
+    ),
+    "notes",
+  );
+});
+
+test("R-BACKUP-1, R-CLI-22: backup given one TC Directory and a name, from an empty working directory in no TC Copy, makes a TC Copy there and fills it", (t) => {
+  const temporary = temporaryDirectory(t);
+  const tcDirectory = path.join(temporary, "photos");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  const folder = path.join(temporary, "moon-laptop");
+  mkdirSync(folder);
+  writeFileSync(path.join(folder, "notes.txt"), "notes");
+  assert.equal(
+    runTurboCollection(temporary, ["import", folder, tcDirectory]).status,
+    0,
+  );
+  const home = path.join(temporary, "home");
+  mkdirSync(home);
+
+  const run = runTurboCollection(
+    temporary,
+    ["backup", tcDirectory, "--tc-copy", "home"],
+    home,
   );
 
   assert.equal(run.status, 0, run.stderr);

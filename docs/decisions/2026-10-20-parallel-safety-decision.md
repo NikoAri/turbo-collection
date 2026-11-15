@@ -15,12 +15,14 @@ two runs can meet, and every such rule is in `parallel-safety-spec.md`.
   draws a new ID where something is (`R-PARALLEL-1`). Creating a file only where
   none exists fails where one does, so of two runs writing into one log
   directory exactly one creates it.
-- **Making a TC Copy in a directory.** An init, or a backup creating a TC Copy,
-  writes that TC Copy's configuration file before any other file in it, and only
-  where none exists. A run that finds one in place ends with an error, having
-  written nothing else there (`R-PARALLEL-2`, `R-PARALLEL-3`). Two such runs
-  meet on a directory, which no lock names: init has no collection until its
-  configuration file exists, and a backup holds the lock of its own collection.
+- **Making a TC Copy in a directory.** An init, or an import or a backup
+  creating a TC Copy, writes that TC Copy's configuration file before any other
+  file in it, and only where none exists. A run that finds one in place ends
+  with an error, having written nothing else there (`R-PARALLEL-2`,
+  `R-PARALLEL-3`). Two such runs meet on a directory, which no lock names: init
+  has no collection until its configuration file exists, an import holds the
+  lock of a collection it has just generated, and a backup holds the lock of its
+  own collection.
 - **Acting on a TC Copy.** Every run but init holds the lock of each collection
   whose TC Copy it reads or writes, status and verify included (`R-PARALLEL-4`).
   A run that finds a lock held ends at once and names the collection, and also
@@ -30,7 +32,7 @@ two runs can meet, and every such rule is in `parallel-safety-spec.md`.
 
 **The lock relies on every file belonging to one TC Copy.** No TC Copy lies
 inside another (`R-CLI-18`,
-[the copy-creation decision](2026-11-08-copy-creation-decision.md)), no run
+[the copy-creation decision](2026-11-14-copy-creation-decision.md)), no run
 follows a link inside a TC Copy (`R-CLI-19`,
 [the non-regular-files decision](2026-10-18-non-regular-files-decision.md)), and
 no import reads a folder that is a TC Directory, lies inside a TC Copy or holds

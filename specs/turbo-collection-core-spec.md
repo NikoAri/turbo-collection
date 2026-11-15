@@ -94,15 +94,14 @@ Turbo-Collection does not have (R-LOG-10).
 > `D:\logs`. `init -- -photos` makes a directory named `-photos` a TC Directory.
 
 **R-CLI-14.** Turbo-Collection MUST NOT create a TC Copy in any operation other
-than **init** and **backup**, and in every other operation MUST refuse to act on
-a directory given as a TC Directory that is not a TC Directory.
+than **init**, **import** and **backup**, and in every other operation MUST
+refuse to act on a directory given as a TC Directory that is not a TC Directory.
 
 **R-CLI-22.** Where a Run's command line leaves out an optional TC Directory,
-Turbo-Collection MUST take as that TC Directory whichever TC Directory that
-Run's current working directory is or lies inside. Turbo-Collection MUST end a
-Run that finds no such TC Directory with an error, before that Run makes a
-directory or writes a file, other than that Run's log and its log directory
-(`logging-spec.md` R-LOG-6).
+Turbo-Collection MUST take in its place whichever TC Directory that Run's
+current working directory is or lies inside. Where that working directory is in
+no TC Copy, Turbo-Collection MUST take that working directory in its place
+(`import-spec.md` R-SRC-27, `backup-spec.md` R-BACKUP-1).
 
 **R-CLI-18.** A TC Copy MUST NOT lie inside another TC Copy. Where a TC Copy
 that a Run acts on, or a directory that a Run is to make a TC Directory, lies

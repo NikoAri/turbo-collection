@@ -315,15 +315,14 @@ function temporaryDirectory(t: TestContext): string {
   return directory;
 }
 
-// Where photo-path layout places `content`, written as a file named `name`,
-// from Import Source `local-folder`.
+// Where photo-path layout places `content`, written as a file named `name`.
 function placeOf(t: TestContext, name: string, content: Buffer | string) {
   const file = path.join(temporaryDirectory(t), name);
   writeFileSync(file, content);
-  return photoPlaceOf(file, name, "local-folder");
+  return photoPlaceOf(file, name);
 }
 
-test("R-PHOTO-3, R-PHOTO-4, R-PHOTO-6: a JPEG goes to <YYYY>/<YYYY>-<MM>/<import source> by its Exif DateTimeOriginal, in either byte order", (t) => {
+test("R-PHOTO-3, R-PHOTO-4, R-PHOTO-6: a JPEG goes to <YYYY>/<YYYY>-<MM> by its Exif DateTimeOriginal, in either byte order", (t) => {
   for (const isLittleEndian of [false, true]) {
     assert.deepEqual(
       placeOf(
@@ -332,7 +331,7 @@ test("R-PHOTO-3, R-PHOTO-4, R-PHOTO-6: a JPEG goes to <YYYY>/<YYYY>-<MM>/<import
         jpegTaken("2019:07:14 15:30:12", "+02:00", isLittleEndian),
       ),
       {
-        directory: "2019/2019-07/local-folder",
+        directory: "2019/2019-07",
         governingTimestamp: "2019-07-14T15:30:12",
         readFrom: "capture time",
       },
@@ -348,7 +347,7 @@ test("R-PHOTO-7: a JPEG is placed by its local wall-clock time, not by that time
     jpegTaken("2020:01:01 00:15:00", "+02:00"),
   );
 
-  assert.equal(place?.directory, "2020/2020-01/local-folder");
+  assert.equal(place?.directory, "2020/2020-01");
 });
 
 test("R-PHOTO-8: a capture time stated with an offset is certain, and one stated with none is uncertain", (t) => {
@@ -362,14 +361,14 @@ test("R-PHOTO-8: a capture time stated with an offset is certain, and one stated
   assert.equal(isUncertain(withOffset!), false);
   assert.equal(withNone?.readFrom, "capture time with no offset");
   assert.equal(isUncertain(withNone!), true);
-  assert.equal(withNone?.directory, "2018/2018-05/local-folder");
+  assert.equal(withNone?.directory, "2018/2018-05");
 });
 
 test("R-PHOTO-1: a JPEG is told by its bytes whatever its name, and another file is not placed whatever its name", (t) => {
   assert.equal(
     placeOf(t, "photo.txt", jpegTaken("2019:07:14 15:30:12", "+02:00"))
       ?.directory,
-    "2019/2019-07/local-folder",
+    "2019/2019-07",
   );
   assert.equal(placeOf(t, "IMG_0001.JPG", "a text, not a JPEG"), undefined);
   assert.equal(placeOf(t, "empty.jpg", ""), undefined);
@@ -389,10 +388,10 @@ test("R-PHOTO-6: Exif is found after other segments, such as an APP0 segment and
 
 test("R-PHOTO-6, R-PHOTO-8: with no capture time, a JPEG is placed by a date its filename states, which is uncertain", (t) => {
   for (const [name, directory, governingTimestamp] of [
-    ["IMG_20190714_153012.jpg", "2019/2019-07/local-folder", "2019-07-14"],
-    ["IMG-20210305-WA0003.jpg", "2021/2021-03/local-folder", "2021-03-05"],
-    ["2019-07-14 15.30.12.jpg", "2019/2019-07/local-folder", "2019-07-14"],
-    ["IMG_20231399_20220810.jpg", "2022/2022-08/local-folder", "2022-08-10"],
+    ["IMG_20190714_153012.jpg", "2019/2019-07", "2019-07-14"],
+    ["IMG-20210305-WA0003.jpg", "2021/2021-03", "2021-03-05"],
+    ["2019-07-14 15.30.12.jpg", "2019/2019-07", "2019-07-14"],
+    ["IMG_20231399_20220810.jpg", "2022/2022-08", "2022-08-10"],
   ] as const) {
     assert.deepEqual(placeOf(t, name, jpegOf()), {
       directory,
@@ -416,8 +415,8 @@ test("R-PHOTO-6, R-PHOTO-7, R-PHOTO-8: with no date in its Exif or its name, a J
     writeFileSync(file, jpegOf());
     utimesSync(file, modified, modified);
 
-    assert.deepEqual(photoPlaceOf(file, name, "local-folder"), {
-      directory: "2017/2017-03/local-folder",
+    assert.deepEqual(photoPlaceOf(file, name), {
+      directory: "2017/2017-03",
       governingTimestamp: "2017-03-31T23:30:00",
       readFrom: "modification time",
     });
@@ -466,7 +465,7 @@ test("R-PHOTO-1, R-PHOTO-6: a HEIF image goes by its Exif DateTimeOriginal, at e
           ),
         ),
         {
-          directory: "2019/2019-07/local-folder",
+          directory: "2019/2019-07",
           governingTimestamp: "2019-07-14T15:30:12",
           readFrom: "capture time",
         },
@@ -483,7 +482,7 @@ test("R-PHOTO-8: a HEIF image whose Exif states no offset is uncertain", (t) => 
   );
 
   assert.equal(place?.readFrom, "capture time with no offset");
-  assert.equal(place?.directory, "2018/2018-05/local-folder");
+  assert.equal(place?.directory, "2018/2018-05");
 });
 
 test("R-PHOTO-6: a HEIF image whose Exif item is cut short, or holds no TIFF structure, goes by a date its filename states", (t) => {
@@ -512,7 +511,7 @@ test("R-PHOTO-1, R-PHOTO-6: a movie goes by Apple's creation date, which states 
       );
 
       assert.deepEqual(placeOf(t, "IMG_4021.MOV", movie), {
-        directory: "2019/2019-07/local-folder",
+        directory: "2019/2019-07",
         governingTimestamp: "2019-07-14T15:30:12",
         readFrom: "capture time",
       });
@@ -527,7 +526,7 @@ test("R-PHOTO-6, R-PHOTO-7, R-PHOTO-8: with no Apple creation date, a movie goes
     assert.deepEqual(
       placeOf(t, "MVI_0042.MP4", movieOf(created, [], mvhdVersion)),
       {
-        directory: "2019/2019-07/local-folder",
+        directory: "2019/2019-07",
         governingTimestamp: "2019-07-31T23:30:00",
         readFrom: "capture time with no offset",
       },
@@ -541,7 +540,7 @@ test("R-PHOTO-8: Apple's creation date stated in UTC, with `Z`, states no offset
   ]);
 
   assert.deepEqual(placeOf(t, "IMG_4021.MOV", movie), {
-    directory: "2019/2019-07/local-folder",
+    directory: "2019/2019-07",
     governingTimestamp: "2019-07-14T13:30:12",
     readFrom: "capture time with no offset",
   });
@@ -574,7 +573,7 @@ test("R-PHOTO-1, R-PHOTO-6: a PNG goes by its eXIf chunk's DateTimeOriginal, bef
         pngOf(tiffWith("2022:02:20 14:00:00", "+01:00", false), isExifLast),
       ),
       {
-        directory: "2022/2022-02/local-folder",
+        directory: "2022/2022-02",
         governingTimestamp: "2022-02-20T14:00:00",
         readFrom: "capture time",
       },
@@ -586,7 +585,7 @@ test("R-PHOTO-6: a PNG with no eXIf chunk, or one cut short, goes by a date its 
   const whole = pngOf(tiffWith("2022:02:20 14:00:00", "+01:00", false));
   for (const png of [pngOf(), whole.subarray(0, 40)]) {
     assert.deepEqual(placeOf(t, "Screenshot_20210305-101010.png", png), {
-      directory: "2021/2021-03/local-folder",
+      directory: "2021/2021-03",
       governingTimestamp: "2021-03-05",
       readFrom: "filename",
     });
@@ -596,5 +595,5 @@ test("R-PHOTO-6: a PNG with no eXIf chunk, or one cut short, goes by a date its 
 test("R-SRC-26: a file that cannot be read is not placed by photo-path layout", (t) => {
   const missing = path.join(temporaryDirectory(t), "gone.jpg");
 
-  assert.equal(photoPlaceOf(missing, "gone.jpg", "local-folder"), undefined);
+  assert.equal(photoPlaceOf(missing, "gone.jpg"), undefined);
 });
