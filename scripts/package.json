@@ -19,11 +19,11 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "cspell": "^10.5.1",
+    "cspell": "^10.5.2",
     "prettier": "^3.10.1",
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "ignore": "^7.0.14"
+    "ignore": "^7.0.16"
   }
 }
