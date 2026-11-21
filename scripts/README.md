@@ -54,6 +54,27 @@ npm install
 
 That installs every dependency, and is the whole of setup.
 
+## Running Turbo-Collection from any directory
+
+To run Turbo-Collection as `turbo-collection` from any directory, run this once
+from the `scripts` directory, after `npm install`:
+
+```Terminal
+npm link
+```
+
+`npm link` puts a `turbo-collection` command into npm's folder on PATH, so a
+terminal already open finds it too. That command runs `turbo-collection.ts` in
+this clone: a `git pull` changes it straight away, and moving or deleting this
+clone breaks it until `npm link` runs again. To remove it:
+
+```Terminal
+npm unlink -g turbo-collection
+```
+
+How each operating system starts Node for it is in a comment at the top of
+[`turbo-collection.ts`](turbo-collection.ts).
+
 ## Commands
 
 Run these from this directory.

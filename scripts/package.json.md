@@ -193,6 +193,14 @@ neither Node nor its version) into an accurate one at install time. It sits in
 the project `.npmrc` so it travels with the repository and binds every
 contributor, not only this machine.
 
+## `bin` makes the `turbo-collection` command
+
+`npm link`, which [`README.md`](README.md) gives, reads `bin` and puts a
+`turbo-collection` command on PATH, under the name that help and
+`import-spec.md`'s examples already use. It changes how a person starts a run,
+never what a run does, so no requirement covers it, just as none covers
+`npm install`.
+
 ## What is deliberately absent
 
 **No `version` was tried, and reversed.** It was removed on 2026-08-22 as inert
@@ -213,12 +221,6 @@ An **unverified guard against an action nobody plans to take** is exactly what
 plan for this tool, and if it ever becomes one, the key comes back with a test
 behind it. Note the field is unrelated to the source being open: the repository
 is public and MIT licensed either way.
-
-**No `bin`.** It does nothing until the package is installed globally or linked,
-and neither has ever happened. Declaring a capability that is never exercised is
-what R-META-3 calls unauthorized: add the requirement, or remove the code, and
-there is no third option. When the tool is really installed, a `bin` entry is
-what turns `node turbo-collection.ts` into `turbo-collection`.
 
 ## Dependencies
 

@@ -1,3 +1,14 @@
+#!/usr/bin/env node
+// Line 1 says to run this file with Node, once `npm link`, run in this
+// directory, has made `turbo-collection` a command:
+// - On Windows, `npm link` reads line 1 once, to write launchers into
+//   npm's folder on PATH: `turbo-collection.cmd`, `turbo-collection.ps1`
+//   and one for Git Bash, each running `node` on this file. Windows itself
+//   never reads line 1.
+// - On Linux and macOS, `npm link` writes only a link to this file, named
+//   `turbo-collection`, and each run reads line 1 to start Node.
+// Without line 1, a Windows launcher runs this file without Node, and Linux
+// and macOS run it as a shell script.
 import console from "node:console";
 import os from "node:os";
 import path from "node:path";

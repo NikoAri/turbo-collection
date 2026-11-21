@@ -4,6 +4,9 @@
   "description": "Media Preservation",
   "license": "MIT",
   "type": "module",
+  "bin": {
+    "turbo-collection": "turbo-collection.ts"
+  },
   "engines": {
     "node": ">=26.13.1"
   },
