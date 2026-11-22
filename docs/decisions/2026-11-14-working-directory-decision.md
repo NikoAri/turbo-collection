@@ -4,7 +4,7 @@
 
 Replaces the record of 2026-11-08, under which a run whose search found no TC
 Directory ended with an error. An import now makes a TC Copy where it finds none
-([the copy-creation decision](2026-11-14-copy-creation-decision.md)), and given
+([the copy-creation decision](2026-11-21-copy-creation-decision.md)), and given
 no TC Directory, it makes one where init would given no directory: in its
 working directory.
 

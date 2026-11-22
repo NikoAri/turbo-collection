@@ -18,18 +18,24 @@ Turbo-Collection MUST report both TC Copies' `collectionId` and
 Turbo-Collection MUST, before mirroring, create a new TC Copy there if that
 directory does not exist or holds no file at any depth except files matching a
 pattern in its partner's ignore file, its partner being an existing TC Copy.
-Turbo-Collection MUST refuse to create a new TC Copy unless a name for that new
-TC Copy is given on its command line; that name becomes that new TC Copy's
-`tcCopyName`. Turbo-Collection MUST refuse a name that is not valid, or that is
-that existing TC Copy's `tcCopyName` without regard to letter case
-(`meta-file-spec.md` R-MFILE-19), before it makes a directory or writes a file.
-Turbo-Collection MUST refuse a backup given a name for a new TC Copy where that
-backup creates no TC Copy. To create a new TC Copy, Turbo-Collection MUST write
-into its TC Directory a configuration file (`meta-file-spec.md` R-MFILE-17,
-R-MFILE-19) and, where that existing TC Copy has an ignore file, a duplicate of
-that ignore file (R-MFILE-20). Where either of a backup's two directories is not
-a TC Directory and holds any file not matching such a pattern, Turbo-Collection
-MUST refuse that backup, and MUST report every such file.
+Turbo-Collection MUST take that new TC Copy's `tcCopyName` from a name given on
+its command line for that TC Copy and, where none is given, from that TC Copy's
+TC Directory's name, unchanged unless it is taken. A name is taken where it is,
+without regard to letter case, that existing TC Copy's `tcCopyName` or the
+`tcCopyName` of a receipt file in that existing TC Copy (`meta-file-spec.md`
+R-MFILE-13). Where that TC Directory's name is taken, Turbo-Collection MUST
+raise by one a number that follows a final `-` at that name's end, or append
+`-2` where none does, until that name is not taken. Turbo-Collection MUST refuse
+a name that is not valid, or that is that existing TC Copy's `tcCopyName`
+without regard to letter case (`meta-file-spec.md` R-MFILE-19), before it makes
+a directory or writes a file. Turbo-Collection MUST refuse a backup given a name
+for a new TC Copy where that backup creates no TC Copy. To create a new TC Copy,
+Turbo-Collection MUST write into its TC Directory a configuration file
+(`meta-file-spec.md` R-MFILE-17, R-MFILE-19) and, where that existing TC Copy
+has an ignore file, a duplicate of that ignore file (R-MFILE-20). Where either
+of a backup's two directories is not a TC Directory and holds any file not
+matching such a pattern, Turbo-Collection MUST refuse that backup, and MUST
+report every such file.
 
 > **Example.** A backup creates a TC Copy only in an empty directory, so files
 > already there are not pulled into a collection by a two-way mirror. Two
@@ -37,11 +43,16 @@ MUST refuse that backup, and MUST report every such file.
 > different Collections, so a backup given both refuses and copies nothing,
 > although both state `Photos` as `collectionName`. A backup given a working TC
 > Copy, `main`, and an empty directory makes a TC Copy named `home` there when
-> given that name, and refuses `MAIN` as a name before it makes anything. A
-> backup given only `F:\photos`, from a working directory inside a TC Copy at
-> `E:\photos`, mirrors `E:\photos` and `F:\photos` (R-CLI-22). A backup given
-> only `E:\photos` and a name, `home`, from an empty working directory in no TC
-> Copy, makes a TC Copy named `home` in that working directory and fills it.
+> given that name, and refuses `MAIN` as a name before it makes anything. Given
+> no name, a backup makes a TC Copy named `off-site` in an empty folder
+> `F:\off-site`, or `off-site-2` where receipt files in its partner already
+> carry `off-site`, and a folder `F:\photos-2` gives `photos-3` where `photos-2`
+> is taken, while `F:\Photos 2019` gives `Photos 2019-2` where its name is
+> taken. A backup given only `F:\photos`, from a working directory inside a TC
+> Copy at `E:\photos`, mirrors `E:\photos` and `F:\photos` (R-CLI-22). A backup
+> given only `E:\photos` and a name, `home`, from an empty working directory in
+> no TC Copy, makes a TC Copy named `home` in that working directory and fills
+> it.
 
 **R-BACKUP-2.** Where backup creates a directory, Turbo-Collection MUST also
 create every directory above it that does not exist.

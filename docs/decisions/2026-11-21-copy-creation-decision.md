@@ -1,13 +1,14 @@
 # Init or an import creates the first TC Copy; backup creates every later TC Copy
 
-**Status:** Accepted **Date:** 2026-11-14
+**Status:** Accepted **Date:** 2026-11-21
 
-Replaces the record of 2026-11-08, under which import never created a TC Copy.
-That record let backup create every later TC Copy because an init for each one
-"adds a step whose only output is an empty TC Copy that the next backup fills
-anyway". The same holds for an init before a first import, and an import that
-creates a TC Copy makes every check init makes, so it can no more turn a folder
-of photographs into a TC Directory than init can.
+Replaces the record of 2026-11-14, under which backup required a name for every
+TC Copy it created. That record held that a guessed name would be permanent in
+every receipt, and that two drives each holding a folder of one name would give
+two TC Copies one name. A backup now names a later TC Copy after its TC
+Directory, and numbers that name where it is taken, which answers the second for
+every TC Copy made from one hub. `--tc-copy` still names a TC Copy for where it
+rests.
 
 A directory becomes a TC Directory when Turbo-Collection writes its
 configuration, which states the collection its TC Copy belongs to and the name
@@ -44,34 +45,46 @@ Init, import and backup do that, and no other operation ever does:
   it; given one that is empty or does not exist, it creates a TC Copy there and
   fills it; given anything else, it refuses and lists what the directory holds.
   "Empty" means holding nothing except files the existing TC Copy's ignore file
-  ignores, and the new TC Copy starts with a duplicate of that ignore file and
-  with the existing TC Copy's `collectionId` and `collectionName`. A name is
-  required on the run that creates a TC Copy, and creation needs exactly one
-  existing TC Copy, which settles whose ignore file and whose collection are
-  inherited.
+  ignores, and a new TC Copy starts with a duplicate of that ignore file and
+  with the existing TC Copy's `collectionId` and `collectionName`. A new TC Copy
+  takes its name from `--tc-copy`, or else from its TC Directory, numbered where
+  that name is taken. Creation needs exactly one existing TC Copy, which settles
+  whose ignore file and whose collection are inherited.
 
 Files a person already has enter a TC Copy as every other file does, by an
 import.
 
 These smaller rules complete it.
 
-**Init takes the collection's name from its directory; no operation takes a TC
-Copy's name from one.** Init follows a flow people already know from
-`yarn init`: run in a directory, it names what it makes after that directory and
-asks nothing. A directory's name, such as `Family Photos`, says what is kept,
-which is the collection. A TC Copy is named for where it rests, which only the
-operator knows, and two drives that each hold a folder of one name would give
-two TC Copies one name, which stops every run (`R-MFILE-19`). So the first TC
-Copy is `main`, the hub, and backup has no default: a guessed name would be
-permanent in every receipt. An import that creates a TC Copy names both as init
-does given no name.
+**A TC Copy is named after its directory, except the first.** Init follows a
+flow people already know from `yarn init`: run in a directory, it names what it
+makes after that directory and asks nothing. A first TC Copy's directory already
+names its collection, such as `Family Photos`, so that TC Copy is `main`, the
+hub, and an import that creates a TC Copy names both as init does given no name.
+A later TC Copy sits in a folder a person made on a drive, and a backup takes
+that folder's name, so no one has to invent a name for every drive. Where a
+person wants a name for where a TC Copy rests, such as `home` or `off-site`,
+`--tc-copy` gives it.
+
+**A taken name is numbered, not refused.** A name is taken where the existing TC
+Copy holds it, or a receipt file in that TC Copy carries it, without regard to
+letter case (`R-BACKUP-1`). A backup leaves both its TC Copies holding every
+receipt file (`R-REC-6`), so a hub holds a name for each TC Copy made from it:
+`F:\photos` becomes `photos`, and then `G:\photos` becomes `photos-2`, a pattern
+people know from copying folders. Only a number after a final `-` is raised, so
+`photos-2` gives `photos-3`, and `Photos 2019` gives `Photos 2019-2` rather than
+a name that reads as another year. A name given with `--tc-copy` is checked
+against that existing TC Copy's name alone, so that a replacement drive can take
+a dead TC Copy's name. Two TC Copies made from TC Copies that have not met since
+can still share a name, and a run that connects them refuses (`R-MFILE-19`).
 
 **A TC Copy's name may be in any script.** It is kept as typed, in Unicode
 Normalization Form C, and holds no control character and none of
 `< > : " / \ | ? *`, the characters some operating system refuses in a filename,
 because receipt filenames carry it (`R-MFILE-19`). Two names that differ only by
 letter case are one name, on every computer whatever its language. A
-collection's name appears in no filename and has only to be non-empty.
+collection's name appears in no filename and has only to be non-empty. A drive's
+root has no name of its own, so a backup into one is given `--tc-copy`.
 
 **Every directory a path needs is created.** `init a/b/c` creates all three, and
 an import and a backup do the same, so a person meets one behavior in every
@@ -109,15 +122,25 @@ run reports no `collectionId`, since a real init generates its own. An import
 that would make a TC Copy reports in its dry run what init's would, and what it
 would import (`R-SRC-27`).
 
-**A replacement drive takes the dead TC Copy's name.** Receipts record where
-content was placed, never that a TC Copy survives (`R-REC-8`), a release already
-requires a real verification, and location receipts exist to record which
-volumes have stood behind a name (`R-MFILE-26`). So a reused name vouches for
-nothing it should not. The one duplicate-name rule is the existing refusal when
-two connected TC Copies state one name (`R-MFILE-19`).
+**A replacement drive takes the dead TC Copy's name**, given with `--tc-copy`.
+Receipts record where content was placed, never that a TC Copy survives
+(`R-REC-8`), a release already requires a real verification, and location
+receipts exist to record which volumes have stood behind a name (`R-MFILE-26`).
+So a reused name vouches for nothing it should not. Besides a default name's
+number, the one rule against a shared name is the refusal when two connected TC
+Copies state one name (`R-MFILE-19`).
 
 ## Rejected
 
+- **A later TC Copy's name required on the run that creates it.** The rule until
+  2026-11-21, on the ground that a guessed name would be permanent in every
+  receipt and that two drives each holding a folder of one name would give two
+  TC Copies one name. Reversed because numbering a taken name answers the
+  second, and a folder's name is one a person already chose.
+- **Refusing a default name that is taken.** A number lets that backup through,
+  as a copied folder gets one.
+- **Raising any number at a name's end.** `Photos 2019` would become
+  `Photos 2020`, which reads as another year's photographs.
 - **Import never creating a TC Copy, so that init comes first.** The rule until
   2026-11-14, on the ground that creation is a deliberate act with its own
   operation, and that a routine operation able to create one could turn any
@@ -146,9 +169,9 @@ two connected TC Copies state one name (`R-MFILE-19`).
   ground that init writes into an empty directory and leaves nothing a person
   cannot see or delete. What init checks is not what a person sees, and one
   `--dry-run` for every command is one behavior to learn.
-- **The first TC Copy named after its directory.** The rule on 2026-10-13. A
-  directory's name says what is kept, which is the collection; a TC Copy is
-  named for where it rests.
+- **The first TC Copy named after its directory.** The rule on 2026-10-13. Its
+  directory's name already names its collection, and `main` says which TC Copy
+  is the hub.
 - **A directory's name converted to lower case and hyphens.** The rule on
   2026-10-13, so that one spelling would serve every machine. It garbled a name
   in any other script, and a filename needs only a short list of characters kept
@@ -176,13 +199,12 @@ two connected TC Copies state one name (`R-MFILE-19`).
   whose only output is an empty TC Copy that the next backup fills anyway.
   Backup detects the state of each directory instead, as a build tool tells a
   full build from an incremental one.
-- **A later TC Copy's name taken from its TC Directory.** See above: two TC
-  Copies would share one name.
 - **Numbered default names for later TC Copies** (`copy-2`). A permanent name
-  that says nothing about where a TC Copy lives.
-- **Retiring a dead TC Copy's name, a name check, or a `--replace` flag.** Each
-  guarded against a receipt vouching for a new drive, which a receipt never
-  does.
+  that says nothing about its TC Copy, where a folder's name says what a person
+  called it.
+- **Retiring a dead TC Copy's name, a check of a given name against receipts, or
+  a `--replace` flag.** Each guarded against a receipt vouching for a new drive,
+  which a receipt never does.
 - **Refusing a path the tool judges wrong.** The tool cannot know intent, so it
   checks only facts it can verify.
 
@@ -198,18 +220,18 @@ and its dry run), and `R-SRC-25`'s example. `turbo-collection-core-spec.md`:
 `R-CLI-14` (no operation but init, import and backup creates a TC Copy),
 `R-CLI-18` (no TC Copy inside another, for every run) and `R-CLI-22` (a run's
 working directory, where a search finds no TC Directory). `backup-spec.md`:
-`R-BACKUP-1` (backup creating a TC Copy) and `R-BACKUP-2` (every directory a
-backup's path needs is created), which were `R-CLI-13` and a sentence of
-`R-CLI-14` until 2026-10-21. `parallel-safety-spec.md`: `R-PARALLEL-2` (a
-configuration file written first, by init, an import or a backup). `R-CLI-12`,
-under which init performed an in-place import, was removed on 2026-10-12. The
-in-place import source specification was withdrawn with it, and so was
-`R-FOUND-2` in `supplied-path-layout-spec.md`. `turbo-collection-spec.md`: the
-glossary holds _Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19`
-states that a TC Copy's identity is set once, at creation, that backup passes
-the `collectionId` on, and what a TC Copy's name may hold; `R-MFILE-20` and
-`R-MFILE-21` carry the starter ignore file and the rule that an ignored file
-never enters a TC Copy
+`R-BACKUP-1` (backup creating a TC Copy, and its name: given, or its TC
+Directory's, numbered where taken) and `R-BACKUP-2` (every directory a backup's
+path needs is created), which were `R-CLI-13` and a sentence of `R-CLI-14` until
+2026-10-21. `parallel-safety-spec.md`: `R-PARALLEL-2` (a configuration file
+written first, by init, an import or a backup). `R-CLI-12`, under which init
+performed an in-place import, was removed on 2026-10-12. The in-place import
+source specification was withdrawn with it, and so was `R-FOUND-2` in
+`supplied-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds
+_Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19` states that a TC
+Copy's identity is set once, at creation, that backup passes the `collectionId`
+on, and what a TC Copy's name may hold; `R-MFILE-20` and `R-MFILE-21` carry the
+starter ignore file and the rule that an ignored file never enters a TC Copy
 ([the starter-ignore-file decision](2026-10-18-starter-ignore-file-decision.md)).
 The setup procedure's `R-SET-15` runs init, and its `R-SET-10` and `R-SET-11`
 create the later TC Copies by backup.

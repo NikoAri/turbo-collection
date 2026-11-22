@@ -58,8 +58,8 @@ backup [options] <tc-directory-1> [<tc-directory-2>]
   Directory yet, and holds no file, make a TC Copy there.
   Default <tc-directory-2>: the TC Copy the current directory is in.
 
-      --tc-copy <name>   Name the TC Copy this backup makes. Default: none;
-                         required when it makes one.
+      --tc-copy <name>   Name the TC Copy this backup makes. Default: name of
+                         its directory, numbered -2, -3, ... where taken.
 
 Options for every command:
   -n, --dry-run          Make every check, say what the command would do, and

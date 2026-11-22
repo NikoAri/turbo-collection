@@ -39,7 +39,13 @@ export type TcCopyContents = {
 // being a UTC instant to the second, `-` and four hexadecimal digits
 // (meta-file-spec.md R-MFILE-13, R-MFILE-26).
 const ReceiptFileName =
-  /^receipt-\d{8}T\d{6}Z-[0-9a-f]{4}-.+\.(arrival|error|location)\.json$/;
+  /^receipt-\d{8}T\d{6}Z-[0-9a-f]{4}-(?<tcCopyName>.+)\.(?<kind>arrival|error|location)\.json$/;
+
+// The name of a TC Copy that `receiptFile`, a name in a `receiptFiles` list,
+// carries (meta-file-spec.md R-MFILE-13).
+export function tcCopyNameOfReceiptFile(receiptFile: string): string {
+  return ReceiptFileName.exec(receiptFile)!.groups!.tcCopyName!;
+}
 
 // What a read of one TC Copy needs as it goes, and what it has found so far.
 type Reading = {
@@ -185,7 +191,7 @@ function readMetaDirectory(
 // arrival file's or an error file's anywhere, and a location receipt file's
 // at a TC Directory alone, which `isRoot` says it is (R-MFILE-2).
 function isReceiptFileName(name: string, isRoot: boolean): boolean {
-  const kind = ReceiptFileName.exec(name)?.[1];
+  const kind = ReceiptFileName.exec(name)?.groups?.kind;
   return (
     kind === "arrival" || kind === "error" || (kind === "location" && isRoot)
   );

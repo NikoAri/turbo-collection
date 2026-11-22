@@ -765,6 +765,35 @@ test("R-BACKUP-1, R-CLI-22: backup given one TC Directory and a name, from an em
   );
 });
 
+test("R-BACKUP-1, R-CLI-22: backup given one TC Directory and no name, from an empty working directory in no TC Copy, makes a TC Copy there named after that directory", (t) => {
+  const temporary = temporaryDirectory(t);
+  const tcDirectory = path.join(temporary, "tc-test");
+  assert.equal(runTurboCollection(temporary, ["init", tcDirectory]).status, 0);
+  const workingDirectory = path.join(temporary, "tc-test-2");
+  mkdirSync(workingDirectory);
+
+  const run = runTurboCollection(
+    temporary,
+    ["backup", tcDirectory],
+    workingDirectory,
+  );
+
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(
+    JSON.parse(
+      readFileSync(
+        path.join(
+          workingDirectory,
+          ".turbo-collection",
+          "turbo-collection-config.json",
+        ),
+        "utf8",
+      ),
+    ).tcCopyName,
+    "tc-test-2",
+  );
+});
+
 test("R-BACKUP-1, R-LOG-16: a backup makes a new TC Copy, says what it copied into each TC Copy, and exits with status 0; the next copies nothing", (t) => {
   const temporary = temporaryDirectory(t);
   const tcDirectory = path.join(temporary, "photos");

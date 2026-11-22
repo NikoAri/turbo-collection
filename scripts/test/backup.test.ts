@@ -289,13 +289,16 @@ test("R-BACKUP-1: a backup given no TC Directory, TC Copies of two collections, 
   );
 });
 
-test("R-BACKUP-1, R-MFILE-19: a backup that would make a TC Copy is refused before it makes a directory, given no name, a name that is not valid, or the other TC Copy's name in another letter case", async (t) => {
+test("R-BACKUP-1, R-MFILE-19: a backup that would make a TC Copy is refused before it makes a directory, given a name that is not valid or the other TC Copy's name in another letter case, or given no name for a drive's root", async (t) => {
   const temporary = temporaryDirectory(t);
   const main = path.join(temporary, "main");
   initializeTc({ directory: main });
   const home = path.join(temporary, "drive", "home");
 
-  await assert.rejects(backUpTcCopies(main, home), /with --tc-copy/);
+  await assert.rejects(
+    backUpTcCopies(main, path.parse(main).root),
+    /has no name of its own for a new TC Copy to take/,
+  );
   await assert.rejects(
     backUpTcCopies(main, home, { tcCopyName: "a/b" }),
     /cannot be a TC Copy's name/,
@@ -305,6 +308,42 @@ test("R-BACKUP-1, R-MFILE-19: a backup that would make a TC Copy is refused befo
     /is the name of the TC Copy this backup mirrors/,
   );
   assert.equal(existsSync(path.join(temporary, "drive")), false);
+});
+
+test("R-BACKUP-1: a backup given no name names a new TC Copy after its TC Directory, numbering a name its partner's receipt files already carry", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const main = path.join(temporary, "main");
+  await importFolder(temporary, main, "Trip", { "a.jpg": "a" });
+
+  // Each new TC Copy's TC Directory, and the name a backup gives it
+  const expected: [string, string][] = [
+    [path.join(temporary, "e", "photos"), "photos"],
+    [path.join(temporary, "f", "photos"), "photos-2"],
+    [path.join(temporary, "g", "photos-2"), "photos-3"],
+    [path.join(temporary, "h", "PHOTOS"), "PHOTOS-4"],
+    [path.join(temporary, "i", "Photos 2019"), "Photos 2019"],
+    [path.join(temporary, "j", "Photos 2019"), "Photos 2019-2"],
+  ];
+  for (const [tcDirectory] of expected) {
+    await backUpTcCopies(main, tcDirectory);
+  }
+  assert.deepEqual(
+    expected.map(([tcDirectory]) => [
+      tcDirectory,
+      configurationOf(tcDirectory).tcCopyName,
+    ]),
+    expected,
+  );
+});
+
+test("R-BACKUP-1: a backup given no name numbers its TC Directory's name where that is its partner's name, without regard to letter case, though that partner holds no receipt file", async (t) => {
+  const temporary = temporaryDirectory(t);
+  const main = path.join(temporary, "main");
+  initializeTc({ directory: main });
+  const drive = path.join(temporary, "drive", "MAIN");
+
+  await backUpTcCopies(main, drive);
+  assert.equal(configurationOf(drive).tcCopyName, "MAIN-2");
 });
 
 test("R-BACKUP-1: a backup does not make a TC Copy in a directory holding a file the other TC Copy's ignore file does not ignore, and names that file", async (t) => {

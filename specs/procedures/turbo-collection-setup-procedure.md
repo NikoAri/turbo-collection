@@ -145,10 +145,10 @@ manifests.
 **R-SET-12.** Take your off-site TC Copy **off-site**, and leave it there.
 
 > **Why a backup, and why a name.** A backup given an empty directory creates a
-> new TC Copy there and fills it, and refuses to do so without a name
-> (`backup-spec.md` R-BACKUP-1). A TC Copy is named for where it permanently
-> rests, so a drive in a wrong place is plainly wrong. A drive that replaces a
-> dead one takes that dead TC Copy's name.
+> new TC Copy there and fills it, and names it after that directory where it is
+> given no name (`backup-spec.md` R-BACKUP-1). A TC Copy named for where it
+> permanently rests makes a drive in a wrong place plainly wrong. A drive that
+> replaces a dead one takes that dead TC Copy's name.
 
 ## 5. Done when
 

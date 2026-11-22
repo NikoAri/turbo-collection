@@ -132,4 +132,4 @@ groupings by area once there is more than one area to group.
 | 2026-11-08 | [The command line follows POSIX's utility conventions, with GNU's long options](2026-11-08-command-line-conventions-decision.md)                                      | Accepted |
 | 2026-11-14 | [A photo is filed by its month alone, and its manifest records where it came from](2026-11-14-import-source-decision.md)                                              | Accepted |
 | 2026-11-14 | [A TC Directory left off a command line is found by searching up from a run's working directory, or is that directory](2026-11-14-working-directory-decision.md)      | Accepted |
-| 2026-11-14 | [Init or an import creates the first TC Copy; backup creates every later TC Copy](2026-11-14-copy-creation-decision.md)                                               | Accepted |
+| 2026-11-21 | [Init or an import creates the first TC Copy; backup creates every later TC Copy](2026-11-21-copy-creation-decision.md)                                               | Accepted |

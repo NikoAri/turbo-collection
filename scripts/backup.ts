@@ -14,7 +14,11 @@ import path from "node:path";
 
 import { takeCollectionLock } from "./collection-lock.ts";
 import { copyAndChecksum, isTcCopyUnwritable } from "./content-files.ts";
-import { readTcCopy, type TcCopyContents } from "./tc-copy-contents.ts";
+import {
+  readTcCopy,
+  tcCopyNameOfReceiptFile,
+  type TcCopyContents,
+} from "./tc-copy-contents.ts";
 import { dateToString } from "./helpers/date-helper.ts";
 import { TcError } from "./helpers/tc-error.ts";
 import {
@@ -65,11 +69,21 @@ export type BackupArgs = {
   // Two directories to mirror, at least one of them a TC Directory, the second
   // undefined where a command line leaves it out (R-BACKUP-1)
   directories: readonly [string, string | undefined];
-  // --tc-copy: a name for a TC Copy this backup creates (R-BACKUP-1)
+  // --tc-copy: a name for a TC Copy this backup creates, which otherwise takes
+  // its TC Directory's name (R-BACKUP-1)
   tcCopyName: string | undefined;
   // --dry-run: say what a real backup would copy, and change nothing
   // (R-BACKUP-10)
   dryRun: boolean;
+};
+
+// A name for a TC Copy that a backup creates, before that backup has read what
+// its partner holds (R-BACKUP-1).
+type NewTcCopyName = {
+  // That name, in NFC
+  tcCopyName: string;
+  // Whether it is its TC Directory's name, and so is numbered where taken
+  fromTcDirectory: boolean;
 };
 
 // One of a backup's two TC Copies: its root, its configuration, and what it
@@ -187,7 +201,14 @@ export async function backUp(
     ensureEmptyForNewTcCopy(newRoot, existingRoot);
     const existing = readBackupTcCopy(existingRoot, existingTcConfig);
     ensureRegularEntriesOnly(context, existing);
-    const created = createTcCopy(context, newRoot, existing, newTcCopyName!);
+    const created = createTcCopy(
+      context,
+      newRoot,
+      existing,
+      newTcCopyName!.fromTcDirectory
+        ? freeTcCopyName(newTcCopyName!.tcCopyName, existing)
+        : newTcCopyName!.tcCopyName,
+    );
     [tcCopyA, tcCopyB] = isTcCopyA ? [existing, created] : [created, existing];
   }
 
@@ -280,18 +301,34 @@ function ensureOneCollection(
 }
 
 // The name of a new TC Copy that a backup makes at `newRoot` (R-BACKUP-1):
-// `givenTcCopyName` in NFC. No name, one that is not valid, and the name of
-// the TC Copy whose configuration is `existing`, without regard to letter case,
-// are each an error (meta-file-spec.md R-MFILE-19).
+// `givenTcCopyName` in NFC, or else `newRoot`'s own name in NFC, which
+// `freeTcCopyName` numbers once its partner has been read. A name that is
+// not valid, and a given name that is the name of the TC Copy whose
+// configuration is `existing`, without regard to letter case, are each an
+// error (meta-file-spec.md R-MFILE-19).
 function nameForNewTcCopy(
   newRoot: string,
   existing: TcConfig,
   givenTcCopyName: string | undefined,
-): string {
+): NewTcCopyName {
   if (givenTcCopyName === undefined) {
-    throw new TcError(
-      `"${newRoot}" is not a TC Directory, and a backup makes a TC Copy there only when given a name for it with --tc-copy. Name it for where it will rest, such as --tc-copy home or --tc-copy off-site.`,
-    );
+    const directoryName = path.basename(newRoot);
+    if (directoryName === "") {
+      throw new TcError(
+        `"${newRoot}" has no name of its own for a new TC Copy to take. Name it with --tc-copy for where it will rest, such as --tc-copy home or --tc-copy off-site.`,
+      );
+    }
+    try {
+      return {
+        tcCopyName: tcCopyNameFor(directoryName),
+        fromTcDirectory: true,
+      };
+    } catch (e) {
+      throw new TcError(
+        `A backup names a new TC Copy after its directory, and "${directoryName}" cannot be a TC Copy's name. Name it with --tc-copy for where it will rest, such as --tc-copy home or --tc-copy off-site.`,
+        { cause: e },
+      );
+    }
   }
   const tcCopyName = tcCopyNameFor(givenTcCopyName);
   if (pathKeyOf(tcCopyName) === pathKeyOf(existing.tcCopyName)) {
@@ -299,7 +336,30 @@ function nameForNewTcCopy(
       `"${givenTcCopyName}" is the name of the TC Copy this backup mirrors, without regard to letter case. Give the new TC Copy another name.`,
     );
   }
-  return tcCopyName;
+  return { tcCopyName, fromTcDirectory: false };
+}
+
+// `tcCopyName`, or else, where it is taken, the first name after it that is
+// not. A name is taken where it is, without regard to letter case, `existing`'s
+// name or a name that a receipt file in `existing` carries. A taken name's
+// number after a final `-` is raised by one, or `-2` appended where it has none
+// (R-BACKUP-1).
+function freeTcCopyName(tcCopyName: string, existing: BackupTcCopy): string {
+  const taken = new Set([pathKeyOf(existing.tcConfig.tcCopyName)]);
+  for (const directory of existing.contents.directories.values()) {
+    for (const receiptFile of directory.receiptFiles) {
+      taken.add(pathKeyOf(tcCopyNameOfReceiptFile(receiptFile)));
+    }
+  }
+  let free = tcCopyName;
+  while (taken.has(pathKeyOf(free))) {
+    const number = /-(\d+)$/.exec(free);
+    free =
+      number === null
+        ? `${free}-2`
+        : `${free.slice(0, number.index)}-${BigInt(number[1]!) + 1n}`;
+  }
+  return free;
 }
 
 // Throws where TC Copies at `rootA` and `rootB` hold different ignore patterns,
