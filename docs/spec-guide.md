@@ -68,6 +68,7 @@ Every prefix resolves to exactly one document.
 | `R-BAK-*`         | `procedures/turbo-collection-backup-procedure.md`           | bringing the home TC Copy up to date                                                |
 | `R-OFF-*`         | `procedures/turbo-collection-offsite-procedure.md`          | bringing the off-site TC Copy up to date                                            |
 | `R-REL-*`         | `procedures/turbo-collection-release-procedure.md`          | destroying a copy held outside a collection                                         |
+| `R-ICLOUD-*`      | `importers/icloud/turbo-collection-icloud-procedure.md`     | copying photos out of iCloud through Photos on a Mac                                |
 | `R-LANG-*`        | `language-requirement.md`                                   | how a normative document is written                                                 |
 | `R-PUB-*`         | `version-requirement.md`                                    | how a normative document is versioned and published                                 |
 | `R-META-*`        | `traceability-requirement.md`                               | how documents, requirements, and code trace to one another                          |
