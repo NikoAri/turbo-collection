@@ -155,7 +155,7 @@ In answering, Turbo-Collection MUST NOT act on a TC Copy or on an Import Source.
 
 > **Example.** A version report lists `turbo-collection-spec 1.2.0 (2027-03-01)`
 > and one such line for `meta-file-spec.md`, for each Layout specification, and
-> for each Import Source specification Turbo-Collection conforms to.
+> for each Importer specification Turbo-Collection conforms to.
 
 ### 8.4 Distinct read-only inspections
 

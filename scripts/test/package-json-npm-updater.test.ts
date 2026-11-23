@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { cpSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import process from "node:process";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   getAllDependencies,
@@ -222,6 +228,33 @@ test("parseCliArgs: --help and -h each set the help flag, whatever else a comman
     parseCliArgs(["--no-dependencies", "ghost", "--help"]).help,
     true,
   );
+});
+
+test("package-json-npm-updater.ts: a copy of helpers/ with no node_modules above it shows its help", (t) => {
+  const directory = mkdtempSync(path.join(tmpdir(), "turbo-collection-test-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+
+  // Node looks for a package in node_modules in each directory above a file,
+  // so a copy proves nothing where one of them holds one.
+  for (let above = directory; ; above = path.dirname(above)) {
+    assert.equal(existsSync(path.join(above, "node_modules")), false, above);
+    if (above === path.dirname(above)) {
+      break;
+    }
+  }
+
+  const helpersCopy = path.join(directory, "helpers");
+  cpSync(fileURLToPath(new URL("../helpers/", import.meta.url)), helpersCopy, {
+    recursive: true,
+  });
+  const result = spawnSync(
+    process.execPath,
+    [path.join(helpersCopy, "package-json-npm-updater.ts"), "--help"],
+    { encoding: "utf8" },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^Usage:/);
 });
 
 test("parseCliArgs: an unknown option throws, --help beside it included", () => {

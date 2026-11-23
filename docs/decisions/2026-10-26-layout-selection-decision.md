@@ -1,4 +1,4 @@
-# An import has one primary layout, by its import source's rule, and the supplied-path layout is the floor
+# An import has one primary layout, by its importer specification's rule, and the supplied-path layout is the floor
 
 **Status:** Accepted **Date:** 2026-10-26
 
@@ -7,16 +7,14 @@ primary layout for all its imports, and bytes never chose a layout. That rule
 reversed on first use: a folder of camera photos, imported as a local folder,
 kept its folder paths, where its owner expected each photo filed by date.
 
-**Each import has one primary layout, and its import source's specification
-states the rule that picks it** (`R-SRC-15`). iCloud names the photo layout for
-every import. A local folder names the photo layout where that layout is able to
-place at least one of an import's items, and the supplied-path layout otherwise
-(`R-LOCALFOLDER-5`).
+**Each import has one primary layout, and its importer specification states the
+rule that picks it** (`R-SRC-15`). A local folder names the photo layout where
+that layout is able to place at least one of an import's items, and the
+supplied-path layout otherwise (`R-LOCALFOLDER-5`).
 
 The rule has three parts.
 
-- **An import source's specification picks an import's primary layout**, as
-  above.
+- **An importer specification picks an import's primary layout**, as above.
 - **A layout specification owns placement and nothing else.** It states where
   its items go, and which items it is able to place at all (`R-PHOTO-1` for the
   photo layout). Bytes decide where an item goes _within_ a layout, and, for a
@@ -81,10 +79,10 @@ folder of photos can keep its paths on demand. It is not specified yet.
 
 ## Touches
 
-`import-spec.md`: `R-SRC-15` recast so an import source specification states
-which layout is an import's primary layout; `R-SRC-20` speaks of an import's
-primary layout. `local-folder-importer-spec.md`: `R-LOCALFOLDER-5` picks the
-photo layout or the supplied-path layout by what an import holds.
-`logging-spec.md`: `R-LOG-18`'s import entry records its layout, and `R-LOG-19`
-adds `floored` and `uncertain-date` entries. Both layout specifications and the
-iCloud specification speak of an import's primary layout.
+`import-spec.md`: `R-SRC-15` recast so an importer specification states which
+layout is an import's primary layout; `R-SRC-20` speaks of an import's primary
+layout. `local-folder-importer-spec.md`: `R-LOCALFOLDER-5` picks the photo
+layout or the supplied-path layout by what an import holds. `logging-spec.md`:
+`R-LOG-18`'s import entry records its layout, and `R-LOG-19` adds `floored` and
+`uncertain-date` entries. Both layout specifications and the iCloud
+specification speak of an import's primary layout.

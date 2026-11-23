@@ -225,8 +225,8 @@ Directory's, numbered where taken) and `R-BACKUP-2` (every directory a backup's
 path needs is created), which were `R-CLI-13` and a sentence of `R-CLI-14` until
 2026-10-21. `parallel-safety-spec.md`: `R-PARALLEL-2` (a configuration file
 written first, by init, an import or a backup). `R-CLI-12`, under which init
-performed an in-place import, was removed on 2026-10-12. The in-place import
-source specification was withdrawn with it, and so was `R-FOUND-2` in
+performed an in-place import, was removed on 2026-10-12. The in-place importer
+specification was withdrawn with it, and so was `R-FOUND-2` in
 `supplied-path-layout-spec.md`. `turbo-collection-spec.md`: the glossary holds
 _Init_ and _Ignored file_. `meta-file-spec.md`: `R-MFILE-19` states that a TC
 Copy's identity is set once, at creation, that backup passes the `collectionId`

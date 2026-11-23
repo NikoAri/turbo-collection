@@ -128,8 +128,9 @@ groupings by area once there is more than one area to group.
 | 2026-10-25 | [The specification names concrete things, and has no ports](2026-10-25-spec-vocabulary-decision.md)                                                                   | Accepted |
 | 2026-10-25 | [A TC Copy carries its collection's ID and name, and its own name for where it permanently rests](2026-10-25-collection-naming-decision.md)                           | Accepted |
 | 2026-10-25 | [A Domain term is written as its terminology section writes it, capitals included](2026-10-25-glossary-capitals-decision.md)                                          | Accepted |
-| 2026-10-26 | [An import has one primary layout, by its import source's rule, and the supplied-path layout is the floor](2026-10-26-layout-selection-decision.md)                   | Accepted |
+| 2026-10-26 | [An import has one primary layout, by its importer specification's rule, and the supplied-path layout is the floor](2026-10-26-layout-selection-decision.md)          | Accepted |
 | 2026-11-08 | [The command line follows POSIX's utility conventions, with GNU's long options](2026-11-08-command-line-conventions-decision.md)                                      | Accepted |
 | 2026-11-14 | [A photo is filed by its month alone, and its manifest records where it came from](2026-11-14-import-source-decision.md)                                              | Accepted |
 | 2026-11-14 | [A TC Directory left off a command line is found by searching up from a run's working directory, or is that directory](2026-11-14-working-directory-decision.md)      | Accepted |
 | 2026-11-21 | [Init or an import creates the first TC Copy; backup creates every later TC Copy](2026-11-21-copy-creation-decision.md)                                               | Accepted |
+| 2026-11-22 | [An import source's specification is an importer specification, named for its kind](2026-11-22-importer-specification-decision.md)                                    | Accepted |

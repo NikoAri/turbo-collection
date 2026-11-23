@@ -72,8 +72,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   with stable IDs.
 
 - **Subject.** What a normative document is normative over.
-  `turbo-collection-spec.md`'s subject is Turbo-Collection itself; an import
-  source specification's is one import source; this document's is this project's
+  `turbo-collection-spec.md`'s subject is Turbo-Collection itself; an importer
+  specification's is one import source; this document's is this project's
   normative documents.
 
 - **Normative dependency.** Another normative document that a document relies on
@@ -163,8 +163,8 @@ text resolves a version stamp (R-PUB-2).
 > that every document shares, but whatever surface a bump is measured against
 > differs. `meta-file-spec.md` measures its effect on meta files, because a meta
 > file already written cannot be regenerated, while code is regenerable from
-> that document. An import source specification writes no meta files at all, so
-> it measures whether a previously conforming import source has become
+> that document. An importer specification writes no meta files at all, so it
+> measures whether a previously conforming import source has become
 > non-conforming. Forcing one surface onto both would make one of those tests
 > meaningless.
 
@@ -272,8 +272,8 @@ archived terminal text by its full version stamp.
 > **Why a normative dependency is declared, and why against a MAJOR line
 > (R-PUB-13).** A document is self-contained for its own subject (R-PUB-4),
 > never for a subject another document owns, so shared mechanics may live in one
-> document that others depend on: an import source specification, for example,
-> can factor common mechanics into a base specification and depend on it.
+> document that others depend on: an importer specification, for example, can
+> factor common mechanics into a base specification and depend on it.
 > `traceability-requirement.md` R-META-1 makes documents that bind
 > Turbo-Collection's implementation jointly sufficient, but sufficiency is worth
 > little if a reader cannot tell which documents are in that set, so a

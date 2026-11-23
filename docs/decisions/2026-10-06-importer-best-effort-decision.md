@@ -18,8 +18,8 @@ far as that vendor exposes evidence. For a folder of files or a camera card,
 nothing exists to check against, so `R-SRC-19` read literally refused them all.
 
 What a particular import source delivers, and how an operator gets the best
-version out of it, belongs in that import source's own specification and
-procedure, where the evidence for it is.
+version out of it, belongs in its importer specification and procedure, where
+the evidence for it is.
 
 **The cost, accepted knowingly.** Nothing in the core stops an import that
 quietly took lesser versions of files, and deleting from an import source
@@ -33,7 +33,7 @@ operator's procedure, not a guarantee.
 - **Narrowing `R-SRC-5` to a duty an importer can keep, and keeping the rest.**
   First recommendation. It left three requirements about the import source
   standing.
-- **A core requirement that every import source specification state what its
+- **A core requirement that every importer specification state what its import
   source delivers, and on what evidence.** Second recommendation, declined:
   fidelity is up to the importer.
 

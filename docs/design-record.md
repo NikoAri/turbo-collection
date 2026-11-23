@@ -65,8 +65,9 @@ plain files. After that a vendor service holds as much or as little as suits
 you, and losing one costs you convenience rather than photographs.
 
 That is a better outcome than leaving, and a more honest description of the
-design: iCloud is currently the **import source** for the iPhone, so this
-project depends on it working well rather than wishing it away.
+design: an iPhone's photos currently come in by way of iCloud, copied out into a
+folder that is then imported, so this project depends on iCloud working well
+rather than wishing it away.
 
 **Hard goals:**
 
@@ -476,7 +477,7 @@ years.
 - **No performance numbers in the core specification.** Throughput and duration
   depend on hardware and on a vendor's service, and both change. A number
   written into the core would be wrong within a hardware generation, and would
-  read as a promise in the meantime. Measurements live only in import source
+  read as a promise in the meantime. Measurements live only in importer
   specifications, each with its date and the conditions it was taken under.
 
 **Conformance checking has two directions** (both AI-assisted, both periodic):

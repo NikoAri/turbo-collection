@@ -35,12 +35,12 @@ Each document has one job:
   **where content goes**. One layout specification per way of placing files:
   photographs and videos by date, and any file kept at the path its import
   source supplied.
-- [`specs/importers/`](specs/importers/): one specification per **import
-  source** a photo can come in by, each paired with the procedures a human
-  follows to import from it. The core spec is normative over things this project
-  controls; an import source specification is normative over things a vendor
-  controls, so it carries dated evidence and expiry dates rather than stable
-  promises.
+- [`specs/importers/`](specs/importers/): one importer specification per
+  **import source** a photo can come in by, beside procedures a human follows to
+  get photos out of a vendor's service for an import, such as iCloud's. The core
+  spec is normative over things this project controls; an importer specification
+  for a vendor's service is normative over things that vendor controls, so it
+  carries dated evidence and expiry dates rather than stable promises.
 - [`specs/procedures/`](specs/procedures/): **what a person does**, one
   procedure per sitting: setup, import, backup, off-site, release. They bind the
   operator, and no code cites them.

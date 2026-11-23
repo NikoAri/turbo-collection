@@ -29,4 +29,4 @@ goes. A fixed outside fact, such as the digit width of a date field, also stays.
 
 `language-requirement.md`: `R-LANG-22` added with its commentary, and the
 commentary on `R-LANG-20` brought into line with it. `turbo-collection-spec.md`
-and the iCloud import source specification: one counted list each reworded.
+and the iCloud importer specification: one counted list each reworded.

@@ -8,10 +8,9 @@ local-folder import source. A still image and a motion clip that share a name
 are two items.
 
 **Nothing states the pairing.** A vendor's export can say that two files are one
-thing, and an import source specification for that vendor can rely on it. A
-directory says nothing, so a pairing would be inferred from two files sharing a
-name: a naming habit that no document defines and that any tool is free to
-break.
+thing, and an importer specification for that vendor can rely on it. A directory
+says nothing, so a pairing would be inferred from two files sharing a name: a
+naming habit that no document defines and that any tool is free to break.
 
 **Declining to guess loses nothing here.** The local-folder import source places
 files under the supplied-path layout, which stores each file at the path it was
@@ -34,8 +33,7 @@ one that files photographs by date: its own specification states its items.
   one failing holds back the other.
 - **Pairing a fixed list of known combinations**, such as one still format with
   one clip format. The same guess with a list to maintain, and the list is
-  knowledge about vendors, which belongs in a vendor's import source
-  specification.
+  knowledge about vendors, which belongs in a vendor's importer specification.
 - **Leaving it open in both specifications.** It stood as a marked open note
   with a stated default. An implementation needs one answer, and the default was
   the right one.
@@ -45,7 +43,7 @@ one that files photographs by date: its own specification states its items.
 `in-place-import-source-spec.md`: `R-INPLACE-9` added in place of an open note.
 `local-folder-importer-spec.md`: the placeholder in its items section replaced
 by the same rule. `import-spec.md` `R-SRC-9` is unchanged, and still governs an
-import source whose specification names items of several files.
+import source whose importer specification names items of several files.
 
-The in-place import source specification, with `R-INPLACE-9`, was withdrawn on
+The in-place importer specification, with `R-INPLACE-9`, was withdrawn on
 2026-10-12, when in-place import was put off to a later version.

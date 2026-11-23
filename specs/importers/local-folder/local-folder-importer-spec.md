@@ -1,4 +1,4 @@
-# Turbo-Collection: Import Source Specification, Local Folder
+# Turbo-Collection: Local Folder Importer Specification
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-10-06  
@@ -13,7 +13,7 @@ download directory, and a directory copied off a retired computer.
 
 Requirement ID prefix: **`R-LOCALFOLDER-*`**.
 
-> **Rationale.** Which Layout an Import Source names, and why:
+> **Rationale.** Which Layout an Importer specification names, and why:
 > [layout-selection decision](../../../docs/decisions/2026-10-26-layout-selection-decision.md).
 > Why every file is an Item of its own:
 > [one-file-one-item decision](../../../docs/decisions/2026-10-06-one-file-one-item-decision.md).
@@ -82,7 +82,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   stored.
 
 - **Primary Layout.** A single Layout that governs an Import's Items, as its
-  Import Source's specification states.
+  Importer specification states.
 
 - **Photo-path Layout.** A Layout that stores a photograph or a video in a
   directory named for the year and month that file states it was taken.
@@ -91,7 +91,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   Import Source supplied for it.
 
 - **Supplied path.** A path a file has at its Import Source, relative to a root
-  that Import Source's specification states.
+  its Importer specification states.
 
 - **Run.** A single invocation of Turbo-Collection, which performs its work once
   and exits.

@@ -71,7 +71,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   (R-MFILE-9).
 
 - **Supplied path.** A path a file has at its import source, relative to a root
-  that import source's specification states (`import-spec.md` R-SRC-21).
+  its importer specification states (`import-spec.md` R-SRC-21).
 
 - **Layout.** A rule that determines where in a TC Copy a content file is
   stored. Each layout is defined by its own specification, which declares that
@@ -175,7 +175,7 @@ content file needs no manifest. A manifest MUST NOT cover an ignored file.
     as that layout's specification declares it
   - `version`, that specification's version
 - `importSource`, an object with:
-  - `specId`, whatever identifier its import source's specification declares
+  - `specId`, whatever identifier its importer specification declares
   - `version`, whichever version of that specification governs that directory
 - `checksumAlgorithm`, stating which algorithm its checksums were computed with,
   as `SHA-256` (R-MFILE-8)
@@ -267,15 +267,15 @@ because it acquired nothing from outside and applied no layout; its provenance
 is whichever import arrival placed that content, which travels to it
 (`verify-spec.md` R-REC-6). `layout` MUST be an object stating that layout's
 identifier (`specId`) and its specification's `version`; `importSource` MUST be
-an object stating its import source specification's identifier (`specId`) and
+an object stating its importer specification's identifier (`specId`) and
 whichever `version` of that specification its run conformed to. An
-`importSourceDetails` value MUST be a JSON object whose contents that import
-source's own specification states, and Turbo-Collection MUST NOT depend on its
-contents. A content digest MUST cover content files only, so that no meta file
-contributes to it. A `contentDigest` MUST be computed as SHA-256 of a text
-formed by taking each content file's SHA-256 checksum as lowercase hexadecimal,
-ordering those checksums in ascending Unicode code point order, and joining them
-with a single newline (`U+000A`) between each.
+`importSourceDetails` value MUST be a JSON object whose contents that importer
+specification states, and Turbo-Collection MUST NOT depend on its contents. A
+content digest MUST cover content files only, so that no meta file contributes
+to it. A `contentDigest` MUST be computed as SHA-256 of a text formed by taking
+each content file's SHA-256 checksum as lowercase hexadecimal, ordering those
+checksums in ascending Unicode code point order, and joining them with a single
+newline (`U+000A`) between each.
 
 **R-MFILE-16.** An error file MUST contain every error a run recorded for its
 directory. Its fields MUST be:
@@ -313,7 +313,7 @@ as real errors show what is needed.
 >   "fileCount": 412,
 >   "contentDigest": "9f2a1c...",
 >   "layout": { "specId": "photo-path-layout", "version": "0.1.0" },
->   "importSource": { "specId": "icloud", "version": "0.1.0" }
+>   "importSource": { "specId": "local-folder", "version": "0.1.0" }
 > }
 > ```
 >
@@ -344,7 +344,7 @@ as real errors show what is needed.
 >   "tcCopyName": "main",
 >   "importErrors": [
 >     {
->       "message": "icloud delivered IMG_0001.HEIC only inside a container that could not be unpacked; refused (import-spec.md R-SRC-5)"
+>       "message": "\"/Volumes/card/trip/IMG_0001.HEIC\" is left out: \"/Volumes/tc-main/2026/2026-08/IMG_0001.HEIC\" in the collection holds other content, and an import never writes over it."
 >     }
 >   ]
 > }

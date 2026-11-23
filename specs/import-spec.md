@@ -139,18 +139,18 @@ nothing.
 > reports zero pending items shows everything there has already reached its
 > collection.
 
-**R-SRC-15.** Every import source specification MUST state, as a rule on an
-Import's items, which one Layout is that Import's primary layout. A layout
-specification MUST state which items its layout is able to place, as a condition
-on an item's own bytes and any metadata its import source supplies with it.
-Turbo-Collection MUST determine an item's collection path under its Import's
-primary layout, wherever that layout is able to place that item. R-SRC-20
-governs an item that layout is not able to place.
+**R-SRC-15.** Every importer specification MUST state, as a rule on an Import's
+items, which one Layout is that Import's primary layout. A layout specification
+MUST state which items its layout is able to place, as a condition on an item's
+own bytes and any metadata its import source supplies with it. Turbo-Collection
+MUST determine an item's collection path under its Import's primary layout,
+wherever that layout is able to place that item. R-SRC-20 governs an item that
+layout is not able to place.
 
-> **Example.** Every iCloud Import has photo-path layout as its primary layout.
-> A local-folder Import has photo-path layout where its directory holds a photo,
-> and supplied-path layout where it holds none (`local-folder-importer-spec.md`
-> R-LOCALFOLDER-5). Either way, one Import has one primary layout.
+> **Example.** A local-folder Import has photo-path layout where its directory
+> holds a photo, and supplied-path layout where it holds none
+> (`local-folder-importer-spec.md` R-LOCALFOLDER-5). Either way, one Import has
+> one primary layout.
 
 **R-SRC-16.** On importing into an existing import-source directory,
 Turbo-Collection MUST compare its running import source's version against
@@ -161,8 +161,8 @@ and where it writes to it MUST re-stamp `importSource.version` to its running
 version. If that running version begins a new MAJOR line, Turbo-Collection MUST
 NOT reuse that directory, and MUST place imported content under a different
 import-source `specId`. What compatibility an import source guarantees within a
-MAJOR line is stated by that import source's own specification;
-Turbo-Collection's core does not adjudicate it.
+MAJOR line is stated by its importer specification; Turbo-Collection's core does
+not adjudicate it.
 
 **R-SRC-17.** An importer MUST NOT write into a TC Copy of a collection, and
 MUST NOT create, modify, or delete any meta file. Turbo-Collection alone writes
@@ -187,7 +187,7 @@ not able to place it.
 > skipped.
 
 **R-SRC-21.** An importer MUST supply, with every file of every item, whatever
-path that file has at its import source, relative to a root that import source's
+path that file has at its import source, relative to a root its importer
 specification states. This path is metadata its import source supplies
 (R-SRC-10).
 

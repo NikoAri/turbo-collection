@@ -25,7 +25,7 @@ the edit that made it wrong.
 
 - **Three fixed numbers: the program, the core specification, and the meta file
   format.** The earlier plan, taken from tools that print a client and a server
-  version. It leaves out the layout and import source specifications that decide
+  version. It leaves out the layout and importer specifications that decide
   where a file is placed.
 - **No version report.** A version in every log is enough only for someone who
   has already run something.

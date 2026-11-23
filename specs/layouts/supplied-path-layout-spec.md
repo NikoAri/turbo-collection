@@ -29,8 +29,8 @@ does that file go.
 
 One rule serves each of these roles:
 
-- **Primary Layout.** An Import Source specification names this Layout to govern
-  an Import's Items (`import-spec.md` R-SRC-15).
+- **Primary Layout.** An Importer specification names this Layout to govern an
+  Import's Items (`import-spec.md` R-SRC-15).
 - **Floor.** This Layout takes an item that another primary layout is not able
   to place, so no item is left out of a collection for want of a place
   (`import-spec.md` R-SRC-20).
@@ -77,14 +77,14 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   with it, and that import source.
 
 - **Primary Layout.** A single Layout that governs an Import's Items, as its
-  Import Source's specification states.
+  Importer specification states.
 
 - **Layout identifier.** This Layout's name as recorded in a TC Copy:
   **`supplied-path-layout`**.
 
 - **Supplied path.** A path a file has at its import source, relative to a root
-  that import source's specification states. An importer supplies it with every
-  file (`import-spec.md` R-SRC-21).
+  its importer specification states. An importer supplies it with every file
+  (`import-spec.md` R-SRC-21).
 
 - **Collection filename.** A name a content file carries inside a TC Copy.
 

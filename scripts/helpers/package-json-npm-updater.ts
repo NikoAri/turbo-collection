@@ -1,3 +1,6 @@
+// Imports only Node's built-ins and helpers that do the same: it runs before
+// node_modules exists, and its `npm ci` deletes node_modules. A test in
+// test/package-json-npm-updater.test.ts runs it with no node_modules.
 import { execSync } from "node:child_process";
 import console from "node:console";
 import { readFileSync } from "node:fs";
@@ -376,7 +379,7 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
 
   if (npmInstallArgsList.length === 0) {
     console.log();
-    console.log("Every package is already at its version. Nothing to install.");
+    console.log("Every package is already at its version.");
     return;
   }
 
@@ -432,8 +435,6 @@ function updateNpmPackageVersions(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
       );
     }
   }
-  console.log();
-  console.log("Next: run `npm run lint && npm test`");
 }
 
 type NpmUpdaterCliArgs = {
@@ -460,7 +461,9 @@ allowed release, rewriting package.json and package-lock.json. Each run first
 raises package.json's Node floor, engines.node, to whichever Node runs it,
 within that floor's major. A package in helpers/npm-version-exceptions.json
 stays within its recorded range. @types/node always has an entry there, which
-each run writes next: a range that keeps it at or below that floor.
+each run writes next: a range that keeps it at or below that floor. Each run
+ends with npm ci, which deletes node_modules and installs exactly what
+package-lock.json names.
 
 Options:
   -n, --dry-run          Report what a run would write and install, and change
@@ -570,6 +573,19 @@ function updatePackageJson(npmUpdaterCliArgs: NpmUpdaterCliArgs): void {
   if (npmUpdaterCliArgs.dependencies) {
     updateNpmPackageVersions(npmUpdaterCliArgs);
   }
+
+  // `npm ci` deletes node_modules and installs exactly what package-lock.json
+  // names, so lint and tests run against what package.json names, after an
+  // update or none. It is an error where package.json and package-lock.json
+  // disagree.
+  console.log();
+  if (npmUpdaterCliArgs.dryRun) {
+    console.log("Dry run: would run `npm ci`");
+    return;
+  }
+  execNpm("ci", /*captureOutput*/ false);
+  console.log();
+  console.log("Next: run `npm run lint && npm test`");
 }
 
 function main(): void {

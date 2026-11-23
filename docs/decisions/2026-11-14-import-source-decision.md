@@ -68,8 +68,8 @@ general. A receipt is read without a specification beside it, so its field is
   directory for screenshots and scans and a registry to tell two identical
   camera bodies apart.
 - **`specs/sources/`, `specs/routes/` and `specs/source-routes/`** as names for
-  import source specifications. Each is too general or pairs two nouns that each
-  name this category.
+  importer specifications. Each is too general or pairs two nouns that each name
+  this category.
 - **A vendor surface level above import sources.** The project has no use for a
   vendor as an entity. Two ways into one vendor that deliver different bytes are
   two import sources.

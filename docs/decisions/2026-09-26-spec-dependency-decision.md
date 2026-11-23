@@ -2,7 +2,7 @@
 
 **Status:** Accepted **Date:** 2026-09-26
 
-The peer-model pass of 2026-09-05 established that per-instance import source
+The peer-model pass of 2026-09-05 established that per-instance importer
 specifications may factor shared mechanics into a base specification and depend
 on it, and named the formal dependency mechanism as a deferred pass. This is
 that pass. The concrete case it serves: `icloud-personal` and `icloud-work` each
@@ -79,11 +79,10 @@ the standards world's dated-versus-undated reference, arrived at independently.
 
 ## Consequences accepted
 
-The mechanism is defined before the specification it will first serve exists.
-The `icloud` base and the two per-instance specifications are still stubs, so
-`R-PUB-13` has no dependency to point at yet; the `Depends on:` header will be
-written when those documents are filled. Defining the rule first is deliberate,
-so the filling has a settled convention to follow.
+The mechanism is defined before the specification it will first serve exists. No
+importer specification depends on another yet, so `R-PUB-13` has no dependency
+to point at; the `Depends on:` header will be written when one does. Defining
+the rule first is deliberate, so the filling has a settled convention to follow.
 
 ## Touches
 

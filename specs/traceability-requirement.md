@@ -90,7 +90,7 @@ Turbo-Collection, with no document outside that set in hand.
   wherever that does not depend on a particular import source.
   `meta-file-spec.md` states what every meta file contains;
 - Layout Specification states where content files go;
-- Import Source Specification states only what its own import source adds.
+- Importer Specification states only what its own import source adds.
 
 If an implementer needs a fact none of them states, that is a defect, and its
 fix is to add that fact to whichever one owns its subject.

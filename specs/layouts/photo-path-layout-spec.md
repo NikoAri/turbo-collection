@@ -33,8 +33,8 @@ for one kind of content: given an item, which directory does it go in.
 It does not decide what a collection holds, which is scope
 ([`turbo-collection-spec.md`](../turbo-collection-spec.md) Section 1), and it
 does not decide what a file inside a directory is called, which `R-NAME-*`
-requirements own. It also does not decide which items are sent to it: an import
-source specification states which Layout is an import's primary layout
+requirements own. It also does not decide which items are sent to it: an
+importer specification states which Layout is an import's primary layout
 (`import-spec.md` R-SRC-15), and this document states only what this Layout is
 able to place once an item arrives. A second Layout, for a kind of content this
 one does not place, is a second document and changes nothing here.
@@ -100,7 +100,7 @@ Per `language-requirement.md` R-LANG-5, this section is self-contained.
   Turbo-Collection reads it.
 
 - **Supplied path.** A path a file has at its import source, relative to a root
-  that import source's specification states (`import-spec.md` R-SRC-21).
+  its importer specification states (`import-spec.md` R-SRC-21).
 
 - **Uncertain date.** An item's state where its governing timestamp was not read
   from a capture timestamp that item itself states (R-PHOTO-8).

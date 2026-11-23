@@ -21,8 +21,8 @@ anticipated (documents, spreadsheets, video), each bringing its own layout, so
 photos should not be privileged by being embedded.
 
 Which layouts a TC Copy uses is read from its manifests, each naming one by its
-identifier. Which layout governs a given item is decided by a rule its import
-source's specification states, one layout per import
+identifier. Which layout governs a given item is decided by a rule its importer
+specification states, one layout per import
 ([the layout-selection decision](2026-10-26-layout-selection-decision.md)).
 
 Names are deliberately asymmetric. An album document covers hydration, receipts,

@@ -99,7 +99,7 @@ layout_; the `R-SRC-*` and `R-TGT-*` bodies say _importer_ and _a TC Copy's
 storage_; Section 11 is _Contracts_; the scope diagram shows peer TC Copies
 without fixing how many. Requirement IDs are unchanged, so `R-SRC-*` and
 `R-TGT-*` keep prefixes that no longer match a term (`language-requirement.md`
-`R-LANG-20`). `meta-file-spec.md`, both layout specifications, the import source
+`R-LANG-20`). `meta-file-spec.md`, both layout specifications, the importer
 specifications, the procedures, `spec-guide.md` and `README.md` were swept to
 match. On 2026-10-06 the glossary's _Layout convention_ and _Layout
 specification_ became _Layout_, each layout specification's _Convention

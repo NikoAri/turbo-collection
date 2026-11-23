@@ -1,8 +1,8 @@
-# Turbo-Collection: Import Procedure, Apple iCloud Photos
+# Turbo-Collection: iCloud Importer Procedure
 
 > **Version:** 0.1.0-draft  
 > **Created:** 2026-07-25  
-> **Status:** Stub. No steps written yet.
+> **Status:** Draft. Not yet executed start to finish (Section 4).
 
 This document is a **human execution path** for copying photos out of iCloud
 into a folder, each as its unmodified original, through Photos on a Mac. An
@@ -26,9 +26,9 @@ achieved** second:
 > Unmodified Original.
 
 A bare click path cannot migrate. When a step becomes automatable, its
-requirement is already articulated and moves unchanged into whichever Import
-Source specification automates it. Expect traffic in both directions: a vendor
-removing an interface moves an automated step back out.
+requirement is already articulated and moves unchanged into whichever Importer
+specification automates it. Expect traffic in both directions: a vendor removing
+an interface moves an automated step back out.
 
 ## 1. Preconditions
 
