@@ -57,7 +57,7 @@ import {
   type IsIgnored,
 } from "./tcignore.ts";
 import {
-  LocalFolderImportSourceSpecVersion,
+  LocalFolderImporterSpecVersion,
   MetaFileSpecVersion,
   PhotoPathLayoutSpecVersion,
   SuppliedPathLayoutSpecVersion,
@@ -67,7 +67,7 @@ import {
 // layout or supplied-path layout.
 
 // Local-folder Import Source's identifier
-// (local-folder-import-source-spec.md R-LOCALFOLDER-1).
+// (local-folder-importer-spec.md R-LOCALFOLDER-1).
 const LocalFolder = "local-folder";
 
 // What an import records of whichever import source and layout placed a
@@ -76,7 +76,7 @@ const LocalFolder = "local-folder";
 // supplied-path-layout-spec.md R-FOUND-6).
 const LocalFolderStamp = {
   specId: LocalFolder,
-  version: LocalFolderImportSourceSpecVersion,
+  version: LocalFolderImporterSpecVersion,
 };
 const PhotoPathLayoutStamp = {
   specId: "photo-path-layout",
@@ -90,7 +90,7 @@ type LayoutStamp = typeof SuppliedPathLayoutStamp;
 
 // What a command line gives import.
 export type ImportArgs = {
-  // Imported directory (local-folder-import-source-spec.md R-LOCALFOLDER-2)
+  // Imported directory (local-folder-importer-spec.md R-LOCALFOLDER-2)
   importDirectory: string;
   // TC Directory of whichever TC Copy to import into, where one is given
   // (R-SRC-25)
@@ -263,7 +263,7 @@ function readTcConfigOf(tcDirectory: string): TcConfig {
 // init would given no name, once every check init makes has passed
 // (R-SRC-27). `importedDirectory` is checked as it will be once that TC Copy
 // exists: it neither holds that TC Copy nor lies inside it
-// (local-folder-import-source-spec.md R-LOCALFOLDER-2). `leftOut` says that
+// (local-folder-importer-spec.md R-LOCALFOLDER-2). `leftOut` says that
 // `tcDirectory` is this run's working directory, since its command line gave
 // none (turbo-collection-core-spec.md R-CLI-22).
 function checkTcCopyToMake(
@@ -310,7 +310,7 @@ function isAtOrInside(directory: string, other: string): boolean {
 
 // Throws where `directory` cannot be an Imported directory: one that is not a
 // directory, has no name of its own, is a TC Directory or lies inside a TC Copy
-// (local-folder-import-source-spec.md R-LOCALFOLDER-2). One that holds a TC
+// (local-folder-importer-spec.md R-LOCALFOLDER-2). One that holds a TC
 // Copy is found as it is looked through.
 function ensureImportable(directory: string): void {
   const stats = statSync(directory, { throwIfNoEntry: false });
@@ -402,7 +402,7 @@ type PlacedItem = { item: Item; directory: string; layout: LayoutStamp };
 
 // Where each of `items` goes: under photo-path layout where it places at least
 // one of them, and under supplied-path layout otherwise
-// (local-folder-import-source-spec.md R-LOCALFOLDER-5). An Item is one file,
+// (local-folder-importer-spec.md R-LOCALFOLDER-5). An Item is one file,
 // its own primary file (photo-path-layout-spec.md R-PHOTO-2).
 //
 // Under photo-path layout, each file it does not place keeps its Supplied path
@@ -744,7 +744,7 @@ function importIntoDirectory(
     majorOf(manifest.importSource.version) !== majorOf(LocalFolderStamp.version)
   ) {
     throw new TcError(
-      `"${directory}" was filled under local-folder-import-source-spec ${manifest.importSource.version}, which this Turbo-Collection does not import into.`,
+      `"${directory}" was filled under local-folder-importer-spec ${manifest.importSource.version}, which this Turbo-Collection does not import into.`,
     );
   }
 

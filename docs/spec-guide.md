@@ -42,37 +42,37 @@ operator, `-requirement.md` binds document authors, `-decision.md` binds nobody.
 
 Every prefix resolves to exactly one document.
 
-| Prefix            | Document                                                    | Covers                                                                              |
-| ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `R-COL-*`         | `turbo-collection-spec.md`                                  | collection invariants                                                               |
-| `R-INIT-*`        | `init-spec.md`                                              | init                                                                                |
-| `R-SRC-*`         | `import-spec.md`                                            | import                                                                              |
-| `R-TGT-*`         | `turbo-collection-spec.md`                                  | storage layout (the prefix dates from when a TC Copy was called a target)           |
-| `R-BACKUP-*`      | `backup-spec.md`                                            | backup                                                                              |
-| `R-VERIFY-*`      | `verify-spec.md`                                            | verify                                                                              |
-| `R-INT-*`         | `verify-spec.md`                                            | integrity and fixity                                                                |
-| `R-NAME-*`        | `verify-spec.md`                                            | filename safety                                                                     |
-| `R-REC-*`         | `verify-spec.md`                                            | when a receipt is written, and what it may be taken to prove                        |
-| `R-STATUS-*`      | `turbo-collection-spec.md`                                  | status                                                                              |
-| `R-CFG-*`         | `turbo-collection-core-spec.md`                             | configuration                                                                       |
-| `R-LOG-*`         | `logging-spec.md`                                           | logging                                                                             |
-| `R-PARALLEL-*`    | `parallel-safety-spec.md`                                   | runs that overlap in time                                                           |
-| `R-CLI-*`         | `turbo-collection-core-spec.md`                             | command line and operations                                                         |
-| `R-VER-*`         | `turbo-collection-spec.md`                                  | this specification's version, and version stamps                                    |
-| `R-MFILE-*`       | `meta-file-spec.md`                                         | every meta file's name, place, and contents                                         |
-| `R-PHOTO-*`       | `layouts/photo-path-layout-spec.md`                         | photo layout                                                                        |
-| `R-FOUND-*`       | `layouts/supplied-path-layout-spec.md`                      | supplied-path layout (the prefix dates from when it was called the as-found layout) |
-| `R-LOCALFOLDER-*` | `importers/local-folder/local-folder-import-source-spec.md` | a directory of files outside a TC Copy, stored under its own name                   |
-| `R-SET-*`         | `procedures/turbo-collection-setup-procedure.md`            | buying, labeling and filling drives, once                                           |
-| `R-IMP-*`         | `procedures/turbo-collection-import-procedure.md`           | getting photos off an import source into a collection                               |
-| `R-BAK-*`         | `procedures/turbo-collection-backup-procedure.md`           | bringing the home TC Copy up to date                                                |
-| `R-OFF-*`         | `procedures/turbo-collection-offsite-procedure.md`          | bringing the off-site TC Copy up to date                                            |
-| `R-REL-*`         | `procedures/turbo-collection-release-procedure.md`          | destroying a copy held outside a collection                                         |
-| `R-ICLOUD-*`      | `importers/icloud/turbo-collection-icloud-procedure.md`     | copying photos out of iCloud through Photos on a Mac                                |
-| `R-LANG-*`        | `language-requirement.md`                                   | how a normative document is written                                                 |
-| `R-PUB-*`         | `version-requirement.md`                                    | how a normative document is versioned and published                                 |
-| `R-META-*`        | `traceability-requirement.md`                               | how documents, requirements, and code trace to one another                          |
-| `R-DUR-*`         | `durability-requirement.md`                                 | durability axioms every specification and design must satisfy                       |
+| Prefix            | Document                                                | Covers                                                                              |
+| ----------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `R-COL-*`         | `turbo-collection-spec.md`                              | collection invariants                                                               |
+| `R-INIT-*`        | `init-spec.md`                                          | init                                                                                |
+| `R-SRC-*`         | `import-spec.md`                                        | import                                                                              |
+| `R-TGT-*`         | `turbo-collection-spec.md`                              | storage layout (the prefix dates from when a TC Copy was called a target)           |
+| `R-BACKUP-*`      | `backup-spec.md`                                        | backup                                                                              |
+| `R-VERIFY-*`      | `verify-spec.md`                                        | verify                                                                              |
+| `R-INT-*`         | `verify-spec.md`                                        | integrity and fixity                                                                |
+| `R-NAME-*`        | `verify-spec.md`                                        | filename safety                                                                     |
+| `R-REC-*`         | `verify-spec.md`                                        | when a receipt is written, and what it may be taken to prove                        |
+| `R-STATUS-*`      | `turbo-collection-spec.md`                              | status                                                                              |
+| `R-CFG-*`         | `turbo-collection-core-spec.md`                         | configuration                                                                       |
+| `R-LOG-*`         | `logging-spec.md`                                       | logging                                                                             |
+| `R-PARALLEL-*`    | `parallel-safety-spec.md`                               | runs that overlap in time                                                           |
+| `R-CLI-*`         | `turbo-collection-core-spec.md`                         | command line and operations                                                         |
+| `R-VER-*`         | `turbo-collection-spec.md`                              | this specification's version, and version stamps                                    |
+| `R-MFILE-*`       | `meta-file-spec.md`                                     | every meta file's name, place, and contents                                         |
+| `R-PHOTO-*`       | `layouts/photo-path-layout-spec.md`                     | photo layout                                                                        |
+| `R-FOUND-*`       | `layouts/supplied-path-layout-spec.md`                  | supplied-path layout (the prefix dates from when it was called the as-found layout) |
+| `R-LOCALFOLDER-*` | `importers/local-folder/local-folder-importer-spec.md`  | a directory of files outside a TC Copy, stored under its own name                   |
+| `R-SET-*`         | `procedures/turbo-collection-setup-procedure.md`        | buying, labeling and filling drives, once                                           |
+| `R-IMP-*`         | `procedures/turbo-collection-import-procedure.md`       | getting photos off an import source into a collection                               |
+| `R-BAK-*`         | `procedures/turbo-collection-backup-procedure.md`       | bringing the home TC Copy up to date                                                |
+| `R-OFF-*`         | `procedures/turbo-collection-offsite-procedure.md`      | bringing the off-site TC Copy up to date                                            |
+| `R-REL-*`         | `procedures/turbo-collection-release-procedure.md`      | destroying a copy held outside a collection                                         |
+| `R-ICLOUD-*`      | `importers/icloud/turbo-collection-icloud-procedure.md` | copying photos out of iCloud through Photos on a Mac                                |
+| `R-LANG-*`        | `language-requirement.md`                               | how a normative document is written                                                 |
+| `R-PUB-*`         | `version-requirement.md`                                | how a normative document is versioned and published                                 |
+| `R-META-*`        | `traceability-requirement.md`                           | how documents, requirements, and code trace to one another                          |
+| `R-DUR-*`         | `durability-requirement.md`                             | durability axioms every specification and design must satisfy                       |
 
 Not yet assigned: the iCloud import source specification under
 `specs/importers/` is a stub, and states that its prefix is unassigned. No album

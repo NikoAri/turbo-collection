@@ -13,7 +13,7 @@ Prefixes cited by this document and defined elsewhere: `R-META-*` in
 `traceability-requirement.md`, `R-DUR-*` in `durability-requirement.md`,
 `R-MFILE-*` in `meta-file-spec.md`, `R-PHOTO-*` in `photo-path-layout-spec.md`,
 `R-FOUND-*` in `supplied-path-layout-spec.md`, `R-LOCALFOLDER-*` in
-`local-folder-import-source-spec.md`, `R-PUB-*` in `version-requirement.md`, and
+`local-folder-importer-spec.md`, `R-PUB-*` in `version-requirement.md`, and
 `R-LANG-*` in `language-requirement.md`.
 
 **Document language.** This document is written in **American English**

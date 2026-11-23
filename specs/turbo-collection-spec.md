@@ -29,8 +29,8 @@ section numbers continue this document's.
 ## 1. Scope, Non-Goals, and Invocation
 
 This diagram _is_ Turbo-Collection's scope statement. It draws a line between
-what this document owns, what import source specifications own, and what sits
-outside Turbo-Collection entirely.
+what this document owns, what importer specifications own, and what sits outside
+Turbo-Collection entirely.
 
 ```mermaid
 flowchart LR
@@ -163,8 +163,8 @@ Self-contained, per `language-requirement.md` R-LANG-5.
   source; an import source is an outside origin files are imported from.
 
 - **Supplied Path**  
-  A path a file has at its **Import Source**, relative to a root that import
-  source's specification states (`import-spec.md` R-SRC-21).
+  A path a file has at its **Import Source**, relative to a root its importer
+  specification states (`import-spec.md` R-SRC-21).
 
 - **TC Copy**  
   One physical instance of a collection, held on one storage medium; TC stands

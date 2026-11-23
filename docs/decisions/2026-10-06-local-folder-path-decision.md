@@ -33,5 +33,5 @@ Two costs are accepted.
 
 ## Touches
 
-`local-folder-import-source-spec.md`: `R-LOCALFOLDER-6`, and the refusal of a
-folder with no name in `R-LOCALFOLDER-2`.
+`local-folder-importer-spec.md`: `R-LOCALFOLDER-6`, and the refusal of a folder
+with no name in `R-LOCALFOLDER-2`.

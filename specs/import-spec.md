@@ -17,7 +17,7 @@ In an **import**, Turbo-Collection MUST take from that import's command line
 first a directory to import from, then an optional TC Directory (R-CLI-22),
 naming which TC Copy to import into. Turbo-Collection MUST import into that TC
 Copy, drawing from Import Source `local-folder`
-([`local-folder-import-source-spec.md`](importers/local-folder/local-folder-import-source-spec.md))
+([`local-folder-importer-spec.md`](importers/local-folder/local-folder-importer-spec.md))
 with that directory to import from as that Import Source's setting (R-SRC-3).
 Turbo-Collection MUST end an import given no directory to import from, or given
 a directory after that import's TC Directory, with an error, before that import
@@ -37,11 +37,10 @@ import into that TC Copy. Turbo-Collection MUST end that import with an error,
 before it makes a directory or writes a file other than its log and its log
 directory (`logging-spec.md` R-LOG-6), where init would refuse that directory,
 or where that import's directory to import from would be refused once that TC
-Copy exists (`local-folder-import-source-spec.md` R-LOCALFOLDER-2). That import
-MUST report which TC Directory it made, and which `collectionName` and
-`tcCopyName` it wrote. A Dry-Run of that import MUST report what a Dry-Run of
-that init would report (`init-spec.md` R-INIT-5), as well as what R-SRC-14
-requires.
+Copy exists (`local-folder-importer-spec.md` R-LOCALFOLDER-2). That import MUST
+report which TC Directory it made, and which `collectionName` and `tcCopyName`
+it wrote. A Dry-Run of that import MUST report what a Dry-Run of that init would
+report (`init-spec.md` R-INIT-5), as well as what R-SRC-14 requires.
 
 > **Example.** Where `E:\photos` does not exist,
 > `turbo-collection import D:\moon-laptop E:\photos` makes a TC Copy named
@@ -150,9 +149,8 @@ governs an item that layout is not able to place.
 
 > **Example.** Every iCloud Import has photo-path layout as its primary layout.
 > A local-folder Import has photo-path layout where its directory holds a photo,
-> and supplied-path layout where it holds none
-> (`local-folder-import-source-spec.md` R-LOCALFOLDER-5). Either way, one Import
-> has one primary layout.
+> and supplied-path layout where it holds none (`local-folder-importer-spec.md`
+> R-LOCALFOLDER-5). Either way, one Import has one primary layout.
 
 **R-SRC-16.** On importing into an existing import-source directory,
 Turbo-Collection MUST compare its running import source's version against

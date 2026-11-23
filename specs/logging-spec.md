@@ -163,16 +163,16 @@ R-LOG-15's entries and this requirement's for what a real run would copy.
 > ```
 
 **R-LOG-18.** For each directory an Import passes over as a `.turbo-collection`
-directory (`local-folder-import-source-spec.md` R-LOCALFOLDER-3),
-Turbo-Collection MUST record a verbose `passed-over` entry holding `path`, that
-directory's path. Once an Import has finished, Turbo-Collection MUST record an
-`import` entry holding `importSource`, that Import Source's identifier,
-`layout`, its primary layout's identifier (`import-spec.md` R-SRC-15), `from`,
-which path it read files from, `to`, which TC Directory it wrote them to,
-`files`, how many files it wrote, `bytes`, their total length in bytes, and
-`leftOut`, how many files it left out of its Collection. A Dry-Run of an import
-(`import-spec.md` R-SRC-14) MUST record these entries, R-LOG-15's and R-LOG-19's
-for what a real Import would do.
+directory (`local-folder-importer-spec.md` R-LOCALFOLDER-3), Turbo-Collection
+MUST record a verbose `passed-over` entry holding `path`, that directory's path.
+Once an Import has finished, Turbo-Collection MUST record an `import` entry
+holding `importSource`, that Import Source's identifier, `layout`, its primary
+layout's identifier (`import-spec.md` R-SRC-15), `from`, which path it read
+files from, `to`, which TC Directory it wrote them to, `files`, how many files
+it wrote, `bytes`, their total length in bytes, and `leftOut`, how many files it
+left out of its Collection. A Dry-Run of an import (`import-spec.md` R-SRC-14)
+MUST record these entries, R-LOG-15's and R-LOG-19's for what a real Import
+would do.
 
 > **Example.** An import of `D:\moon-laptop` into a TC Copy at `E:\Photos`
 > records lines such as these, a `transfer` line once per file:

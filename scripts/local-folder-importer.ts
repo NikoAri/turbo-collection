@@ -5,7 +5,7 @@ import { TcError } from "./helpers/tc-error.ts";
 import { isTcDirectory, pathKeyOf } from "./paths.ts";
 
 // Local-folder Import Source's Importer
-// (local-folder-import-source-spec.md): which files of an Imported directory
+// (local-folder-importer-spec.md): which files of an Imported directory
 // it supplies, and each one's Supplied path.
 
 // One file an Importer supplies, an Item of its own (R-LOCALFOLDER-4):

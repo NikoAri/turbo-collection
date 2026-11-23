@@ -88,6 +88,6 @@ reaches at a time.
 `parallel-safety-spec.md`: Section 8.6, `R-PARALLEL-1` to `R-PARALLEL-8`.
 `logging-spec.md`: `R-LOG-6`. `turbo-collection-core-spec.md`: `R-CFG-3` lets a
 run make its log directory and write its log before it validates configuration;
-`R-CLI-18` and `R-CLI-19`. `local-folder-import-source-spec.md`:
-`R-LOCALFOLDER-2`. [`spec-guide.md`](../spec-guide.md): a row for
-`parallel-safety-spec.md` in each of its tables.
+`R-CLI-18` and `R-CLI-19`. `local-folder-importer-spec.md`: `R-LOCALFOLDER-2`.
+[`spec-guide.md`](../spec-guide.md): a row for `parallel-safety-spec.md` in each
+of its tables.

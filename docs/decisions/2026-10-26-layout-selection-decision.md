@@ -83,8 +83,8 @@ folder of photos can keep its paths on demand. It is not specified yet.
 
 `import-spec.md`: `R-SRC-15` recast so an import source specification states
 which layout is an import's primary layout; `R-SRC-20` speaks of an import's
-primary layout. `local-folder-import-source-spec.md`: `R-LOCALFOLDER-5` picks
-the photo layout or the supplied-path layout by what an import holds.
+primary layout. `local-folder-importer-spec.md`: `R-LOCALFOLDER-5` picks the
+photo layout or the supplied-path layout by what an import holds.
 `logging-spec.md`: `R-LOG-18`'s import entry records its layout, and `R-LOG-19`
 adds `floored` and `uncertain-date` entries. Both layout specifications and the
 iCloud specification speak of an import's primary layout.

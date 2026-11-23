@@ -43,9 +43,9 @@ one that files photographs by date: its own specification states its items.
 ## Touches
 
 `in-place-import-source-spec.md`: `R-INPLACE-9` added in place of an open note.
-`local-folder-import-source-spec.md`: the placeholder in its items section
-replaced by the same rule. `import-spec.md` `R-SRC-9` is unchanged, and still
-governs an import source whose specification names items of several files.
+`local-folder-importer-spec.md`: the placeholder in its items section replaced
+by the same rule. `import-spec.md` `R-SRC-9` is unchanged, and still governs an
+import source whose specification names items of several files.
 
 The in-place import source specification, with `R-INPLACE-9`, was withdrawn on
 2026-10-12, when in-place import was put off to a later version.
